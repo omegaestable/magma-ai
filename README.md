@@ -87,6 +87,22 @@ python download_data.py --generate-local --n 200 --seed 42
 
 This samples a balanced JSONL benchmark from `data/exports/export_raw_implications_14_3_2026.csv`.
 
+To generate the no-leak benchmark requested in Workstream B:
+
+```bash
+python download_data.py --generate-no-leak --n 200 --holdout-count 100 --seed 42
+```
+
+That writes `data/no_leak_benchmark.jsonl` plus `data/no_leak_holdout.json`, which can also be passed to `features.py --exclude-eq-file` so held-out equations never appear in feature extraction.
+
+To mine a structurally misleading hardest-case slice:
+
+```bash
+python download_data.py --generate-hardest --hardest-n 500 --seed 42
+```
+
+That writes `data/hardest_500.jsonl`.
+
 ### 4. Validate the LLM evaluation pipeline without making API calls
 
 ```bash
@@ -100,6 +116,35 @@ python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl
 ```
 
 The safe default is now `--n-format 0`. If you want format examples, supply a separate labeled file explicitly with `--format-data`.
+
+If the organizer JSONL files are restored or you have alternate URLs, `download_data.py` now honors `SAIR_STAGE1_NORMAL_URL` and `SAIR_STAGE1_HARD_URL` before falling back to the old default slug.
+
+### 6. Run the high-priority E/F analyses
+
+Mine the hardest ML pairs from out-of-fold XGBoost predictions:
+
+```bash
+python train.py --dataset default --model-type xgboost --cv 5 --hardest-k 500 --name xgb_hardest
+```
+
+Mine direct-proof templates from matrix value `4` pairs:
+
+```bash
+python workstream_analysis.py --mode proof-patterns --name direct_proofs
+```
+
+Mine hard-false counterexample coverage from sampled matrix value `-4` pairs:
+
+```bash
+python workstream_analysis.py --mode counterexample-patterns --sample-size 400 --timeout 2.5 --name hard_false
+```
+
+Run adversarial evaluation summaries, including trivial-free and landmark reporting, plus optional dual-swap checks:
+
+```bash
+python evaluate.py --mode heuristic --data data/local_benchmark.jsonl --dual-swap-check
+python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --dual-swap-check --name local_eval_dual
+```
 
 ## Tutorial Workflow
 

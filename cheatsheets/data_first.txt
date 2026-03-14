@@ -1,0 +1,40 @@
+MAGMA IMPLICATION CHEATSHEET
+
+DATA FIRST
+- Exact offline E2/singleton class size: 1496 equations. Exact range encoding and first 80 members are written by analyze_cheatsheet_workstream_d.py to results/workstream_d_analysis.json.
+- Current byte budget before this rewrite: 4856/10240 used, 5384 free.
+
+TOP COUNTEREXAMPLE MAGMAS IN THIS REPO
+- 00/00 const0 size2 tags=comm,assoc cover=4.88M sat->unsat pairs.
+- 11/11 const1 size2 tags=comm,assoc cover=4.88M.
+- 000/000/000 const0 size3 tags=comm,assoc cover=4.88M.
+- 00/11 left-zero size2 tags=idem,left0,assoc cover=4.22M.
+- 01/01 right-zero size2 tags=idem,right0,assoc cover=4.22M.
+- 000/111/222 left projection size3 tags=idem,left0,assoc cover=4.22M.
+- 012/012/012 right projection size3 tags=idem,right0,assoc cover=4.22M.
+- 0000/1111/2222/3333 left projection size4 tags=idem,left0,assoc cover=4.22M.
+- 01/10 xor size2 tags=comm,assoc cover=2.67M.
+- 0123/1032/2301/3210 klein4 size4 tags=comm,assoc cover=2.67M.
+- 11/01 implication-like size2 tags=noncomm,nonassoc cover=1.24M.
+- 01/00 left-and-not size2 tags=noncomm,nonassoc cover=1.24M.
+- 00/10 right-xor-and size2 tags=noncomm,nonassoc cover=1.24M.
+- 012/201/120 2x+y mod3 size3 tags=linear cover=0.81M.
+- 021/102/210 x+2y mod3 size3 tags=linear cover=0.81M.
+- 00/01 and size2 tags=idem,comm,assoc cover=0.74M.
+- 01/11 or size2 tags=idem,comm,assoc cover=0.74M.
+- 012/112/222 max3 size3 tags=idem,comm,assoc cover=0.74M.
+- 000/011/012 min3 size3 tags=idem,comm,assoc cover=0.74M.
+- 11/10 nand size2 tags=comm cover=0.63M.
+
+DECISION ORDER
+1. Instant cases: same equation -> TRUE; Eq2 is x=x -> TRUE; Eq1 is x=x and Eq2 not -> FALSE.
+2. Singleton/E2-class: if Eq1 forces singleton, TRUE. If Eq2 does and Eq1 clearly does not, FALSE. Safe trigger: LHS-vars and RHS-vars disjoint with at least one operation.
+3. Specialization: if Eq2 is a pure variable substitution instance of Eq1, TRUE.
+4. Matching invariant: if Eq1 is multiplicity-balanced on every variable and Eq2 is not, FALSE.
+5. Size-2 table pass: test the size-2 bank above before longer reasoning.
+6. Linear pass: try x*y=(a x+b y) mod p for p in {2,3,5,7}; especially the two size-3 linear tables above.
+7. Structural heuristics: extra variables in Eq2 usually mean FALSE; dual pairs have the same answer.
+
+VERDICT DISCIPLINE
+- TRUE needs an instant case, singleton forcing, specialization, or explicit rewrite chain.
+- FALSE needs multiplicity refutation or an explicit finite/linear/translation-invariant counterexample.

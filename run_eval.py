@@ -21,7 +21,17 @@ from pathlib import Path
 from typing import Optional
 
 from analyze_equations import load_equations
-from benchmark_utils import annotate_records, benchmark_metadata, summarize_bucket_accuracy
+from benchmark_utils import (
+    annotate_records,
+    benchmark_metadata,
+    build_dual_swap_records,
+    summarize_bucket_accuracy,
+    summarize_bucket_counts,
+    summarize_dual_swap_consistency,
+    summarize_landmark_accuracy,
+    summarize_trivial_share,
+    summarize_trivial_free_accuracy,
+)
 from config import CHEATSHEET_FILE, ExperimentConfig, RESULTS_DIR
 from llm_client import LLMClient
 
@@ -130,8 +140,8 @@ def load_eval_problems(filepath: str, equations: list) -> list:
             if not line:
                 continue
             rec = json.loads(line)
-            eq1_idx = int(rec.get('equation1_index', rec.get('eq1', 0)))
-            eq2_idx = int(rec.get('equation2_index', rec.get('eq2', 0)))
+            eq1_idx = int(rec.get('equation1_index', rec.get('eq1', rec.get('eq1_idx', 0))))
+            eq2_idx = int(rec.get('equation2_index', rec.get('eq2', rec.get('eq2_idx', 0))))
             label = rec.get('implies', rec.get('label'))
             if eq1_idx and eq2_idx and label is not None:
                 problems.append({
@@ -231,6 +241,9 @@ def run_evaluation(
         logger.info(f"Loaded {len(format_pool)} format-example problems from separate data")
     format_ex = select_format_examples(format_pool, n=config.n_format_examples, seed=config.seed)
     eval_problems = problems
+    dual_problems = build_dual_swap_records(eval_problems, equations) if config.dual_swap_check else []
+    if dual_problems:
+        logger.info(f"Prepared {len(dual_problems)} dual-swapped problems for consistency checking")
 
     # Evaluate
     client = LLMClient(config.eval_model)
@@ -269,6 +282,33 @@ def run_evaluation(
                 f"  [{i+1}/{len(eval_problems)}] Accuracy={acc:.3f} Cost=${client.total_cost:.4f}"
             )
 
+    dual_results_detail = []
+    if dual_problems:
+        logger.info("Running dual-swap consistency evaluation...")
+        for i, prob in enumerate(dual_problems):
+            pred_prob, verdict, raw = evaluate_single(
+                prob["eq1"], prob["eq2"], cheatsheet, client,
+                format_examples=format_ex,
+                use_self_consistency=config.use_self_consistency,
+                sc_samples=config.sc_samples,
+            )
+            dual_results_detail.append({
+                "source_eq1_idx": prob["source_eq1_idx"],
+                "source_eq2_idx": prob["source_eq2_idx"],
+                "eq1_idx": prob["eq1_idx"],
+                "eq2_idx": prob["eq2_idx"],
+                "eq1": prob["eq1"],
+                "eq2": prob["eq2"],
+                "label": prob["label"],
+                "predicted_prob": pred_prob,
+                "predicted": pred_prob > 0.5,
+                "correct": (pred_prob > 0.5) == prob["label"],
+            })
+            if (i + 1) % 10 == 0 or i == len(dual_problems) - 1:
+                logger.info(
+                    f"  [dual {i+1}/{len(dual_problems)}] Cost=${client.total_cost:.4f}"
+                )
+
     # Final metrics
     acc = correct / len(eval_problems) if eval_problems else 0
     ll = compute_log_loss(predictions, labels)
@@ -278,7 +318,10 @@ def run_evaluation(
     false_correct = sum(1 for r in results_detail if not r["label"] and r["correct"])
     annotated_details = annotate_records(results_detail, equations)
     bucket_summary = summarize_bucket_accuracy(annotated_details)
-    trivial_count = sum(1 for item in annotated_details if item["bucket"] == "trivial")
+    trivial_summary = summarize_trivial_share(annotated_details)
+    trivial_free_summary = summarize_trivial_free_accuracy(annotated_details, equations)
+    landmark_summary = summarize_landmark_accuracy(annotated_details)
+    dual_swap_summary = summarize_dual_swap_consistency(annotated_details, dual_results_detail) if dual_results_detail else None
     metadata = benchmark_metadata(
         artifact_kind='cheatsheet_only',
         label_source='jsonl',
@@ -286,6 +329,7 @@ def run_evaluation(
         uses_matrix_at_inference=False,
         format_examples_source=format_source,
         uses_eval_labels_in_prompt=False,
+        benchmark_name='jsonl_eval',
     )
 
     results = {
@@ -300,11 +344,19 @@ def run_evaluation(
         "config": config.__dict__,
         "cheatsheet_bytes": cs_bytes,
         "benchmark_metadata": metadata,
-        "trivial_count": trivial_count,
-        "nontrivial_count": len(annotated_details) - trivial_count,
+        "trivial_count": trivial_summary["trivial_count"],
+        "trivial_share": trivial_summary["trivial_share"],
+        "nontrivial_count": trivial_summary["nontrivial_count"],
+        "nontrivial_share": trivial_summary["nontrivial_share"],
+        "trivial_free_accuracy": trivial_free_summary,
+        "landmark_accuracy": landmark_summary,
+        "dual_swap": dual_swap_summary,
+        "bucket_counts": summarize_bucket_counts(annotated_details),
         "bucket_accuracy": bucket_summary,
         "details": annotated_details,
     }
+    if dual_results_detail:
+        results["dual_swap_details"] = dual_results_detail
 
     # Save results
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -314,9 +366,32 @@ def run_evaluation(
     logger.info(f"Results saved to {out_path}")
     logger.info(f"FINAL — Accuracy: {acc:.3f} ({correct}/{len(eval_problems)})  Cost: ${client.total_cost:.4f}")
     logger.info(f"  Log-loss (calibration diagnostic): {ll:.4f}")
+    logger.info(
+        f"  Trivial share: {trivial_summary['trivial_share']:.3f} "
+        f"({trivial_summary['trivial_count']}/{trivial_summary['total']})"
+    )
     logger.info(f"  Benchmark validity: {metadata['submission_valid']} ({metadata['validity_reason']})")
+    if trivial_free_summary["accuracy"] is not None:
+        logger.info(
+            "  Trivial-free accuracy: "
+            f"{trivial_free_summary['accuracy']:.3f} on {trivial_free_summary['count']} pairs "
+            f"(excluded {trivial_free_summary['excluded_count']})"
+        )
+    landmark_overall = landmark_summary["overall"]
+    if landmark_overall["accuracy"] is not None:
+        logger.info(
+            f"  Landmark accuracy: {landmark_overall['accuracy']:.3f} on {landmark_overall['count']} pairs"
+        )
+    if dual_swap_summary and dual_swap_summary["prediction_consistency"] is not None:
+        logger.info(
+            "  Dual-swap consistency: "
+            f"{dual_swap_summary['prediction_consistency']:.3f} over {dual_swap_summary['paired_count']} paired evaluations"
+        )
     for bucket, values in bucket_summary.items():
-        logger.info(f"  Bucket {bucket}: n={values['count']} acc={values['accuracy']:.3f}")
+        logger.info(
+            f"  Bucket {bucket}: n={values['count']} share={values['share']:.3f} "
+            f"acc={values['accuracy']:.3f}"
+        )
 
     return results
 
@@ -341,6 +416,14 @@ def dry_run(cheatsheet_path: str, eval_data_path: str, config: ExperimentConfig)
         n_true = sum(1 for p in problems if p['label'])
         n_false = len(problems) - n_true
         logger.info(f"  Label balance: {n_true} TRUE ({n_true*100/len(problems):.1f}%), {n_false} FALSE")
+        annotated = annotate_records(problems, equations)
+        trivial_summary = summarize_trivial_share(annotated)
+        logger.info(
+            f"  Trivial share: {trivial_summary['trivial_share']:.3f} "
+            f"({trivial_summary['trivial_count']}/{trivial_summary['total']})"
+        )
+        for bucket, count in summarize_bucket_counts(annotated).items():
+            logger.info(f"  Bucket {bucket}: n={count}")
 
     # Check environment
     env_status = check_environment(config.eval_model)
@@ -368,6 +451,8 @@ def main():
                         help="Number of format examples (safe default: 0 unless using separate format data)")
     parser.add_argument("--self-consistency", action="store_true", help="Use self-consistency")
     parser.add_argument("--sc-samples", type=int, default=5, help="Self-consistency samples")
+    parser.add_argument("--dual-swap-check", action="store_true",
+                        help="Also evaluate dual-swapped pairs and report prediction consistency")
     parser.add_argument("--name", default="default", help="Experiment name")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -387,6 +472,7 @@ def main():
         n_format_examples=args.n_format,
         use_self_consistency=args.self_consistency,
         sc_samples=args.sc_samples,
+        dual_swap_check=args.dual_swap_check,
         seed=args.seed,
     )
 

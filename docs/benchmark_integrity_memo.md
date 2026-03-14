@@ -11,13 +11,15 @@
 1. `run_eval.py` now defaults to zero format examples.
 2. `run_eval.py` accepts `--format-data` so format examples can come from a separate labeled file.
 3. `run_eval.py` and `evaluate.py` now emit explicit benchmark metadata, including whether a run is submission-valid.
-4. Bucket summaries now report counts and accuracies for:
+4. Bucket summaries now report counts, shares, and accuracies for:
    - trivial
-   - specialization_positive
-   - counterexample_easy_negative
-   - structurally_ambiguous
-   - landmark_pair
-   - hard_or_disagreement
+   - specialization
+   - counterexample_easy
+   - ambiguous
+   - landmark
+   - hard
+5. `download_data.py` can now generate `data/no_leak_benchmark.jsonl` with held-out equation metadata and `data/hardest_500.jsonl` for structurally misleading cases.
+6. `features.py` can exclude the held-out equation list so feature extraction respects the no-leak split.
 
 ## Interpretation Rules
 
@@ -28,6 +30,6 @@
 
 ## Remaining Gaps
 
-1. The hardcoded Hugging Face dataset slug in the repo appears stale and returns HTTP 404 as of 2026-03-14, so the old automatic download path is not currently a reliable source of official JSONL benchmark data.
-2. The supported repo-local fallback is `data/local_benchmark.jsonl`, generated from the checked-in implication matrix. This is suitable for offline pipeline validation, but it is not an external official benchmark.
+1. The hardcoded Hugging Face dataset slug in the repo appears stale and returns HTTP 404 as of 2026-03-14, so official JSONL download remains best-effort unless alternate URLs are provided.
+2. The supported repo-local fallbacks are `data/local_benchmark.jsonl`, `data/no_leak_benchmark.jsonl`, and `data/hardest_500.jsonl`; all are matrix-derived and therefore useful for internal validation, not as organizer-held-out external benchmarks.
 3. External competition-rule pages are not archived locally, so some old README claims remain unverified historically even after cleanup.

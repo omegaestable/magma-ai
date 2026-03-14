@@ -268,6 +268,7 @@ def build_dataset_from_jsonl(
     filepath: str,
     equations: list,
     config: MLConfig = None,
+    excluded_eq_indices: set[int] | None = None,
 ) -> tuple:
     """Build feature matrix from JSONL training data.
 
@@ -276,6 +277,7 @@ def build_dataset_from_jsonl(
     if config is None:
         from config import DEFAULT_ML_CONFIG
         config = DEFAULT_ML_CONFIG
+    excluded_eq_indices = set(excluded_eq_indices or set())
 
     # Load problems
     problems = []
@@ -285,9 +287,11 @@ def build_dataset_from_jsonl(
             if not line:
                 continue
             rec = json.loads(line)
-            eq1_idx = int(rec.get('equation1_index', rec.get('eq1', 0)))
-            eq2_idx = int(rec.get('equation2_index', rec.get('eq2', 0)))
+            eq1_idx = int(rec.get('equation1_index', rec.get('eq1', rec.get('eq1_idx', 0))))
+            eq2_idx = int(rec.get('equation2_index', rec.get('eq2', rec.get('eq2_idx', 0))))
             label = rec.get('implies', rec.get('label'))
+            if eq1_idx in excluded_eq_indices or eq2_idx in excluded_eq_indices:
+                continue
             if eq1_idx and eq2_idx and label is not None:
                 problems.append((eq1_idx, eq2_idx, bool(label)))
 
@@ -326,6 +330,7 @@ def build_dataset_from_matrix(
     n_samples: int = 10000,
     config: MLConfig = None,
     seed: int = 42,
+    excluded_eq_indices: set[int] | None = None,
 ) -> tuple:
     """Build feature matrix by sampling from the full implication matrix.
 
@@ -335,9 +340,18 @@ def build_dataset_from_matrix(
     if config is None:
         from config import DEFAULT_ML_CONFIG
         config = DEFAULT_ML_CONFIG
+    excluded_eq_indices = set(excluded_eq_indices or set())
 
-    true_pairs = [(k, True) for k, v in matrix.items() if v]
-    false_pairs = [(k, False) for k, v in matrix.items() if not v]
+    true_pairs = [
+        (k, True)
+        for k, v in matrix.items()
+        if v and k[0] not in excluded_eq_indices and k[1] not in excluded_eq_indices
+    ]
+    false_pairs = [
+        (k, False)
+        for k, v in matrix.items()
+        if not v and k[0] not in excluded_eq_indices and k[1] not in excluded_eq_indices
+    ]
 
     rng = random.Random(seed)
     rng.shuffle(true_pairs)
@@ -399,6 +413,8 @@ def main():
     parser.add_argument("--n-samples", type=int, default=10000,
                         help="Number of pairs to sample from matrix")
     parser.add_argument("--name", default="default", help="Dataset name for saving")
+    parser.add_argument("--exclude-eq-file", default=None,
+                        help="Optional JSON file listing equation indices to exclude from feature extraction")
     parser.add_argument("--no-algebraic", action="store_true", help="Skip algebraic proofs (faster)")
     parser.add_argument("--no-counterexample", action="store_true", help="Skip counterexample search (faster)")
     parser.add_argument("--seed", type=int, default=42)
@@ -412,6 +428,11 @@ def main():
 
     from analyze_equations import load_equations
     equations = load_equations()
+    excluded_eq_indices = set()
+    if args.exclude_eq_file:
+        from benchmark_utils import load_holdout_indices
+        excluded_eq_indices = set(load_holdout_indices(args.exclude_eq_file))
+        logger.info(f"Excluding {len(excluded_eq_indices)} held-out equations from feature extraction")
 
     config = MLConfig(
         seed=args.seed,
@@ -420,11 +441,21 @@ def main():
     )
 
     if args.data:
-        X, y, feature_names, meta = build_dataset_from_jsonl(args.data, equations, config)
+        X, y, feature_names, meta = build_dataset_from_jsonl(
+            args.data,
+            equations,
+            config,
+            excluded_eq_indices=excluded_eq_indices,
+        )
     else:
         matrix = load_raw_implication_matrix()
         X, y, feature_names, meta = build_dataset_from_matrix(
-            equations, matrix, n_samples=args.n_samples, config=config, seed=args.seed,
+            equations,
+            matrix,
+            n_samples=args.n_samples,
+            config=config,
+            seed=args.seed,
+            excluded_eq_indices=excluded_eq_indices,
         )
 
     save_dataset(X, y, feature_names, meta, name=args.name)

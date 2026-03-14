@@ -13,6 +13,7 @@ from sklearn.calibration import CalibratedClassifierCV
 
 from config import MLConfig, DEFAULT_ML_CONFIG, MODELS_DIR, RESULTS_DIR
 from features import load_dataset, build_dataset_from_jsonl, save_dataset
+from benchmark_utils import annotate_records
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +156,7 @@ def cross_validate(
     y: np.ndarray,
     config: MLConfig,
     n_folds: int = 5,
-) -> dict:
+) -> tuple[dict, np.ndarray]:
     """Run k-fold cross-validation."""
     logger.info(f"Running {n_folds}-fold CV with {config.model_type}...")
 
@@ -194,7 +195,41 @@ def cross_validate(
     }
 
     logger.info(f"OOF: acc={oof_acc:.4f}, logloss={oof_ll:.4f}")
-    return results
+    return results, all_probas
+
+
+def mine_hardest_pairs(
+    y: np.ndarray,
+    oof_probas: np.ndarray,
+    meta: list,
+    equations: list[str],
+    top_k: int = 250,
+) -> list[dict]:
+    """Rank the hardest pairs by out-of-fold loss and uncertainty."""
+    eps = 1e-7
+    scored = []
+    for idx, (label, prob, pair_meta) in enumerate(zip(y, oof_probas, meta)):
+        clipped = max(eps, min(1.0 - eps, float(prob)))
+        loss = -np.log(clipped) if label else -np.log(1.0 - clipped)
+        predicted = clipped > 0.5
+        scored.append({
+            "eq1_idx": int(pair_meta["eq1_idx"]),
+            "eq2_idx": int(pair_meta["eq2_idx"]),
+            "eq1": equations[int(pair_meta["eq1_idx"]) - 1],
+            "eq2": equations[int(pair_meta["eq2_idx"]) - 1],
+            "label": bool(label),
+            "predicted_prob": clipped,
+            "predicted": predicted,
+            "correct": predicted == bool(label),
+            "oof_log_loss": float(loss),
+            "margin": float(abs(clipped - 0.5)),
+        })
+
+    hardest = sorted(
+        scored,
+        key=lambda record: (-record["oof_log_loss"], record["margin"]),
+    )[:top_k]
+    return annotate_records(hardest, equations)
 
 
 def save_model(model, feature_names: list, config: MLConfig, name: str = None):
@@ -244,11 +279,15 @@ def main():
     parser = argparse.ArgumentParser(description="Train ML model for implication prediction")
     parser.add_argument("--dataset", default="default", help="Precomputed dataset name (from features.py)")
     parser.add_argument("--data", default=None, help="JSONL file (alternative to --dataset)")
+    parser.add_argument("--exclude-eq-file", default=None,
+                        help="Optional JSON file listing equation indices to exclude when building from --data")
     parser.add_argument("--model-type", default="xgboost", choices=list(MODEL_BUILDERS.keys()))
     parser.add_argument("--n-estimators", type=int, default=1000)
     parser.add_argument("--learning-rate", type=float, default=0.05)
     parser.add_argument("--max-depth", type=int, default=8)
     parser.add_argument("--cv", type=int, default=5, help="Number of CV folds (0 = no CV, just train)")
+    parser.add_argument("--hardest-k", type=int, default=0,
+                        help="Export the top-K hardest out-of-fold pairs after CV")
     parser.add_argument("--name", default="default", help="Experiment name")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -271,8 +310,15 @@ def main():
     # Load data
     if args.data:
         from analyze_equations import load_equations
+        from benchmark_utils import load_holdout_indices
         equations = load_equations()
-        X, y, feature_names, meta = build_dataset_from_jsonl(args.data, equations, config)
+        excluded_eq_indices = set(load_holdout_indices(args.exclude_eq_file)) if args.exclude_eq_file else set()
+        X, y, feature_names, meta = build_dataset_from_jsonl(
+            args.data,
+            equations,
+            config,
+            excluded_eq_indices=excluded_eq_indices,
+        )
         save_dataset(X, y, feature_names, meta, name=args.name)
     else:
         X, y, feature_names, meta = load_dataset(args.dataset)
@@ -281,13 +327,22 @@ def main():
 
     # Cross-validation
     if args.cv > 0:
-        cv_results = cross_validate(X, y, config, n_folds=args.cv)
+        cv_results, oof_probas = cross_validate(X, y, config, n_folds=args.cv)
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         with open(RESULTS_DIR / f"cv_{args.name}.json", 'w') as f:
             json.dump(cv_results, f, indent=2)
         print(f"\nCV Results ({args.cv}-fold):")
         print(f"  Accuracy: {cv_results['oof_accuracy']:.4f} (±{cv_results['std_accuracy']:.4f})")
         print(f"  Log-loss: {cv_results['oof_log_loss']:.4f} (±{cv_results['std_log_loss']:.4f})")
+
+        if args.hardest_k > 0:
+            from analyze_equations import load_equations
+            equations = load_equations()
+            hardest_pairs = mine_hardest_pairs(y, oof_probas, meta, equations, top_k=args.hardest_k)
+            hardest_path = RESULTS_DIR / f"hardest_{args.name}.json"
+            with open(hardest_path, 'w', encoding='utf-8') as f:
+                json.dump(hardest_pairs, f, indent=2)
+            print(f"  Hardest pairs: wrote top {len(hardest_pairs)} to {hardest_path}")
 
     # Train final model on full data
     logger.info("Training final model on full dataset...")

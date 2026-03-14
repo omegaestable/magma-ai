@@ -32,6 +32,8 @@ $env:ANTHROPIC_API_KEY="..."
 - `equations.txt` is the canonical numbered law list.
 - `cheatsheet.txt` is the current submission candidate.
 - `data/local_benchmark.jsonl` is the smallest useful offline benchmark.
+- `data/no_leak_benchmark.jsonl` is the held-out-equation benchmark for leakage-sensitive checks.
+- `data/hardest_500.jsonl` is the structurally misleading hardest-case slice.
 - `data/exports/export_raw_implications_14_3_2026.csv` is the dense research matrix.
 
 ## 4. Run The Offline Heuristic Benchmark
@@ -48,7 +50,7 @@ What this does:
 - loads `cheatsheet.txt` so the byte budget is checked;
 - loads labeled JSONL pairs from `data/local_benchmark.jsonl`;
 - scores them with the built-in heuristic pipeline;
-- reports accuracy, log-loss, bucket counts, and trivial/nontrivial breakdown.
+- reports accuracy, log-loss, bucket counts, bucket shares, and trivial/nontrivial breakdown.
 
 This is a research benchmark, not a competition-faithful LLM evaluation.
 
@@ -61,6 +63,22 @@ python download_data.py --generate-local --n 200 --seed 42
 ```
 
 That command creates or refreshes `data/local_benchmark.jsonl` using balanced sampling from the dense matrix.
+
+For the Workstream B no-leak benchmark:
+
+```bash
+python download_data.py --generate-no-leak --n 200 --holdout-count 100 --seed 42
+```
+
+That command creates `data/no_leak_benchmark.jsonl` and `data/no_leak_holdout.json`.
+
+For the Workstream B hardest-case slice:
+
+```bash
+python download_data.py --generate-hardest --hardest-n 500 --seed 42
+```
+
+That command creates `data/hardest_500.jsonl`.
 
 ## 6. Validate The LLM Evaluation Pipeline Safely
 
@@ -93,6 +111,12 @@ Example with separate format data:
 
 ```bash
 python run_eval.py --cheatsheet cheatsheet.txt --data data/hard.jsonl --format-data data/normal.jsonl --n-format 2 --name heldout_eval
+```
+
+If you are training research-time feature models and want to respect the no-leak split, pass the holdout file into feature extraction:
+
+```bash
+python features.py --data data/normal.jsonl --exclude-eq-file data/no_leak_holdout.json --name no_leak_features
 ```
 
 ## 8. Distill A New Cheatsheet Candidate

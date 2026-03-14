@@ -1,0 +1,28 @@
+{
+  "seed": 42,
+  "holdout_count": 20,
+  "heldout_equation_indices": [
+    205,
+    218,
+    245,
+    261,
+    713,
+    768,
+    840,
+    913,
+    1144,
+    1629,
+    1792,
+    1829,
+    1906,
+    2007,
+    2254,
+    3457,
+    4140,
+    4465,
+    4468,
+    4598
+  ],
+  "benchmark_path": "C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\data\\no_leak_benchmark.jsonl",
+  "matrix_path": "C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\data\\exports\\export_raw_implications_14_3_2026.csv"
+}

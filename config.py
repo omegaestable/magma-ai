@@ -87,6 +87,7 @@ class ExperimentConfig:
     n_eval: int = 100                     # number of eval problems
     n_format_examples: int = 0            # safe default: no eval-set label leakage
     seed: int = 42
+    dual_swap_check: bool = False         # evaluate (E1*, E2*) alongside (E1, E2)
     # Cheatsheet
     cheatsheet_max_bytes: int = 10240     # 10KB limit
     cheatsheet_path: str = str(CHEATSHEET_FILE)

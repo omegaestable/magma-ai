@@ -12,11 +12,19 @@ from pathlib import Path
 from benchmark_utils import (
     annotate_records,
     benchmark_metadata,
+    build_hardest_benchmark_from_matrix,
+    build_no_leak_benchmark,
+    build_dual_swap_records,
+    load_holdout_indices,
     load_equations,
     load_labeled_pairs_from_jsonl,
     sample_balanced_pairs_from_matrix,
     summarize_bucket_accuracy,
     summarize_bucket_counts,
+    summarize_dual_swap_consistency,
+    summarize_landmark_accuracy,
+    summarize_trivial_share,
+    summarize_trivial_free_accuracy,
 )
 from config import CHEATSHEET_FILE, EQUATIONS_FILE, RAW_IMPL_CSV
 
@@ -142,13 +150,28 @@ def main():
     parser.add_argument('--matrix', default=str(RAW_IMPL_CSV),
                         help='Path to raw implications CSV for balanced local sampling')
     parser.add_argument('--n', type=int, default=100, help='Number of problems to evaluate')
+    parser.add_argument('--holdout-count', type=int, default=0,
+                        help='Build a no-leak benchmark from this many held-out equations')
+    parser.add_argument('--heldout-equations', default=None,
+                        help='JSON file containing held-out equation indices for no-leak evaluation')
+    parser.add_argument('--hardest-n', type=int, default=0,
+                        help='Build a hardest-case benchmark of this many structurally misleading pairs')
+    parser.add_argument('--dual-swap-check', action='store_true',
+                        help='Also evaluate dual-swapped problems and report consistency')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
     args = parser.parse_args()
+
+    if args.mode == 'prompt' and not args.data:
+        print('Prompt mode requires --data JSONL input and does not sample directly from the matrix.')
+        print('Use heuristic mode for matrix-backed local research benchmarking.')
+        return
 
     equations = load_equations(args.equations)
     cheatsheet = load_cheatsheet(args.cheatsheet)
 
     label_source = 'jsonl' if args.data else 'matrix_sample'
+    benchmark_name = 'jsonl' if args.data else 'balanced_matrix_sample'
+    holdout_indices: list[int] = []
     if args.data:
         records = load_labeled_pairs_from_jsonl(args.data)
     else:
@@ -156,8 +179,35 @@ def main():
             print(f"Matrix file {args.matrix} not found.")
             records = []
         else:
-            print(f"Sampling balanced benchmark pairs from {args.matrix}...")
-            records = sample_balanced_pairs_from_matrix(args.matrix, n=args.n, seed=args.seed)
+            if args.hardest_n > 0:
+                print(f"Mining hardest {args.hardest_n} structurally misleading pairs from {args.matrix}...")
+                records = build_hardest_benchmark_from_matrix(
+                    equations,
+                    filepath=args.matrix,
+                    n=args.hardest_n,
+                    seed=args.seed,
+                )
+                label_source = 'matrix_hardest'
+                benchmark_name = 'hardest_structural_mismatch'
+            elif args.holdout_count > 0 or args.heldout_equations:
+                if args.heldout_equations:
+                    holdout_indices = load_holdout_indices(args.heldout_equations)
+                    print(f"Building no-leak benchmark from {len(holdout_indices)} held-out equations...")
+                else:
+                    print(f"Sampling no-leak benchmark with {args.holdout_count} held-out equations from {args.matrix}...")
+                records, holdout_indices = build_no_leak_benchmark(
+                    equations,
+                    filepath=args.matrix,
+                    n=args.n,
+                    holdout_equation_count=args.holdout_count,
+                    seed=args.seed,
+                    holdout_eq_indices=holdout_indices,
+                )
+                label_source = 'matrix_holdout'
+                benchmark_name = 'no_leak_holdout'
+            else:
+                print(f"Sampling balanced benchmark pairs from {args.matrix}...")
+                records = sample_balanced_pairs_from_matrix(args.matrix, n=args.n, seed=args.seed)
 
     if not records:
         print("No problems loaded.")
@@ -169,6 +219,8 @@ def main():
         label_source=label_source,
         inference_mode='prompt_export' if args.mode == 'prompt' else 'heuristic_proxy',
         uses_matrix_at_inference=False,
+        benchmark_name=benchmark_name,
+        holdout_equation_count=len(holdout_indices),
     )
 
     print('\nBenchmark metadata:')
@@ -177,6 +229,8 @@ def main():
     print('Bucket counts:')
     for bucket, count in summarize_bucket_counts(records).items():
         print(f'  {bucket}: {count}')
+    if holdout_indices:
+        print(f'  heldout_equation_count: {len(holdout_indices)}')
 
     print(f"\nEvaluating on {len(records)} problems...\n")
 
@@ -184,6 +238,7 @@ def main():
     labels = []
     correct = 0
     scored_records = []
+    dual_scored_records = []
 
     for i, record in enumerate(records):
         eq1_idx = record['eq1_idx']
@@ -207,27 +262,67 @@ def main():
                 print(f"  [{i + 1}/{len(records)}] Accuracy: {acc:.3f}, Log-loss: {ll:.4f}")
         elif args.mode == 'prompt':
             prompt = build_prompt(record['eq1'], record['eq2'], cheatsheet)
-            print(f"--- Problem {i + 1} (Eq{eq1_idx} -> Eq{eq2_idx}, label={label}) ---")
+            print(f"--- Problem {i + 1} (Eq{eq1_idx} -> Eq{eq2_idx}) ---")
             print(prompt[:500])
             print("...")
             print()
+
+    if predictions and args.dual_swap_check:
+        dual_records = build_dual_swap_records(records, equations)
+        for record in dual_records:
+            prob = evaluate_with_heuristic(record['eq1_idx'], record['eq2_idx'], equations)
+            dual_scored_records.append({
+                **record,
+                'predicted_prob': prob,
+                'predicted': prob > 0.5,
+                'correct': (prob > 0.5) == record['label'],
+            })
 
     if predictions:
         acc = correct / len(predictions)
         ll = compute_log_loss(predictions, labels)
         true_count = sum(1 for l in labels if l)
         false_count = len(labels) - true_count
-        trivial_count = sum(1 for record in scored_records if record['bucket'] == 'trivial')
         bucket_summary = summarize_bucket_accuracy(scored_records)
+        trivial_summary = summarize_trivial_share(scored_records)
+        trivial_free_summary = summarize_trivial_free_accuracy(scored_records, equations)
+        landmark_summary = summarize_landmark_accuracy(scored_records)
+        dual_summary = summarize_dual_swap_consistency(scored_records, dual_scored_records) if dual_scored_records else None
         print(f"\n{'=' * 50}")
         print(f"Final Results ({len(predictions)} problems)")
         print(f"  TRUE/FALSE split: {true_count}/{false_count}")
-        print(f"  Trivial/nontrivial: {trivial_count}/{len(predictions) - trivial_count}")
+        print(
+            f"  Trivial/nontrivial: {trivial_summary['trivial_count']}/"
+            f"{trivial_summary['nontrivial_count']}"
+        )
+        print(
+            f"  Trivial share: {trivial_summary['trivial_share']:.3f}  "
+            f"Nontrivial share: {trivial_summary['nontrivial_share']:.3f}"
+        )
         print(f"  Accuracy: {acc:.4f}  <- primary Stage 1 metric")
         print(f"  Log-loss: {ll:.4f}  <- optional local calibration metric")
+        print(f"  Submission validity: {metadata['submission_valid']} ({metadata['validity_reason']})")
+        if trivial_free_summary['accuracy'] is not None:
+            print(
+                f"  Trivial-free accuracy: {trivial_free_summary['accuracy']:.4f} "
+                f"on {trivial_free_summary['count']} pairs"
+            )
+        if landmark_summary['overall']['accuracy'] is not None:
+            print(
+                f"  Landmark accuracy: {landmark_summary['overall']['accuracy']:.4f} "
+                f"on {landmark_summary['overall']['count']} pairs"
+            )
+        if dual_summary and dual_summary['prediction_consistency'] is not None:
+            print(
+                f"  Dual-swap consistency: {dual_summary['prediction_consistency']:.4f} "
+                f"on {dual_summary['paired_count']} paired evaluations"
+            )
         print("  Bucket accuracy:")
         for bucket, values in bucket_summary.items():
-            print(f"    {bucket}: {values['count']} examples, accuracy={values['accuracy']:.3f}")
+            print(
+                f"    {bucket}: {values['count']} examples, share={values['share']:.3f}, "
+                f"accuracy={values['accuracy']:.3f}"
+            )
         print(f"{'=' * 50}")
 
 

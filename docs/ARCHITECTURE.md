@@ -28,10 +28,16 @@ These scripts support Stage 1 without redefining the artifact boundary.
 
 | File | Responsibility |
 |---|---|
+| `config.py` | Shared configuration and paths used by both submission-support and research workflows |
+| `analyze_equations.py` | Shared parsing and structural utilities |
+| `llm_client.py` | LLM transport for distillation and cheatsheet-only evaluation |
 | `run_eval.py` | Evaluate a cheatsheet using an LLM and record benchmark-validity metadata |
 | `distill.py` | Build or compress candidate cheatsheets from labeled examples |
-| `benchmark_utils.py` | Shared bucket labeling, matrix sampling, and validity annotations |
+| `benchmark_utils.py` | Shared bucket labeling, matrix sampling, metric metadata, and validity annotations |
 | `download_data.py` | Generate a local JSONL benchmark or attempt remote dataset download |
+| `evaluate.py` | Local prompt export for cheatsheet workflows and heuristic research benchmarking |
+
+`evaluate.py` is intentionally mixed-use: `prompt` mode is support tooling, while `heuristic` mode is a research proxy and not a submission-valid evaluator.
 
 ## Research-Only Components
 
@@ -87,4 +93,5 @@ The exports directory is intentionally separated from the lightweight JSONL benc
 - The matrix is allowed for offline analysis, local benchmark generation, and research experiments.
 - The matrix is not allowed as an inference-time lookup oracle for a submission-valid path.
 - Format examples in `run_eval.py` should come from a separate labeled source, not from the evaluation file itself.
+- Accuracy is the primary Stage 1 metric in this repo; log-loss is tracked only as a local calibration diagnostic.
 - Accuracy reports should be read alongside bucket breakdowns and trivial/nontrivial counts.
