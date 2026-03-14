@@ -1,0 +1,17 @@
+# Core analysis (stdlib-only, no install needed)
+# analyze_equations.py, evaluate.py work out of the box
+
+# ── LLM APIs (for distillation & evaluation pipeline) ──
+openai>=1.0
+anthropic>=0.30
+google-generativeai>=0.8
+
+# ── Data & utilities ──
+requests
+PyMuPDF           # PDF text extraction (fitz)
+
+# ── Optional: analysis & notebooks ──
+# pandas
+# numpy
+# matplotlib
+# jupytext        # run research.py as notebook

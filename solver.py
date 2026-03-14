@@ -1,0 +1,428 @@
+"""
+solver.py — Decision engine for equational implication.
+
+Orchestrates proof_search and magma_search, using structural
+features + implication graph heuristics to decide the optimal
+search strategy for each (Eq1, Eq2) pair.
+
+The solver decides:
+  1. Is this likely TRUE or FALSE? (prior from structure)
+  2. Which search to run first (proof vs counterexample)?
+  3. How much budget to allocate to each?
+  4. When to give up and fall back to the base rate?
+"""
+
+from __future__ import annotations
+import time
+import logging
+from typing import Optional
+from dataclasses import dataclass
+
+from analyze_equations import (
+    parse_equation, get_vars, count_ops, get_depth, term_size,
+    get_dual, is_specialization,
+)
+from proof_search import find_proof, ImplicationGraph
+from magma_search import find_counterexample
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class SolverResult:
+    """Result of the solver's decision."""
+    verdict: bool               # TRUE (implies) or FALSE (doesn't)
+    confidence: float           # 0.0 to 1.0
+    method: str                 # how we decided
+    proof: Optional[str] = None # proof or counterexample details
+    time_s: float = 0.0
+
+
+class Solver:
+    """Main decision engine.
+
+    Combines fast heuristics with deep search to decide
+    whether Eq1 → Eq2 for any given pair.
+    """
+
+    def __init__(
+        self,
+        impl_graph: Optional[ImplicationGraph] = None,
+        timeout: float = 30.0,
+        base_rate: float = 0.37,
+    ):
+        """
+        Args:
+            impl_graph: Preloaded implication graph (from known data)
+            timeout: Max seconds per problem
+            base_rate: Prior probability of TRUE (from data: ~37%)
+        """
+        self.impl_graph = impl_graph
+        self.timeout = timeout
+        self.base_rate = base_rate
+
+    def solve(
+        self,
+        eq1_str: str,
+        eq2_str: str,
+        eq1_idx: int = 0,
+        eq2_idx: int = 0,
+    ) -> SolverResult:
+        """Determine whether eq1 implies eq2.
+
+        Strategy:
+          Phase 0: Instant checks (trivial cases, specialization)
+          Phase 1: Structural analysis → decide search priority
+          Phase 2: Primary search (proof or counterexample)
+          Phase 3: Secondary search (the other one)
+          Phase 4: Fall back to heuristic probability
+        """
+        t0 = time.time()
+
+        # ── Phase 0: Instant checks ──
+        result = self._instant_checks(eq1_str, eq2_str, eq1_idx, eq2_idx)
+        if result is not None:
+            result.time_s = time.time() - t0
+            return result
+
+        # ── Phase 1: Analyze structure → route ──
+        prior, features = self._compute_prior(eq1_str, eq2_str)
+        likely_true = prior > 0.5
+
+        remaining = self.timeout - (time.time() - t0)
+        if remaining <= 0:
+            return SolverResult(likely_true, prior, "prior_only", time_s=time.time() - t0)
+
+        # ── Phase 2: Primary search ──
+        if likely_true:
+            # Try proof first
+            proof_budget = remaining * 0.6
+            proof_result = find_proof(
+                eq1_str, eq2_str, timeout=proof_budget,
+                impl_graph=self.impl_graph, eq1_idx=eq1_idx, eq2_idx=eq2_idx
+            )
+            if proof_result is not None:
+                return SolverResult(True, 0.97, f"proof:{proof_result['method']}",
+                                    proof=proof_result.get('proof', ''),
+                                    time_s=time.time() - t0)
+
+            remaining = self.timeout - (time.time() - t0)
+            if remaining <= 0:
+                return SolverResult(True, prior, "prior_after_failed_proof",
+                                    time_s=time.time() - t0)
+
+            # Phase 3: Try counterexample
+            cex_result = find_counterexample(eq1_str, eq2_str, timeout=remaining * 0.9)
+            if cex_result is not None:
+                return SolverResult(False, 0.97, f"counterexample:{cex_result['method']}",
+                                    proof=f"magma size {cex_result['size']}: {cex_result['table']}",
+                                    time_s=time.time() - t0)
+        else:
+            # Try counterexample first
+            cex_budget = remaining * 0.6
+            cex_result = find_counterexample(eq1_str, eq2_str, timeout=cex_budget)
+            if cex_result is not None:
+                return SolverResult(False, 0.97, f"counterexample:{cex_result['method']}",
+                                    proof=f"magma size {cex_result['size']}: {cex_result['table']}",
+                                    time_s=time.time() - t0)
+
+            remaining = self.timeout - (time.time() - t0)
+            if remaining <= 0:
+                return SolverResult(False, 1.0 - prior, "prior_after_failed_cex",
+                                    time_s=time.time() - t0)
+
+            # Phase 3: Try proof
+            proof_result = find_proof(
+                eq1_str, eq2_str, timeout=remaining * 0.9,
+                impl_graph=self.impl_graph, eq1_idx=eq1_idx, eq2_idx=eq2_idx
+            )
+            if proof_result is not None:
+                return SolverResult(True, 0.97, f"proof:{proof_result['method']}",
+                                    proof=proof_result.get('proof', ''),
+                                    time_s=time.time() - t0)
+
+        # ── Phase 4: Heuristic fallback ──
+        # Refine the prior based on what we learned from failed searches
+        refined = self._refine_prior(prior, features, likely_true)
+        verdict = refined > 0.5
+        return SolverResult(verdict, refined if verdict else 1.0 - refined,
+                            "heuristic_fallback", time_s=time.time() - t0)
+
+    def _instant_checks(
+        self, eq1_str, eq2_str, eq1_idx, eq2_idx,
+    ) -> Optional[SolverResult]:
+        """O(1) checks that give definitive answers."""
+
+        # Syntactic identity
+        if eq1_str.strip() == eq2_str.strip():
+            return SolverResult(True, 1.0, "identical")
+
+        try:
+            eq1 = parse_equation(eq1_str)
+            eq2 = parse_equation(eq2_str)
+        except Exception:
+            return SolverResult(False, self.base_rate, "parse_error")
+
+        lhs1, rhs1 = eq1
+        lhs2, rhs2 = eq2
+
+        # x = x (tautology)
+        if lhs2 == rhs2:
+            return SolverResult(True, 1.0, "eq2_tautology")
+        if lhs1 == rhs1:
+            return SolverResult(False, 1.0, "eq1_tautology_eq2_nontrivial")
+
+        # x = y (singleton law) implies everything
+        vars1 = get_vars(lhs1) | get_vars(rhs1)
+        if isinstance(lhs1, str) and isinstance(rhs1, str) and len(vars1) == 2:
+            return SolverResult(True, 1.0, "eq1_singleton")
+
+        # eq2 is singleton law — only if eq1 also forces singleton
+        vars2 = get_vars(lhs2) | get_vars(rhs2)
+        if isinstance(lhs2, str) and isinstance(rhs2, str) and len(vars2) == 2:
+            # eq2 forces |M|=1; check quickly
+            if isinstance(lhs1, str) and isinstance(rhs1, str) and len(vars1) == 2:
+                return SolverResult(True, 1.0, "both_singleton")
+            # Most non-singleton eq1 won't imply this
+            return SolverResult(False, 0.92, "eq2_singleton_eq1_not")
+
+        # Direct specialization (fast, no search)
+        if is_specialization(eq1, eq2):
+            return SolverResult(True, 0.98, "specialization")
+
+        # Graph lookup (instant if graph loaded)
+        if self.impl_graph and eq1_idx and eq2_idx:
+            direct = self.impl_graph.adj.get(eq1_idx, set())
+            if eq2_idx in direct:
+                return SolverResult(True, 0.99, "graph_direct")
+
+        return None
+
+    def _compute_prior(self, eq1_str: str, eq2_str: str) -> tuple:
+        """Compute structural prior probability of TRUE.
+
+        Uses hand-crafted features known to correlate with implication.
+        Returns (prior, features_dict).
+        """
+        try:
+            eq1 = parse_equation(eq1_str)
+            eq2 = parse_equation(eq2_str)
+        except Exception:
+            return self.base_rate, {}
+
+        lhs1, rhs1 = eq1
+        lhs2, rhs2 = eq2
+        vars1 = get_vars(lhs1) | get_vars(rhs1)
+        vars2 = get_vars(lhs2) | get_vars(rhs2)
+        ops1 = count_ops(lhs1) + count_ops(rhs1)
+        ops2 = count_ops(lhs2) + count_ops(rhs2)
+        depth1 = max(get_depth(lhs1), get_depth(rhs1))
+        depth2 = max(get_depth(lhs2), get_depth(rhs2))
+
+        features = {
+            "n_vars1": len(vars1),
+            "n_vars2": len(vars2),
+            "ops1": ops1, "ops2": ops2,
+            "depth1": depth1, "depth2": depth2,
+            "vars_extra_in_eq2": len(vars2 - vars1),
+            "ops_diff": ops1 - ops2,
+            "depth_diff": depth1 - depth2,
+        }
+
+        # Heuristic scoring
+        score = self.base_rate
+
+        # If eq2 uses variables not in eq1, very unlikely TRUE
+        if features["vars_extra_in_eq2"] > 0:
+            score *= 0.1
+
+        # More complex eq1 → more constraining → more likely to imply simpler eq2
+        if ops1 > ops2:
+            score *= 1.3
+        elif ops1 < ops2:
+            score *= 0.7
+
+        # More variables in eq1 → more constraining
+        if len(vars1) > len(vars2):
+            score *= 1.2
+        elif len(vars1) < len(vars2):
+            score *= 0.6
+
+        # Deeper eq1 → harder constraint → more likely to imply shallower eq2
+        if depth1 > depth2:
+            score *= 1.1
+
+        # Self-dual equations are more likely to be involved in implications
+        dual1 = (get_dual(lhs1), get_dual(rhs1))
+        if dual1 == eq1 or dual1 == (rhs1, lhs1):
+            score *= 1.1
+
+        # Clamp
+        score = max(0.01, min(0.99, score))
+        return score, features
+
+    def _refine_prior(self, prior: float, features: dict, tried_proof_first: bool) -> float:
+        """Refine prior after both searches failed.
+
+        If proof search and counterexample search both failed,
+        that's actually informative:
+        - Failed proof doesn't mean FALSE (could just be hard to prove)
+        - Failed counterexample is more informative (small magmas cover a lot)
+        """
+        # If we couldn't find a counterexample even in size 2-5,
+        # that's weak evidence of TRUE (many false implications have small cex)
+        if tried_proof_first:
+            # We tried proof first (prior was > 0.5), failed, then tried cex, also failed
+            # The failed cex is evidence that it might be TRUE
+            return min(0.85, prior * 1.2)
+        else:
+            # We tried cex first (prior was < 0.5), failed (surprising), then tried proof, also failed
+            # Failed cex shifts us toward TRUE
+            return min(0.80, 0.5 + (prior - 0.5) * 0.5 + 0.15)
+
+
+# ── Batch solver ─────────────────────────────────────────────────
+
+def solve_batch(
+    problems: list,
+    equations: list,
+    impl_graph: Optional[ImplicationGraph] = None,
+    timeout_per: float = 10.0,
+    verbose: bool = True,
+) -> list:
+    """Solve a batch of problems.
+
+    Args:
+        problems: list of (eq1_idx, eq2_idx, optional_label)
+        equations: list of equation strings (0-indexed)
+        impl_graph: optional preloaded implication graph
+        timeout_per: seconds per problem
+
+    Returns:
+        list of SolverResult
+    """
+    solver = Solver(impl_graph=impl_graph, timeout=timeout_per)
+    results = []
+    correct = 0
+    total_with_labels = 0
+
+    for i, prob in enumerate(problems):
+        eq1_idx = prob[0]
+        eq2_idx = prob[1]
+        label = prob[2] if len(prob) > 2 else None
+
+        eq1_str = equations[eq1_idx - 1]
+        eq2_str = equations[eq2_idx - 1]
+
+        result = solver.solve(eq1_str, eq2_str, eq1_idx=eq1_idx, eq2_idx=eq2_idx)
+        results.append(result)
+
+        if label is not None:
+            total_with_labels += 1
+            if result.verdict == label:
+                correct += 1
+
+        if verbose and ((i + 1) % 10 == 0 or i == len(problems) - 1):
+            acc_str = f", acc={correct/total_with_labels:.3f}" if total_with_labels > 0 else ""
+            logger.info(
+                f"  [{i+1}/{len(problems)}] Eq{eq1_idx}→Eq{eq2_idx} "
+                f"= {'TRUE' if result.verdict else 'FALSE'} "
+                f"({result.method}, {result.confidence:.2f}, {result.time_s:.2f}s)"
+                f"{acc_str}"
+            )
+
+    if total_with_labels > 0 and verbose:
+        acc = correct / total_with_labels
+        logger.info(f"\nFinal accuracy: {correct}/{total_with_labels} = {acc:.4f}")
+
+    return results
+
+
+# ── CLI ───────────────────────────────────────────────────────────
+
+def main():
+    import argparse
+    import json
+
+    parser = argparse.ArgumentParser(description="Solve equational implication problems")
+    parser.add_argument("--eq1", type=int, help="Equation 1 index (1-based)")
+    parser.add_argument("--eq2", type=int, help="Equation 2 index (1-based)")
+    parser.add_argument("--data", help="JSONL file of problems to solve in batch")
+    parser.add_argument("--graph", help="Path to raw implications CSV for graph")
+    parser.add_argument("--timeout", type=float, default=30.0, help="Timeout per problem (seconds)")
+    parser.add_argument("--output", help="Output JSONL file for batch results")
+    parser.add_argument("-v", "--verbose", action="store_true")
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+    )
+
+    from analyze_equations import load_equations
+    equations = load_equations()
+
+    # Load implication graph if available
+    impl_graph = None
+    if args.graph:
+        logger.info("Loading implication graph...")
+        impl_graph = ImplicationGraph()
+        impl_graph.load_from_matrix_file(args.graph)
+        logger.info(f"Graph: {len(impl_graph.adj)} nodes, {impl_graph.n_edges} edges")
+
+    if args.eq1 and args.eq2:
+        # Single problem mode
+        solver = Solver(impl_graph=impl_graph, timeout=args.timeout)
+        result = solver.solve(
+            equations[args.eq1 - 1], equations[args.eq2 - 1],
+            eq1_idx=args.eq1, eq2_idx=args.eq2,
+        )
+        verdict = "TRUE" if result.verdict else "FALSE"
+        print(f"\nEq{args.eq1}: {equations[args.eq1 - 1]}")
+        print(f"Eq{args.eq2}: {equations[args.eq2 - 1]}")
+        print(f"\nVERDICT: {verdict} (confidence={result.confidence:.2f})")
+        print(f"Method: {result.method}")
+        if result.proof:
+            print(f"Proof: {result.proof}")
+        print(f"Time: {result.time_s:.3f}s")
+
+    elif args.data:
+        # Batch mode
+        problems = []
+        with open(args.data, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                rec = json.loads(line)
+                eq1 = int(rec.get('equation1_index', rec.get('eq1', 0)))
+                eq2 = int(rec.get('equation2_index', rec.get('eq2', 0)))
+                label = rec.get('implies', rec.get('label'))
+                if label is not None:
+                    problems.append((eq1, eq2, bool(label)))
+                else:
+                    problems.append((eq1, eq2))
+
+        results = solve_batch(problems, equations, impl_graph=impl_graph,
+                              timeout_per=args.timeout)
+
+        if args.output:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                for prob, res in zip(problems, results):
+                    f.write(json.dumps({
+                        "eq1": prob[0], "eq2": prob[1],
+                        "verdict": res.verdict,
+                        "confidence": res.confidence,
+                        "method": res.method,
+                        "time_s": res.time_s,
+                    }) + '\n')
+            print(f"Results written to {args.output}")
+    else:
+        # Interactive demo
+        print("Usage:")
+        print("  Single: python solver.py --eq1 4 --eq2 8")
+        print("  Batch:  python solver.py --data data/normal.jsonl --graph export_raw_implications_14_3_2026.csv")
+
+
+if __name__ == "__main__":
+    main()
