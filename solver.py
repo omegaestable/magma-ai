@@ -195,6 +195,8 @@ class Solver:
             direct = self.impl_graph.adj.get(eq1_idx, set())
             if eq2_idx in direct:
                 return SolverResult(True, 0.99, "graph_direct")
+            if self.impl_graph.is_known_false(eq1_idx, eq2_idx):
+                return SolverResult(False, 0.99, "graph_negative")
 
         return None
 
@@ -264,21 +266,29 @@ class Solver:
     def _refine_prior(self, prior: float, features: dict, tried_proof_first: bool) -> float:
         """Refine prior after both searches failed.
 
-        If proof search and counterexample search both failed,
-        that's actually informative:
-        - Failed proof doesn't mean FALSE (could just be hard to prove)
-        - Failed counterexample is more informative (small magmas cover a lot)
+        Key insight: failing to find a counterexample in sizes 2-5 is
+        STRONG evidence for TRUE, because most FALSE implications have
+        small counterexamples. This is especially true when eq2 has
+        extra variables (which makes counterexamples easier to find
+        if they exist).
         """
-        # If we couldn't find a counterexample even in size 2-5,
-        # that's weak evidence of TRUE (many false implications have small cex)
-        if tried_proof_first:
-            # We tried proof first (prior was > 0.5), failed, then tried cex, also failed
-            # The failed cex is evidence that it might be TRUE
-            return min(0.85, prior * 1.2)
-        else:
-            # We tried cex first (prior was < 0.5), failed (surprising), then tried proof, also failed
-            # Failed cex shifts us toward TRUE
-            return min(0.80, 0.5 + (prior - 0.5) * 0.5 + 0.15)
+        # Both searches failed — no proof found AND no counterexample found
+        # The absence of a counterexample is very informative
+        refined = 0.65  # base: lean toward TRUE (no cex is strong signal)
+
+        # Extra vars in eq2 but no counterexample? Very strong TRUE signal.
+        # Extra vars make it trivially easy to construct counterexamples
+        # for FALSE implications, so their absence is highly informative.
+        extra_vars = features.get("vars_extra_in_eq2", 0)
+        if extra_vars > 0:
+            refined = 0.80  # strongly lean TRUE despite extra vars
+
+        # If eq1 has more ops (more constraining), lean more toward TRUE
+        ops_diff = features.get("ops_diff", 0)
+        if ops_diff > 0:
+            refined = min(0.90, refined + 0.05)
+
+        return refined
 
 
 # ── Batch solver ─────────────────────────────────────────────────

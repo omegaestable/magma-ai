@@ -366,13 +366,25 @@ class ImplicationGraph:
 
     def __init__(self):
         self.adj = {}  # eq_idx -> set of implied eq_idx
+        self.neg = {}  # eq_idx -> set of NOT-implied eq_idx
         self.n_edges = 0
+        self.n_neg_edges = 0
 
     def add_implication(self, from_idx: int, to_idx: int):
         if from_idx not in self.adj:
             self.adj[from_idx] = set()
         self.adj[from_idx].add(to_idx)
         self.n_edges += 1
+
+    def add_non_implication(self, from_idx: int, to_idx: int):
+        if from_idx not in self.neg:
+            self.neg[from_idx] = set()
+        self.neg[from_idx].add(to_idx)
+        self.n_neg_edges += 1
+
+    def is_known_false(self, from_idx: int, to_idx: int) -> bool:
+        """Check if we definitively know from_idx does NOT imply to_idx."""
+        return to_idx in self.neg.get(from_idx, set())
 
     def load_from_matrix_file(self, filepath: str, limit: int = 0):
         """Load from the raw implications CSV."""
@@ -387,8 +399,11 @@ class ImplicationGraph:
                     eq2 = col_idx + 1
                     if eq1 != eq2:
                         try:
-                            if int(val_str.strip()) > 0:
+                            v = int(val_str.strip())
+                            if v > 0:
                                 self.add_implication(eq1, eq2)
+                            elif v < 0:
+                                self.add_non_implication(eq1, eq2)
                         except ValueError:
                             pass
                 if limit and row_idx + 1 >= limit:
@@ -475,7 +490,7 @@ def find_proof(
         return None
 
     # 4. Bidirectional BFS
-    bfs_budget = remaining * 0.4
+    bfs_budget = remaining * 0.35
     proof_chain = bidirectional_bfs(eq1, eq2, max_nodes=2000, timeout=bfs_budget)
     if proof_chain is not None:
         steps = [tree_to_str(t) for t in proof_chain]
@@ -487,12 +502,23 @@ def find_proof(
         return None
 
     # 5. A* rewriting
-    astar_budget = remaining * 0.6
+    astar_budget = remaining * 0.4
     proof_chain = astar_rewrite(eq1, eq2, max_nodes=3000, timeout=astar_budget)
     if proof_chain is not None:
         steps = [tree_to_str(t) for t in proof_chain]
         return {"method": "astar_rewrite", "proof": " = ".join(steps),
                 "steps": len(proof_chain), "time_s": time.time() - t0}
+
+    remaining = timeout - (time.time() - t0)
+    if remaining <= 0:
+        return None
+
+    # 5b. Congruence closure (sound but incomplete)
+    cc_budget = remaining * 0.3
+    if congruence_closure_check(eq1, eq2, n_elements=3, timeout=cc_budget):
+        return {"method": "congruence_closure",
+                "proof": "verified by congruence closure on 3 elements",
+                "time_s": time.time() - t0}
 
     remaining = timeout - (time.time() - t0)
     if remaining <= 0:
