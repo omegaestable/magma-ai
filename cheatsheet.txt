@@ -14,7 +14,10 @@ Use this order: singleton check -> specialization -> size-2 magma -> linear magm
 - Safe singleton triggers:
   x=y.
   LHS-vars and RHS-vars are disjoint and at least one side uses *.
-- Many x=t or t=x laws with extra variables are also E2-equivalent; exact offline class size is 1496/4694.
+- High-value singleton candidates (not complete, but often decisive):
+  x=t(y) or t(y)=x where x does not occur inside t and t has at least one *.
+  x=t(y,z,...) or t(y,z,...)=x with x absent from t.
+- Exact offline E2-equivalent class size is 1496/4694 (criterion above is only partial).
 
 3. SPECIALIZATION
 - If Eq2 is obtained from Eq1 by variable substitution only, TRUE.
@@ -51,6 +54,8 @@ Use this order: singleton check -> specialization -> size-2 magma -> linear magm
 7. STRUCTURAL HEURISTICS
 - If Eq2 uses a variable absent from Eq1, usually FALSE.
 - If Eq1 has more variables, more operations, or greater depth than Eq2, TRUE is more plausible but not proved.
+- If Eq1 and Eq2 keep similar variable support, do NOT default to FALSE before trying specialization/rewrite checks.
+- Important anti-collapse rule: do not answer FALSE only from "could not find counterexample quickly"; many hard TRUE pairs require rewrite/specialization.
 - Duality: reverse every product in both equations; the answer must stay the same.
 
 8. WHAT COUNTS AS A REAL TRUE
@@ -67,3 +72,4 @@ Use this order: singleton check -> specialization -> size-2 magma -> linear magm
 10. DEFAULT POSTURE
 - Small counterexamples are common; check them before inventing proofs.
 - Failing to find a small counterexample is not a proof.
+- If singleton candidates or specialization-like structure appears, prefer "needs proof check" over reflex FALSE.

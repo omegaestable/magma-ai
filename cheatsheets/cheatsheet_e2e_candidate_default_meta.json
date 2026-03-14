@@ -1,0 +1,22 @@
+{
+  "config": {
+    "name": "e2e_candidate",
+    "distill_model": "ollama-qwen2.5-3b",
+    "n_shots": 150,
+    "eval_model": "ollama-qwen2.5-3b",
+    "n_eval": 100,
+    "n_format_examples": 0,
+    "seed": 42,
+    "dual_swap_check": false,
+    "cheatsheet_max_bytes": 10240,
+    "cheatsheet_path": "C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\cheatsheet.txt",
+    "use_rationale_augmentation": true,
+    "use_self_consistency": false,
+    "sc_samples": 5
+  },
+  "prompt_variant": "default",
+  "cheatsheet_bytes": 3229,
+  "n_demos_used": 150,
+  "distill_cost": 0.0,
+  "distill_calls": 1
+}

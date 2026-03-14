@@ -318,10 +318,44 @@ The key insight: the problem is far more tractable than it appears. The paper pr
 **Assessment**: The cheatsheet is functionally correct but **dramatically under-utilizing the byte budget**. At 25% capacity, there's room for:
 - Compressed singleton membership list (~500 bytes)
 - Top-20 counterexample magma tables (~3KB)
-- Coverage-ranked decision flowchart refinement
-- Equation family shortcuts
 
-This is the **highest-leverage workstream** for score improvement.
+---
+
+## VIII. First Serious Naive E2E Attempt (2026-03-14)
+
+### What was run
+
+1. Heuristic evaluations on local/no-leak/hardest datasets.
+2. Submission-valid LLM evaluation (`run_eval.py`) on local, no-leak, and hardest slices with dual-swap checks.
+3. Data generation (`generate-local`, `generate-no-leak`, `generate-hardest` with 500 pairs).
+4. Workstream analysis for proof and counterexample patterns.
+5. ML feature extraction + XGBoost CV + hardest-pair mining.
+6. Distillation of a fresh candidate cheatsheet and evaluation on no-leak/hardest slices.
+
+### Critical findings
+
+1. **Submission-valid hard-case failure remains severe**:
+	- Baseline cheatsheet: local 0.51 (n=100), no-leak 0.70 (n=40), hardest20 0.45 (n=20).
+	- Hard-bucket accuracy was weak in all runs; true-positive recall was especially poor.
+2. **Distillation did not fix hard TRUE behavior**:
+	- Candidate cheatsheet (`3229B`) scored no-leak 0.50 (n=100), hardest20 0.45 (n=20).
+	- On candidate no-leak run, TRUE accuracy collapsed to **0.00** while FALSE accuracy stayed high.
+3. **Naive workflow break discovered**:
+	- `train.py --dataset default` failed until `features/default.pkl` was created manually.
+	- This is a real onboarding/reproducibility issue.
+4. **Potential benchmark pathology detected**:
+	- Heuristic proxy achieved 1.00 on hardest500, inconsistent with LLM behavior.
+	- Indicates hardest500 construction is likely too solver-like/heuristic-aligned and not yet a robust adversarial proxy for cheatsheet-only inference.
+5. **Duality behavior is mostly stable but not perfect**:
+	- A no-leak run showed dual-swap prediction consistency < 1.0, so duality is not fully internalized by model+prompt.
+
+### Roadmap reprioritization before next E2E
+
+1. **NEW CRITICAL**: Add explicit anti-false-collapse controls in cheatsheet (hard TRUE guardrails).
+2. **NEW CRITICAL**: Add exact singleton-membership artifact (1496 indices or compressed equivalent) instead of partial trigger only.
+3. **NEW HIGH**: Make `train.py` auto-bootstrap missing feature datasets or fail with actionable instruction.
+4. **NEW HIGH**: Redesign hardest benchmark generation to target model-facing adversarial cases, not just heuristic difficulty.
+5. **NEW HIGH**: Add model-parity metrics (`true_accuracy`, `false_accuracy`, hard-bucket recall) as first-class acceptance gates.
 
 ---
 

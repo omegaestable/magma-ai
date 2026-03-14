@@ -1,0 +1,80 @@
+### Cheat Sheet for Solving Complex Magma Implication Problems
+
+#### Decision Procedures and Algorithms
+1. **Check Nested Operations**: 
+   - Identify nested operations in both equations.
+   - Simplify expressions by applying associativity and commutativity.
+
+2. **Counterexample Construction**:
+   - Construct a simple magma with small variable count (e.g., 3 elements).
+   - Test specific values to see if the equations hold or fail.
+
+#### Common Patterns
+1. **TRUE Implications**:
+   - **Equation 1**: \( x = y \circ ((z \circ w) \circ u) \)
+     - Equation 2: \( x = (y \circ z) \circ (u \circ w) \)
+     - Both equations involve nested operations, and simplifying one leads to the other.
+
+2. **FALSE Implications**:
+   - **Equation 1**: \( x = y \circ ((z \circ w) \circ u) \)
+     - Equation 2: \( x = (y \circ z) \circ (u \circ w) \)
+     - The nested operations are different, and one cannot be derived from the other.
+
+#### Useful Counterexample Magma Tables
+| Element | Operation |
+|---------|-----------|
+| a       | a          |
+| b       | b          |
+| c       | c          |
+
+| \(a \circ a\) | \(b \circ b\) | \(c \circ c\) |
+|-------------|--------------|--------------|
+| a           | b            | c            |
+| b           | a            | c            |
+| c           | b            | a            |
+
+#### Key Structural Properties
+1. **Variable Count**:
+   - Small variable count (e.g., 3 elements) often helps in identifying contradictions or equivalences.
+
+2. **Operation Depth**:
+   - Nested operations can be simplified by applying associativity and commutativity.
+   
+3. **Duality**:
+   - Check if the equations are dual to each other, i.e., if one equation is derived from swapping variables and operations.
+
+#### Landmark Equations and Their Relationships
+1. **Equation 1**: \( x = y \circ ((z \circ w) \circ u) \)
+2. **Equation 2**: \( x = (y \circ z) \circ (u \circ w) \)
+
+- **TRUE Implication**:
+  - If Equation 1 holds, then Equation 2 must also hold.
+  
+- **FALSE Implication**:
+  - Construct a simple magma where both equations fail to hold.
+
+### Example Walkthrough
+#### Problem: Determine if \( x = y \circ ((z \circ w) \circ u) \) implies \( x = (y \circ z) \circ (u \circ w) \)
+
+1. **Check Nested Operations**:
+   - Equation 1: \( x = y \circ ((z \circ w) \circ u) \)
+   - Equation 2: \( x = (y \circ z) \circ (u \circ w) \)
+
+2. **Counterexample Construction**:
+   - Consider a magma with elements \(a, b, c\).
+   - Define the operation such that associativity and commutativity do not hold.
+
+3. **Verify Equations**:
+   - For Equation 1: \( x = y \circ ((z \circ w) \circ u) \)
+   - For Equation 2: \( x = (y \circ z) \circ (u \circ w) \)
+
+4. **Conclusion**:
+   - If both equations hold, then one must imply the other.
+   - Construct a counterexample where one holds and the other fails.
+
+### Summary
+- Use decision procedures to check nested operations for equivalence or contradiction.
+- Construct simple magma tables with small variable counts to test implications.
+- Identify common patterns (TRUE/FALSE) in complex equations.
+- Understand structural properties like variable count, operation depth, and duality.
+- Analyze landmark equations to determine if they imply each other.
