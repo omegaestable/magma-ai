@@ -12,14 +12,20 @@ from typing import Optional
 
 # ── Paths ──────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent
+DOCS_DIR = ROOT / "docs"
+GUIDES_DIR = DOCS_DIR / "guides"
+PAPER_DIR = DOCS_DIR / "paper"
+PAPER_SOURCE_DIR = PAPER_DIR / "source"
 DATA_DIR = ROOT / "data"
+EXPORTS_DIR = DATA_DIR / "exports"
 RESULTS_DIR = ROOT / "results"
 CHEATSHEETS_DIR = ROOT / "cheatsheets"
 LOGS_DIR = ROOT / "logs"
 
+CHEATSHEET_FILE = ROOT / "cheatsheet.txt"
 EQUATIONS_FILE = ROOT / "equations.txt"
-EXPLORER_CSV = ROOT / "export_explorer_14_3_2026.csv"
-RAW_IMPL_CSV = ROOT / "export_raw_implications_14_3_2026.csv"
+EXPLORER_CSV = EXPORTS_DIR / "export_explorer_14_3_2026.csv"
+RAW_IMPL_CSV = EXPORTS_DIR / "export_raw_implications_14_3_2026.csv"
 
 # ── Model Configs ──────────────────────────────────────────────────
 
@@ -83,7 +89,7 @@ class ExperimentConfig:
     seed: int = 42
     # Cheatsheet
     cheatsheet_max_bytes: int = 10240     # 10KB limit
-    cheatsheet_path: str = "cheatsheet.txt"
+    cheatsheet_path: str = str(CHEATSHEET_FILE)
     # Ablations
     use_rationale_augmentation: bool = True
     use_self_consistency: bool = False
@@ -157,7 +163,7 @@ def check_environment(eval_model: str = "gpt-4o-mini") -> list[str]:
         lines.append("WARNING: No JSONL files in data/ — run: python download_data.py --generate-local")
 
     # Check cheatsheet
-    cs = ROOT / "cheatsheet.txt"
+    cs = CHEATSHEET_FILE
     if cs.is_file():
         size = cs.stat().st_size
         lines.append(f"Cheatsheet: {size} bytes ({size*100/10240:.1f}% of 10KB limit)")

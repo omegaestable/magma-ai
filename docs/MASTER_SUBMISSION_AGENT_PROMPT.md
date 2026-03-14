@@ -45,7 +45,7 @@ Treat these as hard constraints, not suggestions.
 The broader equational-theories project studies the implication partial order over 4694 single equations in magmas, up to symmetry and relabeling. This yields 22,028,942 ordered implication questions. The repository already contains useful assets:
 
 1. `equations.txt`: equation list
-2. `export_raw_implications_14_3_2026.csv`: dense implication matrix with positive and negative entries
+2. `data/exports/export_raw_implications_14_3_2026.csv`: dense implication matrix with positive and negative entries
 3. `solver.py`: research decision engine
 4. `proof_search.py`: proof-oriented search
 5. `magma_search.py`: counterexample search

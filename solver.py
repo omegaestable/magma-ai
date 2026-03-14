@@ -423,7 +423,7 @@ def main():
         # Interactive demo
         print("Usage:")
         print("  Single: python solver.py --eq1 4 --eq2 8")
-        print("  Batch:  python solver.py --data data/normal.jsonl --graph export_raw_implications_14_3_2026.csv")
+        print("  Batch:  python solver.py --data data/normal.jsonl --graph data/exports/export_raw_implications_14_3_2026.csv")
 
 
 if __name__ == "__main__":

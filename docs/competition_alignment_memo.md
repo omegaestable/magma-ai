@@ -28,4 +28,4 @@ External organizer rules page is not archived in this repo, so any claim not pre
 
 ## Clean Statement Of The Submitted Artifact
 
-The intended Stage 1 artifact for this repo is a single plain-text cheatsheet, represented by [cheatsheet.txt](cheatsheet.txt). Any solver, matrix lookup, proof search, counterexample search, or ML system is offline support only and must not be treated as hidden inference-time behavior.
+The intended Stage 1 artifact for this repo is a single plain-text cheatsheet, represented by [cheatsheet.txt](../cheatsheet.txt). Any solver, matrix lookup, proof search, counterexample search, or ML system is offline support only and must not be treated as hidden inference-time behavior.

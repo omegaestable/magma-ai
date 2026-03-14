@@ -21,7 +21,7 @@ import math
 from pathlib import Path
 from collections import Counter
 
-from config import ExperimentConfig, MODELS, DATA_DIR, RESULTS_DIR, CHEATSHEETS_DIR
+from config import CHEATSHEET_FILE, EXPLORER_CSV, ExperimentConfig, MODELS, DATA_DIR, RESULTS_DIR, CHEATSHEETS_DIR
 from analyze_equations import load_equations, parse_equation, get_vars, count_ops, get_depth
 
 equations = load_equations()
@@ -56,7 +56,7 @@ for k, v in stats.items():
 
 # %%
 import csv
-explorer_path = Path("export_explorer_14_3_2026.csv")
+explorer_path = EXPLORER_CSV
 if explorer_path.exists():
     with open(explorer_path, 'r') as f:
         reader = csv.DictReader(f)
@@ -211,7 +211,7 @@ def compare_cheatsheets():
 compare_cheatsheets()
 
 # Also check the main cheatsheet
-main_cs = Path("cheatsheet.txt")
+main_cs = CHEATSHEET_FILE
 if main_cs.exists():
     with open(main_cs, 'r') as f:
         text = f.read()

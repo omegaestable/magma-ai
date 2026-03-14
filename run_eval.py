@@ -20,8 +20,9 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+from analyze_equations import load_equations
 from benchmark_utils import annotate_records, benchmark_metadata, summarize_bucket_accuracy
-from config import ExperimentConfig, DEFAULT_CONFIG, RESULTS_DIR, DATA_DIR
+from config import CHEATSHEET_FILE, ExperimentConfig, RESULTS_DIR
 from llm_client import LLMClient
 
 logger = logging.getLogger(__name__)
@@ -114,9 +115,10 @@ def compute_log_loss(predictions: list, labels: list) -> float:
     return total / n
 
 
-def load_equations(filepath: str = "equations.txt") -> list:
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f if line.strip()]
+def load_cheatsheet_text(filepath: str) -> tuple[str, int]:
+    """Load cheatsheet text and report its true on-disk byte size."""
+    raw = Path(filepath).read_bytes()
+    return raw.decode('utf-8'), len(raw)
 
 
 def load_eval_problems(filepath: str, equations: list) -> list:
@@ -210,10 +212,7 @@ def run_evaluation(
     """Run full evaluation and return results dict."""
     # Load
     equations = load_equations()
-    with open(cheatsheet_path, 'r', encoding='utf-8') as f:
-        cheatsheet = f.read()
-
-    cs_bytes = len(cheatsheet.encode('utf-8'))
+    cheatsheet, cs_bytes = load_cheatsheet_text(cheatsheet_path)
     logger.info(f"Cheatsheet: {cs_bytes} bytes ({cs_bytes*100/10240:.1f}% of limit)")
 
     problems = load_eval_problems(eval_data_path, equations)
@@ -329,9 +328,7 @@ def dry_run(cheatsheet_path: str, eval_data_path: str, config: ExperimentConfig)
     logger.info("=== DRY RUN: validating pipeline (no API calls) ===")
 
     # Check cheatsheet
-    with open(cheatsheet_path, 'r', encoding='utf-8') as f:
-        cheatsheet = f.read()
-    cs_bytes = len(cheatsheet.encode('utf-8'))
+    cheatsheet, cs_bytes = load_cheatsheet_text(cheatsheet_path)
     logger.info(f"Cheatsheet: {cs_bytes} bytes ({cs_bytes*100/10240:.1f}% of 10KB limit)")
     if cs_bytes > 10240:
         logger.warning("Cheatsheet EXCEEDS 10KB limit!")
@@ -361,13 +358,14 @@ def dry_run(cheatsheet_path: str, eval_data_path: str, config: ExperimentConfig)
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a cheatsheet with LLM")
-    parser.add_argument("--cheatsheet", required=True, help="Path to cheatsheet file")
+    parser.add_argument("--cheatsheet", default=str(CHEATSHEET_FILE), help="Path to cheatsheet file")
     parser.add_argument("--data", required=True, help="JSONL eval data file")
     parser.add_argument("--format-data", default=None,
                         help="Optional separate JSONL file used only for format examples")
     parser.add_argument("--eval-model", default="gpt-4o-mini", help="Model for evaluation")
     parser.add_argument("--n-eval", type=int, default=100, help="Number of problems")
-    parser.add_argument("--n-format", type=int, default=2, help="Number of format examples")
+    parser.add_argument("--n-format", type=int, default=0,
+                        help="Number of format examples (safe default: 0 unless using separate format data)")
     parser.add_argument("--self-consistency", action="store_true", help="Use self-consistency")
     parser.add_argument("--sc-samples", type=int, default=5, help="Self-consistency samples")
     parser.add_argument("--name", default="default", help="Experiment name")

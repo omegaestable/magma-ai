@@ -20,19 +20,15 @@ from analyze_equations import (
     get_depth,
     get_vars,
     is_specialization,
+    load_equations,
     parse_equation,
 )
+from config import RAW_IMPL_CSV
 
 
 LANDMARK_EQUATIONS = {
     1, 2, 3, 4, 5, 6, 7, 23, 38, 39, 40, 41, 42, 43, 44, 45, 46, 4512, 4513
 }
-
-
-def load_equations(filepath: str = "equations.txt") -> list[str]:
-    with open(filepath, "r", encoding="utf-8") as handle:
-        return [line.strip() for line in handle if line.strip()]
-
 
 def load_labeled_pairs_from_jsonl(filepath: str) -> list[dict]:
     records = []
@@ -57,7 +53,7 @@ def load_labeled_pairs_from_jsonl(filepath: str) -> list[dict]:
 
 
 def sample_balanced_pairs_from_matrix(
-    filepath: str = "export_raw_implications_14_3_2026.csv",
+    filepath: str = str(RAW_IMPL_CSV),
     n: int = 100,
     seed: int = 42,
 ) -> list[dict]:

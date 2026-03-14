@@ -5,7 +5,7 @@ These notes distinguish verified facts from heuristics.
 ## Verified Facts
 
 1. `equations.txt` contains 4694 equations.
-2. `export_raw_implications_14_3_2026.csv` is a dense 4694 x 4694 matrix.
+2. `data/exports/export_raw_implications_14_3_2026.csv` is a dense 4694 x 4694 matrix.
 3. The matrix contains 8,178,279 positive ordered pairs and 13,855,357 negative ordered pairs, so the positive rate is about 37.1172%.
 4. Equation 1 is `x = x`.
 5. Equation 2 is `x = y`.

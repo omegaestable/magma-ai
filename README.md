@@ -1,85 +1,157 @@
 # Magma AI
 
-This repository is now organized around a strict Stage 1 submission boundary.
+Magma AI is a submission-focused research repository for Stage 1 of the SAIR Mathematics Distillation Challenge on equational implication over magmas. The repository has two jobs:
 
-- The intended final artifact is a plain-text cheatsheet under 10 KB.
-- Solver, proof search, counterexample search, and ML remain offline research tools.
-- Every benchmark path should say whether it is submission-valid or research-only.
+1. Produce a strong plain-text cheatsheet under 10 KB.
+2. Preserve the mathematical and experimental tooling used to build that cheatsheet without confusing research-time assistance with submission-time behavior.
 
-## Current Ground Truth
+The current competition-oriented source of truth is [docs/MASTER_SUBMISSION_AGENT_PROMPT.md](docs/MASTER_SUBMISSION_AGENT_PROMPT.md). If a rule claim is not grounded there or in archived primary competition material, it should be treated as unverified.
 
-The strongest repository-local source of truth is [MASTER_SUBMISSION_AGENT_PROMPT.md](MASTER_SUBMISSION_AGENT_PROMPT.md). External organizer rules are not archived in this repo yet, so any rule claim not present in that file should be treated as unverified until a primary source is added.
+## What This Repository Is About
 
-Verified local facts:
+The underlying mathematics comes from the Equational Theories Project, which studied implication between the 4694 simplest equational laws on magmas. A magma is just a set with one binary operation and no further axioms assumed. Given two laws $E_1$ and $E_2$, the central question is whether every magma satisfying $E_1$ must also satisfy $E_2$.
 
-- `equations.txt` contains 4694 equations.
-- `export_raw_implications_14_3_2026.csv` is a dense 4694 x 4694 implication matrix.
-- The dense matrix contains 8,178,279 positive entries and 13,855,357 negative entries, so the positive rate is about 37.12% over ordered pairs.
-- Matrix-backed graph lookup is useful for research, but it is not the submission artifact.
+The LaTeX paper in [docs/paper/source](docs/paper/source) gives the larger context. The most important facts for this repository are:
 
-## Paths
+- There are 4694 laws in scope, listed in `equations.txt`.
+- This yields 22,028,942 non-reflexive implication questions.
+- The full implication graph was resolved in the broader project through a combination of rewriting, duality, finite counterexamples, linear models, automated theorem proving, and formal verification in Lean.
+- In this repo, that full graph is research data. The Stage 1 submission artifact is not the graph; it is the cheatsheet.
 
-Submission-support path:
+Concrete landmark equations used throughout the code and docs include:
 
-- `cheatsheet.txt`: current champion submission candidate.
-- `distill.py`: offline cheatsheet authoring and compression support.
-- `run_eval.py`: LLM cheatsheet evaluation with bucketed reporting and explicit validity metadata.
-- `evaluate.py`: local heuristic benchmark or prompt export with explicit validity metadata.
-- `benchmark_utils.py`: shared bucket logic and benchmark metadata helpers.
+- Eq1: `x = x`, the trivial top law.
+- Eq2: `x = y`, the singleton law that implies every law.
+- Eq43: `x ◇ y = y ◇ x`, commutativity.
+- Eq4512: `x ◇ (y ◇ z) = (x ◇ y) ◇ z`, associativity.
 
-Research-only path:
+## Submission Boundary
 
-- `solver.py`: proof/counterexample/graph decision engine.
-- `proof_search.py`, `magma_search.py`: offline theorem and counterexample tooling.
-- `features.py`, `train.py`: ML feature extraction and classifier training.
-- `run_experiments.py`: ablation orchestrator.
+The only intended submission artifact is [cheatsheet.txt](cheatsheet.txt).
 
-## What Changed
+Submission-valid behavior:
 
-- Removed the default leakage path in `run_eval.py` where format examples were drawn from the evaluation set itself.
-- Changed prompt evaluation defaults to zero format examples unless a separate labeled file is provided.
-- Added per-bucket reporting, trivial/nontrivial counts, byte counts, and benchmark-validity metadata.
-- Rewrote the top-level docs and cheatsheet to avoid unsupported accuracy and base-rate claims.
+- Prompting an evaluation model with the cheatsheet alone.
+- Optionally using separate, non-evaluation examples purely for output formatting.
+
+Research-only behavior:
+
+- Looking up answers in the dense implication matrix.
+- Using graph reachability, solver shortcuts, proof search, counterexample search, or ML models at inference time.
+- Feeding evaluation labels back into the prompt context.
+
+If a workflow touches the matrix or graph during inference, it is useful for research but not a valid Stage 1 submission path.
+
+## Repository Layout
+
+Top-level files are now limited to the working code and primary artifact. Supporting assets live under `data/` and `docs/`.
+
+| Path | Purpose |
+|---|---|
+| `cheatsheet.txt` | Current submission candidate |
+| `equations.txt` | Canonical list of the 4694 equations |
+| `run_eval.py` | LLM-based cheatsheet evaluation harness |
+| `evaluate.py` | Local heuristic benchmark and prompt export |
+| `distill.py` | Offline cheatsheet distillation pipeline |
+| `solver.py` | Research-only implication engine |
+| `data/local_benchmark.jsonl` | Small offline benchmark that requires no external host |
+| `data/exports/` | Dense implication matrix and explorer export |
+| `docs/guides/tutorial.md` | End-to-end usage tutorial |
+| `docs/guides/math-background.md` | Mathematical background distilled from the paper |
+| `docs/ARCHITECTURE.md` | Repo structure and data-flow guide |
+| `docs/paper/` | PDF copies and LaTeX source for the project paper |
 
 ## Quick Start
 
-Prompt-only local benchmark from explicit JSONL data:
+### 1. Install dependencies
 
 ```bash
-python run_eval.py --cheatsheet cheatsheet.txt --data path/to/eval.jsonl --format-data path/to/train.jsonl --name local_eval
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-Supported no-network local benchmark path:
+### 2. Run an offline sanity check
+
+This path uses only local files already present in the repo.
 
 ```bash
-python download_data.py --generate-local --n 200 --seed 42
 python evaluate.py --mode heuristic --data data/local_benchmark.jsonl
 ```
 
-Attempting to fetch official JSONL files from the old Hugging Face slug:
+### 3. Generate a fresh local benchmark
 
 ```bash
-set HF_TOKEN=hf_your_read_token_here
-python download_data.py
+python download_data.py --generate-local --n 200 --seed 42
 ```
 
-As of 2026-03-14, the hardcoded Hugging Face dataset slug in this repo appears stale and returns 404. Treat this path as best-effort only until the organizer provides a current official dataset location.
+This samples a balanced JSONL benchmark from `data/exports/export_raw_implications_14_3_2026.csv`.
 
-Research-only heuristic benchmark from the dense matrix:
+### 4. Validate the LLM evaluation pipeline without making API calls
 
 ```bash
-python evaluate.py --mode heuristic --matrix export_raw_implications_14_3_2026.csv --n 100
+python run_eval.py --data data/local_benchmark.jsonl --dry-run
 ```
 
-Prompt export for manual testing:
+### 5. Run a live cheatsheet evaluation
 
 ```bash
-python evaluate.py --mode prompt --matrix export_raw_implications_14_3_2026.csv --n 10
+python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model gpt-4o-mini --name local_eval
 ```
 
-## Notes
+The safe default is now `--n-format 0`. If you want format examples, supply a separate labeled file explicitly with `--format-data`.
 
-- Hugging Face is not required for repo-local benchmarking; the supported fallback is `data/local_benchmark.jsonl`, generated from the checked-in implication matrix.
-- `download_data.py` still supports `HF_TOKEN`, `HUGGINGFACE_HUB_TOKEN`, or `--token` in case a current official dataset URL is restored later.
-- A benchmark is only submission-valid when the inference path uses the cheatsheet alone, with no matrix or graph lookup and no evaluation-label examples embedded into the prompt.
-- The memos in `docs/` record the current audit, benchmark risks, mathematical notes, and open uncertainties.
+## Tutorial Workflow
+
+The recommended workflow for contributors is:
+
+1. Read [docs/guides/math-background.md](docs/guides/math-background.md) for the algebraic setup.
+2. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) to understand which scripts are submission-support versus research-only.
+3. Use [docs/guides/tutorial.md](docs/guides/tutorial.md) for the step-by-step command flow.
+4. Iterate on `cheatsheet.txt` or distill a new candidate with `distill.py`.
+5. Evaluate with `run_eval.py` and keep the validity metadata with the result.
+
+## Mathematical Approach Used In This Repo
+
+The paper shows that no single method is enough to understand the implication graph. The practical approach in this repository follows the same lesson.
+
+Positive implications are often discovered or checked using:
+
+- direct specialization;
+- rewriting under a single law;
+- duality and transitivity;
+- ATP-assisted proof search.
+
+Negative implications are often discovered or checked using:
+
+- explicit small finite magmas;
+- linear and translation-invariant constructions;
+- syntactic invariants;
+- greedy counterexample search.
+
+The heuristic and ML code in this repo can exploit structural signals such as variable support, operation count, depth, symmetry, and easy counterexamples. Those signals are useful for research prioritization, but they are not themselves proofs.
+
+## Data And Reproducibility Notes
+
+- `data/local_benchmark.jsonl` is the supported no-network evaluation fallback.
+- `data/exports/export_raw_implications_14_3_2026.csv` is the dense 4694 x 4694 implication matrix used for offline research and benchmark generation.
+- `data/exports/export_explorer_14_3_2026.csv` is an auxiliary explorer export used for analysis notebooks and reporting.
+- The old hardcoded Hugging Face dataset path still appears stale as of 2026-03-14. Treat remote download as best-effort only until an official path is restored.
+
+## Documentation Index
+
+- [docs/guides/tutorial.md](docs/guides/tutorial.md)
+- [docs/guides/math-background.md](docs/guides/math-background.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/competition_alignment_memo.md](docs/competition_alignment_memo.md)
+- [docs/benchmark_integrity_memo.md](docs/benchmark_integrity_memo.md)
+- [docs/mathematical_notes.md](docs/mathematical_notes.md)
+- [docs/risk_register.md](docs/risk_register.md)
+
+## Current Cleanup Highlights
+
+- Publication assets and paper materials were moved out of the repository root.
+- Data exports now live under `data/exports/`.
+- Generated LaTeX intermediates and archive clutter were removed.
+- Script defaults were updated to the new layout.
+- `run_eval.py` now defaults to zero format examples, matching the intended benchmark-safety policy.

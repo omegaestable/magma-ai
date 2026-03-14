@@ -14,10 +14,10 @@ import random
 import urllib.error
 import urllib.request
 
+from config import DATA_DIR as REPO_DATA_DIR, RAW_IMPL_CSV
 
-ROOT_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(ROOT_DIR, 'data')
-DEFAULT_MATRIX = os.path.join(ROOT_DIR, 'export_raw_implications_14_3_2026.csv')
+DATA_DIR = str(REPO_DATA_DIR)
+DEFAULT_MATRIX = str(RAW_IMPL_CSV)
 
 FILES = {
     'normal.jsonl': 'https://huggingface.co/datasets/tao-challenge/equational-theories-stage1/resolve/main/normal.jsonl',

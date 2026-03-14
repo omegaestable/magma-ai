@@ -23,6 +23,17 @@ embeddings/
 # Logs
 logs/
 
+# LaTeX build artifacts
+docs/paper/source/*.aux
+docs/paper/source/*.bbl
+docs/paper/source/*.blg
+docs/paper/source/*.fdb_latexmk
+docs/paper/source/*.fls
+docs/paper/source/*.log
+docs/paper/source/*.out
+docs/paper/source/*.synctex.gz
+docs/paper/source/*.toc
+
 # IDE
 .vscode/
 *.code-workspace

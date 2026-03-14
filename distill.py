@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+from analyze_equations import load_equations
 from config import ExperimentConfig, DEFAULT_CONFIG, CHEATSHEETS_DIR, DATA_DIR, RESULTS_DIR
 from llm_client import LLMClient
 
@@ -183,12 +184,6 @@ def load_training_demos(filepath: str, equations: list) -> list:
             })
     return demos
 
-
-def load_equations(filepath: str = "equations.txt") -> list:
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f if line.strip()]
-
-
 def augment_with_rationales(
     demos: list,
     client: LLMClient,
@@ -319,10 +314,10 @@ def run_pipeline(
     if output_path is None:
         output_path = str(CHEATSHEETS_DIR / f"cheatsheet_{config.name}_{prompt_variant}.txt")
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(cheatsheet)
 
-    size = len(cheatsheet.encode('utf-8'))
+    size = Path(output_path).stat().st_size
     logger.info(f"Cheatsheet saved to {output_path} ({size} bytes)")
     logger.info(distill_client.cost_report())
 

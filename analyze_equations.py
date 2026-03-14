@@ -10,6 +10,8 @@ import itertools
 import random
 from typing import Optional
 
+from config import EQUATIONS_FILE
+
 
 def parse_equation(eq_str: str) -> tuple:
     """Parse an equation string like 'x ◇ (y ◇ z) = (x ◇ y) ◇ z' into (LHS_tree, RHS_tree)."""
@@ -307,7 +309,7 @@ def matches_pattern(eq, pattern_name: str) -> bool:
     return False
 
 
-def load_equations(filepath: str = 'equations.txt') -> list:
+def load_equations(filepath: str = str(EQUATIONS_FILE)) -> list:
     """Load equations from file. Line number (1-indexed) = equation number."""
     with open(filepath, 'r', encoding='utf-8') as f:
         return [line.strip() for line in f if line.strip()]

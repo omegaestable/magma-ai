@@ -8,6 +8,7 @@ Status:
 
 import math
 import os
+from pathlib import Path
 from benchmark_utils import (
     annotate_records,
     benchmark_metadata,
@@ -17,12 +18,13 @@ from benchmark_utils import (
     summarize_bucket_accuracy,
     summarize_bucket_counts,
 )
+from config import CHEATSHEET_FILE, EQUATIONS_FILE, RAW_IMPL_CSV
 
-def load_cheatsheet(filepath: str = 'cheatsheet.txt') -> str:
+def load_cheatsheet(filepath: str = str(CHEATSHEET_FILE)) -> str:
     """Load cheatsheet and check size."""
-    with open(filepath, 'r', encoding='utf-8') as f:
-        text = f.read()
-    size = len(text.encode('utf-8'))
+    raw = Path(filepath).read_bytes()
+    text = raw.decode('utf-8')
+    size = len(raw)
     if size > 10240:
         print(f"WARNING: Cheatsheet is {size} bytes (limit: 10240)")
     else:
@@ -132,12 +134,12 @@ def evaluate_with_heuristic(eq1_idx: int, eq2_idx: int, equations: list) -> floa
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Evaluate or export a local Stage 1 benchmark')
-    parser.add_argument('--cheatsheet', default='cheatsheet.txt', help='Path to cheatsheet file')
-    parser.add_argument('--equations', default='equations.txt', help='Path to equations file')
+    parser.add_argument('--cheatsheet', default=str(CHEATSHEET_FILE), help='Path to cheatsheet file')
+    parser.add_argument('--equations', default=str(EQUATIONS_FILE), help='Path to equations file')
     parser.add_argument('--mode', choices=['heuristic', 'prompt'], default='heuristic',
                         help='Evaluation mode: heuristic research benchmark or prompt export')
     parser.add_argument('--data', default=None, help='Path to JSONL benchmark data')
-    parser.add_argument('--matrix', default='export_raw_implications_14_3_2026.csv',
+    parser.add_argument('--matrix', default=str(RAW_IMPL_CSV),
                         help='Path to raw implications CSV for balanced local sampling')
     parser.add_argument('--n', type=int, default=100, help='Number of problems to evaluate')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
