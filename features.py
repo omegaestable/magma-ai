@@ -1,9 +1,4 @@
-"""
-features.py — Feature extraction for equation-pair implication prediction.
-
-Extracts structural, algebraic, and counterexample-based features
-from (Eq1, Eq2) pairs for ML classifiers.
-"""
+"""Research-only feature extraction for ML implication prediction."""
 
 import csv
 import json

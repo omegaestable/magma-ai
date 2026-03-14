@@ -1,0 +1,588 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{Tao_blog_Sep_2024}
+\citation{term-rewriting}
+\citation{mccune-survey}
+\citation{dolev}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{1}{Introduction}}{2}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{1.1}{Magmas and equational laws}}{2}{subsection.1.1}\protected@file@percent }
+\citation{austin_finite}
+\citation{evans}
+\citation{knuth}
+\citation{knuth-bendix}
+\citation{klt}
+\citation{Tarski1938}
+\citation{mendelsohn-padmanabhan}
+\citation{meredith-prior}
+\citation{mccune_et_al}
+\citation{higman-neumann}
+\citation{mccune-survey}
+\citation{term-rewriting}
+\citation{mckenzie}
+\citation{robbins}
+\citation{Kisielewicz2}
+\citation{phillips-vojtechovsky}
+\citation{Wolfram_2022}
+\citation{Gowers2009}
+\citation{bbchallenge_bb5}
+\citation{the_coq_development_team_2024_14542673}
+\citation{bbchallenge_bb5}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{1.2}{The Equational Theories Project}}{4}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{1.3}{Outcomes}}{4}{subsection.1.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A Hasse diagram of all the equational laws implied by $\mathrm  {E}854$ (for unrestricted magmas). An edge in this diagram indicates that the lower equation implies the higher one. Rounded rectangles indicate groups of equivalent laws. This graph was produced by the visualization tool \emph  {Graphiti}, which was developed for this project.}}{5}{figure.1}\protected@file@percent }
+\newlabel{fig:854}{{1}{5}{A Hasse diagram of all the equational laws implied by $\Eq {854}$ (for unrestricted magmas). An edge in this diagram indicates that the lower equation implies the higher one. Rounded rectangles indicate groups of equivalent laws. This graph was produced by the visualization tool \emph {Graphiti}, which was developed for this project}{figure.1}{}}
+\newlabel{fig:854@cref}{{[figure][1][]1}{[1][5][]5}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces A Hasse diagram of all the equational laws implied by $\mathrm  {E}1729$, both for unrestricted magmas (left) and finite magmas (right). Note the slightly larger number of implications in the latter.}}{5}{figure.2}\protected@file@percent }
+\newlabel{fig:1729}{{2}{5}{A Hasse diagram of all the equational laws implied by $\Eq {1729}$, both for unrestricted magmas (left) and finite magmas (right). Note the slightly larger number of implications in the latter}{figure.2}{}}
+\newlabel{fig:1729@cref}{{[figure][2][]2}{[1][5][]5}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Longest chains of implications (length $15$) between inequivalent laws in the implication graph. The parts above/below law $\mathrm  {E}3$ can be independently dualized. }}{6}{figure.3}\protected@file@percent }
+\newlabel{fig:longchain}{{3}{6}{Longest chains of implications (length $15$) between inequivalent laws in the implication graph. The parts above/below law $\Eq {3}$ can be independently dualized}{figure.3}{}}
+\newlabel{fig:longchain@cref}{{[figure][3][]3}{[1][5][]6}{}{}{}}
+\citation{knuth}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Some of the main dynamics in which proofs were generated, discussed within the Lean Zulip channel and then formalized in the GitHub repository. Boldface arrows indicate human activities, such as proposing an automated attack on outstanding implications, converting a computer-generated proof into a human-readable format, formalizing a human readable proof directly, or first creating a more precise blueprint for other collaborators to work on. Dashed arrows indicate fully automated processes, while the partly dashed line indicates a semi-automated process requiring human supervision. }}{8}{figure.4}\protected@file@percent }
+\newlabel{fig:flow}{{4}{8}{Some of the main dynamics in which proofs were generated, discussed within the Lean Zulip channel and then formalized in the GitHub repository. Boldface arrows indicate human activities, such as proposing an automated attack on outstanding implications, converting a computer-generated proof into a human-readable format, formalizing a human readable proof directly, or first creating a more precise blueprint for other collaborators to work on. Dashed arrows indicate fully automated processes, while the partly dashed line indicates a semi-automated process requiring human supervision}{figure.4}{}}
+\newlabel{fig:flow@cref}{{[figure][4][]4}{[1][8][]8}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{1.4}{Further directions}}{8}{subsection.1.4}\protected@file@percent }
+\citation{term-rewriting}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{2}{Notation and mathematical foundations}}{9}{section.2}\protected@file@percent }
+\newlabel{notation-sec}{{2}{9}{Notation and mathematical foundations}{section.2}{}}
+\newlabel{notation-sec@cref}{{[section][2][]2}{[1][9][]9}{}{}{}}
+\newlabel{left-right}{{1}{9}{Notation and mathematical foundations}{equation.1}{}}
+\newlabel{left-right@cref}{{[equation][1][]1}{[1][9][]9}{}{}{}}
+\newlabel{square-def}{{2}{9}{Notation and mathematical foundations}{equation.2}{}}
+\newlabel{square-def@cref}{{[equation][2][]2}{[1][9][]9}{}{}{}}
+\citation{leanblueprint}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 2.1\else \numberline {2.1}Example\fi \thmtformatoptarg {Commutative and associative free magma}}{10}{example.2.1}\protected@file@percent }
+\newlabel{semi-group}{{2.1}{10}{Commutative and associative free magma}{example.2.1}{}}
+\newlabel{semi-group@cref}{{[example][1][2]2.1}{[1][10][]10}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 2.2\else \numberline {2.2}Example\fi \thmtformatoptarg {Left-absorptive free magma}}{10}{example.2.2}\protected@file@percent }
+\newlabel{left-absorb}{{2.2}{10}{Left-absorptive free magma}{example.2.2}{}}
+\newlabel{left-absorb@cref}{{[example][2][2]2.2}{[1][10][]10}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{3}{Formal foundations}}{10}{section.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces A sample proof of a formalized implication, in this case that $\mathrm  {E}1437 \not \models  \mathrm  {E}4269$.}}{11}{figure.5}\protected@file@percent }
+\newlabel{fig:impl}{{5}{11}{A sample proof of a formalized implication, in this case that $\Eq {1437} \nmodels \Eq {4269}$}{figure.5}{}}
+\newlabel{fig:impl@cref}{{[figure][5][]5}{[1][11][]11}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces A computer generated \texttt  {Facts} theorem, using an explicit finite magma of order $6$ to refute several implications at once.}}{11}{figure.6}\protected@file@percent }
+\newlabel{fig:facts}{{6}{11}{A computer generated \texttt {Facts} theorem, using an explicit finite magma of order $6$ to refute several implications at once}{figure.6}{}}
+\newlabel{fig:facts@cref}{{[figure][6][]6}{[1][11][]11}{}{}{}}
+\citation{EMS_code_of_practice}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{4}{Project management}}{12}{section.4}\protected@file@percent }
+\newlabel{project-sec}{{4}{12}{Project management}{section.4}{}}
+\newlabel{project-sec@cref}{{[section][4][]4}{[1][12][]12}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.1}{Problems of scale in mathematical collaboration}}{12}{subsection.4.1}\protected@file@percent }
+\citation{leanblueprint}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.2}{The Blueprint tool}}{13}{subsection.4.2}\protected@file@percent }
+\citation{Monticone_LeanProject_2025}
+\citation{PFR_Tao_Dilles_2023}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.3}{The project template}}{14}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.4}{The \emph  {Lean} Zulip chat forum}}{14}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.5}{Organising the collaboration: the precedent set by the PFR project}}{14}{subsection.4.5}\protected@file@percent }
+\citation{The_Equational_Theories_repository}
+\citation{lean4lean}
+\citation{FLT_Lean}
+\citation{the_lean4_paper}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.6}{Organizing the collaboration in this project}}{15}{subsection.4.6}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces  A partial flowchart of the automated task management process. Each task corresponds to an issue. A pull request is created to resolve tasks and once a pull request linked to a task is merged, the task is considered complete. The thick boxes represent states of the project dashboard represented by task columns. The movement of tasks between these states is automated by the CI which is triggered upon specific actions performed by contributors on the respective GitHub issues and pull requests. A more detailed description is found in the contributions file of the GitHub file, named \texttt  {CONTRIBUTING.md} by convention.}}{16}{figure.7}\protected@file@percent }
+\newlabel{fig:proj_mgmt_flow}{{7}{16}{A partial flowchart of the automated task management process. Each task corresponds to an issue. A pull request is created to resolve tasks and once a pull request linked to a task is merged, the task is considered complete. The thick boxes represent states of the project dashboard represented by task columns. The movement of tasks between these states is automated by the CI which is triggered upon specific actions performed by contributors on the respective GitHub issues and pull requests. A more detailed description is found in the contributions file of the GitHub file, named \texttt {CONTRIBUTING.md} by convention}{figure.7}{}}
+\newlabel{fig:proj_mgmt_flow@cref}{{[figure][7][]7}{[1][15][]16}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces  A snapshot of the project dashboard as of 30 July 2025}}{16}{figure.8}\protected@file@percent }
+\newlabel{fig:proj_dashboard}{{8}{16}{A snapshot of the project dashboard as of 30 July 2025}{figure.8}{}}
+\newlabel{fig:proj_dashboard@cref}{{[figure][8][]8}{[1][15][]16}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.7}{Trusting ITPs to scale collaboration}}{17}{subsection.4.7}\protected@file@percent }
+\citation{lean4lean}
+\citation{Tao_blog_Sep_2024}
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 4.1\else \numberline {4.1}Remark\fi }{18}{remark.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{\tocparagraph {}{}{\textbf  {The non-Lean pieces:}}}{18}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{4.8}{The Role of organisers and maintainers}}{19}{subsection.4.8}\protected@file@percent }
+\citation{berman-burris}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{5}{Counterexample constructions}}{20}{section.5}\protected@file@percent }
+\newlabel{finite-sec}{{5.1}{20}{Finite magmas}{subsection.5.1}{}}
+\newlabel{finite-sec@cref}{{[subsection][1][5]5.1}{[1][20][]20}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{5.1}{Finite magmas}}{20}{subsection.5.1}\protected@file@percent }
+\citation{Kisielewicz}
+\citation{murskii-1}
+\citation{murskii-2}
+\citation{Padmanabhan}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Number of laws of order at most $4$ whose smallest non-trivial model (if any) is of a given size.}}{21}{table.1}\protected@file@percent }
+\newlabel{size-table}{{1}{21}{Number of laws of order at most $4$ whose smallest non-trivial model (if any) is of a given size}{table.1}{}}
+\newlabel{size-table@cref}{{[table][1][]1}{[1][21][]21}{}{}{}}
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 5.1\else \numberline {5.1}Remark\fi }{21}{remark.5.1}\protected@file@percent }
+\citation{diamond-lemma}
+\newlabel{linear-sec}{{5.2}{22}{Linear models}{subsection.5.2}{}}
+\newlabel{linear-sec@cref}{{[subsection][2][5]5.2}{[1][22][]22}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{5.2}{Linear models}}{22}{subsection.5.2}\protected@file@percent }
+\newlabel{variety}{{3}{22}{Linear models}{equation.3}{}}
+\newlabel{variety@cref}{{[equation][3][]3}{[1][22][]22}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 5.2\else \numberline {5.2}Example\fi \thmtformatoptarg {Commutative counterexample}}{22}{example.5.2}\protected@file@percent }
+\newlabel{1286-ex}{{5.2}{22}{Commutative counterexample}{example.5.2}{}}
+\newlabel{1286-ex@cref}{{[example][2][5]5.2}{[1][22][]22}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 5.3\else \numberline {5.3}Example\fi \thmtformatoptarg {Noncommutative counterexample}}{22}{example.5.3}\protected@file@percent }
+\newlabel{1117-ex}{{5.3}{22}{Noncommutative counterexample}{example.5.3}{}}
+\newlabel{1117-ex@cref}{{[example][3][5]5.3}{[1][22][]22}{}{}{}}
+\citation{austin}
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 5.4\else \numberline {5.4}Remark\fi }{23}{remark.5.4}\protected@file@percent }
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 5.5\else \numberline {5.5}Remark\fi }{23}{remark.5.5}\protected@file@percent }
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 5.6\else \numberline {5.6}Remark\fi }{23}{remark.5.6}\protected@file@percent }
+\newlabel{translation-sec}{{5.3}{23}{Translation-invariant models}{subsection.5.3}{}}
+\newlabel{translation-sec@cref}{{[subsection][3][5]5.3}{[1][23][]23}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{5.3}{Translation-invariant models}}{23}{subsection.5.3}\protected@file@percent }
+\newlabel{xop-add}{{4}{23}{Translation-invariant models}{equation.4}{}}
+\newlabel{xop-add@cref}{{[equation][4][]4}{[1][23][]23}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 5.7\else \numberline {5.7}Example\fi \thmtformatoptarg {Abelian example}}{24}{example.5.7}\protected@file@percent }
+\newlabel{abex}{{5.7}{24}{Abelian example}{example.5.7}{}}
+\newlabel{abex@cref}{{[example][7][5]5.7}{[1][24][]24}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 5.8\else \numberline {5.8}Example\fi \thmtformatoptarg {Non-abelian example}}{24}{example.5.8}\protected@file@percent }
+\newlabel{trans-nonab}{{5.8}{24}{Non-abelian example}{example.5.8}{}}
+\newlabel{trans-nonab@cref}{{[example][8][5]5.8}{[1][24][]24}{}{}{}}
+\newlabel{206-eq}{{5}{24}{Non-abelian example}{equation.5}{}}
+\newlabel{206-eq@cref}{{[equation][5][]5}{[1][24][]24}{}{}{}}
+\newlabel{1648-eq}{{6}{24}{Non-abelian example}{equation.6}{}}
+\newlabel{1648-eq@cref}{{[equation][6][]6}{[1][24][]24}{}{}{}}
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 5.9\else \numberline {5.9}Remark\fi }{24}{remark.5.9}\protected@file@percent }
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 5.10\else \numberline {5.10}Remark\fi }{25}{remark.5.10}\protected@file@percent }
+\newlabel{twisting-sec}{{5.4}{25}{The twisting semigroup}{subsection.5.4}{}}
+\newlabel{twisting-sec@cref}{{[subsection][4][5]5.4}{[1][25][]25}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{5.4}{The twisting semigroup}}{25}{subsection.5.4}\protected@file@percent }
+\newlabel{twist}{{7}{25}{The twisting semigroup}{equation.7}{}}
+\newlabel{twist@cref}{{[equation][7][]7}{[1][25][]25}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 5.11\else \numberline {5.11}Example\fi }{25}{example.5.11}\protected@file@percent }
+\citation{skolem}
+\newlabel{greedy-sec}{{5.5}{26}{Greedy constructions}{subsection.5.5}{}}
+\newlabel{greedy-sec@cref}{{[subsection][5][5]5.5}{[1][26][]26}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{5.5}{Greedy constructions}}{26}{subsection.5.5}\protected@file@percent }
+\@writefile{loe}{\contentsline {theorem}{\ifthmt@listswap Theorem\nonbreakingspace 5.12\else \numberline {5.12}Theorem\fi \thmtformatoptarg {Abstract greedy algorithm}}{27}{theorem.5.12}\protected@file@percent }
+\newlabel{greedy-abstract}{{5.12}{27}{Abstract greedy algorithm}{theorem.5.12}{}}
+\newlabel{greedy-abstract@cref}{{[theorem][12][5]5.12}{[1][27][]27}{}{}{}}
+\@writefile{loe}{\contentsline {proposition}{\ifthmt@listswap Proposition\nonbreakingspace 5.13\else \numberline {5.13}Proposition\fi \thmtformatoptarg {$\mathrm  {E}73 \not \models  \mathrm  {E}4380$}}{28}{proposition.5.13}\protected@file@percent }
+\newlabel{73-4380}{{5.13}{28}{$\Eq {73} \nmodels \Eq {4380}$}{proposition.5.13}{}}
+\newlabel{73-4380@cref}{{[proposition][13][5]5.13}{[1][27][]28}{}{}{}}
+\@writefile{loe}{\contentsline {theorem}{\ifthmt@listswap Theorem\nonbreakingspace 5.14\else \numberline {5.14}Theorem\fi \thmtformatoptarg {Noncommutative translation-invariant greedy algorithm}}{29}{theorem.5.14}\protected@file@percent }
+\newlabel{nc-greedy-abstract}{{5.14}{29}{Noncommutative translation-invariant greedy algorithm}{theorem.5.14}{}}
+\newlabel{nc-greedy-abstract@cref}{{[theorem][14][5]5.14}{[1][29][]29}{}{}{}}
+\newlabel{modify-base}{{5.6}{30}{Modifying base models}{subsection.5.6}{}}
+\newlabel{modify-base@cref}{{[subsection][6][5]5.6}{[1][30][]30}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{5.6}{Modifying base models}}{30}{subsection.5.6}\protected@file@percent }
+\newlabel{xsyt}{{8}{30}{Modifying base models}{equation.8}{}}
+\newlabel{xsyt@cref}{{[equation][8][]8}{[1][30][]30}{}{}{}}
+\@writefile{loe}{\contentsline {proposition}{\ifthmt@listswap Proposition\nonbreakingspace 5.15\else \numberline {5.15}Proposition\fi \thmtformatoptarg {$\mathrm  {E}1110 \not \models  \mathrm  {E}1629$}}{31}{proposition.5.15}\protected@file@percent }
+\newlabel{1110-1629}{{5.15}{31}{$\Eq {1110} \nmodels \Eq {1629}$}{proposition.5.15}{}}
+\newlabel{1110-1629@cref}{{[proposition][15][5]5.15}{[1][31][]31}{}{}{}}
+\@writefile{loe}{\contentsline {proposition}{\ifthmt@listswap Proposition\nonbreakingspace 5.16\else \numberline {5.16}Proposition\fi \thmtformatoptarg {$\mathrm  {E}1659 \not \models  \mathrm  {E}4315$}}{31}{proposition.5.16}\protected@file@percent }
+\newlabel{1659-4315}{{5.16}{31}{$\Eq {1659} \nmodels \Eq {4315}$}{proposition.5.16}{}}
+\newlabel{1659-4315@cref}{{[proposition][16][5]5.16}{[1][31][]31}{}{}{}}
+\citation{DBLP:conf/ijcai/AudemardS09}
+\citation{DBLP:conf/cp/AudemardS12}
+\citation{DBLP:conf/sat/EenS03}
+\citation{imms-sat18}
+\citation{itk-sat24}
+\citation{BiereFazekasFleuryHeisinger-SAT-Competition-2020-solvers}
+\citation{prover9-mace4}
+\citation{DBLP:conf/cav/KovacsV13}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{6}{Syntactic arguments}}{33}{section.6}\protected@file@percent }
+\newlabel{syntactic-sec}{{6}{33}{Syntactic arguments}{section.6}{}}
+\newlabel{syntactic-sec@cref}{{[section][6][]6}{[1][33][]33}{}{}{}}
+\newlabel{rewrite-sec}{{6.1}{33}{Simple rewrites}{subsection.6.1}{}}
+\newlabel{rewrite-sec@cref}{{[subsection][1][6]6.1}{[1][33][]33}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{6.1}{Simple rewrites}}{33}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{6.2}{Matching invariants}}{33}{subsection.6.2}\protected@file@percent }
+\@writefile{loe}{\contentsline {proposition}{\ifthmt@listswap Proposition\nonbreakingspace 6.1\else \numberline {6.1}Proposition\fi \thmtformatoptarg {Free magmas and matching invariants}}{34}{proposition.6.1}\protected@file@percent }
+\newlabel{free-inv}{{6.1}{34}{Free magmas and matching invariants}{proposition.6.1}{}}
+\newlabel{free-inv@cref}{{[proposition][1][6]6.1}{[1][34][]34}{}{}{}}
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 6.2\else \numberline {6.2}Example\fi }{34}{example.6.2}\protected@file@percent }
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 6.3\else \numberline {6.3}Example\fi }{34}{example.6.3}\protected@file@percent }
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 6.4\else \numberline {6.4}Example\fi }{34}{example.6.4}\protected@file@percent }
+\@writefile{loe}{\contentsline {remark}{\ifthmt@listswap Remark\nonbreakingspace 6.5\else \numberline {6.5}Remark\fi }{35}{remark.6.5}\protected@file@percent }
+\newlabel{canon-sec}{{6.3}{35}{Canonization}{subsection.6.3}{}}
+\newlabel{canon-sec@cref}{{[subsection][3][6]6.3}{[1][35][]35}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{6.3}{Canonization}}{35}{subsection.6.3}\protected@file@percent }
+\@writefile{loe}{\contentsline {definition}{\ifthmt@listswap Definition\nonbreakingspace 6.6\else \numberline {6.6}Definition\fi }{35}{definition.6.6}\protected@file@percent }
+\@writefile{loe}{\contentsline {definition}{\ifthmt@listswap Definition\nonbreakingspace 6.7\else \numberline {6.7}Definition\fi }{35}{definition.6.7}\protected@file@percent }
+\newlabel{def:canon}{{6.7}{35}{}{definition.6.7}{}}
+\newlabel{def:canon@cref}{{[definition][7][6]6.7}{[1][35][]35}{}{}{}}
+\@writefile{loe}{\contentsline {lemma}{\ifthmt@listswap Lemma\nonbreakingspace 6.8\else \numberline {6.8}Lemma\fi }{35}{lemma.6.8}\protected@file@percent }
+\newlabel{lem:subsubst}{{6.8}{35}{}{lemma.6.8}{}}
+\newlabel{lem:subsubst@cref}{{[lemma][8][6]6.8}{[1][35][]35}{}{}{}}
+\citation{term-rewriting}
+\@writefile{loe}{\contentsline {theorem}{\ifthmt@listswap Theorem\nonbreakingspace 6.9\else \numberline {6.9}Theorem\fi }{36}{theorem.6.9}\protected@file@percent }
+\newlabel{thm:canon}{{6.9}{36}{}{theorem.6.9}{}}
+\newlabel{thm:canon@cref}{{[theorem][9][6]6.9}{[1][35][]36}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{6.4}{Unique factorization}}{36}{subsection.6.4}\protected@file@percent }
+\newlabel{left-absorptive}{{11}{36}{Unique factorization}{equation.11}{}}
+\newlabel{left-absorptive@cref}{{[equation][11][]11}{[1][36][]36}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Equations similar to $\mathrm  {E}854$ that are of the form \eqref  {left-absorptive} (possibly involving a fourth indeterminate $\mathrm  {w}$) and imply $\mathrm  {E}378$. For brevity, $70$ equations equivalent to $\mathrm  {E}4$ have been omitted.}}{37}{figure.9}\protected@file@percent }
+\newlabel{fig:854-like}{{9}{37}{Equations similar to $\Eq {854}$ that are of the form \eqref {left-absorptive} (possibly involving a fourth indeterminate $\w $) and imply $\Eq {378}$. For brevity, $70$ equations equivalent to $\Eq {4}$ have been omitted}{figure.9}{}}
+\newlabel{fig:854-like@cref}{{[figure][9][]9}{[1][36][]37}{}{}{}}
+\@writefile{loe}{\contentsline {lemma}{\ifthmt@listswap Lemma\nonbreakingspace 6.10\else \numberline {6.10}Lemma\fi }{37}{lemma.6.10}\protected@file@percent }
+\newlabel{854}{{6.10}{37}{}{lemma.6.10}{}}
+\newlabel{854@cref}{{[lemma][10][6]6.10}{[1][37][]37}{}{}{}}
+\@writefile{loe}{\contentsline {theorem}{\ifthmt@listswap Theorem\nonbreakingspace 6.11\else \numberline {6.11}Theorem\fi \thmtformatoptarg {Description of equivalence}}{38}{theorem.6.11}\protected@file@percent }
+\newlabel{irred-desc}{{6.11}{38}{Description of equivalence}{theorem.6.11}{}}
+\newlabel{irred-desc@cref}{{[theorem][11][6]6.11}{[1][37][]38}{}{}{}}
+\@writefile{loe}{\contentsline {corollary}{\ifthmt@listswap Corollary\nonbreakingspace 6.12\else \numberline {6.12}Corollary\fi \thmtformatoptarg {Unique factorization}}{38}{corollary.6.12}\protected@file@percent }
+\newlabel{unique-factorization}{{6.12}{38}{Unique factorization}{corollary.6.12}{}}
+\newlabel{unique-factorization@cref}{{[corollary][12][6]6.12}{[1][38][]38}{}{}{}}
+\citation{DBLP:conf/cav/KovacsV13}
+\citation{TheVampireDiary}
+\citation{prover9-mace4}
+\citation{DBLP:journals/pacmpl/EbnerURAM17}
+\citation{DBLP:conf/itp/CluneQBA24}
+\@writefile{loe}{\contentsline {proposition}{\ifthmt@listswap Proposition\nonbreakingspace 6.13\else \numberline {6.13}Proposition\fi \thmtformatoptarg {$\mathrm  {E}854 \not \models  \mathrm  {E}3316$}}{39}{proposition.6.13}\protected@file@percent }
+\newlabel{854-3316}{{6.13}{39}{$\Eq {854} \nmodels \Eq {3316}$}{proposition.6.13}{}}
+\newlabel{854-3316@cref}{{[proposition][13][6]6.13}{[1][39][]39}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{7}{Proof automation}}{39}{section.7}\protected@file@percent }
+\newlabel{automated-sec}{{7}{39}{Proof automation}{section.7}{}}
+\newlabel{automated-sec@cref}{{[section][7][]7}{[1][39][]39}{}{}{}}
+\citation{deMoura-Bjorner-2009}
+\citation{DBLP:conf/cpp/LimpergF23}
+\citation{DBLP:conf/cav/KovacsV13}
+\citation{DBLP:journals/cacm/BentkampBNTVW23}
+\citation{DBLP:conf/cav/KovacsV13}
+\citation{DBLP:conf/itp/CluneQBA24}
+\citation{prover9-mace4}
+\citation{burris}
+\citation{term-rewriting}
+\citation{DBLP:conf/cade/MouraB07}
+\citation{DBLP:conf/tacas/MouraB08}
+\citation{DBLP:series/txtcs/KroeningS16}
+\citation{DBLP:conf/cade/MouraB07}
+\citation{DBLP:journals/pacmpl/WillseyNWFTP21}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{7.1}{Proof techniques}}{40}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.1.1}{Saturation}}{40}{subsubsection.7.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.1.2}{Equational Reasoning}}{40}{subsubsection.7.1.2}\protected@file@percent }
+\citation{DBLP:conf/tacas/MouraB08}
+\citation{prover9-mace4}
+\citation{DBLP:journals/pacmpl/WillseyNWFTP21}
+\citation{DBLP:journals/pacmpl/KoehlerGBGTS24}
+\citation{egg_tactic}
+\newlabel{sec:proof-reconstruction}{{7.2}{41}{Integration of automation procedures}{subsection.7.2}{}}
+\newlabel{sec:proof-reconstruction@cref}{{[subsection][2][7]7.2}{[1][41][]41}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{7.2}{Integration of automation procedures}}{41}{subsection.7.2}\protected@file@percent }
+\newlabel{inter}{{2}{41}{Integration of automation procedures}{Item.12}{}}
+\newlabel{inter@cref}{{[enumi][2][]2}{[1][41][]41}{}{}{}}
+\newlabel{external}{{3}{41}{Integration of automation procedures}{Item.13}{}}
+\newlabel{external@cref}{{[enumi][3][]3}{[1][41][]41}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.2.1}{Proof Reconstruction}}{41}{subsubsection.7.2.1}\protected@file@percent }
+\citation{nieuwenhuis2005proof}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Example of a proof reconstructed from output of \emph  {Vampire}. Note how the proof proceeds by contradiction and uses the \texttt  {superpose} and \texttt  {subsumption} steps implemented in \emph  {Lean}.}}{42}{figure.10}\protected@file@percent }
+\newlabel{fig:vampire-example}{{10}{42}{Example of a proof reconstructed from output of \emph {Vampire}. Note how the proof proceeds by contradiction and uses the \texttt {superpose} and \texttt {subsumption} steps implemented in \emph {Lean}}{figure.10}{}}
+\newlabel{fig:vampire-example@cref}{{[figure][10][]10}{[1][41][]42}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Example of a proof reconstructed by \emph  {MagmaEgg}. Note the proof only uses reflexivity, symmetry, transitivity, and congruence of equality.}}{42}{figure.11}\protected@file@percent }
+\newlabel{fig:magma-egg-example}{{11}{42}{Example of a proof reconstructed by \emph {MagmaEgg}. Note the proof only uses reflexivity, symmetry, transitivity, and congruence of equality}{figure.11}{}}
+\newlabel{fig:magma-egg-example@cref}{{[figure][11][]11}{[1][42][]42}{}{}{}}
+\citation{DBLP:journals/pacmpl/KoehlerGBGTS24}
+\citation{LPAR2024:Prover9_Unleashed_Automated_Configuration}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Example of the \texttt  {egg} tactic reconstructing a proof in human-readable form with the help of \texttt  {calcify} (invoked by the special syntax \texttt  {egg?}).}}{43}{figure.12}\protected@file@percent }
+\newlabel{fig:egg-example}{{12}{43}{Example of the \texttt {egg} tactic reconstructing a proof in human-readable form with the help of \texttt {calcify} (invoked by the special syntax \texttt {egg?})}{figure.12}{}}
+\newlabel{fig:egg-example@cref}{{[figure][12][]12}{[1][42][]43}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.2.2}{Semi-Automated Counterexample Guidance}}{43}{subsubsection.7.2.2}\protected@file@percent }
+\newlabel{ATP_usage}{{7.3}{43}{ATP usage}{subsection.7.3}{}}
+\newlabel{ATP_usage@cref}{{[subsection][3][7]7.3}{[1][43][]43}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{7.3}{ATP usage}}{43}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.1}{Employing several ATPs}}{44}{subsubsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.2}{Basic usage}}{44}{subsubsection.7.3.2}\protected@file@percent }
+\citation{DBLP:conf/cav/KovacsV13}
+\newlabel{flow control}{{7.3.3}{45}{Flow control}{subsubsection.7.3.3}{}}
+\newlabel{flow control@cref}{{[subsubsection][3][7,3]7.3.3}{[1][45][]45}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.3}{Flow control}}{45}{subsubsection.7.3.3}\protected@file@percent }
+\newlabel{input}{{7.3.4}{45}{Input}{subsubsection.7.3.4}{}}
+\newlabel{input@cref}{{[subsubsection][4][7,3]7.3.4}{[1][45][]45}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.4}{Input}}{45}{subsubsection.7.3.4}\protected@file@percent }
+\newlabel{weight_strategy}{{7.3.5}{46}{The weight-sos limit strategy}{subsubsection.7.3.5}{}}
+\newlabel{weight_strategy@cref}{{[subsubsection][5][7,3]7.3.5}{[1][46][]46}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.5}{The weight-sos limit strategy}}{46}{subsubsection.7.3.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Proof-finding time as a function of \texttt  {max\_weight}, for several values of \texttt  {sos\_limit}.}}{47}{figure.13}\protected@file@percent }
+\newlabel{figure:weight_time}{{13}{47}{Proof-finding time as a function of \texttt {max\_weight}, for several values of \texttt {sos\_limit}}{figure.13}{}}
+\newlabel{figure:weight_time@cref}{{[figure][13][]13}{[1][46][]47}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Proof-finding time as a function of \texttt  {sos\_limit}, for different values of \texttt  {max\_weight}. a) Stabilization as plateau, same for different weights. b) Different behaviours for different weights, with one trend monotonically increasing.}}{47}{figure.14}\protected@file@percent }
+\newlabel{figure:sos_limit_time}{{14}{47}{Proof-finding time as a function of \texttt {sos\_limit}, for different values of \texttt {max\_weight}. a) Stabilization as plateau, same for different weights. b) Different behaviours for different weights, with one trend monotonically increasing}{figure.14}{}}
+\newlabel{figure:sos_limit_time@cref}{{[figure][14][]14}{[1][46][]47}{}{}{}}
+\citation{janota2025experimentalresultsvampireequational}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Proof-complexity indicators as a function of \texttt  {sos\_limit}.}}{48}{figure.15}\protected@file@percent }
+\newlabel{figure:sos_limit_proof_data}{{15}{48}{Proof-complexity indicators as a function of \texttt {sos\_limit}}{figure.15}{}}
+\newlabel{figure:sos_limit_proof_data@cref}{{[figure][15][]15}{[1][46][]48}{}{}{}}
+\newlabel{Mace4}{{7.3.6}{48}{Mace4}{subsubsection.7.3.6}{}}
+\newlabel{Mace4@cref}{{[subsubsection][6][7,3]7.3.6}{[1][48][]48}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.6}{Mace4}}{48}{subsubsection.7.3.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Largest size of $\mathrm  {E}1485$ (weak central groupoids) models exhausted by each configuration in under 300s. The \texttt  {skolems\_last} parameter turns out to be irrelevant for this problem.}}{49}{table.2}\protected@file@percent }
+\newlabel{table:weakcentralgroupoids}{{2}{49}{Largest size of $\Eq {1485}$ (weak central groupoids) models exhausted by each configuration in under 300s. The \texttt {skolems\_last} parameter turns out to be irrelevant for this problem}{table.2}{}}
+\newlabel{table:weakcentralgroupoids@cref}{{[table][2][]2}{[1][48][]49}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.7}{Search of compatible properties}}{49}{subsubsection.7.3.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Time to find one model of $\mathrm  {E}677$ of size\nonbreakingspace $9$ and to exhaust the same size for different configurations. Some finite-setting formulas were included to speed up the search (see \Cref  {finite setting}). The configurations not listed here were unable to find a model in \SI {4000}{s}.}}{50}{table.3}\protected@file@percent }
+\newlabel{table:677models}{{3}{50}{Time to find one model of $\Eq {677}$ of size~$9$ and to exhaust the same size for different configurations. Some finite-setting formulas were included to speed up the search (see \Cref {finite setting}). The configurations not listed here were unable to find a model in \SI {4000}{s}}{table.3}{}}
+\newlabel{table:677models@cref}{{[table][3][]3}{[1][49][]50}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Comparison of the two best configurations for finding certain special $\mathrm  {E}677$ models, both for exhausting each size and for finding a single model, with best times in boldface. Note that initially (2,4,N) seems the best configuration, but in the long run, (2,3,Y) outperforms it. The comparison is particularly misleading at size 16 when searching for a single model. All times are in seconds.}}{50}{table.4}\protected@file@percent }
+\newlabel{table:Schneider}{{4}{50}{Comparison of the two best configurations for finding certain special $\Eq {677}$ models, both for exhausting each size and for finding a single model, with best times in boldface. Note that initially (2,4,N) seems the best configuration, but in the long run, (2,3,Y) outperforms it. The comparison is particularly misleading at size 16 when searching for a single model. All times are in seconds}{table.4}{}}
+\newlabel{table:Schneider@cref}{{[table][4][]4}{[1][49][]50}{}{}{}}
+\newlabel{finite setting}{{7.3.8}{51}{Finite setting}{subsubsection.7.3.8}{}}
+\newlabel{finite setting@cref}{{[subsubsection][8][7,3]7.3.8}{[1][50][]51}{}{}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.8}{Finite setting}}{51}{subsubsection.7.3.8}\protected@file@percent }
+\@writefile{loe}{\contentsline {example}{\ifthmt@listswap Example\nonbreakingspace 7.1\else \numberline {7.1}Example\fi }{51}{example.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\tocsubsubsection {}{7.3.9}{Discriminators for Isofilter}}{51}{subsubsection.7.3.9}\protected@file@percent }
+\citation{taylor}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{8}{Implications for finite magmas}}{52}{section.8}\protected@file@percent }
+\newlabel{austin-sec}{{8}{52}{Implications for finite magmas}{section.8}{}}
+\newlabel{austin-sec@cref}{{[section][8][]8}{[1][52][]52}{}{}{}}
+\@writefile{loe}{\contentsline {problem}{\ifthmt@listswap Problem\nonbreakingspace 8.1\else \numberline {8.1}Problem\fi }{52}{problem.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\tocsection {}{9}{Spectrum of equational laws}}{52}{section.9}\protected@file@percent }
+\newlabel{spectrum-sec}{{9}{52}{Spectrum of equational laws}{section.9}{}}
+\newlabel{spectrum-sec@cref}{{[section][9][]9}{[1][52][]52}{}{}{}}
+\citation{sheffer}
+\citation{Tarski1938}
+\citation{higman-neumann}
+\citation{Sholander01021959}
+\citation{Padmanabhan_1969}
+\citation{mccune_et_al}
+\citation{higman-neumann}
+\citation{mccune1993single}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{10}{Higman--Neumann laws}}{54}{section.10}\protected@file@percent }
+\newlabel{higman-neumann}{{10}{54}{Higman--Neumann laws}{section.10}{}}
+\newlabel{higman-neumann@cref}{{[section][10][]10}{[1][54][]54}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{10.1}{Describing groups as magmas}}{54}{subsection.10.1}\protected@file@percent }
+\citation{mccune-webpage-gtsax}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{10.2}{Basic constraints}}{55}{subsection.10.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{10.3}{Using automated theorem provers}}{55}{subsection.10.3}\protected@file@percent }
+\citation{Goodfellow-et-al-2016}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{11}{AI and Machine Learning contributions}}{57}{section.11}\protected@file@percent }
+\newlabel{ml-sec}{{11}{57}{AI and Machine Learning contributions}{section.11}{}}
+\newlabel{ml-sec@cref}{{[section][11][]11}{[1][57][]57}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{}{Convolutional neural network model for the implication graph}}{57}{section*.3}\protected@file@percent }
+\citation{tensorflow2015-whitepaper}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Prediction accuracy as a function of the size of the training set}}{58}{table.5}\protected@file@percent }
+\newlabel{table:prediction-accuracy}{{5}{58}{Prediction accuracy as a function of the size of the training set}{table.5}{}}
+\newlabel{table:prediction-accuracy@cref}{{[table][5][]5}{[1][58][]58}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Sizes of different encodings for the implication graph}}{59}{table.6}\protected@file@percent }
+\newlabel{table:encoding-sizes}{{6}{59}{Sizes of different encodings for the implication graph}{table.6}{}}
+\newlabel{table:encoding-sizes@cref}{{[table][6][]6}{[1][59][]59}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{12}{User Interfaces}}{59}{section.12}\protected@file@percent }
+\newlabel{sec:gui-sec}{{12}{59}{User Interfaces}{section.12}{}}
+\newlabel{sec:gui-sec@cref}{{[section][12][]12}{[1][59][]59}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{13}{Data management}}{60}{section.13}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces An example of the information displayed by the Equation Explorer for a specific equation.}}{61}{figure.16}\protected@file@percent }
+\newlabel{fig:screenshot-equation-explorer}{{16}{61}{An example of the information displayed by the Equation Explorer for a specific equation}{figure.16}{}}
+\newlabel{fig:screenshot-equation-explorer@cref}{{[figure][16][]16}{[1][60][]61}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\tocsection {}{14}{Conclusions and future directions}}{61}{section.14}\protected@file@percent }
+\citation{PFR_Tao_Dilles_2023}
+\citation{Kisielewicz2}
+\@writefile{toc}{\contentsline {subsection}{\tocsubsection {}{14.1}{Miscellaneous remarks}}{65}{subsection.14.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\tocsection {}{}{Acknowledgments}}{65}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\tocsection {Appendix}{A}{Numbering system}}{65}{appendix.A}\protected@file@percent }
+\newlabel{numbering-app}{{A}{65}{Numbering system}{appendix.A}{}}
+\newlabel{numbering-app@cref}{{[appendix][1][]A}{[1][65][]65}{}{}{}}
+\newlabel{eq1}{{{E1}}{67}{Numbering system}{AMS.66}{}}
+\newlabel{eq1@cref}{{[equation][2147483647][]{E1}}{[1][67][]67}{}{}{}}
+\newlabel{eq2}{{{E2}}{67}{Numbering system}{AMS.67}{}}
+\newlabel{eq2@cref}{{[equation][2147483647][]{E2}}{[1][67][]67}{}{}{}}
+\newlabel{eq3}{{{E3}}{67}{Numbering system}{AMS.68}{}}
+\newlabel{eq3@cref}{{[equation][2147483647][]{E3}}{[1][67][]67}{}{}{}}
+\newlabel{eq4}{{{E4}}{67}{Numbering system}{AMS.69}{}}
+\newlabel{eq4@cref}{{[equation][2147483647][]{E4}}{[1][67][]67}{}{}{}}
+\newlabel{eq5}{{{E5}}{67}{Numbering system}{AMS.70}{}}
+\newlabel{eq5@cref}{{[equation][2147483647][]{E5}}{[1][67][]67}{}{}{}}
+\newlabel{eq10}{{{E10}}{67}{Numbering system}{AMS.71}{}}
+\newlabel{eq10@cref}{{[equation][2147483647][]{E10}}{[1][67][]67}{}{}{}}
+\newlabel{eq11}{{{E11}}{67}{Numbering system}{AMS.72}{}}
+\newlabel{eq11@cref}{{[equation][2147483647][]{E11}}{[1][67][]67}{}{}{}}
+\newlabel{eq14}{{{E14}}{67}{Numbering system}{AMS.73}{}}
+\newlabel{eq14@cref}{{[equation][2147483647][]{E14}}{[1][67][]67}{}{}{}}
+\newlabel{eq23}{{{E23}}{67}{Numbering system}{AMS.74}{}}
+\newlabel{eq23@cref}{{[equation][2147483647][]{E23}}{[1][67][]67}{}{}{}}
+\newlabel{eq40}{{{E40}}{67}{Numbering system}{AMS.75}{}}
+\newlabel{eq40@cref}{{[equation][2147483647][]{E40}}{[1][67][]67}{}{}{}}
+\newlabel{eq41}{{{E41}}{67}{Numbering system}{AMS.76}{}}
+\newlabel{eq41@cref}{{[equation][2147483647][]{E41}}{[1][67][]67}{}{}{}}
+\newlabel{eq43}{{{E43}}{67}{Numbering system}{AMS.77}{}}
+\newlabel{eq43@cref}{{[equation][2147483647][]{E43}}{[1][67][]67}{}{}{}}
+\newlabel{eq46}{{{E46}}{67}{Numbering system}{AMS.78}{}}
+\newlabel{eq46@cref}{{[equation][2147483647][]{E46}}{[1][67][]67}{}{}{}}
+\newlabel{eq47}{{{E47}}{67}{Numbering system}{AMS.79}{}}
+\newlabel{eq47@cref}{{[equation][2147483647][]{E47}}{[1][67][]67}{}{}{}}
+\newlabel{eq73}{{{E73}}{67}{Numbering system}{AMS.80}{}}
+\newlabel{eq73@cref}{{[equation][2147483647][]{E73}}{[1][67][]67}{}{}{}}
+\newlabel{eq151}{{{E151}}{67}{Numbering system}{AMS.81}{}}
+\newlabel{eq151@cref}{{[equation][2147483647][]{E151}}{[1][67][]67}{}{}{}}
+\newlabel{eq168}{{{E168}}{67}{Numbering system}{AMS.82}{}}
+\newlabel{eq168@cref}{{[equation][2147483647][]{E168}}{[1][67][]67}{}{}{}}
+\newlabel{eq206}{{{E206}}{68}{Numbering system}{AMS.83}{}}
+\newlabel{eq206@cref}{{[equation][2147483647][]{E206}}{[1][67][]68}{}{}{}}
+\newlabel{eq255}{{{E255}}{68}{Numbering system}{AMS.84}{}}
+\newlabel{eq255@cref}{{[equation][2147483647][]{E255}}{[1][67][]68}{}{}{}}
+\newlabel{eq327}{{{E327}}{68}{Numbering system}{AMS.85}{}}
+\newlabel{eq327@cref}{{[equation][2147483647][]{E327}}{[1][67][]68}{}{}{}}
+\newlabel{eq378}{{{E378}}{68}{Numbering system}{AMS.86}{}}
+\newlabel{eq378@cref}{{[equation][2147483647][]{E378}}{[1][67][]68}{}{}{}}
+\newlabel{eq395}{{{E395}}{68}{Numbering system}{AMS.87}{}}
+\newlabel{eq395@cref}{{[equation][2147483647][]{E395}}{[1][67][]68}{}{}{}}
+\newlabel{eq413}{{{E413}}{68}{Numbering system}{AMS.88}{}}
+\newlabel{eq413@cref}{{[equation][2147483647][]{E413}}{[1][67][]68}{}{}{}}
+\newlabel{eq450}{{{E450}}{68}{Numbering system}{AMS.89}{}}
+\newlabel{eq450@cref}{{[equation][2147483647][]{E450}}{[1][67][]68}{}{}{}}
+\newlabel{eq492}{{{E492}}{68}{Numbering system}{AMS.90}{}}
+\newlabel{eq492@cref}{{[equation][2147483647][]{E492}}{[1][67][]68}{}{}{}}
+\newlabel{eq543}{{{E543}}{68}{Numbering system}{AMS.91}{}}
+\newlabel{eq543@cref}{{[equation][2147483647][]{E543}}{[1][67][]68}{}{}{}}
+\newlabel{eq650}{{{E650}}{68}{Numbering system}{AMS.92}{}}
+\newlabel{eq650@cref}{{[equation][2147483647][]{E650}}{[1][67][]68}{}{}{}}
+\newlabel{eq677}{{{E677}}{68}{Numbering system}{AMS.93}{}}
+\newlabel{eq677@cref}{{[equation][2147483647][]{E677}}{[1][67][]68}{}{}{}}
+\newlabel{eq817}{{{E817}}{68}{Numbering system}{AMS.94}{}}
+\newlabel{eq817@cref}{{[equation][2147483647][]{E817}}{[1][67][]68}{}{}{}}
+\newlabel{eq854}{{{E854}}{68}{Numbering system}{AMS.95}{}}
+\newlabel{eq854@cref}{{[equation][2147483647][]{E854}}{[1][67][]68}{}{}{}}
+\newlabel{eq1045}{{{E1045}}{68}{Numbering system}{AMS.96}{}}
+\newlabel{eq1045@cref}{{[equation][2147483647][]{E1045}}{[1][67][]68}{}{}{}}
+\newlabel{eq1055}{{{E1055}}{68}{Numbering system}{AMS.97}{}}
+\newlabel{eq1055@cref}{{[equation][2147483647][]{E1055}}{[1][67][]68}{}{}{}}
+\newlabel{eq1110}{{{E1110}}{68}{Numbering system}{AMS.98}{}}
+\newlabel{eq1110@cref}{{[equation][2147483647][]{E1110}}{[1][67][]68}{}{}{}}
+\newlabel{eq1117}{{{E1117}}{68}{Numbering system}{AMS.99}{}}
+\newlabel{eq1117@cref}{{[equation][2147483647][]{E1117}}{[1][67][]68}{}{}{}}
+\newlabel{eq1286}{{{E1286}}{68}{Numbering system}{AMS.100}{}}
+\newlabel{eq1286@cref}{{[equation][2147483647][]{E1286}}{[1][67][]68}{}{}{}}
+\newlabel{eq1323}{{{E1323}}{68}{Numbering system}{AMS.101}{}}
+\newlabel{eq1323@cref}{{[equation][2147483647][]{E1323}}{[1][67][]68}{}{}{}}
+\newlabel{eq1485}{{{E1485}}{68}{Numbering system}{AMS.102}{}}
+\newlabel{eq1485@cref}{{[equation][2147483647][]{E1485}}{[1][67][]68}{}{}{}}
+\newlabel{eq1518}{{{E1518}}{68}{Numbering system}{AMS.103}{}}
+\newlabel{eq1518@cref}{{[equation][2147483647][]{E1518}}{[1][67][]68}{}{}{}}
+\newlabel{eq1571}{{{E1571}}{68}{Numbering system}{AMS.104}{}}
+\newlabel{eq1571@cref}{{[equation][2147483647][]{E1571}}{[1][67][]68}{}{}{}}
+\newlabel{eq1629}{{{E1629}}{68}{Numbering system}{AMS.105}{}}
+\newlabel{eq1629@cref}{{[equation][2147483647][]{E1629}}{[1][67][]68}{}{}{}}
+\newlabel{eq1648}{{{E1648}}{68}{Numbering system}{AMS.106}{}}
+\newlabel{eq1648@cref}{{[equation][2147483647][]{E1648}}{[1][67][]68}{}{}{}}
+\newlabel{eq1659}{{{E1659}}{68}{Numbering system}{AMS.107}{}}
+\newlabel{eq1659@cref}{{[equation][2147483647][]{E1659}}{[1][67][]68}{}{}{}}
+\newlabel{eq1689}{{{E1689}}{68}{Numbering system}{AMS.108}{}}
+\newlabel{eq1689@cref}{{[equation][2147483647][]{E1689}}{[1][67][]68}{}{}{}}
+\newlabel{eq1729}{{{E1729}}{68}{Numbering system}{AMS.109}{}}
+\newlabel{eq1729@cref}{{[equation][2147483647][]{E1729}}{[1][67][]68}{}{}{}}
+\newlabel{eq2301}{{{E2301}}{68}{Numbering system}{AMS.110}{}}
+\newlabel{eq2301@cref}{{[equation][2147483647][]{E2301}}{[1][67][]68}{}{}{}}
+\newlabel{eq2441}{{{E2441}}{68}{Numbering system}{AMS.111}{}}
+\newlabel{eq2441@cref}{{[equation][2147483647][]{E2441}}{[1][67][]68}{}{}{}}
+\newlabel{eq2744}{{{E2744}}{68}{Numbering system}{AMS.112}{}}
+\newlabel{eq2744@cref}{{[equation][2147483647][]{E2744}}{[1][67][]68}{}{}{}}
+\newlabel{eq2910}{{{E2910}}{68}{Numbering system}{AMS.113}{}}
+\newlabel{eq2910@cref}{{[equation][2147483647][]{E2910}}{[1][67][]68}{}{}{}}
+\newlabel{eq3316}{{{E3316}}{68}{Numbering system}{AMS.114}{}}
+\newlabel{eq3316@cref}{{[equation][2147483647][]{E3316}}{[1][67][]68}{}{}{}}
+\newlabel{eq3523}{{{E3523}}{68}{Numbering system}{AMS.115}{}}
+\newlabel{eq3523@cref}{{[equation][2147483647][]{E3523}}{[1][67][]68}{}{}{}}
+\newlabel{eq3737}{{{E3737}}{68}{Numbering system}{AMS.116}{}}
+\newlabel{eq3737@cref}{{[equation][2147483647][]{E3737}}{[1][67][]68}{}{}{}}
+\newlabel{eq3925}{{{E3925}}{68}{Numbering system}{AMS.117}{}}
+\newlabel{eq3925@cref}{{[equation][2147483647][]{E3925}}{[1][67][]68}{}{}{}}
+\newlabel{eq4315}{{{E4315}}{68}{Numbering system}{AMS.118}{}}
+\newlabel{eq4315@cref}{{[equation][2147483647][]{E4315}}{[1][67][]68}{}{}{}}
+\newlabel{eq4380}{{{E4380}}{69}{Numbering system}{AMS.119}{}}
+\newlabel{eq4380@cref}{{[equation][2147483647][]{E4380}}{[1][67][]69}{}{}{}}
+\newlabel{eq4482}{{{E4482}}{69}{Numbering system}{AMS.120}{}}
+\newlabel{eq4482@cref}{{[equation][2147483647][]{E4482}}{[1][67][]69}{}{}{}}
+\newlabel{eq4512}{{{E4512}}{69}{Numbering system}{AMS.121}{}}
+\newlabel{eq4512@cref}{{[equation][2147483647][]{E4512}}{[1][67][]69}{}{}{}}
+\newlabel{eq4531}{{{E4531}}{69}{Numbering system}{AMS.122}{}}
+\newlabel{eq4531@cref}{{[equation][2147483647][]{E4531}}{[1][67][]69}{}{}{}}
+\newlabel{eq5093}{{{E5093}}{69}{Numbering system}{AMS.123}{}}
+\newlabel{eq5093@cref}{{[equation][2147483647][]{E5093}}{[1][67][]69}{}{}{}}
+\newlabel{eq85914}{{{E85914}}{69}{Numbering system}{AMS.124}{}}
+\newlabel{eq85914@cref}{{[equation][2147483647][]{E85914}}{[1][67][]69}{}{}{}}
+\newlabel{eq86082}{{{E86082}}{69}{Numbering system}{AMS.125}{}}
+\newlabel{eq86082@cref}{{[equation][2147483647][]{E86082}}{[1][67][]69}{}{}{}}
+\newlabel{eq345169}{{{E345169}}{69}{Numbering system}{AMS.126}{}}
+\newlabel{eq345169@cref}{{[equation][2147483647][]{E345169}}{[1][67][]69}{}{}{}}
+\newlabel{eq42302852}{{{E42302852}}{69}{Numbering system}{AMS.134}{}}
+\newlabel{eq42302852@cref}{{[equation][2147483647][]{E42302852}}{[1][69][]69}{}{}{}}
+\newlabel{eq42302946}{{{E42302946}}{69}{Numbering system}{AMS.135}{}}
+\newlabel{eq42302946@cref}{{[equation][2147483647][]{E42302946}}{[1][69][]69}{}{}{}}
+\newlabel{eq42323216}{{{E42323216}}{69}{Numbering system}{AMS.136}{}}
+\newlabel{eq42323216@cref}{{[equation][2147483647][]{E42323216}}{[1][69][]69}{}{}{}}
+\newlabel{eq67953597}{{{E67953597}}{69}{Numbering system}{AMS.137}{}}
+\newlabel{eq67953597@cref}{{[equation][2147483647][]{E67953597}}{[1][69][]69}{}{}{}}
+\newlabel{eq89176740}{{{E89176740}}{69}{Numbering system}{AMS.138}{}}
+\newlabel{eq89176740@cref}{{[equation][2147483647][]{E89176740}}{[1][69][]69}{}{}{}}
+\newlabel{eq102744082}{{{E102744082}}{69}{Numbering system}{AMS.139}{}}
+\newlabel{eq102744082@cref}{{[equation][2147483647][]{E102744082}}{[1][69][]69}{}{}{}}
+\newlabel{eq147976245}{{{E147976245}}{69}{Numbering system}{AMS.140}{}}
+\newlabel{eq147976245@cref}{{[equation][2147483647][]{E147976245}}{[1][69][]69}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\tocsection {Appendix}{B}{Author contributions}}{69}{appendix.B}\protected@file@percent }
+\bibstyle{plainurl}
+\bibdata{references}
+\bibcite{tensorflow2015-whitepaper}{1}
+\bibcite{LPAR2024:Prover9_Unleashed_Automated_Configuration}{2}
+\bibcite{DBLP:conf/ijcai/AudemardS09}{3}
+\bibcite{DBLP:conf/cp/AudemardS12}{4}
+\bibcite{austin}{5}
+\bibcite{austin_finite}{6}
+\bibcite{term-rewriting}{7}
+\bibcite{TheVampireDiary}{8}
+\bibcite{DBLP:journals/cacm/BentkampBNTVW23}{9}
+\bibcite{diamond-lemma}{10}
+\bibcite{berman-burris}{11}
+\bibcite{BiereFazekasFleuryHeisinger-SAT-Competition-2020-solvers}{12}
+\bibcite{The_Equational_Theories_repository}{13}
+\@writefile{toc}{\contentsline {section}{\tocsection {Appendix}{}{References}}{71}{section*.141}\protected@file@percent }
+\bibcite{burris}{14}
+\bibcite{FLT_Lean}{15}
+\bibcite{lean4lean}{16}
+\bibcite{DBLP:conf/itp/CluneQBA24}{17}
+\bibcite{bbchallenge_bb5}{18}
+\bibcite{deMoura-Bjorner-2009}{19}
+\bibcite{DBLP:conf/cade/MouraB07}{20}
+\bibcite{DBLP:conf/tacas/MouraB08}{21}
+\bibcite{PFR_Tao_Dilles_2023}{22}
+\bibcite{dolev}{23}
+\bibcite{DBLP:journals/pacmpl/EbnerURAM17}{24}
+\bibcite{DBLP:conf/sat/EenS03}{25}
+\bibcite{evans}{26}
+\bibcite{Goodfellow-et-al-2016}{27}
+\bibcite{Gowers2009}{28}
+\bibcite{higman-neumann}{29}
+\bibcite{imms-sat18}{30}
+\bibcite{itk-sat24}{31}
+\bibcite{janota2025experimentalresultsvampireequational}{32}
+\bibcite{Kisielewicz}{33}
+\bibcite{Kisielewicz2}{34}
+\bibcite{knuth}{35}
+\bibcite{knuth-bendix}{36}
+\bibcite{DBLP:journals/pacmpl/KoehlerGBGTS24}{37}
+\bibcite{DBLP:conf/cav/KovacsV13}{38}
+\bibcite{DBLP:series/txtcs/KroeningS16}{39}
+\bibcite{klt}{40}
+\bibcite{DBLP:conf/cpp/LimpergF23}{41}
+\bibcite{leanblueprint}{42}
+\bibcite{prover9-mace4}{43}
+\bibcite{robbins}{44}
+\bibcite{mccune-survey}{45}
+\bibcite{mccune-webpage-gtsax}{46}
+\bibcite{mccune_et_al}{47}
+\bibcite{mccune1993single}{48}
+\bibcite{mckenzie}{49}
+\bibcite{mendelsohn-padmanabhan}{50}
+\bibcite{meredith-prior}{51}
+\bibcite{Monticone_LeanProject_2025}{52}
+\bibcite{the_lean4_paper}{53}
+\bibcite{murskii-1}{54}
+\bibcite{murskii-2}{55}
+\bibcite{nieuwenhuis2005proof}{56}
+\bibcite{Padmanabhan_1969}{57}
+\bibcite{Padmanabhan}{58}
+\bibcite{phillips-vojtechovsky}{59}
+\bibcite{egg_tactic}{60}
+\bibcite{sheffer}{61}
+\bibcite{Sholander01021959}{62}
+\bibcite{skolem}{63}
+\bibcite{EMS_code_of_practice}{64}
+\bibcite{Tao_blog_Sep_2024}{65}
+\bibcite{Tarski1938}{66}
+\bibcite{taylor}{67}
+\bibcite{the_coq_development_team_2024_14542673}{68}
+\bibcite{DBLP:journals/pacmpl/WillseyNWFTP21}{69}
+\bibcite{Wolfram_2022}{70}
+\newlabel{tocindent-1}{0pt}
+\newlabel{tocindent0}{68.86424pt}
+\newlabel{tocindent1}{77.67224pt}
+\newlabel{tocindent2}{0pt}
+\newlabel{tocindent3}{0pt}
+\gdef \@abspage@last{74}

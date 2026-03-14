@@ -1,15 +1,7 @@
-"""
-solver.py — Decision engine for equational implication.
+"""Research-only decision engine for equational implication.
 
-Orchestrates proof_search and magma_search, using structural
-features + implication graph heuristics to decide the optimal
-search strategy for each (Eq1, Eq2) pair.
-
-The solver decides:
-  1. Is this likely TRUE or FALSE? (prior from structure)
-  2. Which search to run first (proof vs counterexample)?
-  3. How much budget to allocate to each?
-  4. When to give up and fall back to the base rate?
+This solver is useful for offline discovery, proof mining, and counterexample
+search. It is not the Stage 1 submission artifact.
 """
 
 from __future__ import annotations

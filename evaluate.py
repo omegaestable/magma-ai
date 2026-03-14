@@ -1,25 +1,22 @@
-"""
-evaluate.py — Local evaluation for TAO Challenge Stage 1.
+"""Local benchmark harness and prompt exporter.
 
-Test a cheatsheet by checking correctness against known implications.
-Uses the raw implications CSV and equations.txt as ground truth.
+Status:
+- `prompt` mode is submission-support only when the downstream model sees only the cheatsheet.
+- `heuristic` mode is research-only; it does not evaluate the submission artifact.
+- Matrix-sampled labels are acceptable as offline supervision, but never as inference-time lookup.
 """
 
-import csv
-import json
 import math
 import os
-import random
-import sys
-from pathlib import Path
-from typing import Optional
-
-
-def load_equations(filepath: str = 'equations.txt') -> list:
-    """Load equations. Line number (1-indexed) = equation index."""
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f if line.strip()]
-
+from benchmark_utils import (
+    annotate_records,
+    benchmark_metadata,
+    load_equations,
+    load_labeled_pairs_from_jsonl,
+    sample_balanced_pairs_from_matrix,
+    summarize_bucket_accuracy,
+    summarize_bucket_counts,
+)
 
 def load_cheatsheet(filepath: str = 'cheatsheet.txt') -> str:
     """Load cheatsheet and check size."""
@@ -31,53 +28,6 @@ def load_cheatsheet(filepath: str = 'cheatsheet.txt') -> str:
     else:
         print(f"Cheatsheet size: {size}/10240 bytes ({size * 100 / 10240:.1f}%)")
     return text
-
-
-def load_implication_matrix(filepath: str = 'export_raw_implications_14_3_2026.csv') -> dict:
-    """Load the raw implications CSV into a dict: (eq1_idx, eq2_idx) -> bool."""
-    print(f"Loading implications from {filepath}...")
-    matrix = {}
-    with open(filepath, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        header = next(reader)
-        for row in reader:
-            if len(row) >= 3:
-                try:
-                    eq1 = int(row[0])
-                    eq2 = int(row[1])
-                    val = int(row[2])
-                    matrix[(eq1, eq2)] = val > 0
-                except ValueError:
-                    continue
-    print(f"Loaded {len(matrix)} implications")
-    return matrix
-
-
-def load_training_data(filepath: str) -> list:
-    """Load JSONL training data."""
-    data = []
-    with open(filepath, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                data.append(json.loads(line))
-    return data
-
-
-def sample_problems(matrix: dict, n: int = 100, seed: int = 42) -> list:
-    """Sample balanced (50/50 TRUE/FALSE) problems from the implication matrix."""
-    true_pairs = [(k, True) for k, v in matrix.items() if v]
-    false_pairs = [(k, False) for k, v in matrix.items() if not v]
-
-    rng = random.Random(seed)
-    rng.shuffle(true_pairs)
-    rng.shuffle(false_pairs)
-
-    half = n // 2
-    problems = true_pairs[:half] + false_pairs[:half]
-    rng.shuffle(problems)
-    return problems
-
 
 def build_prompt(eq1_str: str, eq2_str: str, cheatsheet: str) -> str:
     """Build the evaluation prompt matching the competition template."""
@@ -98,7 +48,7 @@ Then optionally explain your reasoning."""
 
 
 def compute_log_loss(predictions: list, labels: list) -> float:
-    """Compute balanced log-loss (the competition metric)."""
+    """Compute log-loss as an optional local calibration metric."""
     eps = 1e-7
     total_loss = 0.0
     n = len(predictions)
@@ -181,14 +131,14 @@ def evaluate_with_heuristic(eq1_idx: int, eq2_idx: int, equations: list) -> floa
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='Evaluate cheatsheet for TAO Challenge')
+    parser = argparse.ArgumentParser(description='Evaluate or export a local Stage 1 benchmark')
     parser.add_argument('--cheatsheet', default='cheatsheet.txt', help='Path to cheatsheet file')
     parser.add_argument('--equations', default='equations.txt', help='Path to equations file')
     parser.add_argument('--mode', choices=['heuristic', 'prompt'], default='heuristic',
-                        help='Evaluation mode: heuristic (no LLM) or prompt (print prompts)')
-    parser.add_argument('--data', default=None, help='Path to JSONL training data')
+                        help='Evaluation mode: heuristic research benchmark or prompt export')
+    parser.add_argument('--data', default=None, help='Path to JSONL benchmark data')
     parser.add_argument('--matrix', default='export_raw_implications_14_3_2026.csv',
-                        help='Path to raw implications CSV')
+                        help='Path to raw implications CSV for balanced local sampling')
     parser.add_argument('--n', type=int, default=100, help='Number of problems to evaluate')
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
     args = parser.parse_args()
@@ -196,35 +146,47 @@ def main():
     equations = load_equations(args.equations)
     cheatsheet = load_cheatsheet(args.cheatsheet)
 
-    # Load problems
+    label_source = 'jsonl' if args.data else 'matrix_sample'
     if args.data:
-        problems_data = load_training_data(args.data)
-        problems = []
-        for p in problems_data:
-            eq1_idx = p.get('equation1_index', p.get('eq1'))
-            eq2_idx = p.get('equation2_index', p.get('eq2'))
-            label = p.get('implies', p.get('label'))
-            if eq1_idx and eq2_idx and label is not None:
-                problems.append(((eq1_idx, eq2_idx), bool(label)))
+        records = load_labeled_pairs_from_jsonl(args.data)
     else:
         if not os.path.exists(args.matrix):
-            print(f"Matrix file {args.matrix} not found. Using random equations.")
-            problems = []
+            print(f"Matrix file {args.matrix} not found.")
+            records = []
         else:
-            matrix = load_implication_matrix(args.matrix)
-            problems = sample_problems(matrix, n=args.n, seed=args.seed)
+            print(f"Sampling balanced benchmark pairs from {args.matrix}...")
+            records = sample_balanced_pairs_from_matrix(args.matrix, n=args.n, seed=args.seed)
 
-    if not problems:
+    if not records:
         print("No problems loaded.")
         return
 
-    print(f"\nEvaluating on {len(problems)} problems...\n")
+    records = annotate_records(records, equations)
+    metadata = benchmark_metadata(
+        artifact_kind='cheatsheet_only' if args.mode == 'prompt' else 'heuristic_proxy',
+        label_source=label_source,
+        inference_mode='prompt_export' if args.mode == 'prompt' else 'heuristic_proxy',
+        uses_matrix_at_inference=False,
+    )
+
+    print('\nBenchmark metadata:')
+    for key, value in metadata.items():
+        print(f'  {key}: {value}')
+    print('Bucket counts:')
+    for bucket, count in summarize_bucket_counts(records).items():
+        print(f'  {bucket}: {count}')
+
+    print(f"\nEvaluating on {len(records)} problems...\n")
 
     predictions = []
     labels = []
     correct = 0
+    scored_records = []
 
-    for i, ((eq1_idx, eq2_idx), label) in enumerate(problems):
+    for i, record in enumerate(records):
+        eq1_idx = record['eq1_idx']
+        eq2_idx = record['eq2_idx']
+        label = record['label']
         if args.mode == 'heuristic':
             prob = evaluate_with_heuristic(eq1_idx, eq2_idx, equations)
             pred = prob > 0.5
@@ -232,14 +194,17 @@ def main():
             labels.append(label)
             if pred == label:
                 correct += 1
-            if (i + 1) % 20 == 0 or i == len(problems) - 1:
+            scored = dict(record)
+            scored['predicted_prob'] = prob
+            scored['predicted'] = pred
+            scored['correct'] = pred == label
+            scored_records.append(scored)
+            if (i + 1) % 20 == 0 or i == len(records) - 1:
                 acc = correct / (i + 1)
                 ll = compute_log_loss(predictions, labels)
-                print(f"  [{i + 1}/{len(problems)}] Accuracy: {acc:.3f}, Log-loss: {ll:.4f}")
+                print(f"  [{i + 1}/{len(records)}] Accuracy: {acc:.3f}, Log-loss: {ll:.4f}")
         elif args.mode == 'prompt':
-            eq1_str = equations[eq1_idx - 1]
-            eq2_str = equations[eq2_idx - 1]
-            prompt = build_prompt(eq1_str, eq2_str, cheatsheet)
+            prompt = build_prompt(record['eq1'], record['eq2'], cheatsheet)
             print(f"--- Problem {i + 1} (Eq{eq1_idx} -> Eq{eq2_idx}, label={label}) ---")
             print(prompt[:500])
             print("...")
@@ -250,11 +215,17 @@ def main():
         ll = compute_log_loss(predictions, labels)
         true_count = sum(1 for l in labels if l)
         false_count = len(labels) - true_count
+        trivial_count = sum(1 for record in scored_records if record['bucket'] == 'trivial')
+        bucket_summary = summarize_bucket_accuracy(scored_records)
         print(f"\n{'=' * 50}")
         print(f"Final Results ({len(predictions)} problems)")
         print(f"  TRUE/FALSE split: {true_count}/{false_count}")
-        print(f"  Accuracy: {acc:.4f}")
-        print(f"  Log-loss: {ll:.4f}")
+        print(f"  Trivial/nontrivial: {trivial_count}/{len(predictions) - trivial_count}")
+        print(f"  Accuracy: {acc:.4f}  <- primary Stage 1 metric")
+        print(f"  Log-loss: {ll:.4f}  <- optional local calibration metric")
+        print("  Bucket accuracy:")
+        for bucket, values in bucket_summary.items():
+            print(f"    {bucket}: {values['count']} examples, accuracy={values['accuracy']:.3f}")
         print(f"{'=' * 50}")
 
 

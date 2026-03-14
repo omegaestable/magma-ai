@@ -1,11 +1,14 @@
-"""
-run_eval.py — LLM-based evaluation harness for cheatsheet quality.
+"""LLM-based cheatsheet evaluation harness.
 
-Tests a cheatsheet by prompting an LLM on equational implication problems
-and scoring against ground truth. Supports:
-  - Cheatsheet + format examples (Honda et al. eq. 2)
-  - Self-consistency decoding
-  - Cost tracking & log-loss scoring
+Status:
+- Submission-support when the model sees only the cheatsheet and optional
+    format examples drawn from a separate labeled file.
+- Invalid if evaluation labels are embedded back into the prompt context.
+
+Metrics:
+- PRIMARY: Accuracy (% correct TRUE/FALSE classification). This is what the
+    Stage 1 competition evaluates.
+- SECONDARY: Log-loss (calibration diagnostic only, not submission-scored).
 """
 
 import json
@@ -17,6 +20,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+from benchmark_utils import annotate_records, benchmark_metadata, summarize_bucket_accuracy
 from config import ExperimentConfig, DEFAULT_CONFIG, RESULTS_DIR, DATA_DIR
 from llm_client import LLMClient
 
@@ -140,10 +144,13 @@ def load_eval_problems(filepath: str, equations: list) -> list:
 
 def select_format_examples(
     problems: list,
-    n: int = 2,
+    n: int = 0,
     seed: int = 42,
 ) -> list:
     """Select balanced format examples (D̂₂ in the paper)."""
+    if n <= 0 or not problems:
+        return []
+
     true_ex = [p for p in problems if p["label"]]
     false_ex = [p for p in problems if not p["label"]]
     rng = random.Random(seed)
@@ -198,6 +205,7 @@ def run_evaluation(
     cheatsheet_path: str,
     eval_data_path: str,
     config: ExperimentConfig,
+    format_data_path: Optional[str] = None,
 ) -> dict:
     """Run full evaluation and return results dict."""
     # Load
@@ -216,11 +224,14 @@ def run_evaluation(
         problems = rng.sample(problems, config.n_eval)
         logger.info(f"Sampled {len(problems)} for evaluation")
 
-    # Format examples
-    format_ex = select_format_examples(problems, n=config.n_format_examples, seed=config.seed)
-    # Remove format examples from eval set
-    fmt_pairs = {(e["eq1"], e["eq2"]) for e in format_ex}
-    eval_problems = [p for p in problems if (p["eq1"], p["eq2"]) not in fmt_pairs]
+    format_pool = []
+    format_source = 'none'
+    if config.n_format_examples > 0 and format_data_path:
+        format_pool = load_eval_problems(format_data_path, equations)
+        format_source = 'separate_jsonl'
+        logger.info(f"Loaded {len(format_pool)} format-example problems from separate data")
+    format_ex = select_format_examples(format_pool, n=config.n_format_examples, seed=config.seed)
+    eval_problems = problems
 
     # Evaluate
     client = LLMClient(config.eval_model)
@@ -245,6 +256,8 @@ def run_evaluation(
         results_detail.append({
             "eq1_idx": prob["eq1_idx"],
             "eq2_idx": prob["eq2_idx"],
+            "eq1": prob["eq1"],
+            "eq2": prob["eq2"],
             "label": prob["label"],
             "predicted_prob": pred_prob,
             "predicted": pred_bool,
@@ -253,9 +266,8 @@ def run_evaluation(
 
         if (i + 1) % 10 == 0 or i == len(eval_problems) - 1:
             acc = correct / (i + 1)
-            ll = compute_log_loss(predictions, labels)
             logger.info(
-                f"  [{i+1}/{len(eval_problems)}] Acc={acc:.3f} LogLoss={ll:.4f} Cost=${client.total_cost:.4f}"
+                f"  [{i+1}/{len(eval_problems)}] Accuracy={acc:.3f} Cost=${client.total_cost:.4f}"
             )
 
     # Final metrics
@@ -265,6 +277,17 @@ def run_evaluation(
     false_labels = [l for l in labels if not l]
     true_correct = sum(1 for r in results_detail if r["label"] and r["correct"])
     false_correct = sum(1 for r in results_detail if not r["label"] and r["correct"])
+    annotated_details = annotate_records(results_detail, equations)
+    bucket_summary = summarize_bucket_accuracy(annotated_details)
+    trivial_count = sum(1 for item in annotated_details if item["bucket"] == "trivial")
+    metadata = benchmark_metadata(
+        artifact_kind='cheatsheet_only',
+        label_source='jsonl',
+        inference_mode='llm_prompt',
+        uses_matrix_at_inference=False,
+        format_examples_source=format_source,
+        uses_eval_labels_in_prompt=False,
+    )
 
     results = {
         "accuracy": acc,
@@ -277,7 +300,11 @@ def run_evaluation(
         "total_calls": client.total_calls,
         "config": config.__dict__,
         "cheatsheet_bytes": cs_bytes,
-        "details": results_detail,
+        "benchmark_metadata": metadata,
+        "trivial_count": trivial_count,
+        "nontrivial_count": len(annotated_details) - trivial_count,
+        "bucket_accuracy": bucket_summary,
+        "details": annotated_details,
     }
 
     # Save results
@@ -286,15 +313,58 @@ def run_evaluation(
     with open(out_path, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=2, default=str)
     logger.info(f"Results saved to {out_path}")
-    logger.info(f"FINAL — Accuracy: {acc:.3f}, LogLoss: {ll:.4f}, Cost: ${client.total_cost:.4f}")
+    logger.info(f"FINAL — Accuracy: {acc:.3f} ({correct}/{len(eval_problems)})  Cost: ${client.total_cost:.4f}")
+    logger.info(f"  Log-loss (calibration diagnostic): {ll:.4f}")
+    logger.info(f"  Benchmark validity: {metadata['submission_valid']} ({metadata['validity_reason']})")
+    for bucket, values in bucket_summary.items():
+        logger.info(f"  Bucket {bucket}: n={values['count']} acc={values['accuracy']:.3f}")
 
     return results
+
+
+def dry_run(cheatsheet_path: str, eval_data_path: str, config: ExperimentConfig):
+    """Validate the evaluation pipeline without making any API calls."""
+    from config import check_environment
+
+    logger.info("=== DRY RUN: validating pipeline (no API calls) ===")
+
+    # Check cheatsheet
+    with open(cheatsheet_path, 'r', encoding='utf-8') as f:
+        cheatsheet = f.read()
+    cs_bytes = len(cheatsheet.encode('utf-8'))
+    logger.info(f"Cheatsheet: {cs_bytes} bytes ({cs_bytes*100/10240:.1f}% of 10KB limit)")
+    if cs_bytes > 10240:
+        logger.warning("Cheatsheet EXCEEDS 10KB limit!")
+
+    # Check eval data
+    equations = load_equations()
+    problems = load_eval_problems(eval_data_path, equations)
+    logger.info(f"Eval data: {len(problems)} problems loaded from {eval_data_path}")
+    if problems:
+        n_true = sum(1 for p in problems if p['label'])
+        n_false = len(problems) - n_true
+        logger.info(f"  Label balance: {n_true} TRUE ({n_true*100/len(problems):.1f}%), {n_false} FALSE")
+
+    # Check environment
+    env_status = check_environment(config.eval_model)
+    for line in env_status:
+        logger.info(f"  {line}")
+
+    # Build a sample prompt to show it works
+    if problems:
+        sample = problems[0]
+        prompt = build_eval_prompt(sample['eq1'], sample['eq2'], cheatsheet)
+        logger.info(f"Sample prompt length: {len(prompt)} chars")
+
+    logger.info("=== DRY RUN complete. Pipeline is ready for live evaluation. ===")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a cheatsheet with LLM")
     parser.add_argument("--cheatsheet", required=True, help="Path to cheatsheet file")
     parser.add_argument("--data", required=True, help="JSONL eval data file")
+    parser.add_argument("--format-data", default=None,
+                        help="Optional separate JSONL file used only for format examples")
     parser.add_argument("--eval-model", default="gpt-4o-mini", help="Model for evaluation")
     parser.add_argument("--n-eval", type=int, default=100, help="Number of problems")
     parser.add_argument("--n-format", type=int, default=2, help="Number of format examples")
@@ -303,6 +373,8 @@ def main():
     parser.add_argument("--name", default="default", help="Experiment name")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Validate pipeline (cheatsheet, data, env) without making API calls")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -320,11 +392,19 @@ def main():
         seed=args.seed,
     )
 
-    run_evaluation(
-        cheatsheet_path=args.cheatsheet,
-        eval_data_path=args.data,
-        config=config,
-    )
+    if args.dry_run:
+        dry_run(
+            cheatsheet_path=args.cheatsheet,
+            eval_data_path=args.data,
+            config=config,
+        )
+    else:
+        run_evaluation(
+            cheatsheet_path=args.cheatsheet,
+            eval_data_path=args.data,
+            config=config,
+            format_data_path=args.format_data,
+        )
 
 
 if __name__ == "__main__":

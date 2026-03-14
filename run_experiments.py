@@ -1,12 +1,8 @@
-"""
-run_experiments.py — Orchestrator for ablation studies.
+"""Research orchestrator for offline distill-and-evaluate ablations.
 
-Runs the full distill→eval pipeline across configurations:
-  - Prompt variants (default, textbook, concise, summary)
-  - Rationale augmentation (on/off)
-  - n_shots sweep
-  - Self-consistency ablation
-  - Model transfer (distill with model A, eval with model B)
+Status:
+- Research-only unless the evaluation stage remains cheatsheet-only and uses
+    separate format-example data or no format examples at all.
 """
 
 import json
@@ -104,6 +100,7 @@ def run_ablation(
             cheatsheet_path=cs_path,
             eval_data_path=eval_data,
             config=config,
+            format_data_path=training_data,
         )
         result["experiment_name"] = config.name
         results.append(result)
@@ -119,6 +116,7 @@ def run_ablation(
                 "log_loss": r["log_loss"],
                 "cost": r["total_cost"],
                 "cheatsheet_bytes": r["cheatsheet_bytes"],
+                "submission_valid": r["benchmark_metadata"]["submission_valid"],
             }
             for r in results
         ],
@@ -133,10 +131,10 @@ def run_ablation(
     # Print comparison table
     print(f"\n{'='*70}")
     print(f"ABLATION: {ablation_name}")
-    print(f"{'Name':<30} {'Acc':>8} {'LogLoss':>10} {'Cost':>10} {'Bytes':>8}")
+    print(f"{'Name':<30} {'Acc':>8} {'LogLoss':>10} {'Cost':>10} {'Bytes':>8} {'Valid':>7}")
     print(f"{'-'*70}")
     for r in summary["results"]:
-        print(f"{r['name']:<30} {r['accuracy']:>8.3f} {r['log_loss']:>10.4f} ${r['cost']:>9.4f} {r['cheatsheet_bytes']:>8}")
+        print(f"{r['name']:<30} {r['accuracy']:>8.3f} {r['log_loss']:>10.4f} ${r['cost']:>9.4f} {r['cheatsheet_bytes']:>8} {str(r['submission_valid']):>7}")
     print(f"{'='*70}")
 
     return results

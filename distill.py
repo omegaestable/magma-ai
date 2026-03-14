@@ -1,14 +1,8 @@
-"""
-distill.py — Cheat-sheet distillation pipeline.
+"""Offline cheatsheet distillation pipeline.
 
-Implements Honda et al. (2025) "Distilling Many-Shot ICL into a Cheat Sheet"
-adapted for the TAO Challenge equational implication domain.
-
-Pipeline:
-  1. Load training demonstrations (equation pairs + labels)
-  2. (Optional) Augment with rationales via X-ICL meta-prompting
-  3. Feed demos to distillation model with cheat-sheet creation prompt
-  4. Post-process and validate cheatsheet (≤10KB)
+Status:
+- Submission-support only as an offline authoring tool.
+- Never part of the final submission-time inference path.
 """
 
 import json

@@ -1,8 +1,8 @@
-"""
-config.py — Centralized configuration for the research pipeline.
+"""Centralized configuration for submission-support and research tooling.
 
-Supports both ML-based classification and Honda et al. (2025)
-cheat-sheet ICL distillation for the TAO Challenge.
+Status:
+- Distillation and prompt evaluation are offline support for the cheatsheet artifact.
+- ML and solver settings are research-only and not submission-time behavior.
 """
 
 import os
@@ -79,7 +79,7 @@ class ExperimentConfig:
     # Evaluation
     eval_model: str = "gpt-4o-mini"      # model for inference (cheap)
     n_eval: int = 100                     # number of eval problems
-    n_format_examples: int = 2            # format demos appended (Eq.2 in paper)
+    n_format_examples: int = 0            # safe default: no eval-set label leakage
     seed: int = 42
     # Cheatsheet
     cheatsheet_max_bytes: int = 10240     # 10KB limit
@@ -122,3 +122,64 @@ class MLConfig:
 
 
 DEFAULT_ML_CONFIG = MLConfig()
+
+
+# ── Environment Validation ─────────────────────────────────────────
+
+def check_environment(eval_model: str = "gpt-4o-mini") -> list[str]:
+    """Check readiness of the evaluation environment.
+
+    Returns a list of status lines (info/warnings).
+    """
+    lines: list[str] = []
+
+    # Check model config
+    if eval_model in MODELS:
+        cfg = MODELS[eval_model]
+        lines.append(f"Model: {cfg.model} ({cfg.provider})")
+        key = cfg.api_key
+        if key:
+            masked = key[:4] + "..." + key[-4:] if len(key) > 8 else "***"
+            lines.append(f"API key ({cfg.api_key_env}): set ({masked})")
+        else:
+            lines.append(f"WARNING: API key {cfg.api_key_env} is NOT set — live eval will fail")
+            lines.append(f"  Set it via: $env:{cfg.api_key_env}='sk-...'  or in .env")
+    else:
+        lines.append(f"WARNING: Unknown model '{eval_model}' — not in MODELS registry")
+
+    # Check data folder
+    data_files = []
+    if DATA_DIR.is_dir():
+        data_files = [f.name for f in DATA_DIR.iterdir() if f.suffix == '.jsonl']
+    if data_files:
+        lines.append(f"Data folder: {len(data_files)} JSONL file(s) found ({', '.join(data_files)})")
+    else:
+        lines.append("WARNING: No JSONL files in data/ — run: python download_data.py --generate-local")
+
+    # Check cheatsheet
+    cs = ROOT / "cheatsheet.txt"
+    if cs.is_file():
+        size = cs.stat().st_size
+        lines.append(f"Cheatsheet: {size} bytes ({size*100/10240:.1f}% of 10KB limit)")
+    else:
+        lines.append("WARNING: cheatsheet.txt not found")
+
+    # Check equations
+    if EQUATIONS_FILE.is_file():
+        with open(EQUATIONS_FILE, 'r', encoding='utf-8') as f:
+            n_eq = sum(1 for line in f if line.strip())
+        lines.append(f"Equations: {n_eq} loaded")
+    else:
+        lines.append("WARNING: equations.txt not found")
+
+    # Python packages
+    pkg_status = []
+    for pkg in ['openai', 'anthropic']:
+        try:
+            __import__(pkg)
+            pkg_status.append(f"{pkg} ✓")
+        except ImportError:
+            pkg_status.append(f"{pkg} ✗")
+    lines.append(f"Packages: {', '.join(pkg_status)}")
+
+    return lines

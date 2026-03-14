@@ -33,144 +33,80 @@ Size-2 magma tables (values of a◇b for a,b ∈ {0,1}):
 Useful size-2 magmas for counterexamples:
   Left-zero:  [[0,0],[1,1]]  (x◇y=x, satisfies Eq25: x=(x◇y)◇x)
   Right-zero: [[0,1],[0,1]]  (x◇y=y)
-  Constant-0: [[0,0],[0,0]]  (x◇y=0, satisfies any "constant" law)
-  Constant-1: [[1,1],[1,1]]  (x◇y=1)
-  AND:        [[0,0],[0,1]]  (idempotent, commutative)
-  OR:         [[0,1],[1,1]]  (idempotent, commutative)
-  XOR:        [[0,1],[1,0]]  (commutative, x◇x=0, not idempotent)
-  NAND:       [[1,1],[1,0]]
-  Left-const: [[0,0],[1,1]] = Left-zero (listed above)
-  Proj-swap:  [[1,0],[1,0]]  (x◇y = 1-y, constant on second arg)
+  EQUATIONAL IMPLICATION OVER MAGMAS
 
-Size-3 useful magmas (mod 3 arithmetic):
-  x◇y = x+1 mod 3:        [[1,1,1],[2,2,2],[0,0,0]]
-  x◇y = x+y mod 3:         addition group (commutative, associative)
-  x◇y = 2x+2y mod 3:       satisfies many laws
-  x◇y = x+y+1 mod 3:       shifted addition
+  A magma is just a set with one binary operation. No associativity, identity, inverse,
+  or commutativity is assumed unless an equation forces it.
 
-LINEAR MAGMA METHOD: Try x◇y = ax+by+c (mod p) for small primes p.
-Check if Eq1 is satisfied (substitute and verify mod p).
-Then check if Eq2 is violated. This finds many counterexamples efficiently.
+  Eq1 implies Eq2 means: every magma satisfying Eq1 also satisfies Eq2.
 
-═══ KEY STRUCTURAL RULES ═══
+  DECISION PROCEDURE
 
-VARIABLE RULE: Count distinct variables on each side of each equation.
-- Eq1 has vars V1, Eq2 has vars V2.
-- If a variable appears in Eq2 but NOT in Eq1 (as a whole equation), 
-  Eq1 may not constrain it → evidence for FALSE (but not conclusive).
+  1. Trivial checks.
+  - If Eq1 and Eq2 are syntactically identical: TRUE.
+  - If Eq2 is x = x: TRUE.
+  - If Eq1 is x = x and Eq2 is not: FALSE.
+  - If Eq1 is x = y: TRUE, because it forces every two elements to be equal.
+  - If Eq2 is x = y, do not say TRUE unless Eq1 also clearly forces singleton behavior.
 
-OPERATION COUNT: Let ops(E) = number of ◇ operations in equation E.
-- Equations with more operations are generally more specific/constraining.
-- A more constraining equation (more ops in Eq1) is more likely to imply a less constraining one.
+  2. Specialization check.
+  - If Eq2 is obtained from Eq1 by substituting terms for variables, then TRUE.
+  - Example: x = x ◇ y implies x = x ◇ x by substituting y := x.
 
-DEPTH RULE: Deeper nesting = more specific constraint. If Eq1 is deeper than Eq2, slight evidence for TRUE.
+  3. Rewrite check.
+  - Use Eq1 in either direction as a rewrite rule.
+  - Try to rewrite the two sides of Eq2 to the same term.
+  - If you can exhibit a clean equality chain, answer TRUE.
 
-DUALITY: The DUAL of an equation swaps left and right arguments of every ◇.
-  dual(x) = x, dual(a◇b) = dual(b)◇dual(a)
-  Example: x◇(y◇z) has dual (z◇y)◇x
-  If Eq1 implies Eq2, then dual(Eq1) implies dual(Eq2).
-  Some equations are self-dual. Dual pairs behave symmetrically.
+  4. Duality check.
+  - The dual reverses every product: dual(a ◇ b) = dual(b) ◇ dual(a).
+  - If you know a fact for Eq1 -> Eq2, the dual fact also holds for dual(Eq1) -> dual(Eq2).
 
-═══ LANDMARK EQUATIONS ═══
+  5. Counterexample search for FALSE.
+  - Try a 2-element or 3-element magma.
+  - A single explicit magma satisfying Eq1 but violating Eq2 is enough for FALSE.
+  - Useful first models:
+    left-zero: x ◇ y = x
+    right-zero: x ◇ y = y
+    constant: x ◇ y = c
+    XOR on {0,1}: x ◇ y = x + y mod 2
+    addition mod 3: x ◇ y = x + y mod 3
 
-Eq1:   x = x                     [tautology, implied by everything, implies nothing]
-Eq2:   x = y                     [singleton law, implies everything, ~1495 laws equivalent]
-Eq3:   x = x◇x                  [idempotent fixpoint, 39 implications]
-Eq4:   x = x◇y                  [left absorbing, implies Eq3]
-Eq5:   x = y◇x                  [right absorbing, dual of Eq4]
-Eq6:   x = y◇y                  [equivalent to Eq2 since x=y◇y and y=x◇x gives x=y]
-Eq7:   x = y◇z                  [equivalent to Eq2]
-Eq23:  x = (x◇x)◇x             [idempotent variant]
-Eq38:  x◇x = x◇y               [left-cancellation variant, equivalent to Eq4]
-Eq39:  x◇x = y◇x               [right-cancel variant, equivalent to Eq5]
-Eq40:  x◇x = y◇y               [all squares equal, implies Eq3 via x=x◇x]
-Eq41:  x◇x = y◇z               [equivalent to Eq2]
-Eq42:  x◇y = x◇z               [left-cancellation-like]
-Eq43:  x◇y = y◇x               [COMMUTATIVITY — important, 80+ implications]
-Eq44:  x◇y = y◇z               [partial commutativity, equivalent to Eq2? No—forces const]
-Eq45:  x◇y = z◇y               [right-cancellation-like]
-Eq46:  x◇y = z◇w               [all products equal → equiv to Eq2]
-Eq4512: (x◇y)◇z = x◇(y◇z)     [ASSOCIATIVITY]
-Eq4513: (x◇y)◇z = x◇(y◇w)     [implies associativity-like properties]
+  6. Linear model trick.
+  - For small prime p, try x ◇ y = a x + b y + c mod p.
+  - If Eq1 holds for all assignments but Eq2 fails for one assignment, answer FALSE.
 
-SINGLETON EQUIVALENCE: ~1495 equations are equivalent to Eq2 (x=y).
-  Any equation with form "s = t" where s,t have disjoint variables (no variable in common)
-  and at least one has a ◇ operation forces M to be a singleton. Examples: Eq6, Eq7, Eq41, Eq46.
-  Also: Eq14 (x = y◇(x◇y)), Eq15, Eq17, Eq18, Eq20, Eq21, Eq22, Eq24, Eq26-37, etc.
-  Quick test: if LHS is just "x" and RHS has a variable not equal to x with no x in RHS → singleton.
+  SAFE LANDMARK FACTS
 
-═══ COMMON IMPLICATION PATTERNS ═══
+  - Eq1: x = x is implied by everything and implies nothing nontrivial.
+  - Eq2: x = y implies every equation.
+  - Eq3: x = x ◇ x is idempotence.
+  - Eq4: x = x ◇ y implies Eq3 by y := x.
+  - Eq5: x = y ◇ x is the dual of Eq4.
+  - Eq43: x ◇ y = y ◇ x is commutativity.
+  - Eq4512: x ◇ (y ◇ z) = (x ◇ y) ◇ z is associativity.
 
-KNOWN TRUE IMPLICATIONS:
-- Eq4 (x=x◇y) → Eq3 (x=x◇x): substitute y=x in Eq4.
-- Eq4 (x=x◇y) → Eq38 (x◇x=x◇y): from x=x◇y, substitute to get x◇x=(x◇y)◇x=x◇x.
-- Anything equivalent to Eq2 → everything.
-- Eq43 (commutativity) → does NOT imply Eq4512 (associativity), and vice versa.
-- Eq4512 (associativity) → does NOT imply Eq43 (commutativity).
+  RELIABLE HEURISTICS, NOT PROOFS
 
-SPECIALIZATION: If Eq2's equation is obtainable from Eq1 by substituting variables
+  - If Eq2 uses a variable absent from Eq1, lean FALSE unless Eq1 is extremely strong.
+  - If Eq1 is structurally more restrictive than Eq2, TRUE is more plausible, but still needs proof.
+  - Small counterexamples are common, so failing to find one is evidence only, not a theorem.
+
+  WRITE TRUE ONLY WHEN YOU HAVE ONE OF THESE
+
+  - A trivial case.
+  - A direct specialization.
+  - A short rewrite derivation.
+  - A previously justified landmark implication plus duality or transitivity.
+
+  WRITE FALSE WHEN YOU HAVE ONE OF THESE
+
+  - An explicit finite counterexample magma.
+  - A standard model family such as projection, constant, XOR mod 2, or addition mod 3 that satisfies Eq1 but violates Eq2.
+
+  DEFAULT POSTURE
+
+  - Prefer a short proof over a heuristic guess.
+  - Prefer an explicit counterexample over vague structural reasoning.
+  - If no proof or counterexample is visible, FALSE is the safer default than inventing a theorem.
   (e.g., replacing y with x), then Eq1 implies Eq2. This is the most common proof method.
-  Example: "x◇y = y◇x" with y→x gives "x◇x = x◇x" = tautology.
-
-COMPOSITION: If Eq1 implies EqA and EqA implies Eq2, then Eq1 implies Eq2 (transitivity).
-
-═══ COMMON FALSE PATTERNS ═══
-
-INDEPENDENCE: Most pairs of "interesting" equations are independent (neither implies the other).
-- Commutativity ⊬ Associativity and Associativity ⊬ Commutativity.
-- Idempotency (Eq3) ⊬ Commutativity (Eq43).
-- Commutativity (Eq43) ⊬ Idempotency (Eq3).
-  Counterexample: Z with x◇y = x+y is commutative but not idempotent (x+x≠x for x≠0).
-
-BASE RATE: The overall implication matrix is sparse. Most ordered pairs are FALSE.
-  Only ~6% of all possible implications hold. If unsure, lean toward FALSE.
-
-═══ PROOF CONSTRUCTION TIPS ═══
-
-FOR TRUE: Show a chain of equalities from LHS2 to RHS2 using Eq1 as rewrite rule.
-  Each step: identify a subterm matching one side of Eq1, replace with the other side.
-  You may instantiate Eq1's variables with any terms.
-  Example proof that x◇y=y◇x implies (x◇y)◇z=(z◇y)◇x:
-    (x◇y)◇z = (y◇x)◇z [apply comm to x◇y]... continue if possible.
-
-FOR FALSE: Exhibit a specific magma table satisfying Eq1 but not Eq2.
-  Verify by checking ALL assignments of variables (for size 2: only 4 or 8 checks).
-  State: "The magma ({0,1}, ◇) with table [a◇b values] satisfies Eq1 because... 
-  but violates Eq2 because for x=_, y=_: LHS=_ ≠ RHS=_"
-
-═══ SYSTEMATIC COUNTEREXAMPLE SEARCH ═══
-
-For size-2 magmas, check all 16 tables. For each:
-  1. Verify Eq1 holds for ALL variable assignments
-  2. Find ANY assignment where Eq2 fails
-  
-Common counterexample magmas:
-  [[0,0],[0,0]] satisfies: all "constant" equations, absorption laws
-  [[0,1],[0,1]] satisfies: x◇y=y (right projection), associativity, Eq5
-  [[0,0],[1,1]] satisfies: x◇y=x (left projection), associativity, Eq4
-  [[0,1],[1,0]] satisfies: commutativity, x◇(x◇y)=y, (x◇y)◇y=x
-  [[0,0],[1,0]] satisfies: idempotent, x◇(x◇y)=x◇y
-  [[1,0],[0,1]] satisfies: commutativity, x◇x=1 (constant squares)
-
-═══ ADVANCED: EQUIVALENCE CLASSES ═══
-
-Many equations form equivalence classes (they mutually imply each other).
-The largest class is the "singleton" class (~1495 equations equivalent to Eq2).
-Other notable classes:
-- {Eq4, Eq38}: x=x◇y ↔ x◇x=x◇y
-- {Eq5, Eq39}: x=y◇x ↔ x◇x=y◇x (dual of above)
-- {Eq40}: x◇x=y◇y stands alone (weaker than Eq4/Eq5 but not singleton)
-- {Eq43}: commutativity stands alone
-
-═══ QUICK DECISION FLOWCHART ═══
-
-1. Are Eq1 and Eq2 identical? → TRUE
-2. Is Eq2 "x = x"? → TRUE  
-3. Is Eq1 "x = x"? → FALSE
-4. Is Eq1 equivalent to "x = y"? → TRUE (check: disjoint vars forcing singleton)
-5. Can you get Eq2 by substituting variables in Eq1? → TRUE  
-6. Can you rewrite LHS2→RHS2 using Eq1? → TRUE
-7. Does a size-2 magma satisfy Eq1 but not Eq2? → FALSE
-8. Does a linear magma (ax+by+c mod p) satisfy Eq1 but not Eq2? → FALSE
-9. Does Eq2 introduce variables absent from Eq1? → likely FALSE
-10. Default: lean FALSE (~94% of pairs are FALSE)

@@ -1,72 +1,85 @@
-# Magma AI — TAO Challenge (Stage 1)
+# Magma AI
 
-Competition: **Equational Implication over Magmas**  
-Organizers: Damek Davis (UPenn) & Terence Tao (UCLA) / SAIR Foundation
+This repository is now organized around a strict Stage 1 submission boundary.
 
-## Goal
+- The intended final artifact is a plain-text cheatsheet under 10 KB.
+- Solver, proof search, counterexample search, and ML remain offline research tools.
+- Every benchmark path should say whether it is submission-valid or research-only.
 
-Determine whether `Equation 1 ⟹ Equation 2` over all magmas using algorithmic proof/counterexample search with graph-based routing.
+## Current Ground Truth
 
-## Architecture
+The strongest repository-local source of truth is [MASTER_SUBMISSION_AGENT_PROMPT.md](MASTER_SUBMISSION_AGENT_PROMPT.md). External organizer rules are not archived in this repo yet, so any rule claim not present in that file should be treated as unverified until a primary source is added.
 
-```
-solver.py (decision engine)
-├── proof_search.py (TRUE-proof: BFS/A* rewriting, congruence closure, duality)
-├── magma_search.py (FALSE-proof: exhaustive/backtrack magma search)
-└── ImplicationGraph (8M+ known positive edges, 13M+ negative edges)
-```
+Verified local facts:
 
-**Decision pipeline:**
-1. Instant checks: identity, tautology, singleton, specialization, graph lookup
-2. Structural prior → route to proof-first or counterexample-first
-3. Primary search (BFS rewriting or magma backtrack)
-4. Secondary search (the other direction)
-5. Heuristic fallback (absence of counterexample → lean TRUE)
+- `equations.txt` contains 4694 equations.
+- `export_raw_implications_14_3_2026.csv` is a dense 4694 x 4694 implication matrix.
+- The dense matrix contains 8,178,279 positive entries and 13,855,357 negative entries, so the positive rate is about 37.12% over ordered pairs.
+- Matrix-backed graph lookup is useful for research, but it is not the submission artifact.
 
-## Accuracy
+## Paths
 
-| Configuration | Sample | Accuracy |
-|---|---|---|
-| Pure algorithmic (no graph) | 500 pairs | **99.8%** |
-| With implication graph | 1000 pairs | **100.0%** |
+Submission-support path:
 
-## Stage 1 Rules
+- `cheatsheet.txt`: current champion submission candidate.
+- `distill.py`: offline cheatsheet authoring and compression support.
+- `run_eval.py`: LLM cheatsheet evaluation with bucketed reporting and explicit validity metadata.
+- `evaluate.py`: local heuristic benchmark or prompt export with explicit validity metadata.
+- `benchmark_utils.py`: shared bucket logic and benchmark metadata helpers.
 
-- **Task**: Binary TRUE/FALSE for "Does Eq1 imply Eq2?"
-- **Cheatsheet cap**: 10KB
-- **Scoring**: log-loss on balanced 50/50 TRUE/FALSE eval set
-- **Deadline**: April 20, 2026 23:59 AoE
-- **Budget**: ≤$0.01 avg, ≤10 min per problem
+Research-only path:
 
-## Files
+- `solver.py`: proof/counterexample/graph decision engine.
+- `proof_search.py`, `magma_search.py`: offline theorem and counterexample tooling.
+- `features.py`, `train.py`: ML feature extraction and classifier training.
+- `run_experiments.py`: ablation orchestrator.
 
-| File | Description |
-|------|-------------|
-| `solver.py` | **Main decision engine** — routes between proof and counterexample search |
-| `proof_search.py` | Proof search: BFS/A* rewriting, congruence closure, graph chaining, duality |
-| `magma_search.py` | Counterexample search: known magmas, exhaustive, backtrack with constraint propagation |
-| `analyze_equations.py` | Equation parsing, AST manipulation, structural features |
-| `features.py` | ML feature extraction for equation pairs |
-| `train.py` | XGBoost/LightGBM/MLP training pipeline |
-| `equations.txt` | All 4694 equational laws |
-| `export_raw_implications_14_3_2026.csv` | Full 4694×4694 raw implication matrix (22M+ pairs) |
-| `cheatsheet.txt` | ≤10KB prompt guidance for LLM fallback |
-| `evaluate.py` | Local evaluation script |
+## What Changed
+
+- Removed the default leakage path in `run_eval.py` where format examples were drawn from the evaluation set itself.
+- Changed prompt evaluation defaults to zero format examples unless a separate labeled file is provided.
+- Added per-bucket reporting, trivial/nontrivial counts, byte counts, and benchmark-validity metadata.
+- Rewrote the top-level docs and cheatsheet to avoid unsupported accuracy and base-rate claims.
 
 ## Quick Start
 
+Prompt-only local benchmark from explicit JSONL data:
+
 ```bash
-pip install -r requirements.txt
-
-# Single pair
-python solver.py --eq1 4 --eq2 8 --graph export_raw_implications_14_3_2026.csv
-
-# Batch mode
-python solver.py --data data/normal.jsonl --graph export_raw_implications_14_3_2026.csv -v
+python run_eval.py --cheatsheet cheatsheet.txt --data path/to/eval.jsonl --format-data path/to/train.jsonl --name local_eval
 ```
 
-## Key Concepts
+Supported no-network local benchmark path:
 
-A **magma** (M, ◇) is a set M with a binary operation ◇: M×M → M (no axioms required).
+```bash
+python download_data.py --generate-local --n 200 --seed 42
+python evaluate.py --mode heuristic --data data/local_benchmark.jsonl
+```
 
-**Equation E1 implies E2** means: every magma satisfying E1 also satisfies E2.
+Attempting to fetch official JSONL files from the old Hugging Face slug:
+
+```bash
+set HF_TOKEN=hf_your_read_token_here
+python download_data.py
+```
+
+As of 2026-03-14, the hardcoded Hugging Face dataset slug in this repo appears stale and returns 404. Treat this path as best-effort only until the organizer provides a current official dataset location.
+
+Research-only heuristic benchmark from the dense matrix:
+
+```bash
+python evaluate.py --mode heuristic --matrix export_raw_implications_14_3_2026.csv --n 100
+```
+
+Prompt export for manual testing:
+
+```bash
+python evaluate.py --mode prompt --matrix export_raw_implications_14_3_2026.csv --n 10
+```
+
+## Notes
+
+- Hugging Face is not required for repo-local benchmarking; the supported fallback is `data/local_benchmark.jsonl`, generated from the checked-in implication matrix.
+- `download_data.py` still supports `HF_TOKEN`, `HUGGINGFACE_HUB_TOKEN`, or `--token` in case a current official dataset URL is restored later.
+- A benchmark is only submission-valid when the inference path uses the cheatsheet alone, with no matrix or graph lookup and no evaluation-label examples embedded into the prompt.
+- The memos in `docs/` record the current audit, benchmark risks, mathematical notes, and open uncertainties.

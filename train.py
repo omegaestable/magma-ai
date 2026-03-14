@@ -1,13 +1,4 @@
-"""
-train.py — Train ML classifiers for equational implication prediction.
-
-Supports:
-  - XGBoost (default, best for tabular)
-  - LightGBM
-  - MLP (scikit-learn)
-  - Ensemble stacking
-  - Calibrated probabilities for log-loss optimization
-"""
+"""Research-only ML training pipeline for implication prediction."""
 
 import json
 import logging

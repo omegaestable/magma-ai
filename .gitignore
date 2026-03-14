@@ -1,0 +1,32 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment secrets
+.env
+
+# Generated data (regenerate with download_data.py)
+data/*.jsonl
+
+# Results (experiment outputs)
+results/
+
+# Model checkpoints
+models/
+features/
+embeddings/
+
+# Logs
+logs/
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS
+Thumbs.db
+.DS_Store
