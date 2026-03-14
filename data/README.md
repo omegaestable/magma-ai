@@ -9,7 +9,7 @@ This folder contains lightweight benchmark files and the heavier research export
 | `local_benchmark.jsonl` | Small offline benchmark generated from the dense implication matrix |
 | `no_leak_benchmark.jsonl` | Held-out-equation benchmark for no-leak evaluation |
 | `no_leak_holdout.json` | Metadata and held-out equation indices for the no-leak benchmark |
-| `hardest_500.jsonl` | Structurally misleading hardest-case benchmark |
+| `hardest_20.jsonl` | Structurally misleading hardest-case benchmark |
 | `normal.jsonl` | Organizer-provided split, if later restored or downloaded |
 | `hard.jsonl` | Organizer-provided hard split, if later restored or downloaded |
 | `exports/export_raw_implications_14_3_2026.csv` | Dense 4694 x 4694 implication matrix |
@@ -61,6 +61,6 @@ This creates `data/hardest_500.jsonl`, a benchmark concentrated on pairs where l
 
 - `local_benchmark.jsonl` is the preferred offline benchmark for local development.
 - `no_leak_benchmark.jsonl` is the preferred offline benchmark for leakage-sensitive evaluation.
-- `hardest_500.jsonl` is the preferred offline benchmark for adversarial debugging of misleading structural signals.
+- `hardest_20.jsonl` is the preferred offline benchmark for adversarial debugging of misleading structural signals.
 - The dense exports are research assets, not submission artifacts.
-- The old hardcoded Hugging Face dataset slug referenced by `download_data.py` appears stale as of 2026-03-14, so remote download should be treated as best-effort only unless `SAIR_STAGE1_NORMAL_URL` and `SAIR_STAGE1_HARD_URL` are supplied.
+- Remote HF download is best-effort; set `SAIR_STAGE1_NORMAL_URL` / `SAIR_STAGE1_HARD_URL` env vars if organizer URLs change.

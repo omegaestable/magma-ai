@@ -1,21 +1,13 @@
-# Core analysis (stdlib-only, no install needed)
-# analyze_equations.py, evaluate.py work out of the box
+# LLM APIs
+openai>=2.20,<3
+anthropic>=0.30,<1
 
-# ── LLM APIs (for distillation & evaluation pipeline) ──
-openai>=1.0
-anthropic>=0.30
+# Data & utilities
+requests>=2.28,<3
+PyMuPDF>=1.25,<2
 
-# ── Data & utilities ──
-requests
-PyMuPDF           # PDF text extraction (fitz)
-
-# ── ML pipeline ──
-numpy
-scikit-learn
-xgboost
-lightgbm
-
-# ── Optional: analysis & notebooks ──
-# pandas
-# matplotlib
-# jupytext        # run research.py as notebook
+# ML pipeline
+numpy>=2.0,<3
+scikit-learn>=1.4,<2
+xgboost>=2.0,<3
+lightgbm>=4.0,<5

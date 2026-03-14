@@ -176,7 +176,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         '--hardest-out', default=None,
-        help='Optional output path for --generate-hardest (defaults to data/hardest_500.jsonl).',
+        help='Optional output path for --generate-hardest (defaults to data/hardest_{n}.jsonl).',
     )
     return parser.parse_args()
 

@@ -117,8 +117,6 @@ python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl
 
 The safe default is now `--n-format 0`. If you want format examples, supply a separate labeled file explicitly with `--format-data`.
 
-If the organizer JSONL files are restored or you have alternate URLs, `download_data.py` now honors `SAIR_STAGE1_NORMAL_URL` and `SAIR_STAGE1_HARD_URL` before falling back to the old default slug.
-
 ### 6. Run the high-priority E/F analyses
 
 Mine the hardest ML pairs from out-of-fold XGBoost predictions:
@@ -176,28 +174,20 @@ Negative implications are often discovered or checked using:
 
 The heuristic and ML code in this repo can exploit structural signals such as variable support, operation count, depth, symmetry, and easy counterexamples. Those signals are useful for research prioritization, but they are not themselves proofs.
 
-## Data And Reproducibility Notes
+## Data
 
-- `data/local_benchmark.jsonl` is the supported no-network evaluation fallback.
-- `data/exports/export_raw_implications_14_3_2026.csv` is the dense 4694 x 4694 implication matrix used for offline research and benchmark generation.
-- `data/exports/export_explorer_14_3_2026.csv` is an auxiliary explorer export used for analysis notebooks and reporting.
-- The old hardcoded Hugging Face dataset path still appears stale as of 2026-03-14. Treat remote download as best-effort only until an official path is restored.
+- `data/local_benchmark.jsonl` — no-network evaluation fallback.
+- `data/no_leak_benchmark.jsonl` — held-out benchmark for leakage-free evaluation.
+- `data/hardest_20.jsonl` — structurally misleading adversarial pairs.
+- `data/exports/export_raw_implications_14_3_2026.csv` — dense 4694×4694 implication matrix for offline research.
+- Remote Hugging Face download is best-effort; set `SAIR_STAGE1_NORMAL_URL` / `SAIR_STAGE1_HARD_URL` env vars if organizer URLs change.
 
-## Documentation Index
+## Documentation
 
-- [docs/guides/tutorial.md](docs/guides/tutorial.md)
-- [docs/guides/math-background.md](docs/guides/math-background.md)
-- [docs/guides/competition-readiness-report.md](docs/guides/competition-readiness-report.md)
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- [docs/competition_alignment_memo.md](docs/competition_alignment_memo.md)
-- [docs/benchmark_integrity_memo.md](docs/benchmark_integrity_memo.md)
-- [docs/mathematical_notes.md](docs/mathematical_notes.md)
-- [docs/risk_register.md](docs/risk_register.md)
-
-## Current Cleanup Highlights
-
-- Publication assets and paper materials were moved out of the repository root.
-- Data exports now live under `data/exports/`.
-- Generated LaTeX intermediates and archive clutter were removed.
-- Script defaults were updated to the new layout.
-- `run_eval.py` now defaults to zero format examples, matching the intended benchmark-safety policy.
+- [docs/guides/tutorial.md](docs/guides/tutorial.md) — step-by-step walkthrough
+- [docs/guides/math-background.md](docs/guides/math-background.md) — algebraic setup
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — repo structure and data flow
+- [docs/competition_alignment_memo.md](docs/competition_alignment_memo.md) — rules audit
+- [docs/benchmark_integrity_memo.md](docs/benchmark_integrity_memo.md) — evaluation rigor
+- [docs/mathematical_notes.md](docs/mathematical_notes.md) — verified mathematical facts
+- [docs/risk_register.md](docs/risk_register.md) — known risks

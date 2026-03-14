@@ -1,8 +1,10 @@
 # Risk Register
 
-1. External competition rules are not archived locally, so some historical README claims could not be verified against organizer text.
-2. The hardcoded Hugging Face dataset slug currently returns 404, so the repo cannot automatically fetch the presumed official JSONL files until a current organizer-provided source is confirmed.
-3. The local fallback benchmark is useful for offline validation, but it is derived from the checked-in implication matrix and therefore is not a substitute for an external official benchmark split.
-4. The current cheatsheet is safer than before, but it has not yet been cross-model benchmarked in this environment because no API evaluation was run.
-5. Bucket assignment uses lightweight structural and small-counterexample heuristics; it is useful for debugging, but not a proof taxonomy.
-6. The dense matrix is still available in the repo, so future code changes must continue guarding against accidental inference-time lookup leakage.
+| # | Risk | Severity | Mitigation |
+|---|---|---|---|
+| 1 | HF dataset URLs stale (404) | Medium | Use local generation from dense matrix; set `SAIR_STAGE1_*_URL` env vars when organizer provides new URLs |
+| 2 | No automated test suite | Medium | Manual dry-run validation works; add tests before scaling |
+| 3 | Dense matrix in repo enables accidental inference-time leakage | High | Code paths classified in `ARCHITECTURE.md`; guard with code review discipline |
+| 4 | No cross-model LLM evaluation recorded | Medium | Run GPT-4o-mini + Claude evaluations before submission |
+| 5 | Cheatsheet uses only 25% of byte budget | High | Fill with singleton membership, magma tables, coverage-ranked flowchart |
+| 6 | External competition rules not archived locally | Low | Document what is verified vs unverified in `competition_alignment_memo.md` |

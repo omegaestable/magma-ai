@@ -296,11 +296,6 @@ class Solver:
         Uses paper-informed features (§4 spectrum, §5 syntactic invariants,
         §3 counterexample difficulty). Returns (prior, features_dict).
         """
-        """Compute structural prior probability of TRUE.
-
-        Uses hand-crafted features known to correlate with implication.
-        Returns (prior, features_dict).
-        """
         try:
             eq1 = parse_equation(eq1_str)
             eq2 = parse_equation(eq2_str)

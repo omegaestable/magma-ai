@@ -1,23 +1,13 @@
 # %% [markdown]
-# # Cheat-Sheet ICL Research — Equational Implication over Magmas
+# # Exploratory Analysis — Equational Implication over Magmas
 #
-# Notebook for exploring the TAO Challenge domain and running
-# Honda et al. (2025) cheat-sheet distillation experiments.
-#
-# **Sections:**
-# 1. Data exploration (equations, implications)
-# 2. Cheatsheet distillation (single run)
-# 3. Evaluation against ground truth
-# 4. Ablation comparison
-# 5. Error analysis
+# Notebook-style script (run with `jupytext` or cell-by-cell in VS Code).
 
 # %% [markdown]
 # ## 1. Setup & Data Exploration
 
 # %%
 import json
-import random
-import math
 from pathlib import Path
 from collections import Counter
 
@@ -64,81 +54,11 @@ if explorer_path.exists():
     print(f"Explorer CSV: {len(rows)} rows")
     if rows:
         print(f"Columns: {list(rows[0].keys())}")
-        # Distribution of implications counts
-        implies_counts = [int(r.get('implies', r.get('Implies', 0))) for r in rows if r.get('implies', r.get('Implies', ''))]
-        if implies_counts:
-            print(f"Implies count: min={min(implies_counts)}, max={max(implies_counts)}, mean={sum(implies_counts)/len(implies_counts):.1f}")
 else:
     print("Explorer CSV not found")
 
 # %% [markdown]
-# ### Training data inspection
-
-# %%
-# Check if training data has been downloaded
-data_dir = DATA_DIR
-normal_path = data_dir / "normal.jsonl"
-hard_path = data_dir / "hard.jsonl"
-
-for path in [normal_path, hard_path]:
-    if path.exists():
-        with open(path, 'r') as f:
-            lines = f.readlines()
-        print(f"{path.name}: {len(lines)} problems")
-        if lines:
-            sample = json.loads(lines[0])
-            print(f"  Fields: {list(sample.keys())}")
-            print(f"  Sample: {sample}")
-            labels = [json.loads(l).get('implies', json.loads(l).get('label')) for l in lines[:1000]]
-            true_count = sum(1 for l in labels if l)
-            print(f"  Label balance (first 1000): {true_count} TRUE, {len(labels)-true_count} FALSE")
-    else:
-        print(f"{path.name}: NOT FOUND — run `python download_data.py` first")
-
-# %% [markdown]
-# ## 2. Single Cheatsheet Distillation
-
-# %%
-# Uncomment and run after setting API keys and downloading data
-#
-# from distill import run_pipeline
-#
-# config = ExperimentConfig(
-#     name="test_run",
-#     distill_model="gpt-4.1",
-#     n_shots=50,  # start small
-#     use_rationale_augmentation=False,  # skip for quick test
-# )
-#
-# cheatsheet = run_pipeline(
-#     training_data=str(normal_path),
-#     config=config,
-#     prompt_variant="default",
-# )
-# print(f"Generated cheatsheet: {len(cheatsheet.encode('utf-8'))} bytes")
-# print(cheatsheet[:500])
-
-# %% [markdown]
-# ## 3. Evaluate a Cheatsheet
-
-# %%
-# from run_eval import run_evaluation
-#
-# results = run_evaluation(
-#     cheatsheet_path="cheatsheet.txt",  # or generated one
-#     eval_data_path=str(normal_path),
-#     config=ExperimentConfig(
-#         name="baseline_eval",
-#         eval_model="gpt-4o-mini",
-#         n_eval=50,  # start small
-#     ),
-# )
-# print(f"Accuracy: {results['accuracy']:.3f}")
-# print(f"Log-loss: {results['log_loss']:.4f}")
-# print(f"Cost: ${results['total_cost']:.4f}")
-
-# %% [markdown]
-# ## 4. Compare Ablation Results
+# ## 2. Compare Evaluation Results
 
 # %%
 def load_results(pattern="eval_*.json"):
@@ -162,37 +82,7 @@ else:
     print("No results yet. Run experiments first.")
 
 # %% [markdown]
-# ## 5. Error Analysis
-
-# %%
-def analyze_errors(result_file: str):
-    """Analyze errors from a single evaluation run."""
-    with open(result_file) as f:
-        data = json.load(f)
-
-    details = data.get("details", [])
-    errors = [d for d in details if not d["correct"]]
-    print(f"Errors: {len(errors)}/{len(details)} ({len(errors)/len(details)*100:.1f}%)")
-
-    # Error breakdown by label
-    fp = [d for d in errors if d["label"] == False]  # predicted TRUE, was FALSE
-    fn = [d for d in errors if d["label"] == True]   # predicted FALSE, was TRUE
-    print(f"  False positives (pred TRUE, label FALSE): {len(fp)}")
-    print(f"  False negatives (pred FALSE, label TRUE): {len(fn)}")
-
-    # Show some errors
-    for d in errors[:5]:
-        eq1_str = equations[d["eq1_idx"]-1] if d["eq1_idx"] <= len(equations) else "?"
-        eq2_str = equations[d["eq2_idx"]-1] if d["eq2_idx"] <= len(equations) else "?"
-        print(f"\n  Eq{d['eq1_idx']} → Eq{d['eq2_idx']}: label={d['label']}, pred_prob={d['predicted_prob']:.2f}")
-        print(f"    {eq1_str}")
-        print(f"    {eq2_str}")
-
-# Uncomment after running an evaluation:
-# analyze_errors(str(RESULTS_DIR / "eval_default.json"))
-
-# %% [markdown]
-# ## 6. Cheatsheet Comparison
+# ## 3. Cheatsheet Comparison
 
 # %%
 def compare_cheatsheets():
@@ -200,20 +90,15 @@ def compare_cheatsheets():
     if not CHEATSHEETS_DIR.exists():
         print("No cheatsheets directory yet.")
         return
-
     for path in sorted(CHEATSHEETS_DIR.glob("*.txt")):
-        with open(path, 'r') as f:
-            text = f.read()
-        size = len(text.encode('utf-8'))
-        lines = text.count('\n')
+        size = path.stat().st_size
+        lines = path.read_text(encoding='utf-8').count('\n')
         print(f"{path.name}: {size} bytes, {lines} lines")
 
 compare_cheatsheets()
 
-# Also check the main cheatsheet
 main_cs = CHEATSHEET_FILE
 if main_cs.exists():
-    with open(main_cs, 'r') as f:
-        text = f.read()
-    size = len(text.encode('utf-8'))
+    size = main_cs.stat().st_size
     print(f"\nMain cheatsheet.txt: {size}/10240 bytes ({size*100/10240:.1f}%)")
+
