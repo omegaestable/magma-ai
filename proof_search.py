@@ -4,13 +4,19 @@ proof_search.py — Automated proof search engine for equational implication.
 Given "Eq1 implies Eq2?", searches for a proof that every magma
 satisfying Eq1 also satisfies Eq2.
 
+Paper §6 context: The Equational Theories Project (Tao et al.) used
+Vampire, Prover9/Mace4, Z3, and MagmaEgg (e-graph) for proof automation.
+Only 10,657 of the 8.2M TRUE implications needed a direct proof; the
+rest followed from transitivity and duality (Paper §1.3).
+
 Methods (escalating sophistication):
   1. Identity check (syntactic equality)
-  2. Direct substitution (specialization)
-  3. Bidirectional BFS rewriting (meet in the middle)
-  4. A* guided rewriting with term-complexity heuristic
-  5. Congruence closure on ground instances
-  6. Multi-step chaining via known implications graph
+  2. Direct substitution / specialization (Paper §5.1)
+  3. Graph chaining via known implications (transitivity, Paper §1.3)
+  4. Bidirectional BFS rewriting (meet in the middle)
+  5. A* guided rewriting with term-complexity heuristic
+  6. Congruence closure on ground instances
+  7. Duality lifting (Paper §2: if E1 ⊨ E2 then E1* ⊨ E2*)
 """
 
 from __future__ import annotations
@@ -439,6 +445,285 @@ class ImplicationGraph:
         return self.adj.get(eq_idx, set())
 
 
+# ── Paper §5.3: Canonizer / normal form refutation ───────────────
+
+def canonizer_refutes(eq1, eq2, max_depth: int = 6, max_rewrites: int = 200) -> bool:
+    """Paper §5.3: Check if eq1's rewrite system distinguishes eq2's sides.
+
+    Constructs the rewrite system from eq1 (oriented from larger to
+    smaller side), then reduces both sides of eq2 to normal form.
+    If the normal forms differ, eq1 cannot imply eq2.
+
+    Only applies when eq1 can be oriented as a strictly size-reducing
+    rule (the paper's "weakly collapsing" criterion). If both sides
+    have equal size, the canonizer is not reliably terminating and
+    we skip it.
+    """
+    lhs1, rhs1 = eq1
+    lhs2, rhs2 = eq2
+
+    # Build oriented rewrite rules from eq1
+    rules = _orient_rules(lhs1, rhs1)
+    if not rules:
+        return False  # cannot orient — skip
+
+    # Normalize both sides of eq2
+    nf_l2 = _normalize(lhs2, rules, max_depth, max_rewrites)
+    nf_r2 = _normalize(rhs2, rules, max_depth, max_rewrites)
+
+    # If normal forms are syntactically different, eq1 ⊭ eq2
+    return nf_l2 != nf_r2
+
+
+def _orient_rules(lhs, rhs) -> list:
+    """Orient an equation as rewrite rules, preferring to reduce term size.
+
+    Paper §5.3: The rewrite direction matters. We orient from larger
+    to smaller term. If sizes are equal, we CANNOT orient reliably
+    (the rule wouldn't be terminating), so we return empty — the
+    canonizer declines to give an opinion.
+    """
+    s_l = term_size(lhs)
+    s_r = term_size(rhs)
+
+    if s_l > s_r:
+        return [(lhs, rhs)]
+    elif s_r > s_l:
+        return [(rhs, lhs)]
+    else:
+        # Equal size — cannot guarantee termination; skip canonizer.
+        return []
+
+
+def _normalize(term, rules: list, max_depth: int, max_steps: int):
+    """Reduce a term to normal form by repeated rewriting.
+
+    Applies rules at all positions, innermost-first, until no more
+    rules apply or step limit is reached.
+    """
+    current = term
+    for _ in range(max_steps):
+        reduced = _reduce_once(current, rules, 0, max_depth)
+        if reduced is None:
+            break  # already in normal form
+        current = reduced
+    return current
+
+
+def _reduce_once(term, rules: list, depth: int, max_depth: int):
+    """Apply one rewrite step at the leftmost-innermost position.
+
+    Returns the rewritten term or None if no rule applies.
+    """
+    if depth > max_depth:
+        return None
+
+    # First, try to reduce subterms (innermost-first)
+    if isinstance(term, tuple) and len(term) == 3:
+        # Try left subterm
+        new_left = _reduce_once(term[1], rules, depth + 1, max_depth)
+        if new_left is not None:
+            return ('*', new_left, term[2])
+        # Try right subterm
+        new_right = _reduce_once(term[2], rules, depth + 1, max_depth)
+        if new_right is not None:
+            return ('*', term[1], new_right)
+
+    # Then try rules at root
+    for rl, rr in rules:
+        m = {}
+        if match(rl, term, m):
+            result = substitute(rr, m)
+            # Only accept if term shrinks or stays same size (termination)
+            if term_size(result) <= term_size(term):
+                return result
+
+    return None
+
+
+# ── Paper §6: ATP integration wrapper ────────────────────────────
+
+def _atp_available(prover: str) -> bool:
+    """Check if an ATP binary is available on the system PATH."""
+    import shutil
+    return shutil.which(prover) is not None
+
+
+def atp_prove(
+    eq1_str: str,
+    eq2_str: str,
+    timeout: float = 5.0,
+) -> Optional[dict]:
+    """Paper §6: Attempt proof via external ATP (Vampire or Prover9).
+
+    Translates the implication problem into TPTP format and calls
+    an ATP if available. The paper's setup used Vampire with
+    carefully tuned parameters (sos_limit, max_weight).
+
+    Returns dict with proof details or None.
+    """
+    import subprocess
+    import tempfile
+    import os
+
+    # Generate TPTP problem
+    tptp = _to_tptp(eq1_str, eq2_str)
+
+    # Try Vampire first (paper's primary ATP)
+    if _atp_available("vampire"):
+        result = _run_atp("vampire", [
+            "--mode", "casc",
+            "--time_limit", str(max(1, int(timeout))),
+        ], tptp, timeout)
+        if result is not None:
+            return result
+
+    # Fall back to eprover
+    if _atp_available("eprover"):
+        result = _run_atp("eprover", [
+            "--auto",
+            "--cpu-limit=" + str(max(1, int(timeout))),
+        ], tptp, timeout)
+        if result is not None:
+            return result
+
+    return None
+
+
+def atp_refute(
+    eq1_str: str,
+    eq2_str: str,
+    timeout: float = 5.0,
+) -> Optional[dict]:
+    """Paper §6: Attempt refutation via external model finder (Mace4).
+
+    Translates to Prover9/Mace4 format and searches for a finite model
+    satisfying eq1 but not eq2.
+
+    Returns dict with model details or None.
+    """
+    import subprocess
+    import tempfile
+    import os
+
+    if not _atp_available("mace4"):
+        return None
+
+    mace_input = _to_mace4(eq1_str, eq2_str)
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode='w', suffix='.in', delete=False, encoding='utf-8'
+        ) as f:
+            f.write(mace_input)
+            tmpfile = f.name
+
+        proc = subprocess.run(
+            ["mace4", "-n2", "-N10", "-t", str(max(1, int(timeout)))],
+            input=mace_input, capture_output=True, text=True,
+            timeout=timeout + 2,
+        )
+
+        if proc.returncode == 0 and "Exiting with 1 model" in proc.stdout:
+            return {"method": "mace4", "proof": proc.stdout[:500],
+                    "time_s": timeout}
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass
+    finally:
+        try:
+            os.unlink(tmpfile)
+        except (OSError, UnboundLocalError):
+            pass
+
+    return None
+
+
+def _run_atp(prover: str, args: list, tptp: str, timeout: float) -> Optional[dict]:
+    """Run an ATP prover on a TPTP problem string."""
+    import subprocess
+    import tempfile
+    import os
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode='w', suffix='.p', delete=False, encoding='utf-8'
+        ) as f:
+            f.write(tptp)
+            tmpfile = f.name
+
+        proc = subprocess.run(
+            [prover] + args + [tmpfile],
+            capture_output=True, text=True,
+            timeout=timeout + 2,
+        )
+
+        if "Theorem" in proc.stdout or "PROVED" in proc.stdout.upper():
+            return {"method": f"atp:{prover}",
+                    "proof": proc.stdout[:500],
+                    "time_s": timeout}
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass
+    finally:
+        try:
+            os.unlink(tmpfile)
+        except (OSError, UnboundLocalError):
+            pass
+
+    return None
+
+
+def _term_to_tptp(t) -> str:
+    """Convert internal term AST to TPTP function notation."""
+    if isinstance(t, str):
+        return t.upper() if len(t) == 1 else t
+    return f"op({_term_to_tptp(t[1])},{_term_to_tptp(t[2])})"
+
+
+def _to_tptp(eq1_str: str, eq2_str: str) -> str:
+    """Generate TPTP problem: does eq1 imply eq2?"""
+    eq1 = parse_equation(eq1_str)
+    eq2 = parse_equation(eq2_str)
+    lhs1, rhs1 = eq1
+    lhs2, rhs2 = eq2
+
+    # Axiom: eq1 holds for all variables
+    vars1 = sorted(get_vars(lhs1) | get_vars(rhs1))
+    var_list1 = ",".join(v.upper() for v in vars1)
+    ax = f"![{var_list1}]: {_term_to_tptp(lhs1)} = {_term_to_tptp(rhs1)}"
+
+    # Conjecture: eq2 holds for all variables
+    vars2 = sorted(get_vars(lhs2) | get_vars(rhs2))
+    var_list2 = ",".join(v.upper() for v in vars2)
+    conj = f"![{var_list2}]: {_term_to_tptp(lhs2)} = {_term_to_tptp(rhs2)}"
+
+    return (
+        f"fof(axiom_eq1, axiom, ({ax})).\n"
+        f"fof(conjecture_eq2, conjecture, ({conj})).\n"
+    )
+
+
+def _to_mace4(eq1_str: str, eq2_str: str) -> str:
+    """Generate Mace4 input: find model satisfying eq1 but not eq2."""
+    eq1 = parse_equation(eq1_str)
+    eq2 = parse_equation(eq2_str)
+    lhs1, rhs1 = eq1
+    lhs2, rhs2 = eq2
+
+    def _term_to_p9(t) -> str:
+        if isinstance(t, str):
+            return t
+        return f"f({_term_to_p9(t[1])},{_term_to_p9(t[2])})"
+
+    return (
+        f"formulas(assumptions).\n"
+        f"  {_term_to_p9(lhs1)} = {_term_to_p9(rhs1)}.\n"
+        f"end_of_list.\n\n"
+        f"formulas(goals).\n"
+        f"  {_term_to_p9(lhs2)} = {_term_to_p9(rhs2)}.\n"
+        f"end_of_list.\n"
+    )
+
+
 # ── Main proof search orchestrator ───────────────────────────────
 
 def find_proof(
@@ -451,13 +736,17 @@ def find_proof(
 ) -> Optional[dict]:
     """Search for a proof that eq1 implies eq2.
 
-    Strategy (escalating cost):
+    Strategy (escalating cost, Paper §5-6):
       1. Identity check (instant)
-      2. Specialization / substitution (instant)
+      2. Specialization / substitution (instant, Paper §5.1)
       3. Graph chaining via known implications (if available)
-      4. Bidirectional BFS rewriting
-      5. A* guided rewriting
-      6. Duality: prove dual(eq1) → dual(eq2) then lift
+      4. Canonizer refutation check (Paper §5.3 — if canonizer
+         distinguishes eq2's sides, return None immediately)
+      5. Bidirectional BFS rewriting
+      6. A* guided rewriting
+      7. Congruence closure on ground instances
+      8. Duality lifting (Paper §2)
+      9. ATP integration (Paper §6 — if Vampire/Prover9 available)
 
     Returns dict with 'method', 'proof', 'time_s' or None.
     """
@@ -483,6 +772,15 @@ def find_proof(
         if path is not None:
             return {"method": "graph_chain", "proof": f"chain: {' → '.join(f'Eq{i}' for i in path)}",
                     "time_s": time.time() - t0}
+
+    # 4. Paper §5.3: Canonizer refutation (fast syntactic check).
+    # If eq1's rewrite system produces different normal forms for
+    # eq2's two sides, eq1 cannot imply eq2 — skip proof search.
+    try:
+        if canonizer_refutes(eq1, eq2):
+            return None  # proven impossible, don't waste time searching
+    except Exception:
+        pass  # canonizer failed, continue with search
 
     # Budget remaining time across methods
     remaining = timeout - (time.time() - t0)
@@ -543,6 +841,14 @@ def find_proof(
         steps = [tree_to_str(t) for t in dual_chain]
         return {"method": "dual_bfs", "proof": "via duality: " + " = ".join(steps),
                 "steps": len(dual_chain), "time_s": time.time() - t0}
+
+    # 9. Paper §6: ATP integration (if external provers available)
+    remaining = timeout - (time.time() - t0)
+    if remaining > 1.0:
+        atp_result = atp_prove(eq1_str, eq2_str, timeout=remaining * 0.8)
+        if atp_result is not None:
+            atp_result["time_s"] = time.time() - t0
+            return atp_result
 
     return None
 

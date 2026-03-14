@@ -12,12 +12,77 @@ from dataclasses import dataclass
 
 from analyze_equations import (
     parse_equation, get_vars, count_ops, get_depth, term_size,
-    get_dual, is_specialization,
+    count_var_occ, get_dual, is_specialization,
 )
-from proof_search import find_proof, ImplicationGraph
+from proof_search import find_proof, ImplicationGraph, canonizer_refutes
 from magma_search import find_counterexample
 
 logger = logging.getLogger(__name__)
+
+
+# ── Paper-informed helper functions ───────────────────────────────
+
+def _is_singleton_equivalent(lhs, rhs, vars_l: set, vars_r: set) -> bool:
+    """Paper §2: An equation is equivalent to the singleton law (x=y)
+    iff its LHS and RHS have disjoint variable sets and at least one
+    side contains a ◇ operation.
+
+    The 1,496 such laws form the largest equivalence class. If eq1 is
+    in this class, it implies everything; if eq2 is but eq1 isn't, FALSE.
+    """
+    if vars_l & vars_r:
+        return False  # shared variables → not singleton-equivalent
+    has_op = not isinstance(lhs, str) or not isinstance(rhs, str)
+    return has_op
+
+
+def _var_multiplicity_vector(term, all_vars: list) -> tuple:
+    """Compute the multiplicity vector (occurrence count per variable)
+    for a term, ordered by all_vars.
+
+    Paper §5.2: Variable multiplicity is a matching invariant — preserved
+    under any single-step rewrite. This means the multiset of variable
+    counts on LHS must match RHS for any equation reachable by rewriting.
+    """
+    return tuple(count_var_occ(term, v) for v in all_vars)
+
+
+def _multiplicity_refutes(eq1, eq2) -> bool:
+    """Paper §5.2: Matching invariant refutation.
+
+    If eq1 has identical variable multiplicity on both sides (balanced),
+    then every equation derivable from eq1 by rewriting also has balanced
+    multiplicity. If eq2 does NOT have balanced multiplicity, then
+    eq1 cannot imply eq2.
+
+    This is a necessary condition: balanced eq1 can only imply balanced eq2.
+    """
+    lhs1, rhs1 = eq1
+    lhs2, rhs2 = eq2
+
+    all_vars1 = sorted(get_vars(lhs1) | get_vars(rhs1))
+    if not all_vars1:
+        return False
+
+    # Check if eq1 is balanced (same multiplicity on both sides)
+    mv_l1 = _var_multiplicity_vector(lhs1, all_vars1)
+    mv_r1 = _var_multiplicity_vector(rhs1, all_vars1)
+    eq1_balanced = (mv_l1 == mv_r1)
+
+    if not eq1_balanced:
+        return False  # eq1 is unbalanced — no simple refutation
+
+    # eq1 IS balanced. Check if eq2 is also balanced.
+    all_vars2 = sorted(get_vars(lhs2) | get_vars(rhs2))
+    if not all_vars2:
+        return False
+
+    mv_l2 = _var_multiplicity_vector(lhs2, all_vars2)
+    mv_r2 = _var_multiplicity_vector(rhs2, all_vars2)
+    eq2_balanced = (mv_l2 == mv_r2)
+
+    # If eq1 is balanced but eq2 isn't, eq1 cannot imply eq2.
+    return not eq2_balanced
 
 
 @dataclass
@@ -166,17 +231,50 @@ class Solver:
 
         # x = y (singleton law) implies everything
         vars1 = get_vars(lhs1) | get_vars(rhs1)
+        vars1_l = get_vars(lhs1)
+        vars1_r = get_vars(rhs1)
         if isinstance(lhs1, str) and isinstance(rhs1, str) and len(vars1) == 2:
             return SolverResult(True, 1.0, "eq1_singleton")
 
+        # Paper §2: Singleton-equivalent detection.
+        # An equation with disjoint LHS/RHS variable sets and >=1 ◇ op
+        # is equivalent to E2 (x=y). The 1,496 such laws form the
+        # largest equivalence class; E1_singleton implies everything.
+        if _is_singleton_equivalent(lhs1, rhs1, vars1_l, vars1_r):
+            return SolverResult(True, 1.0, "eq1_singleton_equivalent")
+
         # eq2 is singleton law — only if eq1 also forces singleton
         vars2 = get_vars(lhs2) | get_vars(rhs2)
+        vars2_l = get_vars(lhs2)
+        vars2_r = get_vars(rhs2)
         if isinstance(lhs2, str) and isinstance(rhs2, str) and len(vars2) == 2:
             # eq2 forces |M|=1; check quickly
             if isinstance(lhs1, str) and isinstance(rhs1, str) and len(vars1) == 2:
                 return SolverResult(True, 1.0, "both_singleton")
             # Most non-singleton eq1 won't imply this
             return SolverResult(False, 0.92, "eq2_singleton_eq1_not")
+
+        # Paper §2: If eq2 is singleton-equivalent, only singleton-forcing
+        # eq1 can imply it.
+        if _is_singleton_equivalent(lhs2, rhs2, vars2_l, vars2_r):
+            if _is_singleton_equivalent(lhs1, rhs1, vars1_l, vars1_r):
+                return SolverResult(True, 1.0, "both_singleton_equivalent")
+            return SolverResult(False, 0.92, "eq2_singleton_equiv_eq1_not")
+
+        # Paper §5.2: Matching invariant refutation.
+        # Variable multiplicity is preserved by rewriting. If eq1 has
+        # balanced multiplicities (same total on both sides for each var)
+        # but eq2 does not, then eq1 cannot imply eq2.
+        if _multiplicity_refutes(eq1, eq2):
+            return SolverResult(False, 0.95, "matching_invariant")
+
+        # Paper §5.3: Canonizer refutation — if eq1's rewrite system
+        # produces different normal forms for eq2's sides, FALSE.
+        try:
+            if canonizer_refutes(eq1, eq2):
+                return SolverResult(False, 0.90, "canonizer_refutation")
+        except Exception:
+            pass
 
         # Direct specialization (fast, no search)
         if is_specialization(eq1, eq2):
@@ -193,6 +291,11 @@ class Solver:
         return None
 
     def _compute_prior(self, eq1_str: str, eq2_str: str) -> tuple:
+        """Compute structural prior probability of TRUE.
+
+        Uses paper-informed features (§4 spectrum, §5 syntactic invariants,
+        §3 counterexample difficulty). Returns (prior, features_dict).
+        """
         """Compute structural prior probability of TRUE.
 
         Uses hand-crafted features known to correlate with implication.
@@ -223,17 +326,23 @@ class Solver:
             "depth_diff": depth1 - depth2,
         }
 
-        # Heuristic scoring
+        # Heuristic scoring — calibrated to paper's 37% base rate
         score = self.base_rate
 
         # If eq2 uses variables not in eq1, very unlikely TRUE
         if features["vars_extra_in_eq2"] > 0:
             score *= 0.1
 
-        # More complex eq1 → more constraining → more likely to imply simpler eq2
-        if ops1 > ops2:
+        # Paper §4: Same-order equations are more likely to be related.
+        # If eq1 and eq2 have the same total operation count, slightly
+        # higher probability of TRUE (they live in the same "slice").
+        if ops1 == ops2:
+            score *= 1.15
+        elif ops1 > ops2:
+            # Paper §1.3: More complex eq1 → more constraining → more
+            # likely to imply simpler eq2
             score *= 1.3
-        elif ops1 < ops2:
+        else:
             score *= 0.7
 
         # More variables in eq1 → more constraining
@@ -249,6 +358,17 @@ class Solver:
         # Self-dual equations are more likely to be involved in implications
         dual1 = (get_dual(lhs1), get_dual(rhs1))
         if dual1 == eq1 or dual1 == (rhs1, lhs1):
+            score *= 1.1
+
+        # Paper §5.2: Variable balance signal.
+        # If both sides of eq1 have identical variable multisets, eq1
+        # is "balanced" — these tend to imply more equations.
+        vars1_set = get_vars(lhs1) | get_vars(rhs1)
+        eq1_balanced = all(
+            count_var_occ(lhs1, v) == count_var_occ(rhs1, v)
+            for v in vars1_set
+        )
+        if eq1_balanced:
             score *= 1.1
 
         # Clamp

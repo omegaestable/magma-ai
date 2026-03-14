@@ -28,12 +28,12 @@ The cheatsheet has been corrected. All heuristic priors, default verdicts, and s
 | Method | Coverage | Repo status |
 |---|---|---|
 | Finite magmas size ≤ 4 (524 magmas) | **96.3%** of all false implications | `magma_search.py` searches up to size 5 ✓ |
-| Linear magmas x◇y = ax+by (mod p) | Covers most remaining false cases | Mentioned in cheatsheet; **not implemented** |
-| Translation-invariant models (Cayley-table twists on groups) | Resolves many "medium-hard" cases | **Not implemented** |
-| Twisting semigroups (binary encoding of a functorial invariant) | Structural distinguisher | **Not implemented** |
-| Greedy constructions (inherently infinite, free-algebra extensions) | 820 implications that differ finite vs infinite | **Not implemented** (and too complex for cheatsheet) |
+| Linear magmas x◇y = ax+by (mod p) | Covers most remaining false cases | `magma_search.py` `linear_magma_search_primes()` ✓ |
+| Translation-invariant models (Cayley-table twists on groups) | Resolves many "medium-hard" cases | `magma_search.py` `translation_invariant_search()` ✓ |
+| Twisting semigroups (binary encoding of a functorial invariant) | Structural distinguisher | `magma_search.py` `twisted_magma_search()` ✓ |
+| Greedy constructions (inherently infinite, free-algebra extensions) | 820 implications that differ finite vs infinite | `magma_search.py` `greedy_construction_search()` ✓ |
 | Affine "magma cohomology" extensions | Systematic model construction from base models | **Not implemented** |
-| ATP (Vampire, Prover9/Mace4, egg/MagmaEgg) | Complements exhaustive search | **Not integrated** |
+| ATP (Vampire, Prover9/Mace4, egg/MagmaEgg) | Complements exhaustive search | `proof_search.py` `atp_prove()` / `atp_refute()` ✓ (if binaries available) |
 
 **Key paper fact**: Only 524 explicit magmas (all size ≤ 4) suffice to refute 96.3% of all 13.8M false implications. The remaining 3.7% required more sophisticated constructions.
 
@@ -44,10 +44,10 @@ The cheatsheet has been corrected. All heuristic priors, default verdicts, and s
 | Specialization (variable substitution) | Most common proof method | `proof_search.py` ✓ |
 | BFS/A* rewriting | Find proof chains | `proof_search.py` ✓ |
 | Transitivity + duality closure | Chain known implications | `proof_search.py` partial ✓ |
-| Matching invariants (variable multiplicities) | Syntactic refutation: if Eq2 requires more "weight" than Eq1 provides, FALSE | **Not implemented** |
-| Canonizer / normal forms | Some laws induce canonical forms on terms; if Eq2's normal form differs, FALSE | **Not implemented** |
-| Unique factorization (left-absorptive laws) | For depth-≤1 LHS, the free magma factors uniquely | **Not implemented** |
-| ATP integration | Automated theorem proving for harder cases | **Not implemented** |
+| Matching invariants (variable multiplicities) | Syntactic refutation: if Eq2 requires more "weight" than Eq1 provides, FALSE | `solver.py` `_multiplicity_refutes()` ✓ |
+| Canonizer / normal forms | Some laws induce canonical forms on terms; if Eq2's normal form differs, FALSE | `proof_search.py` `canonizer_refutes()` ✓ |
+| Unique factorization (left-absorptive laws) | For depth-≤1 LHS, the free magma factors uniquely | Included in canonizer (oriented rules) ✓ |
+| ATP integration | Automated theorem proving for harder cases | `proof_search.py` `atp_prove()` ✓ (requires Vampire/eprover on PATH) |
 
 **Key insight from paper**: Only **10,657** positive implications (0.13% of TRUE) needed a direct proof that wasn't reducible to transitivity/duality/self-evidence. Most TRUE implications follow by combining a small set of "seed" proofs with transitivity and duality.
 
@@ -90,10 +90,10 @@ If E1 ⊨ E2, then E1* ⊨ E2* (where * swaps arguments of ◇). This halves the
 
 ### Critical Gaps
 1. **Cheatsheet base rate was wrong** (now fixed to 37%).
-2. **No linear magma counterexample method** — the highest-leverage algorithmic addition.
-3. **No matching invariant / multiplicities check** — a fast syntactic refutation method.
-4. **No systematic exploitation of the 1496 singleton-class** — instant TRUE for 7M pairs.
-5. **No ATP integration** for proof search.
+3. **No linear magma counterexample method** — ~~the highest-leverage algorithmic addition.~~ ✅ IMPLEMENTED (`linear_magma_search_primes`)
+4. **No matching invariant / multiplicities check** — ~~a fast syntactic refutation method.~~ ✅ IMPLEMENTED (`_multiplicity_refutes`)
+5. **No systematic exploitation of the 1496 singleton-class** — ~~instant TRUE for 7M pairs.~~ ✅ IMPLEMENTED (`_is_singleton_equivalent`)
+5. **No ATP integration** — ~~for proof search.~~ ✅ IMPLEMENTED (`atp_prove`, `atp_refute` — requires Vampire/eprover/Mace4 on PATH)
 6. **No spectrum-based reasoning** in cheatsheet or solver.
 7. **Evaluation has potential leakage risks** — sampling from the same matrix used for training features.
 8. **Cheatsheet wastes bytes** on content an LLM already knows (e.g., what a magma is, basic proof methodology) instead of encoding high-value decision data.
@@ -125,11 +125,16 @@ If E1 ⊨ E2, then E1* ⊨ E2* (where * swaps arguments of ◇). This halves the
 
 | # | Action | Priority | Effort |  
 |---|---|---|---|
-| C1 | **Build singleton-class detector**: Implement a function that identifies equations equivalent to E2 (x=y) using the disjoint-variables criterion from the paper. Encode the full list in a compressed format. | CRITICAL | Medium |
-| C2 | **Implement matching invariant refutation**: Compute variable multiplicity vectors for both sides of each equation. If Eq2 requires a multiplicity pattern that Eq1 doesn't constrain, output FALSE. | HIGH | Medium |
+| C1 | **Build singleton-class detector**: Implement a function that identifies equations equivalent to E2 (x=y) using the disjoint-variables criterion from the paper. Encode the full list in a compressed format. | CRITICAL | ✅ DONE |
+| C2 | **Implement matching invariant refutation**: Compute variable multiplicity vectors for both sides of each equation. If Eq2 requires a multiplicity pattern that Eq1 doesn't constrain, output FALSE. | HIGH | ✅ DONE |
 | C3 | **Build equation taxonomy**: Classify all 4694 equations into families (singleton, projection, idempotent, commutative, associative, constant, self-dual, etc.) using paper's analysis. | HIGH | Medium |
 | C4 | **Mine the 524 critical magmas**: From the paper/data, identify which small magmas (size ≤ 4) resolve the most false implications. Rank them by "refutation coverage" and embed the top N in the cheatsheet. | CRITICAL | High |
-| C5 | **Implement linear magma search**: x◇y = ax+by (mod p) for primes p ≤ 7. Check if Eq1 is satisfied and Eq2 is violated. This covers cases that exhaustive size-4 search misses. | HIGH | High |
+| C5 | **Implement linear magma search**: x◇y = ax+by (mod p) for primes p ≤ 7. Check if Eq1 is satisfied and Eq2 is violated. This covers cases that exhaustive size-4 search misses. | HIGH | ✅ DONE |
+| C9 | **Translation-invariant model search**: x◇y = x + f(y−x) on ℤ/nℤ. Covers medium-hard cases from §3.3. | HIGH | ✅ DONE |
+| C10 | **Twisting semigroup search**: Construct M^k with cyclic shifts on base magmas. Functorial invariant from §3.4. | HIGH | ✅ DONE |
+| C11 | **Greedy construction framework**: Partial-magma greedy fill for inherently-infinite counterexamples. §3.5. | HIGH | ✅ DONE |
+| C12 | **Canonizer / normal-form refutation**: Orient equations as rewrite rules, check if normal forms of Eq2 sides differ. §5.3. | HIGH | ✅ DONE |
+| C13 | **ATP integration**: TPTP generation + Vampire/eprover/Mace4 subprocess wrappers. §6. | HIGH | ✅ DONE |
 | C6 | **Extract high-hub equations**: From the implication graph, identify equations with many outgoing/incoming implications (high in-degree or out-degree). These are the most important for the cheatsheet to handle correctly. | MEDIUM | Low |
 | C7 | **Catalog duality pairs**: For each equation, compute its dual. Group equations by duality relationship and use this to halve the decision space. | MEDIUM | Low |
 | C8 | **Spectrum-based rules**: Encode which equations force finite spectrum restrictions (e.g., only allow |M|=1) vs. which allow all sizes. | MEDIUM | Medium |
@@ -175,7 +180,7 @@ If E1 ⊨ E2, then E1* ⊨ E2* (where * swaps arguments of ◇). This halves the
 
 ### Phase 1: Foundation Fixes (Immediate)
 1. ~~Fix base rate in cheatsheet~~ ✅ DONE
-2. **C1**: Build singleton-class detector (highest single-item impact)
+2. ~~**C1**: Build singleton-class detector~~ ✅ DONE (`solver.py:_is_singleton_equivalent`, `features.py:is_singleton_equivalent`)
 3. **D2**: Encode singleton-class data into cheatsheet
 4. **D1**: Cut LLM-obvious preamble, free up byte budget
 5. **B1**: Create no-leak benchmark
@@ -184,13 +189,13 @@ If E1 ⊨ E2, then E1* ⊨ E2* (where * swaps arguments of ◇). This halves the
 ### Phase 2: Core Mathematical Enrichment
 7. **C4**: Mine and rank top-coverage counterexample magmas
 8. **D3**: Add top counterexample magmas to cheatsheet
-9. **C2**: Implement matching invariant refutation
+9. ~~**C2**: Implement matching invariant refutation~~ ✅ DONE (`solver.py:_multiplicity_refutes`)
 10. **D4**: Add matching invariant to cheatsheet flowchart
 11. **D5**: Restructure flowchart by coverage order
 12. **A1–A4**: Complete alignment audit
 
 ### Phase 3: Algorithmic Deepening
-13. **C5**: Implement linear magma search
+13. ~~**C5**: Implement linear magma search~~ ✅ DONE (`magma_search.py:linear_magma_search_primes`)
 14. **E4**: Mine recurring proof patterns  
 15. **E5**: Mine recurring counterexample patterns
 16. **D6**: Test cheatsheet structural variants

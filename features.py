@@ -81,6 +81,23 @@ def equation_features(eq_str: str) -> dict:
         "lhs_is_var": isinstance(lhs, str),
         "rhs_is_var": isinstance(rhs, str),
         "is_self_dual": is_self_dual,
+        # ── Paper-informed features ──
+        # Paper §2: Singleton-equivalent detection
+        # Equations with disjoint variable sets and ≥1 ◇ op force |M|=1.
+        "is_singleton_equivalent": (
+            len(vars_l & vars_r) == 0
+            and (not isinstance(lhs, str) or not isinstance(rhs, str))
+        ),
+        # Paper §5.2: Variable multiplicity balance
+        # If both sides have the same count of each variable, the equation
+        # is "balanced" — a syntactic matching invariant.
+        "multiplicity_balanced": all(
+            count_var_occ(lhs, v) == count_var_occ(rhs, v)
+            for v in all_vars
+        ) if all_vars else True,
+        # Paper §5.2: Total variable occurrences per side
+        "total_var_occ_lhs": sum(count_var_occ(lhs, v) for v in all_vars),
+        "total_var_occ_rhs": sum(count_var_occ(rhs, v) for v in all_vars),
     }
     feats.update(pattern_flags)
     return feats
@@ -95,6 +112,8 @@ def _null_eq_features() -> dict:
         "size_lhs", "size_rhs", "size_total", "size_diff",
         "max_var_occ_lhs", "max_var_occ_rhs",
         "is_identity", "lhs_is_var", "rhs_is_var", "is_self_dual",
+        "is_singleton_equivalent", "multiplicity_balanced",
+        "total_var_occ_lhs", "total_var_occ_rhs",
     ]}
     feats.update({f"pat_{name}": False for name in PATTERNS})
     return feats
@@ -152,6 +171,24 @@ def pair_features(
     feats["e2_is_trivial_identity"] = f2["is_identity"]
     feats["e1_forces_singleton"] = f1["lhs_is_var"] and f1["rhs_is_var"] and f1["n_vars"] == 2
     feats["e2_forces_singleton"] = f2["lhs_is_var"] and f2["rhs_is_var"] and f2["n_vars"] == 2
+
+    # ── Paper-informed pair features ──
+    # Paper §2: Singleton equivalence (1,496 laws)
+    feats["e1_singleton_equiv"] = f1.get("is_singleton_equivalent", False)
+    feats["e2_singleton_equiv"] = f2.get("is_singleton_equivalent", False)
+
+    # Paper §5.2: Matching invariant — if eq1 is multiplicity-balanced
+    # but eq2 is not, eq1 cannot imply eq2 (FALSE).
+    feats["e1_mult_balanced"] = f1.get("multiplicity_balanced", False)
+    feats["e2_mult_balanced"] = f2.get("multiplicity_balanced", False)
+    feats["mult_invariant_refutes"] = (
+        f1.get("multiplicity_balanced", False)
+        and not f2.get("multiplicity_balanced", False)
+    )
+
+    # Paper §2: Duality relationship
+    feats["e1_is_self_dual"] = f1.get("is_self_dual", False)
+    feats["e2_is_self_dual"] = f2.get("is_self_dual", False)
 
     # ── Algebraic features ──
     if parsed_ok and config.use_algebraic:
