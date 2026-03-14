@@ -1,9 +1,8 @@
-"""Download helper for offline benchmark data.
+"""Local benchmark generation helper.
 
 Status:
-- Submission-support only as a way to fetch local benchmark files.
-- The old hardcoded Hugging Face dataset slug may be stale; local generation is
-    the supported fallback.
+- Submission-support only as a way to generate local benchmark files.
+- Remote download has been removed; all supported paths are local-only.
 """
 
 import argparse
@@ -11,8 +10,6 @@ import csv
 import json
 import os
 import random
-import urllib.error
-import urllib.request
 
 from benchmark_utils import (
     build_hardest_benchmark_from_matrix,
@@ -25,107 +22,9 @@ from config import DATA_DIR as REPO_DATA_DIR, RAW_IMPL_CSV
 DATA_DIR = str(REPO_DATA_DIR)
 DEFAULT_MATRIX = str(RAW_IMPL_CSV)
 
-DEFAULT_FILES = {
-    'normal.jsonl': 'https://huggingface.co/datasets/tao-challenge/equational-theories-stage1/resolve/main/normal.jsonl',
-    'hard.jsonl': 'https://huggingface.co/datasets/tao-challenge/equational-theories-stage1/resolve/main/hard.jsonl',
-}
-
-OFFICIAL_FILENAMES = ('normal.jsonl', 'hard.jsonl')
-
-
-def resolve_token(explicit_token: str | None = None) -> str | None:
-    if explicit_token:
-        return explicit_token
-    return (
-        os.environ.get('HF_TOKEN')
-        or os.environ.get('HUGGINGFACE_HUB_TOKEN')
-        or os.environ.get('HUGGINGFACE_TOKEN')
-    )
-
-
-def build_request(url: str, token: str | None = None) -> urllib.request.Request:
-    headers = {
-        'User-Agent': 'magma-ai-download-data/1.0',
-    }
-    if token:
-        headers['Authorization'] = f'Bearer {token}'
-    return urllib.request.Request(url, headers=headers)
-
-
-def download_file(url: str, filepath: str, token: str | None = None) -> int:
-    request = build_request(url, token=token)
-    with urllib.request.urlopen(request) as response, open(filepath, 'wb') as output_file:
-        output_file.write(response.read())
-    return os.path.getsize(filepath)
-
-
-def explain_http_error(error: urllib.error.HTTPError, url: str, token_present: bool) -> None:
-    print(f"  Failed: HTTP {error.code} {error.reason}")
-    if error.code == 401:
-        print("  The dataset appears to require Hugging Face authentication.")
-        if token_present:
-            print("  A token was provided, but this account likely lacks access to the dataset.")
-        else:
-            print("  No Hugging Face token was provided to the downloader.")
-        print("  Required next step: use a Hugging Face account that can open this dataset and supply a read token.")
-        print("  Set one of: HF_TOKEN, HUGGINGFACE_HUB_TOKEN, HUGGINGFACE_TOKEN")
-    elif error.code == 403:
-        print("  The token is valid but does not have permission for this dataset, or the dataset is gated.")
-    elif error.code == 404:
-        print("  The dataset path or filename was not found. The hardcoded dataset slug may be stale.")
-        print("  Supported fallback: python download_data.py --generate-local")
-    print(f"  URL: {url}")
-
-
-def download(token: str | None = None, force: bool = False):
-    os.makedirs(DATA_DIR, exist_ok=True)
-    for filename, urls in resolve_download_targets().items():
-        filepath = os.path.join(DATA_DIR, filename)
-        if os.path.exists(filepath) and not force:
-            print(f"  {filename} already exists, skipping")
-            continue
-        print(f"  Downloading {filename}...")
-        last_error = None
-        for url in urls:
-            try:
-                size = download_file(url, filepath, token=token)
-                print(f"  Saved {filename} ({size:,} bytes)")
-                last_error = None
-                break
-            except urllib.error.HTTPError as e:
-                last_error = e
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-                explain_http_error(e, url, token_present=bool(token))
-            except Exception as e:
-                last_error = e
-                if os.path.exists(filepath):
-                    os.remove(filepath)
-                print(f"  Failed to download {filename}: {e}")
-                print(f"  You can manually download from: {url}")
-
-        if last_error and not os.path.exists(filepath):
-            print(f"  No working download target found for {filename}")
-
-    available = official_data_files()
-    if available:
-        print(f"  Official benchmark files available locally: {', '.join(available)}")
-    else:
-        print("  Official benchmark files are still unavailable locally.")
-
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Download TAO Challenge benchmark JSONL files.')
-    parser.add_argument(
-        '--token',
-        default=None,
-        help='Optional Hugging Face read token. If omitted, uses HF_TOKEN or HUGGINGFACE_HUB_TOKEN.',
-    )
-    parser.add_argument(
-        '--force',
-        action='store_true',
-        help='Redownload files even if they already exist locally.',
-    )
+    parser = argparse.ArgumentParser(description='Generate local TAO Challenge benchmark JSONL files.')
     parser.add_argument(
         '--generate-local',
         action='store_true',
@@ -322,25 +221,6 @@ def generate_hardest_benchmark(
     return out_path
 
 
-def resolve_download_targets() -> dict[str, list[str]]:
-    targets = {}
-    override_env = {
-        'normal.jsonl': os.environ.get('SAIR_STAGE1_NORMAL_URL'),
-        'hard.jsonl': os.environ.get('SAIR_STAGE1_HARD_URL'),
-    }
-    for filename, default_url in DEFAULT_FILES.items():
-        urls = []
-        if override_env.get(filename):
-            urls.append(override_env[filename])
-        urls.append(default_url)
-        targets[filename] = urls
-    return targets
-
-
-def official_data_files() -> list[str]:
-    return [name for name in OFFICIAL_FILENAMES if os.path.exists(os.path.join(DATA_DIR, name))]
-
-
 def _write_jsonl(filepath: str, records: list[dict]) -> None:
     with open(filepath, 'w', encoding='utf-8') as handle:
         for record in records:
@@ -380,12 +260,7 @@ if __name__ == '__main__':
             out_path=args.hardest_out,
         )
     else:
-        token = resolve_token(args.token)
-        print("Downloading TAO Challenge training data...")
-        if token:
-            print("Using Hugging Face token from CLI or environment.")
-        else:
-            print("No Hugging Face token detected; private or gated datasets will return HTTP 401/403.")
-        download(token=token, force=args.force)
+        print("No action selected.")
+        print("Use one of: --generate-local, --generate-no-leak, --generate-hardest")
 
     print("Done.")

@@ -23,8 +23,7 @@ pip install -r requirements.txt
 Optional environment variables for live LLM evaluation:
 
 ```powershell
-$env:OPENAI_API_KEY="sk-..."
-$env:ANTHROPIC_API_KEY="..."
+$env:OLLAMA_BASE_URL="http://localhost:11434/v1"
 ```
 
 ## 3. Inspect The Main Assets
@@ -33,7 +32,7 @@ $env:ANTHROPIC_API_KEY="..."
 - `cheatsheet.txt` is the current submission candidate.
 - `data/local_benchmark.jsonl` is the smallest useful offline benchmark.
 - `data/no_leak_benchmark.jsonl` is the held-out-equation benchmark for leakage-sensitive checks.
-- `data/hardest_500.jsonl` is the structurally misleading hardest-case slice.
+- `data/hardest_20.jsonl` is the shipped structurally misleading hardest-case slice.
 - `data/exports/export_raw_implications_14_3_2026.csv` is the dense research matrix.
 
 ## 4. Run The Offline Heuristic Benchmark
@@ -95,11 +94,21 @@ This verifies:
 - environment readiness;
 - prompt construction.
 
-## 7. Run A Live Cheatsheet Evaluation
+## 7. Run A Local Cheatsheet Evaluation
 
 ```bash
-python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model gpt-4o-mini --name smoke_eval
+ollama pull qwen2.5:3b
+ollama serve
+python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model ollama-qwen2.5-3b --name smoke_eval
 ```
+
+The built-in local model aliases are:
+
+- `ollama-qwen2.5-3b`
+- `ollama-qwen2.5-7b`
+- `ollama-gemma2-2b`
+
+If your Ollama server is not on the default endpoint, set `OLLAMA_BASE_URL` before running the command.
 
 Important safety rule:
 
@@ -121,10 +130,10 @@ python features.py --data data/normal.jsonl --exclude-eq-file data/no_leak_holdo
 
 ## 8. Distill A New Cheatsheet Candidate
 
-If you have labeled training data available, create a new candidate:
+If you have labeled training data available, create a new candidate locally:
 
 ```bash
-python distill.py --data data/normal.jsonl --name candidate_a --n-shots 150
+python distill.py --data data/local_benchmark.jsonl --config-name candidate_a --n-shots 150 --distill-model ollama-qwen2.5-3b
 ```
 
 Typical loop:

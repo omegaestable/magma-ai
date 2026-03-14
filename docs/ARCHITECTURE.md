@@ -30,11 +30,11 @@ These scripts support Stage 1 without redefining the artifact boundary.
 |---|---|
 | `config.py` | Shared configuration and paths used by both submission-support and research workflows |
 | `analyze_equations.py` | Shared parsing and structural utilities |
-| `llm_client.py` | LLM transport for distillation and cheatsheet-only evaluation |
+| `llm_client.py` | Local Ollama/OpenAI-compatible transport for distillation and cheatsheet-only evaluation |
 | `run_eval.py` | Evaluate a cheatsheet using an LLM and record benchmark-validity metadata |
 | `distill.py` | Build or compress candidate cheatsheets from labeled examples |
 | `benchmark_utils.py` | Shared bucket labeling, matrix sampling, metric metadata, and validity annotations |
-| `download_data.py` | Generate a local JSONL benchmark or attempt remote dataset download |
+| `download_data.py` | Generate local JSONL benchmarks from the dense matrix |
 | `evaluate.py` | Local prompt export for cheatsheet workflows and heuristic research benchmarking |
 
 `evaluate.py` is intentionally mixed-use: `prompt` mode is support tooling, while `heuristic` mode is a research proxy and not a submission-valid evaluator.

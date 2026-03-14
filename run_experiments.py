@@ -1,4 +1,4 @@
-"""Research orchestrator for offline distill-and-evaluate ablations.
+"""Research orchestrator for local distill-and-evaluate ablations.
 
 Status:
 - Research-only unless the evaluation stage remains cheatsheet-only and uses
@@ -45,9 +45,9 @@ ABLATION_CONFIGS = {
 
     # Model transfer
     "model_transfer": [
-        {"name": "gpt41_to_mini", "distill_model": "gpt-4.1", "eval_model": "gpt-4o-mini"},
-        {"name": "gpt41_to_gemini", "distill_model": "gpt-4.1", "eval_model": "gemini-2.0-flash"},
-        {"name": "gemini_to_mini", "distill_model": "gemini-2.0-flash", "eval_model": "gpt-4o-mini"},
+        {"name": "qwen3b_to_qwen3b", "distill_model": "ollama-qwen2.5-3b", "eval_model": "ollama-qwen2.5-3b"},
+        {"name": "qwen7b_to_qwen3b", "distill_model": "ollama-qwen2.5-7b", "eval_model": "ollama-qwen2.5-3b"},
+        {"name": "gemma2b_to_qwen3b", "distill_model": "ollama-gemma2-2b", "eval_model": "ollama-qwen2.5-3b"},
     ],
 
     # Self-consistency
@@ -148,8 +148,8 @@ def main():
                         help="Which ablation to run")
     parser.add_argument("--train-data", required=True, help="Training JSONL")
     parser.add_argument("--eval-data", required=True, help="Eval JSONL")
-    parser.add_argument("--distill-model", default="gpt-4.1")
-    parser.add_argument("--eval-model", default="gpt-4o-mini")
+    parser.add_argument("--distill-model", default="ollama-qwen2.5-3b")
+    parser.add_argument("--eval-model", default="ollama-qwen2.5-3b")
     parser.add_argument("--n-shots", type=int, default=150)
     parser.add_argument("--n-eval", type=int, default=100)
     parser.add_argument("--seed", type=int, default=42)

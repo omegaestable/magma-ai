@@ -18,6 +18,6 @@
 
 ## Known Limitations
 
-1. HF dataset URLs are stale; remote download is best-effort. Set `SAIR_STAGE1_*_URL` env vars when organizer URLs change.
+1. Benchmark generation is local-only and depends on the dense matrix remaining available in `data/exports/`.
 2. Local benchmarks (`local_benchmark.jsonl`, `no_leak_benchmark.jsonl`, `hardest_20.jsonl`) are matrix-derived — useful for internal validation, not as external held-out benchmarks.
 3. External competition-rule pages are not archived locally.

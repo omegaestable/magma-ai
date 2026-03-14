@@ -341,7 +341,7 @@ def main():
     parser = argparse.ArgumentParser(description="Distill a cheat sheet from training data")
     parser.add_argument("--data", required=True, help="JSONL training data file")
     parser.add_argument("--config-name", default="default", help="Experiment config name")
-    parser.add_argument("--distill-model", default="gpt-4.1", help="Model for distillation")
+    parser.add_argument("--distill-model", default="ollama-qwen2.5-3b", help="Local model for distillation")
     parser.add_argument("--n-shots", type=int, default=150, help="Number of demos to use")
     parser.add_argument("--variant", default="default",
                         choices=list(CHEATSHEET_PROMPT_VARIANTS.keys()),

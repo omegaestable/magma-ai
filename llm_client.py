@@ -1,21 +1,21 @@
 """
-llm_client.py — Unified LLM client supporting OpenAI and Anthropic APIs.
+llm_client.py — Unified local LLM client for Ollama/OpenAI-compatible endpoints.
 
-Handles retry logic, cost tracking, and response parsing.
-Used for cheatsheet distillation and LLM-based evaluation.
+Handles retry logic, local endpoint calls, and response parsing.
+Used for cheatsheet distillation and local LLM-based evaluation.
 """
 
 import json
-import os
 import time
 import logging
+import urllib.error
+import urllib.request
 from typing import Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from config import ModelConfig, MODELS
+from config import MODELS
 
 logger = logging.getLogger(__name__)
-
 
 @dataclass
 class LLMResponse:
@@ -29,31 +29,15 @@ class LLMResponse:
 
 
 class LLMClient:
-    """Unified client for calling LLM APIs with cost tracking."""
+    """Client for calling a local Ollama/OpenAI-compatible endpoint."""
 
-    def __init__(self, model_name: str = "gpt-4o-mini"):
+    def __init__(self, model_name: str = "ollama-qwen2.5-3b"):
         if model_name in MODELS:
             self.config = MODELS[model_name]
         else:
             raise ValueError(f"Unknown model: {model_name}. Available: {list(MODELS.keys())}")
         self.total_cost = 0.0
         self.total_calls = 0
-        self._client = None
-
-    def _get_openai_client(self):
-        if self._client is None:
-            import openai
-            self._client = openai.OpenAI(
-                api_key=self.config.api_key,
-                base_url=self.config.base_url,
-            )
-        return self._client
-
-    def _get_anthropic_client(self):
-        if self._client is None:
-            import anthropic
-            self._client = anthropic.Anthropic(api_key=self.config.api_key)
-        return self._client
 
     def call(
         self,
@@ -70,12 +54,9 @@ class LLMClient:
         for attempt in range(retries):
             try:
                 t0 = time.time()
-                if self.config.provider == "openai":
-                    resp = self._call_openai(prompt, system, temp, max_tok)
-                elif self.config.provider == "anthropic":
-                    resp = self._call_anthropic(prompt, system, temp, max_tok)
-                else:
+                if self.config.provider != "local":
                     raise ValueError(f"Unsupported provider: {self.config.provider}")
+                resp = self._call_local(prompt, system, temp, max_tok)
                 resp.latency_s = time.time() - t0
                 resp.model = self.config.model
 
@@ -96,47 +77,51 @@ class LLMClient:
                 else:
                     raise
 
-    def _call_openai(self, prompt, system, temperature, max_tokens) -> LLMResponse:
-        client = self._get_openai_client()
+    def _call_local(self, prompt, system, temperature, max_tokens) -> LLMResponse:
         messages = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
-        response = client.chat.completions.create(
-            model=self.config.model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        choice = response.choices[0]
-        usage = response.usage
-        return LLMResponse(
-            text=choice.message.content or "",
-            input_tokens=usage.prompt_tokens if usage else 0,
-            output_tokens=usage.completion_tokens if usage else 0,
-        )
-
-    def _call_anthropic(self, prompt, system, temperature, max_tokens) -> LLMResponse:
-        client = self._get_anthropic_client()
-        kwargs = {
+        payload = {
             "model": self.config.model,
+            "messages": messages,
+            "temperature": temperature,
             "max_tokens": max_tokens,
-            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
         }
-        if temperature > 0:
-            kwargs["temperature"] = temperature
-        if system:
-            kwargs["system"] = system
-
-        response = client.messages.create(**kwargs)
-        text = response.content[0].text if response.content else ""
-        return LLMResponse(
-            text=text,
-            input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens,
+        url = f"{self.config.resolved_base_url.rstrip('/')}/chat/completions"
+        request = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ollama",
+            },
+            method="POST",
         )
+        try:
+            with urllib.request.urlopen(request) as response:
+                body = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            error_body = exc.read().decode("utf-8", errors="ignore")
+            raise RuntimeError(f"Local LLM request failed with HTTP {exc.code}: {error_body}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(
+                f"Could not reach local LLM endpoint at {self.config.resolved_base_url}. "
+                "Start Ollama with 'ollama serve' and make sure the model is pulled."
+            ) from exc
 
+        choices = body.get("choices", [])
+        if not choices:
+            raise RuntimeError(f"Local LLM response did not contain choices: {body}")
+        message = choices[0].get("message", {})
+        usage = body.get("usage", {})
+        return LLMResponse(
+            text=message.get("content", "") or "",
+            input_tokens=usage.get("prompt_tokens", 0),
+            output_tokens=usage.get("completion_tokens", 0),
+        )
 
     def cost_report(self) -> str:
         return f"Total calls: {self.total_calls}, Total cost: ${self.total_cost:.4f}"

@@ -109,13 +109,18 @@ That writes `data/hardest_500.jsonl`.
 python run_eval.py --data data/local_benchmark.jsonl --dry-run
 ```
 
-### 5. Run a live cheatsheet evaluation
+### 5. Run a local open-source model through Ollama
+
+The repo is local-only. Evaluation and distillation run against a local Ollama/OpenAI-compatible endpoint. A good first small-model baseline is Qwen 2.5 3B.
 
 ```bash
-python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model gpt-4o-mini --name local_eval
+ollama pull qwen2.5:3b
+ollama serve
+python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model ollama-qwen2.5-3b --name local_ollama_eval
 ```
 
-The safe default is now `--n-format 0`. If you want format examples, supply a separate labeled file explicitly with `--format-data`.
+Other built-in local aliases are `ollama-qwen2.5-7b` and `ollama-gemma2-2b`. To point at a non-default Ollama host, set `OLLAMA_BASE_URL`, for example `http://localhost:11434/v1`.
+The safe default is `--n-format 0`. If you want format examples, supply a separate labeled file explicitly with `--format-data`.
 
 ### 6. Run the high-priority E/F analyses
 
@@ -180,7 +185,6 @@ The heuristic and ML code in this repo can exploit structural signals such as va
 - `data/no_leak_benchmark.jsonl` — held-out benchmark for leakage-free evaluation.
 - `data/hardest_20.jsonl` — structurally misleading adversarial pairs.
 - `data/exports/export_raw_implications_14_3_2026.csv` — dense 4694×4694 implication matrix for offline research.
-- Remote Hugging Face download is best-effort; set `SAIR_STAGE1_NORMAL_URL` / `SAIR_STAGE1_HARD_URL` env vars if organizer URLs change.
 
 ## Documentation
 

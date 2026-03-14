@@ -10,8 +10,6 @@ This folder contains lightweight benchmark files and the heavier research export
 | `no_leak_benchmark.jsonl` | Held-out-equation benchmark for no-leak evaluation |
 | `no_leak_holdout.json` | Metadata and held-out equation indices for the no-leak benchmark |
 | `hardest_20.jsonl` | Structurally misleading hardest-case benchmark |
-| `normal.jsonl` | Organizer-provided split, if later restored or downloaded |
-| `hard.jsonl` | Organizer-provided hard split, if later restored or downloaded |
 | `exports/export_raw_implications_14_3_2026.csv` | Dense 4694 x 4694 implication matrix |
 | `exports/export_explorer_14_3_2026.csv` | Explorer-oriented summary export |
 
@@ -63,4 +61,4 @@ This creates `data/hardest_500.jsonl`, a benchmark concentrated on pairs where l
 - `no_leak_benchmark.jsonl` is the preferred offline benchmark for leakage-sensitive evaluation.
 - `hardest_20.jsonl` is the preferred offline benchmark for adversarial debugging of misleading structural signals.
 - The dense exports are research assets, not submission artifacts.
-- Remote HF download is best-effort; set `SAIR_STAGE1_NORMAL_URL` / `SAIR_STAGE1_HARD_URL` env vars if organizer URLs change.
+- All supported benchmark generation paths are local-only.

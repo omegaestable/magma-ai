@@ -445,7 +445,7 @@ def main():
     parser.add_argument("--data", required=True, help="JSONL eval data file")
     parser.add_argument("--format-data", default=None,
                         help="Optional separate JSONL file used only for format examples")
-    parser.add_argument("--eval-model", default="gpt-4o-mini", help="Model for evaluation")
+    parser.add_argument("--eval-model", default="ollama-qwen2.5-3b", help="Local model for evaluation")
     parser.add_argument("--n-eval", type=int, default=100, help="Number of problems")
     parser.add_argument("--n-format", type=int, default=0,
                         help="Number of format examples (safe default: 0 unless using separate format data)")

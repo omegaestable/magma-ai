@@ -62,11 +62,11 @@ The table below labels the repository's top-level Python modules by competition 
 | [config.py](../config.py) | Shared support | Holds shared paths and config for both submission-support and research tools. |
 | [analyze_equations.py](../analyze_equations.py) | Shared support | Structural parsing utilities used across both evaluation support and research code. |
 | [benchmark_utils.py](../benchmark_utils.py) | Shared support | Shared benchmark loading, labeling, bucketing, and validity metadata. |
-| [llm_client.py](../llm_client.py) | Submission-support | Provides the LLM transport used by cheatsheet distillation and cheatsheet-only evaluation. |
+| [llm_client.py](../llm_client.py) | Submission-support | Provides the local Ollama transport used by cheatsheet distillation and cheatsheet-only evaluation. |
 | [run_eval.py](../run_eval.py) | Submission-support | Cheatsheet-only LLM evaluation with explicit validity metadata. |
 | [evaluate.py](../evaluate.py) | Mixed: submission-support plus research mode | Prompt export supports cheatsheet workflows; heuristic mode is a research proxy only. |
 | [distill.py](../distill.py) | Submission-support | Offline authoring tool for producing the cheatsheet artifact. |
-| [download_data.py](../download_data.py) | Submission-support | Fetches JSONL data or generates local offline benchmarks. |
+| [download_data.py](../download_data.py) | Submission-support | Generates local offline benchmarks from the dense matrix. |
 | [solver.py](../solver.py) | Research-only | Uses proof search, counterexample search, and optional graph access. |
 | [proof_search.py](../proof_search.py) | Research-only | Proof search and graph-assisted reasoning are invalid as hidden submission-time inference. |
 | [magma_search.py](../magma_search.py) | Research-only | Counterexample construction is offline research support. |

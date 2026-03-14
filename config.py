@@ -32,9 +32,8 @@ RAW_IMPL_CSV = EXPORTS_DIR / "export_raw_implications_14_3_2026.csv"
 @dataclass
 class ModelConfig:
     """Configuration for an LLM provider/model."""
-    provider: str          # "openai", "anthropic", "google", "local"
-    model: str             # e.g. "gpt-4.1", "gemini-2.0-flash", "llama-3"
-    api_key_env: str = ""  # env var name for API key
+    provider: str          # "local"
+    model: str             # e.g. "qwen2.5:3b", "gemma2:2b"
     base_url: Optional[str] = None
     temperature: float = 0.0
     max_tokens: int = 4096
@@ -42,28 +41,24 @@ class ModelConfig:
     cost_per_1k_output: float = 0.0  # USD per 1K output tokens
 
     @property
-    def api_key(self) -> str:
-        if self.api_key_env:
-            return os.environ.get(self.api_key_env, "")
-        return ""
+    def resolved_base_url(self) -> Optional[str]:
+        """Resolve base URL for the local Ollama/OpenAI-compatible endpoint."""
+        return os.environ.get("OLLAMA_BASE_URL", self.base_url or "http://localhost:11434/v1")
 
 
-# Pre-configured LLM models (for distillation / eval, add keys via env vars)
+# Pre-configured local LLM models for distillation and evaluation.
 MODELS = {
-    "gpt-4.1": ModelConfig(
-        provider="openai", model="gpt-4.1",
-        api_key_env="OPENAI_API_KEY",
-        cost_per_1k_input=0.002, cost_per_1k_output=0.008,
+    "ollama-qwen2.5-3b": ModelConfig(
+        provider="local", model="qwen2.5:3b",
+        base_url="http://localhost:11434/v1",
     ),
-    "gpt-4o-mini": ModelConfig(
-        provider="openai", model="gpt-4o-mini",
-        api_key_env="OPENAI_API_KEY",
-        cost_per_1k_input=0.00015, cost_per_1k_output=0.0006,
+    "ollama-qwen2.5-7b": ModelConfig(
+        provider="local", model="qwen2.5:7b",
+        base_url="http://localhost:11434/v1",
     ),
-    "claude-sonnet": ModelConfig(
-        provider="anthropic", model="claude-sonnet-4-20250514",
-        api_key_env="ANTHROPIC_API_KEY",
-        cost_per_1k_input=0.003, cost_per_1k_output=0.015,
+    "ollama-gemma2-2b": ModelConfig(
+        provider="local", model="gemma2:2b",
+        base_url="http://localhost:11434/v1",
     ),
 }
 
@@ -80,10 +75,10 @@ class ExperimentConfig:
     """Full experiment configuration."""
     name: str = "default"
     # Distillation
-    distill_model: str = "gpt-4.1"       # model to create the cheatsheet
+    distill_model: str = "ollama-qwen2.5-3b"  # local model to create the cheatsheet
     n_shots: int = 150                    # demos for many-shot/distillation
     # Evaluation
-    eval_model: str = "gpt-4o-mini"      # model for inference (cheap)
+    eval_model: str = "ollama-qwen2.5-3b"  # local model for inference
     n_eval: int = 100                     # number of eval problems
     n_format_examples: int = 0            # safe default: no eval-set label leakage
     seed: int = 42
@@ -133,7 +128,7 @@ DEFAULT_ML_CONFIG = MLConfig()
 
 # ── Environment Validation ─────────────────────────────────────────
 
-def check_environment(eval_model: str = "gpt-4o-mini") -> list[str]:
+def check_environment(eval_model: str = "ollama-qwen2.5-3b") -> list[str]:
     """Check readiness of the evaluation environment.
 
     Returns a list of status lines (info/warnings).
@@ -144,13 +139,9 @@ def check_environment(eval_model: str = "gpt-4o-mini") -> list[str]:
     if eval_model in MODELS:
         cfg = MODELS[eval_model]
         lines.append(f"Model: {cfg.model} ({cfg.provider})")
-        key = cfg.api_key
-        if key:
-            masked = key[:4] + "..." + key[-4:] if len(key) > 8 else "***"
-            lines.append(f"API key ({cfg.api_key_env}): set ({masked})")
-        else:
-            lines.append(f"WARNING: API key {cfg.api_key_env} is NOT set — live eval will fail")
-            lines.append(f"  Set it via: $env:{cfg.api_key_env}='sk-...'  or in .env")
+        lines.append(f"Local endpoint: {cfg.resolved_base_url}")
+        lines.append("API key: not required for local provider")
+        lines.append(f"Start Ollama and pull the model first: ollama pull {cfg.model}")
     else:
         lines.append(f"WARNING: Unknown model '{eval_model}' — not in MODELS registry")
 
@@ -179,14 +170,6 @@ def check_environment(eval_model: str = "gpt-4o-mini") -> list[str]:
     else:
         lines.append("WARNING: equations.txt not found")
 
-    # Python packages
-    pkg_status = []
-    for pkg in ['openai', 'anthropic']:
-        try:
-            __import__(pkg)
-            pkg_status.append(f"{pkg} ✓")
-        except ImportError:
-            pkg_status.append(f"{pkg} ✗")
-    lines.append(f"Packages: {', '.join(pkg_status)}")
+    lines.append("Packages: no remote API client required for local model execution")
 
     return lines

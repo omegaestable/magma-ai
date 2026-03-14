@@ -119,7 +119,7 @@ If E1 ⊨ E2, then E1* ⊨ E2* (where * swaps arguments of ◇). This halves the
 | B2 | Report per-bucket accuracy (trivial, specialization, counterexample-easy, ambiguous, landmark, hard) | HIGH | ✅ DONE |
 | B3 | Report trivial-case share to prevent inflation | HIGH | ✅ DONE |
 | B4 | Build a "hardest 500" benchmark from pairs where structural heuristics are misleading | HIGH | ⚠️ PARTIAL (20 pairs built, target 500) |
-| B5 | Download the official training data (normal.jsonl, hard.jsonl) and benchmark against it if available | HIGH | ❌ BLOCKED (HF URLs stale) |
+| B5 | Build stronger local benchmark slices from the dense matrix when additional coverage is needed | HIGH | ⚠️ PARTIAL |
 
 ### Workstream C: Mathematical Understanding Extraction
 
@@ -149,7 +149,7 @@ If E1 ⊨ E2, then E1* ⊨ E2* (where * swaps arguments of ◇). This halves the
 | D4 | **Add matching-invariant rules**: Encode the variable multiplicity test as a concise algorithm step. | HIGH | ✅ DONE |
 | D5 | **Restructure flowchart by coverage**: Reorder the decision procedure so the highest-coverage steps come first (singleton check → specialization → size-2 magma check → linear magma check → structural heuristics). | HIGH | ⚠️ PARTIAL |
 | D6 | **Test algorithm-first vs. data-first cheatsheet variants**: Compare a cheatsheet that leads with compact decision rules vs. one that leads with lookup tables of critical equation data. | MEDIUM | ✅ DONE |
-| D7 | **Run A/B test across GPT-4o-mini and Claude Sonnet**: Ensure the champion cheatsheet is robust across at least two models. | HIGH | ❌ NOT DONE |
+| D7 | **Run A/B test across local models**: Ensure the champion cheatsheet is robust across at least two local models. | HIGH | ❌ NOT DONE |
 | D8 | **Byte budget analysis**: Measure current cheatsheet bytes vs. 10KB cap. Allocate remaining budget to highest-leverage additions. | HIGH | ✅ DONE (2,568B used, 7,672B free) |
 
 ### Workstream E: ML and Algorithmic Support
@@ -312,7 +312,7 @@ The key insight: the problem is far more tractable than it appears. The paper pr
 | D4: Matching invariant rules | ✅ DONE | Variable multiplicity test in cheatsheet flowchart |
 | D5: Restructure by coverage | ⚠️ PARTIAL | Decision order exists but not coverage-ranked with empirical data |
 | D6: Test variants | ✅ DONE | `algorithm_first.txt` and `data_first.txt` both exist |
-| D7: Cross-model A/B test | ❌ NOT DONE | No cross-model evaluation (GPT-4o-mini vs Claude) recorded |
+| D7: Cross-model A/B test | ❌ NOT DONE | No cross-model local evaluation (Qwen vs Gemma) recorded |
 | D8: Byte budget audit | ✅ DONE | 2,568 bytes used, 7,672 free. **Massive opportunity — 75% of budget untapped.** |
 
 **Assessment**: The cheatsheet is functionally correct but **dramatically under-utilizing the byte budget**. At 25% capacity, there's room for:
@@ -381,7 +381,7 @@ This is the **highest-leverage workstream** for score improvement.
 | Rank | Action | Workstream | Expected Impact | Effort |
 |---|---|---|---|---|
 | 1 | **Fill cheatsheet byte budget** — encode top-20 magma tables + singleton list + coverage-ranked flowchart | D2, D3, D5 | HIGH — 7.6KB untapped | Medium |
-| 2 | **Run full LLM evaluation** — GPT-4o-mini + Claude on no-leak + hardest benchmarks | D7, F3–F5 | HIGH — validates submission readiness | Medium |
+| 2 | **Run full local LLM evaluation** — Qwen/Gemma on no-leak + hardest benchmarks | D7, F3–F5 | HIGH — validates submission readiness | Medium |
 | 3 | **Scale hardest benchmark** from 20→500 pairs | B4 | MEDIUM — better adversarial coverage | Low |
 | 4 | **Pin requirements.txt** — lock all dependency versions | Infra | LOW — but critical for reproducibility | Low |
 | 5 | **Build equation taxonomy** (C3) and feed into cheatsheet shortcuts | C3, D5 | MEDIUM — faster LLM routing | Medium |

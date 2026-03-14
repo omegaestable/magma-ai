@@ -1,9 +1,4 @@
-# LLM APIs
-openai>=2.20,<3
-anthropic>=0.30,<1
-
-# Data & utilities
-requests>=2.28,<3
+# Local model and utilities
 PyMuPDF>=1.25,<2
 
 # ML pipeline
