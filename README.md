@@ -142,6 +142,7 @@ The heuristic and ML code in this repo can exploit structural signals such as va
 
 - [docs/guides/tutorial.md](docs/guides/tutorial.md)
 - [docs/guides/math-background.md](docs/guides/math-background.md)
+- [docs/guides/competition-readiness-report.md](docs/guides/competition-readiness-report.md)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/competition_alignment_memo.md](docs/competition_alignment_memo.md)
 - [docs/benchmark_integrity_memo.md](docs/benchmark_integrity_memo.md)
