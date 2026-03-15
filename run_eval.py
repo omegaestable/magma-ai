@@ -372,10 +372,12 @@ def run_evaluation(
     )
     logger.info(f"  Benchmark validity: {metadata['submission_valid']} ({metadata['validity_reason']})")
     if trivial_free_summary["accuracy"] is not None:
+        _excl = trivial_free_summary.get("excluded_count", "")
+        _excl_str = f" (excluded {_excl})" if _excl != "" else ""
         logger.info(
             "  Trivial-free accuracy: "
-            f"{trivial_free_summary['accuracy']:.3f} on {trivial_free_summary['count']} pairs "
-            f"(excluded {trivial_free_summary['excluded_count']})"
+            f"{trivial_free_summary['accuracy']:.3f} on {trivial_free_summary['count']} pairs"
+            f"{_excl_str}"
         )
     landmark_overall = landmark_summary["overall"]
     if landmark_overall["accuracy"] is not None:

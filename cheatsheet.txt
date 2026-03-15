@@ -213,3 +213,31 @@ Answer FALSE only from an explicit witness.
   Pass 1: multiplicity + stock/linear magmas.
   Pass 2: if Pass 1 fails, mandatory specialization/duality/rewrite attempt.
 - If neither side has a real argument yet, keep checking. Do not default to FALSE.
+
+13. NEW VARIABLE IN Eq2 - STRONG FALSE SIGNAL
+- If Eq2 uses variables absent from Eq1 and Eq1 is not singleton-forcing: almost always FALSE.
+- Fast check: right-zero (a*b=b). Under right-zero every product collapses to its rightmost leaf.
+  Evaluate both sides. If right-zero satisfies Eq1 but fails Eq2 for some valuation: FALSE.
+- Fast check: left-zero (a*b=a). Under left-zero every product collapses to its leftmost leaf.
+  If left-zero satisfies Eq1 but fails Eq2: FALSE.
+- These two checks resolve most new-variable FALSE pairs in five steps or fewer.
+- Exception: if Eq1 is singleton-forcing (section 2), new variables in Eq2 don't matter. TRUE.
+
+14. FALSE SHAPE TRAPS - DO NOT BE FOOLED
+- Squaring-law trap: Eq1 = x*y = (x*x)*(y*y).
+  Left-zero satisfies this (x = x). But if Eq2 has a single-variable LHS like x = (y*(z*z))*(w*w),
+  then left-zero gives x = y. That fails for x!=y. Use left-zero as explicit FALSE witness.
+- LHS arity mismatch: Eq1 LHS is a product (u*v), Eq2 LHS is a single variable x.
+  Unless Eq1 is singleton-forcing, this requires total collapse - assume FALSE and find witness.
+- Partial-substitution trap: Eq2 looks like Eq1 with y replaced by x*x in one position.
+  Specialization requires consistent replacement of EVERY occurrence of that variable in Eq1.
+  If the same variable maps to different terms in two positions: NOT specialization -> likely FALSE.
+- Same-skeleton trap: Eq1 and Eq2 share a sub-expression like (y*(z*w)).
+  Structural similarity is not proof. Always check left-zero/right-zero before saying TRUE.
+
+15. PRE-VERDICT CHECKLIST
+Before answering TRUE: name the proof path. If you cannot name one, answer FALSE.
+Before answering FALSE: try at least left-zero and right-zero as witnesses.
+Fast FALSE sequence: left-zero -> right-zero -> xor -> const0 -> and.
+- Eq2 has new variables and Eq1 is not singleton: start with right-zero.
+- Eq1 LHS is a product but Eq2 LHS is a single variable: try left-zero first (usually works).
