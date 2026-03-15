@@ -1,18 +1,8 @@
-# Tutorial
+# Tutorial (Repo 2.0)
 
-This tutorial walks through the repository from a cold start to a reproducible local evaluation run.
+This tutorial is the canonical operational path for the repository.
 
-## 1. Understand The Objective
-
-The Stage 1 task is to answer questions of the form:
-
-> Does Equation 1 imply Equation 2 over all magmas?
-
-The intended artifact is a plain-text cheatsheet under 10 KB. The repo includes more tooling than that because the cheatsheet is built from mathematical and empirical work, but the extra tooling is support code, not the artifact itself.
-
-If you are new to the mathematics, read [math-background.md](math-background.md) first.
-
-## 2. Set Up The Environment
+## 1. Install and activate
 
 ```bash
 python -m venv .venv
@@ -20,153 +10,53 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Optional environment variables for live LLM evaluation:
-
-```powershell
-$env:OLLAMA_BASE_URL="http://localhost:11434/v1"
-```
-
-## 3. Inspect The Main Assets
-
-- `equations.txt` is the canonical numbered law list.
-- `cheatsheet.txt` is the current submission candidate.
-- `data/local_benchmark.jsonl` is the smallest useful offline benchmark.
-- `data/no_leak_benchmark.jsonl` is the held-out-equation benchmark for leakage-sensitive checks.
-- `data/hardest_20.jsonl` is the shipped structurally misleading hardest-case slice.
-- `data/exports/export_raw_implications_14_3_2026.csv` is the dense research matrix.
-
-## 4. Run The Offline Heuristic Benchmark
-
-This requires no API keys and gives a fast smoke test that the local tooling works.
+## 2. Run the one-command E2E harness
 
 ```bash
-python evaluate.py --mode heuristic --data data/local_benchmark.jsonl
+python repo2_harness.py --name repo2_run --eval-model ollama-qwen2.5-3b
 ```
 
-What this does:
+Expected behavior:
 
-- loads `equations.txt`;
-- loads `cheatsheet.txt` so the byte budget is checked;
-- loads labeled JSONL pairs from `data/local_benchmark.jsonl`;
-- scores them with the built-in heuristic pipeline;
-- reports accuracy, log-loss, bucket counts, bucket shares, and trivial/nontrivial breakdown.
+1. Generates benchmark slices (`local`, `no_leak`, `hardest`).
+2. Runs training with feature auto-bootstrap if needed.
+3. Runs submission-valid baseline eval on no-leak.
+4. Writes summary JSON in `results/repo2_summary_repo2_run.json`.
 
-This is a research benchmark, not a competition-faithful LLM evaluation.
-
-## 5. Generate A Fresh Local Benchmark
-
-If you want a newly sampled benchmark from the dense matrix:
+## 3. Optional candidate distillation and evaluation
 
 ```bash
-python download_data.py --generate-local --n 200 --seed 42
+python repo2_harness.py --name repo2_run --eval-model ollama-qwen2.5-3b --run-distill
 ```
 
-That command creates or refreshes `data/local_benchmark.jsonl` using balanced sampling from the dense matrix.
+This adds:
 
-For the Workstream B no-leak benchmark:
+1. candidate cheatsheet generation,
+2. candidate no-leak eval,
+3. gate verdicts for baseline and candidate.
+
+## 4. Read gate verdicts
+
+Open `results/repo2_summary_<name>.json` and inspect:
+
+1. `overall_accuracy`
+2. `true_accuracy`
+3. `hard_bucket_accuracy`
+4. `dual_swap_consistency`
+5. `pass`
+
+A candidate should not be promoted if any required gate fails.
+
+## 5. Manual training still supported
 
 ```bash
-python download_data.py --generate-no-leak --n 200 --holdout-count 100 --seed 42
+python train.py --dataset default --model-type xgboost --cv 5 --hardest-k 500 --name xgb_manual
 ```
 
-That command creates `data/no_leak_benchmark.jsonl` and `data/no_leak_holdout.json`.
+If the dataset cache is missing, `train.py` auto-creates it.
 
-For the Workstream B hardest-case slice:
+## 6. Guardrails
 
-```bash
-python download_data.py --generate-hardest --hardest-n 500 --seed 42
-```
-
-That command creates `data/hardest_500.jsonl`.
-
-## 6. Validate The LLM Evaluation Pipeline Safely
-
-Before making live model calls, run a dry-run check:
-
-```bash
-python run_eval.py --data data/local_benchmark.jsonl --dry-run
-```
-
-This verifies:
-
-- cheatsheet byte size;
-- evaluation data loading;
-- environment readiness;
-- prompt construction.
-
-## 7. Run A Local Cheatsheet Evaluation
-
-```bash
-ollama pull qwen2.5:3b
-ollama serve
-python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model ollama-qwen2.5-3b --name smoke_eval
-```
-
-The built-in local model aliases are:
-
-- `ollama-qwen2.5-3b`
-- `ollama-qwen2.5-7b`
-- `ollama-gemma2-2b`
-
-If your Ollama server is not on the default endpoint, set `OLLAMA_BASE_URL` before running the command.
-
-Important safety rule:
-
-- The default is `--n-format 0`.
-- If you choose to use format examples, pass a separate file with `--format-data`.
-- Do not reuse the evaluation file as prompt examples.
-
-Example with separate format data:
-
-```bash
-python run_eval.py --cheatsheet cheatsheet.txt --data data/hard.jsonl --format-data data/normal.jsonl --n-format 2 --name heldout_eval
-```
-
-If you are training research-time feature models and want to respect the no-leak split, pass the holdout file into feature extraction:
-
-```bash
-python features.py --data data/normal.jsonl --exclude-eq-file data/no_leak_holdout.json --name no_leak_features
-```
-
-## 8. Distill A New Cheatsheet Candidate
-
-If you have labeled training data available, create a new candidate locally:
-
-```bash
-python distill.py --data data/local_benchmark.jsonl --config-name candidate_a --n-shots 150 --distill-model ollama-qwen2.5-3b
-```
-
-Typical loop:
-
-1. Distill a candidate cheatsheet.
-2. Compare its size against the 10 KB limit.
-3. Evaluate it with `run_eval.py`.
-4. Manually inspect failure buckets.
-5. Refine the cheatsheet or distillation prompt.
-
-## 9. Use The Research Stack Carefully
-
-These scripts are useful, but not submission-valid at inference time:
-
-- `solver.py`
-- `proof_search.py`
-- `magma_search.py`
-- `train.py`
-- `run_experiments.py`
-
-Use them to discover proof patterns, counterexamples, and structural invariants. Then compress the robust lessons into the cheatsheet.
-
-## 10. Read The Outputs
-
-The most important outputs are:
-
-- `results/eval_*.json`: evaluation results, including benchmark-validity metadata.
-- `results/train_*.json` and `results/cv_*.json`: ML experiment summaries.
-- `cheatsheets/*.txt`: generated candidate cheatsheets.
-
-When comparing runs, prioritize:
-
-1. validity of the evaluation path;
-2. nontrivial-bucket accuracy;
-3. stability across runs or models;
-4. cheatsheet size and clarity.
+1. Keep submission inference cheatsheet-only.
+2. Keep matrix/solver/ML use strictly research-time.
+3. Treat class asymmetry regressions as failures even if aggregate accuracy looks acceptable.

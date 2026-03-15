@@ -12,7 +12,13 @@ from sklearn.metrics import log_loss, accuracy_score, classification_report
 from sklearn.calibration import CalibratedClassifierCV
 
 from config import MLConfig, DEFAULT_ML_CONFIG, MODELS_DIR, RESULTS_DIR
-from features import load_dataset, build_dataset_from_jsonl, save_dataset
+from features import (
+    load_dataset,
+    build_dataset_from_jsonl,
+    build_dataset_from_matrix,
+    load_raw_implication_matrix,
+    save_dataset,
+)
 from benchmark_utils import annotate_records
 
 logger = logging.getLogger(__name__)
@@ -273,6 +279,42 @@ def predict_pair(
     return float(prob)
 
 
+def ensure_dataset_available(
+    dataset_name: str,
+    config: MLConfig,
+    n_samples: int,
+    excluded_eq_indices: set[int] | None = None,
+) -> tuple[np.ndarray, np.ndarray, list, list]:
+    """Load a precomputed dataset, auto-building it from matrix data if missing."""
+    try:
+        return load_dataset(dataset_name)
+    except FileNotFoundError:
+        from analyze_equations import load_equations
+
+        logger.warning(
+            "Dataset '%s' not found in features/. Auto-bootstrapping from matrix with n_samples=%d.",
+            dataset_name,
+            n_samples,
+        )
+        equations = load_equations()
+        matrix = load_raw_implication_matrix()
+        X, y, feature_names, meta = build_dataset_from_matrix(
+            equations,
+            matrix,
+            n_samples=n_samples,
+            config=config,
+            seed=config.seed,
+            excluded_eq_indices=excluded_eq_indices or set(),
+        )
+        save_dataset(X, y, feature_names, meta, name=dataset_name)
+        logger.info(
+            "Auto-bootstrap complete: features/%s.pkl created with %d rows.",
+            dataset_name,
+            X.shape[0],
+        )
+        return X, y, feature_names, meta
+
+
 # ── CLI ───────────────────────────────────────────────────────────
 
 def main():
@@ -281,6 +323,10 @@ def main():
     parser.add_argument("--data", default=None, help="JSONL file (alternative to --dataset)")
     parser.add_argument("--exclude-eq-file", default=None,
                         help="Optional JSON file listing equation indices to exclude when building from --data")
+    parser.add_argument("--bootstrap-samples", type=int, default=10000,
+                        help="Rows to sample when auto-bootstrapping a missing precomputed dataset")
+    parser.add_argument("--no-auto-bootstrap", action="store_true",
+                        help="Disable automatic dataset creation when --dataset is missing")
     parser.add_argument("--model-type", default="xgboost", choices=list(MODEL_BUILDERS.keys()))
     parser.add_argument("--n-estimators", type=int, default=1000)
     parser.add_argument("--learning-rate", type=float, default=0.05)
@@ -308,11 +354,12 @@ def main():
     )
 
     # Load data
+    from benchmark_utils import load_holdout_indices
+    excluded_eq_indices = set(load_holdout_indices(args.exclude_eq_file)) if args.exclude_eq_file else set()
+
     if args.data:
         from analyze_equations import load_equations
-        from benchmark_utils import load_holdout_indices
         equations = load_equations()
-        excluded_eq_indices = set(load_holdout_indices(args.exclude_eq_file)) if args.exclude_eq_file else set()
         X, y, feature_names, meta = build_dataset_from_jsonl(
             args.data,
             equations,
@@ -321,7 +368,15 @@ def main():
         )
         save_dataset(X, y, feature_names, meta, name=args.name)
     else:
-        X, y, feature_names, meta = load_dataset(args.dataset)
+        if args.no_auto_bootstrap:
+            X, y, feature_names, meta = load_dataset(args.dataset)
+        else:
+            X, y, feature_names, meta = ensure_dataset_available(
+                dataset_name=args.dataset,
+                config=config,
+                n_samples=args.bootstrap_samples,
+                excluded_eq_indices=excluded_eq_indices,
+            )
 
     logger.info(f"Dataset: {X.shape[0]} samples, {X.shape[1]} features, {y.mean()*100:.1f}% positive")
 

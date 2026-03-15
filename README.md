@@ -1,69 +1,21 @@
-# Magma AI
+# Magma AI (Repo 2.0)
 
-Magma AI is a submission-focused research repository for Stage 1 of the SAIR Mathematics Distillation Challenge on equational implication over magmas. The repository has two jobs:
+Submission-first repository for SAIR Stage 1 equational implication over magmas.
 
-1. Produce a strong plain-text cheatsheet under 10 KB.
-2. Preserve the mathematical and experimental tooling used to build that cheatsheet without confusing research-time assistance with submission-time behavior.
+## Primary Goal
 
-The current competition-oriented source of truth is [docs/MASTER_SUBMISSION_AGENT_PROMPT.md](docs/MASTER_SUBMISSION_AGENT_PROMPT.md). If a rule claim is not grounded there or in archived primary competition material, it should be treated as unverified.
+Produce the best possible plain-text cheatsheet (`cheatsheet.txt`, <= 10KB) for TRUE/FALSE implication decisions.
 
-## What This Repository Is About
+## Repo 2.0 Principles
 
-The underlying mathematics comes from the Equational Theories Project, which studied implication between the 4694 simplest equational laws on magmas. A magma is just a set with one binary operation and no further axioms assumed. Given two laws $E_1$ and $E_2$, the central question is whether every magma satisfying $E_1$ must also satisfy $E_2$.
-
-The LaTeX paper in [docs/paper/source](docs/paper/source) gives the larger context. The most important facts for this repository are:
-
-- There are 4694 laws in scope, listed in `equations.txt`.
-- This yields 22,028,942 non-reflexive implication questions.
-- The full implication graph was resolved in the broader project through a combination of rewriting, duality, finite counterexamples, linear models, automated theorem proving, and formal verification in Lean.
-- In this repo, that full graph is research data. The Stage 1 submission artifact is not the graph; it is the cheatsheet.
-
-Concrete landmark equations used throughout the code and docs include:
-
-- Eq1: `x = x`, the trivial top law.
-- Eq2: `x = y`, the singleton law that implies every law.
-- Eq43: `x ◇ y = y ◇ x`, commutativity.
-- Eq4512: `x ◇ (y ◇ z) = (x ◇ y) ◇ z`, associativity.
-
-## Submission Boundary
-
-The only intended submission artifact is [cheatsheet.txt](cheatsheet.txt).
-
-Submission-valid behavior:
-
-- Prompting an evaluation model with the cheatsheet alone.
-- Optionally using separate, non-evaluation examples purely for output formatting.
-
-Research-only behavior:
-
-- Looking up answers in the dense implication matrix.
-- Using graph reachability, solver shortcuts, proof search, counterexample search, or ML models at inference time.
-- Feeding evaluation labels back into the prompt context.
-
-If a workflow touches the matrix or graph during inference, it is useful for research but not a valid Stage 1 submission path.
-
-## Repository Layout
-
-Top-level files are now limited to the working code and primary artifact. Supporting assets live under `data/` and `docs/`.
-
-| Path | Purpose |
-|---|---|
-| `cheatsheet.txt` | Current submission candidate |
-| `equations.txt` | Canonical list of the 4694 equations |
-| `run_eval.py` | LLM-based cheatsheet evaluation harness |
-| `evaluate.py` | Local heuristic benchmark and prompt export |
-| `distill.py` | Offline cheatsheet distillation pipeline |
-| `solver.py` | Research-only implication engine |
-| `data/local_benchmark.jsonl` | Small offline benchmark that requires no external host |
-| `data/exports/` | Dense implication matrix and explorer export |
-| `docs/guides/tutorial.md` | End-to-end usage tutorial |
-| `docs/guides/math-background.md` | Mathematical background distilled from the paper |
-| `docs/ARCHITECTURE.md` | Repo structure and data-flow guide |
-| `docs/paper/` | PDF copies and LaTeX source for the project paper |
+1. Mathematical structure first.
+2. Submission-valid behavior separated from research tooling.
+3. One-command reproducibility for naive E2E execution.
+4. Hard-case and class-parity metrics treated as first-class gates.
 
 ## Quick Start
 
-### 1. Install dependencies
+### 1. Environment
 
 ```bash
 python -m venv .venv
@@ -71,127 +23,67 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Run an offline sanity check
-
-This path uses only local files already present in the repo.
+### 2. One-command naive E2E
 
 ```bash
-python evaluate.py --mode heuristic --data data/local_benchmark.jsonl
+python repo2_harness.py --name repo2_run --eval-model ollama-qwen2.5-3b
 ```
 
-### 3. Generate a fresh local benchmark
+This does all of the following in order:
+
+1. Generates local/no-leak/hardest benchmark slices.
+2. Trains research model with automatic dataset bootstrapping if features are missing.
+3. Evaluates baseline cheatsheet on no-leak with dual-swap checks.
+4. Emits a consolidated summary in `results/repo2_summary_<name>.json`.
+
+Optional candidate distillation pass:
 
 ```bash
-python download_data.py --generate-local --n 200 --seed 42
+python repo2_harness.py --name repo2_run --eval-model ollama-qwen2.5-3b --run-distill
 ```
 
-This samples a balanced JSONL benchmark from `data/exports/export_raw_implications_14_3_2026.csv`.
+## Immediate Fix Included
 
-To generate the no-leak benchmark requested in Workstream B:
+`train.py` now auto-bootstraps feature datasets when `--dataset` is missing. Example:
 
 ```bash
-python download_data.py --generate-no-leak --n 200 --holdout-count 100 --seed 42
+python train.py --dataset default --model-type xgboost --cv 5 --hardest-k 500 --name xgb_default
 ```
 
-That writes `data/no_leak_benchmark.jsonl` plus `data/no_leak_holdout.json`, which can also be passed to `features.py --exclude-eq-file` so held-out equations never appear in feature extraction.
+If `features/default.pkl` is absent, it is generated automatically from matrix sampling.
 
-To mine a structurally misleading hardest-case slice:
+## Submission Boundary
 
-```bash
-python download_data.py --generate-hardest --hardest-n 500 --seed 42
-```
+Submission-valid inference:
 
-That writes `data/hardest_500.jsonl`.
+1. Prompting only with cheatsheet text.
+2. No matrix/graph/solver/model lookup at inference time.
 
-### 4. Validate the LLM evaluation pipeline without making API calls
+Research-only tooling:
 
-```bash
-python run_eval.py --data data/local_benchmark.jsonl --dry-run
-```
+1. `solver.py`, `proof_search.py`, `magma_search.py`
+2. `features.py`, `train.py`, `workstream_analysis.py`
 
-### 5. Run a local open-source model through Ollama
+## Core Files
 
-The repo is local-only. Evaluation and distillation run against a local Ollama/OpenAI-compatible endpoint. A good first small-model baseline is Qwen 2.5 3B.
+1. `cheatsheet.txt`: current submission artifact candidate.
+2. `repo2_harness.py`: one-command orchestrator.
+3. `run_eval.py`: submission-valid LLM benchmark harness.
+4. `train.py`: research model training with auto-bootstrap.
+5. `ROADMAP.md`: Repo 2.0 prioritized plan.
+6. `docs/guides/tutorial.md`: operational walkthrough.
 
-```bash
-ollama pull qwen2.5:3b
-ollama serve
-python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --eval-model ollama-qwen2.5-3b --name local_ollama_eval
-```
+## Acceptance Gates
 
-Other built-in local aliases are `ollama-qwen2.5-7b` and `ollama-gemma2-2b`. To point at a non-default Ollama host, set `OLLAMA_BASE_URL`, for example `http://localhost:11434/v1`.
-The safe default is `--n-format 0`. If you want format examples, supply a separate labeled file explicitly with `--format-data`.
+Configured in `repo2_harness.py` (override via CLI):
 
-### 6. Run the high-priority E/F analyses
+1. overall accuracy >= 0.60
+2. true accuracy >= 0.45
+3. hard-bucket accuracy >= 0.35
+4. dual-swap consistency >= 0.90
 
-Mine the hardest ML pairs from out-of-fold XGBoost predictions:
+## Notes
 
-```bash
-python train.py --dataset default --model-type xgboost --cv 5 --hardest-k 500 --name xgb_hardest
-```
-
-Mine direct-proof templates from matrix value `4` pairs:
-
-```bash
-python workstream_analysis.py --mode proof-patterns --name direct_proofs
-```
-
-Mine hard-false counterexample coverage from sampled matrix value `-4` pairs:
-
-```bash
-python workstream_analysis.py --mode counterexample-patterns --sample-size 400 --timeout 2.5 --name hard_false
-```
-
-Run adversarial evaluation summaries, including trivial-free and landmark reporting, plus optional dual-swap checks:
-
-```bash
-python evaluate.py --mode heuristic --data data/local_benchmark.jsonl --dual-swap-check
-python run_eval.py --cheatsheet cheatsheet.txt --data data/local_benchmark.jsonl --dual-swap-check --name local_eval_dual
-```
-
-## Tutorial Workflow
-
-The recommended workflow for contributors is:
-
-1. Read [docs/guides/math-background.md](docs/guides/math-background.md) for the algebraic setup.
-2. Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) to understand which scripts are submission-support versus research-only.
-3. Use [docs/guides/tutorial.md](docs/guides/tutorial.md) for the step-by-step command flow.
-4. Iterate on `cheatsheet.txt` or distill a new candidate with `distill.py`.
-5. Evaluate with `run_eval.py` and keep the validity metadata with the result.
-
-## Mathematical Approach Used In This Repo
-
-The paper shows that no single method is enough to understand the implication graph. The practical approach in this repository follows the same lesson.
-
-Positive implications are often discovered or checked using:
-
-- direct specialization;
-- rewriting under a single law;
-- duality and transitivity;
-- ATP-assisted proof search.
-
-Negative implications are often discovered or checked using:
-
-- explicit small finite magmas;
-- linear and translation-invariant constructions;
-- syntactic invariants;
-- greedy counterexample search.
-
-The heuristic and ML code in this repo can exploit structural signals such as variable support, operation count, depth, symmetry, and easy counterexamples. Those signals are useful for research prioritization, but they are not themselves proofs.
-
-## Data
-
-- `data/local_benchmark.jsonl` — no-network evaluation fallback.
-- `data/no_leak_benchmark.jsonl` — held-out benchmark for leakage-free evaluation.
-- `data/hardest_20.jsonl` — structurally misleading adversarial pairs.
-- `data/exports/export_raw_implications_14_3_2026.csv` — dense 4694×4694 implication matrix for offline research.
-
-## Documentation
-
-- [docs/guides/tutorial.md](docs/guides/tutorial.md) — step-by-step walkthrough
-- [docs/guides/math-background.md](docs/guides/math-background.md) — algebraic setup
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — repo structure and data flow
-- [docs/competition_alignment_memo.md](docs/competition_alignment_memo.md) — rules audit
-- [docs/benchmark_integrity_memo.md](docs/benchmark_integrity_memo.md) — evaluation rigor
-- [docs/mathematical_notes.md](docs/mathematical_notes.md) — verified mathematical facts
-- [docs/risk_register.md](docs/risk_register.md) — known risks
+1. Local model aliases are configured in `config.py`.
+2. Default local endpoint is `http://localhost:11434/v1`.
+3. Set `OLLAMA_BASE_URL` to target a non-default endpoint.
