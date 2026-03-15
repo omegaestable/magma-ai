@@ -36,7 +36,7 @@ This does all of the following in order:
 3. Evaluates baseline cheatsheet on no-leak with dual-swap checks.
 4. Emits a consolidated summary in `results/repo2_summary_<name>.json`.
 
-Optional candidate distillation pass:
+Optional distillation ablation pass:
 
 ```bash
 python repo2_harness.py --name repo2_run --eval-model ollama-qwen2.5-3b --run-distill
@@ -66,12 +66,14 @@ Research-only tooling:
 
 ## Core Files
 
-1. `cheatsheet.txt`: current submission artifact candidate.
-2. `repo2_harness.py`: one-command orchestrator.
-3. `run_eval.py`: submission-valid LLM benchmark harness.
-4. `train.py`: research model training with auto-bootstrap.
-5. `ROADMAP.md`: Repo 2.0 prioritized plan.
-6. `docs/guides/tutorial.md`: operational walkthrough.
+1. `cheatsheet.txt`: current live submission artifact candidate.
+2. `cheatsheets/cheatsheet_2026-03-14_full_budget_v2.txt`: archived promoted full-budget baseline.
+3. `repo2_harness.py`: one-command orchestrator.
+4. `run_eval.py`: submission-valid LLM benchmark harness.
+5. `train.py`: research model training with auto-bootstrap.
+6. `ROADMAP.md`: Repo 2.0 prioritized plan.
+7. `docs/guides/tutorial.md`: operational walkthrough.
+8. `docs/guides/cheatsheet-revamp-2026-03-14.md`: rigorous rating of the old cheatsheets and rationale for the new baseline.
 
 ## Acceptance Gates
 

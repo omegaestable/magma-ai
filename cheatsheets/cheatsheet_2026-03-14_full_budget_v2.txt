@@ -213,3 +213,47 @@ Answer FALSE only from an explicit witness.
   Pass 1: multiplicity + stock/linear magmas.
   Pass 2: if Pass 1 fails, mandatory specialization/duality/rewrite attempt.
 - If neither side has a real argument yet, keep checking. Do not default to FALSE.
+
+13. GRAPH-POSITION FROM FORMULA (mined stats, 1415-equation corpus)
+ops = total * in formula. avg_implies by ops:
+  ops=0  n=2    avg=2346  (x=x, x=y)
+  ops=1  n=3    avg= 822  (x=x*y, x=y*x)
+  ops=2  n=18   avg= 208  (x*x=y*z, x=y*(x*x))
+  ops=3  n=123  avg=  40
+  ops=4  n=1269 avg=  20  (bulk, weakest)
+avg_implies by distinct variable count:
+  vars=1  avg=2.7  impby=2269  (near-sink)
+  vars=2  avg=20   vars=3  avg=37   vars=4  avg=66
+Lower ops + more distinct vars = stronger hub (higher out-degree).
+
+14. NO-REPEATED-VARS RULE
+If every variable appears exactly once total (both sides combined):
+  avg_implies=203  (8.7x corpus mean of 23)  -> treat Eq1 as high-power hub.
+Any repeated variable drops avg to 23.
+
+15. OPS-ASYMMETRY RULE
+asym=|ops_LHS - ops_RHS|:  asym=1 peaks at avg=105 implies.
+asym=0 avg=50, asym=2 avg=23, asym=4 avg=20.
+Eq1 with exactly one-side-more operator -> boost TRUE confidence.
+
+16. ONE-VAR SINK RULE
+Eq with only one distinct variable: avg_implies=2.7, avg_impby=2269.
+  x*x=x*(x*(x*x))   Eq3253 impby=3029  x*x=((x*x)*x)*x  Eq4065 impby=3029
+  x*x=x*(x*x)        Eq307  impby=2617  x*x=(x*x)*(x*x)  Eq3659 impby=2575
+If Eq2 is one-var -> lean TRUE. If Eq1 is one-var -> lean FALSE.
+
+17. HUB QUICK-SCORE for Eq1 (estimate out-degree)
++60 ops<=1  +40 ops=2  +20 ops=3  +20 vars=4  +10 vars=3
++30 no variable repeated anywhere  +50 LHS-vars and RHS-vars disjoint
+-15 balanced (every var same count LHS as RHS)  -25 vars=1
+Score>=70: strong hub, lean TRUE. Score<0: sink, lean FALSE.
+
+18. KNOWN HUBS AND SINKS
+Hubs (Eq1 -> near-TRUE):
+  x=y           Eq2  4693  x*x=y*z        Eq41  1555
+  x=x*y         Eq4  1213  x=y*x          Eq5   1213
+  x=y*((x*z)*(y*z)) Eq895 662  x=y*(x*x) Eq13   574
+  x*x=x*y       Eq38  175  x=x*(x*y)     Eq9    117
+Sinks (Eq2 -> lean TRUE from almost any Eq1):
+  x=x            Eq1   impby=4693  x*x=x*(x*(x*x)) Eq3253 impby=3029
+  x*(x*x)=x*(y*x) Eq4269 impby=2867  x*x=x*(x*x) Eq307 impby=2617

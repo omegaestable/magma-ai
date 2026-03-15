@@ -19,7 +19,7 @@ That separation matters because the dense implication matrix and solver stack co
 | `docs/` | Paper assets, memos, architecture, and guides |
 | `evaluate.py` | Local heuristic benchmark or prompt export |
 | `run_eval.py` | LLM evaluation for cheatsheet-only inference |
-| `distill.py` | Offline cheatsheet distillation |
+| `distill.py` | Offline cheatsheet distillation ablation |
 | `solver.py` | Research-only decision engine |
 
 ## Submission-Support Components
@@ -32,7 +32,7 @@ These scripts support Stage 1 without redefining the artifact boundary.
 | `analyze_equations.py` | Shared parsing and structural utilities |
 | `llm_client.py` | Local Ollama/OpenAI-compatible transport for distillation and cheatsheet-only evaluation |
 | `run_eval.py` | Evaluate a cheatsheet using an LLM and record benchmark-validity metadata |
-| `distill.py` | Build or compress candidate cheatsheets from labeled examples |
+| `distill.py` | Build or compress candidate cheatsheets from labeled examples for ablation comparison |
 | `benchmark_utils.py` | Shared bucket labeling, matrix sampling, metric metadata, and validity annotations |
 | `download_data.py` | Generate local JSONL benchmarks from the dense matrix |
 | `evaluate.py` | Local prompt export for cheatsheet workflows and heuristic research benchmarking |
@@ -78,15 +78,17 @@ The exports directory is intentionally separated from the lightweight JSONL benc
 ### Submission-Support Flow
 
 1. Start from `equations.txt` and labeled training/eval data.
-2. Use `distill.py` to produce a candidate cheatsheet.
+2. Start from the human-authored baseline in `cheatsheet.txt`.
 3. Use `run_eval.py` to evaluate the cheatsheet on JSONL benchmark data.
+4. Use `distill.py` only as an ablation path, not as the default artifact-construction path.
 4. Store results under `results/` with benchmark-validity metadata.
 
 ### Research Flow
 
 1. Use `data/exports/export_raw_implications_14_3_2026.csv` as a dense source of implication labels.
 2. Use `solver.py`, `proof_search.py`, `magma_search.py`, and `features.py` to discover patterns, counterexamples, and heuristic signals.
-3. Distill only the robust mathematical content back into `cheatsheet.txt`.
+3. Distill only robust mathematical content back into short, explicit proof and refutation macros.
+4. Promote new baselines into `cheatsheet.txt` only after they beat the current human-authored artifact on class-parity and hard-slice behavior.
 
 ## Guardrails
 

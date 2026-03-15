@@ -1,8 +1,139 @@
 """Shared benchmark helpers for submission-support and research evaluation.
 
-This module centralizes label loading, balanced sampling, holdout construction,
-bucket assignment, and adversarial summaries so evaluation code can state
-clearly when a run is submission-valid and when it is only research support.
+This module keeps label loading, balanced sampling, bucket assignment, and
+benchmark metadata in one place so evaluation code can state clearly when a
+run is submission-valid and when it is only research support.
+"""
+
+from __future__ import annotations
+
+import csv
+import json
+import random
+from collections import defaultdict
+from typing import Iterable
+
+from analyze_equations import (
+    can_prove_by_rewriting,
+    count_ops,
+    find_counterexample,
+    get_depth,
+    get_vars,
+    is_specialization,
+    load_equations,
+    parse_equation,
+    tree_to_str,
+    get_dual,
+)
+from config import RAW_IMPL_CSV
+
+
+LANDMARK_EQUATIONS = {
+    1, 2, 3, 4, 5, 6, 7, 23, 38, 39, 40, 41, 42, 43, 44, 45, 46, 4512, 4513
+}
+
+
+def is_singleton_equivalent_equation(eq_str: str) -> bool:
+    """Return True if the equation is equivalent to the singleton law x=y."""
+    try:
+        lhs, rhs = parse_equation(eq_str)
+    except Exception:
+        return False
+    vars_l = get_vars(lhs)
+    vars_r = get_vars(rhs)
+    if vars_l & vars_r:
+        return False
+    return not isinstance(lhs, str) or not isinstance(rhs, str)
+
+
+def is_trivial_free_pair(record: dict, equations: list[str]) -> bool:
+    """F1 definition: drop Eq1/Eq2 incidents and pairs both singleton-equivalent."""
+    eq1_idx = int(record["eq1_idx"])
+    eq2_idx = int(record["eq2_idx"])
+    if eq1_idx in {1, 2} or eq2_idx in {1, 2}:
+        return False
+    eq1_singleton = is_singleton_equivalent_equation(equations[eq1_idx - 1])
+    eq2_singleton = is_singleton_equivalent_equation(equations[eq2_idx - 1])
+    return not (eq1_singleton and eq2_singleton)
+
+
+def summarize_accuracy(records: Iterable[dict]) -> dict:
+    records = list(records)
+    if not records:
+        return {"count": 0, "accuracy": None}
+    correct = sum(1 for record in records if record.get("correct"))
+    return {
+        "count": len(records),
+        "accuracy": correct / len(records),
+    }
+
+
+def summarize_trivial_free_accuracy(records: Iterable[dict], equations: list[str]) -> dict:
+    records = list(records)
+    filtered = [record for record in records if is_trivial_free_pair(record, equations)]
+    summary = summarize_accuracy(filtered)
+    summary["excluded_count"] = max(0, len(records) - summary["count"])
+    return summary
+
+
+def _canonical_equation_key(eq_str: str) -> tuple[str, str]:
+    lhs, rhs = parse_equation(eq_str)
+    lhs_str = tree_to_str(lhs)
+    rhs_str = tree_to_str(rhs)
+    return tuple(sorted((lhs_str, rhs_str)))
+
+
+def build_dual_index(equations: list[str]) -> dict[int, int]:
+    """Map each equation index to the index of its dual, if present."""
+    key_to_idx: dict[tuple[str, str], int] = {}
+    for idx, eq_str in enumerate(equations, start=1):
+        try:
+            key_to_idx[_canonical_equation_key(eq_str)] = idx
+        except Exception:
+            continue
+
+    dual_map: dict[int, int] = {}
+    for idx, eq_str in enumerate(equations, start=1):
+        try:
+            lhs, rhs = parse_equation(eq_str)
+            dual_key = tuple(sorted((tree_to_str(get_dual(lhs)), tree_to_str(get_dual(rhs)))))
+        except Exception:
+            continue
+        dual_idx = key_to_idx.get(dual_key)
+        if dual_idx is not None:
+            dual_map[idx] = dual_idx
+    return dual_map
+
+
+def build_dual_swap_records(records: Iterable[dict], equations: list[str]) -> list[dict]:
+    """Construct dual-swapped evaluation records for F2 consistency checks."""
+    dual_map = build_dual_index(equations)
+    swapped = []
+    for record in records:
+        eq1_idx = int(record["eq1_idx"])
+        eq2_idx = int(record["eq2_idx"])
+        dual_eq1 = dual_map.get(eq1_idx)
+        dual_eq2 = dual_map.get(eq2_idx)
+        if dual_eq1 is None or dual_eq2 is None:
+            continue
+        swapped.append({
+            "source_eq1_idx": eq1_idx,
+            "source_eq2_idx": eq2_idx,
+            "eq1_idx": dual_eq1,
+            "eq2_idx": dual_eq2,
+            "eq1": equations[dual_eq1 - 1],
+            "eq2": equations[dual_eq2 - 1],
+            "label": record.get("label"),
+        })
+    return swapped
+
+
+"""Shared benchmark helpers for submission-support and research evaluation.
+
+This module keeps label loading, balanced sampling, holdout construction,
+bucket assignment, and benchmark metadata in one place so evaluation code can
+state clearly when a run is submission-valid and when it is only research
+support.
 """
 
 from __future__ import annotations
@@ -12,15 +143,14 @@ import heapq
 import json
 import random
 from collections import defaultdict
-from functools import lru_cache
 from typing import Iterable, Sequence
 
 from analyze_equations import (
     can_prove_by_rewriting,
     count_ops,
     find_counterexample,
-    get_depth,
     get_dual,
+    get_depth,
     get_vars,
     is_specialization,
     load_equations,
@@ -52,8 +182,8 @@ def load_labeled_pairs_from_jsonl(filepath: str) -> list[dict]:
             if not line:
                 continue
             payload = json.loads(line)
-            eq1_idx = payload.get("equation1_index", payload.get("eq1", payload.get("eq1_idx")))
-            eq2_idx = payload.get("equation2_index", payload.get("eq2", payload.get("eq2_idx")))
+            eq1_idx = payload.get("equation1_index", payload.get("eq1"))
+            eq2_idx = payload.get("equation2_index", payload.get("eq2"))
             label = payload.get("implies", payload.get("label"))
             if eq1_idx and eq2_idx and label is not None:
                 records.append(
@@ -87,7 +217,7 @@ def sample_holdout_equation_indices(
     if n_holdout <= 0:
         return []
 
-    protected = {int(value) for value in (protected_indices or [])}
+    protected = set(int(value) for value in (protected_indices or []))
     candidates = [idx for idx in range(1, n_equations + 1) if idx not in protected]
     if n_holdout > len(candidates):
         raise ValueError(
@@ -220,6 +350,7 @@ def build_hardest_benchmark_from_matrix(
                     require_both_allowed=require_both_allowed,
                 ):
                     continue
+
                 try:
                     value = int(value_str)
                 except ValueError:
@@ -355,6 +486,7 @@ def classify_pair(
 def structural_heuristic_probability(eq1_profile: dict, eq2_profile: dict) -> float:
     if not eq1_profile["parsed"] or not eq2_profile["parsed"]:
         return 0.5
+
     if eq1_profile["equation"] == eq2_profile["equation"]:
         return 0.99
     if eq1_profile["is_identity"]:
@@ -419,17 +551,6 @@ def summarize_bucket_counts(records: Iterable[dict]) -> dict:
     }
 
 
-def summarize_accuracy(records: Iterable[dict]) -> dict:
-    records_list = list(records)
-    if not records_list:
-        return {"count": 0, "accuracy": None}
-    correct = sum(1 for record in records_list if record.get("correct"))
-    return {
-        "count": len(records_list),
-        "accuracy": correct / len(records_list),
-    }
-
-
 def summarize_trivial_share(records: Iterable[dict]) -> dict:
     records_list = list(records)
     total = len(records_list)
@@ -444,111 +565,65 @@ def summarize_trivial_share(records: Iterable[dict]) -> dict:
     }
 
 
-def is_singleton_equivalent_equation(eq_str: str) -> bool:
-    try:
-        lhs, rhs = parse_equation(eq_str)
-    except Exception:
-        return False
-    vars_l = get_vars(lhs)
-    vars_r = get_vars(rhs)
-    if vars_l & vars_r:
-        return False
-    return not isinstance(lhs, str) or not isinstance(rhs, str)
-
-
-def is_trivial_free_pair(record: dict, equations: Sequence[str]) -> bool:
-    eq1_idx = int(record["eq1_idx"])
-    eq2_idx = int(record["eq2_idx"])
-    if eq1_idx in {1, 2} or eq2_idx in {1, 2}:
-        return False
-    singleton_indices = load_singleton_equivalent_indices()
-    if singleton_indices:
-        eq1_singleton = eq1_idx in singleton_indices
-        eq2_singleton = eq2_idx in singleton_indices
-    else:
-        eq1_singleton = is_singleton_equivalent_equation(equations[eq1_idx - 1])
-        eq2_singleton = is_singleton_equivalent_equation(equations[eq2_idx - 1])
-    return not (eq1_singleton and eq2_singleton)
-
-
 def summarize_trivial_free_accuracy(records: Iterable[dict], equations: Sequence[str] | None = None) -> dict:
-    records_list = list(records)
-    if equations is None:
-        filtered = [record for record in records_list if record.get("bucket") != "trivial"]
-    else:
-        filtered = [record for record in records_list if is_trivial_free_pair(record, equations)]
-    summary = summarize_accuracy(filtered)
-    summary["excluded_count"] = len(records_list) - summary["count"]
+    records_list = [record for record in records if record.get("bucket") != "trivial"]
+    count = len(records_list)
+    if count == 0:
+        return {"count": 0, "accuracy": None}
+    correct = sum(1 for record in records_list if record.get("correct"))
+    return {"count": count, "accuracy": correct / count}
+
+
+def summarize_landmark_accuracy(records: Iterable[dict]) -> dict:
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for record in records:
+        eq1_idx = int(record.get("eq1_idx", 0))
+        eq2_idx = int(record.get("eq2_idx", 0))
+        touched = sorted({idx for idx in (eq1_idx, eq2_idx) if idx in LANDMARK_EQUATIONS})
+        if touched:
+            grouped["overall"].append(record)
+            for idx in touched:
+                grouped[f"Eq{idx}"] .append(record)
+
+    summary = {}
+    for key, bucket_records in grouped.items():
+        count = len(bucket_records)
+        summary[key] = {
+            "count": count,
+            "accuracy": (sum(1 for record in bucket_records if record.get("correct")) / count)
+            if count else None,
+        }
+    if "overall" not in summary:
+        summary["overall"] = {"count": 0, "accuracy": None}
     return summary
-
-
-def summarize_landmark_accuracy(
-    records: Iterable[dict],
-    landmark_equations: set[int] | None = None,
-) -> dict:
-    landmark_equations = landmark_equations or LANDMARK_EQUATIONS
-    filtered = [
-        record for record in records
-        if int(record.get("eq1_idx", 0)) in landmark_equations
-        or int(record.get("eq2_idx", 0)) in landmark_equations
-    ]
-    summary = {
-        "overall": summarize_accuracy(filtered),
-        "per_landmark": {},
-    }
-    for landmark in sorted(landmark_equations):
-        subset = [
-            record for record in filtered
-            if int(record.get("eq1_idx", 0)) == landmark or int(record.get("eq2_idx", 0)) == landmark
-        ]
-        if subset:
-            summary["per_landmark"][str(landmark)] = summarize_accuracy(subset)
-    return summary
-
-
-def _canonical_equation_key(eq_str: str) -> tuple[str, str]:
-    lhs, rhs = parse_equation(eq_str)
-    return tuple(sorted((tree_to_str(lhs), tree_to_str(rhs))))
-
-
-def build_dual_index(equations: Sequence[str]) -> dict[int, int]:
-    key_to_idx: dict[tuple[str, str], int] = {}
-    for idx, eq_str in enumerate(equations, start=1):
-        try:
-            key_to_idx[_canonical_equation_key(eq_str)] = idx
-        except Exception:
-            continue
-
-    dual_map: dict[int, int] = {}
-    for idx, eq_str in enumerate(equations, start=1):
-        try:
-            lhs, rhs = parse_equation(eq_str)
-            dual_key = tuple(sorted((tree_to_str(get_dual(lhs)), tree_to_str(get_dual(rhs)))))
-        except Exception:
-            continue
-        dual_idx = key_to_idx.get(dual_key)
-        if dual_idx is not None:
-            dual_map[idx] = dual_idx
-    return dual_map
 
 
 def build_dual_swap_records(records: Iterable[dict], equations: Sequence[str]) -> list[dict]:
-    dual_map = build_dual_index(equations)
+    index_by_equation = {eq.strip(): idx for idx, eq in enumerate(equations, start=1)}
     swapped = []
     for record in records:
-        eq1_idx = int(record["eq1_idx"])
-        eq2_idx = int(record["eq2_idx"])
-        dual_eq1 = dual_map.get(eq1_idx)
-        dual_eq2 = dual_map.get(eq2_idx)
-        if dual_eq1 is None or dual_eq2 is None:
+        eq1_str = equations[record["eq1_idx"] - 1]
+        eq2_str = equations[record["eq2_idx"] - 1]
+        try:
+            lhs1, rhs1 = parse_equation(eq1_str)
+            lhs2, rhs2 = parse_equation(eq2_str)
+        except Exception:
             continue
+
+        dual_eq1 = f"{tree_to_str(get_dual(lhs1))} = {tree_to_str(get_dual(rhs1))}"
+        dual_eq2 = f"{tree_to_str(get_dual(lhs2))} = {tree_to_str(get_dual(rhs2))}"
+        dual_eq1_idx = index_by_equation.get(dual_eq1)
+        dual_eq2_idx = index_by_equation.get(dual_eq2)
+        if not dual_eq1_idx or not dual_eq2_idx:
+            continue
+
         swapped.append(
             {
-                "source_eq1_idx": eq1_idx,
-                "source_eq2_idx": eq2_idx,
-                "eq1_idx": dual_eq1,
-                "eq2_idx": dual_eq2,
-                "label": record.get("label"),
+                "eq1_idx": dual_eq1_idx,
+                "eq2_idx": dual_eq2_idx,
+                "label": record["label"],
+                "source_eq1_idx": record["eq1_idx"],
+                "source_eq2_idx": record["eq2_idx"],
             }
         )
     return annotate_records(swapped, equations)
@@ -561,8 +636,6 @@ def summarize_dual_swap_consistency(records: Iterable[dict], dual_records: Itera
     }
     paired = 0
     consistent = 0
-    label_preserved = 0
-    mismatches = []
     for dual_record in dual_records:
         source_key = (
             dual_record.get("source_eq1_idx"),
@@ -576,24 +649,10 @@ def summarize_dual_swap_consistency(records: Iterable[dict], dual_records: Itera
         paired += 1
         if bool(original_record["predicted"]) == bool(dual_record["predicted"]):
             consistent += 1
-        if original_record.get("label") == dual_record.get("label"):
-            label_preserved += 1
-        if bool(original_record["predicted"]) != bool(dual_record["predicted"]):
-            mismatches.append(
-                {
-                    "eq1_idx": original_record.get("eq1_idx"),
-                    "eq2_idx": original_record.get("eq2_idx"),
-                    "predicted": original_record.get("predicted"),
-                    "dual_predicted": dual_record.get("predicted"),
-                    "label": original_record.get("label"),
-                }
-            )
 
     return {
         "paired_count": paired,
         "prediction_consistency": (consistent / paired) if paired else None,
-        "label_preservation": (label_preserved / paired) if paired else None,
-        "mismatch_examples": mismatches[:20],
     }
 
 
@@ -639,31 +698,6 @@ def benchmark_metadata(
         "benchmark_name": benchmark_name,
         "holdout_equation_count": holdout_equation_count,
     }
-
-
-@lru_cache(maxsize=1)
-def load_singleton_equivalent_indices(filepath: str = str(RAW_IMPL_CSV)) -> frozenset[int]:
-    """Load exact Eq2-equivalent membership from the dense matrix when available."""
-    try:
-        row2: list[int] | None = None
-        col2: list[int] = []
-        with open(filepath, "r", encoding="utf-8", newline="") as handle:
-            reader = csv.reader(handle)
-            for row_idx, row in enumerate(reader, start=1):
-                if len(row) < 2:
-                    return frozenset()
-                if row_idx == 2:
-                    row2 = [int(value) for value in row]
-                col2.append(int(row[1]))
-        if row2 is None:
-            return frozenset()
-        indices = set()
-        for eq_idx, (from_eq2, to_eq2) in enumerate(zip(row2, col2), start=1):
-            if eq_idx == 2 or (from_eq2 > 0 and to_eq2 > 0):
-                indices.add(eq_idx)
-        return frozenset(indices)
-    except (OSError, ValueError):
-        return frozenset()
 
 
 def _normalize_index_set(values: Sequence[int] | set[int] | None) -> set[int] | None:
@@ -756,6 +790,37 @@ def _bucket_sort_key(bucket: str) -> tuple[int, str]:
         return (CORE_BUCKETS.index(bucket), bucket)
     except ValueError:
         return (len(CORE_BUCKETS), bucket)
+
+
+def _forces_singleton(eq: tuple) -> bool:
+    lhs, rhs = eq
+    variables = get_vars(lhs) | get_vars(rhs)
+    return isinstance(lhs, str) and isinstance(rhs, str) and len(variables) == 2 and lhs != rhs
+    )
+
+    if submission_valid:
+        reason = "Cheatsheet-only prompting with separate labels and no matrix/graph access at inference."
+    elif uses_eval_labels_in_prompt:
+        reason = "Invalid: evaluation labels appear in the prompt context."
+    elif uses_matrix_at_inference:
+        reason = "Research-only: inference path can access answer-like matrix information."
+    elif artifact_kind != "cheatsheet_only":
+        reason = "Research-only: the evaluated artifact is not the submission artifact."
+    else:
+        reason = "Submission validity not established."
+
+    return {
+        "artifact_kind": artifact_kind,
+        "label_source": label_source,
+        "inference_mode": inference_mode,
+        "primary_metric": PRIMARY_STAGE1_METRIC,
+        "secondary_metrics": list(SECONDARY_LOCAL_METRICS),
+        "format_examples_source": format_examples_source,
+        "uses_matrix_at_inference": uses_matrix_at_inference,
+        "uses_eval_labels_in_prompt": uses_eval_labels_in_prompt,
+        "submission_valid": submission_valid,
+        "validity_reason": reason,
+    }
 
 
 def _forces_singleton(eq: tuple) -> bool:

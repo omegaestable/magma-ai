@@ -1,0 +1,71 @@
+### Cheat Sheet for Solving Difficult Examples
+
+#### Decision Procedures and Algorithms for Checking Implication
+
+1. **General Approach**:
+   - **Simplify Equations**: Break down complex nested expressions into simpler parts.
+   - **Identify Patterns**: Look for common patterns or structures that imply certain properties (e.g., associativity, idempotence).
+   - **Counterexamples**: Construct simple magma tables to find counterexamples where equations do not hold.
+
+2. **Specific Techniques**:
+   - **Equation Simplification**: Reduce nested expressions using associative and commutative properties.
+   - **Variable Count and Operation Depth**: Analyze the number of variables and operations involved in each equation.
+   - **Duality Analysis**: Check if equations are dual to each other (e.g., symmetric roles of elements).
+
+#### Common Patterns Leading to TRUE or FALSE
+
+- **TRUE Implications**:
+  - Equations with nested structures that simplify to a single variable or constant.
+  - Equations where operations commute and cancel out, leading to trivial solutions.
+
+- **FALSE Implications**:
+  - Equations involving non-commutative or non-associative operations.
+  - Counterexamples showing contradictions in specific magma tables.
+
+#### Useful Counterexample Magma Tables
+
+| Magma Table |
+|-------------|
+| \( \{0, 1\} \) with: |
+| \( x \circ y = y \) for all \(x, y\) |
+
+- **Example**:
+  - Equation 1: \( x = (y \circ z) \circ (w \circ u) \circ v \)
+  - Counterexample: \( y \circ z = y \), \( w \circ u = w \), \( v = v \)
+  - Result: \( x = y \)
+
+#### Key Structural Properties
+
+- **Variable Count**:
+  - Equations with fewer variables often imply simpler structures.
+  
+- **Operation Depth**:
+  - Nested operations can lead to complex implications. Simplify by reducing depth.
+
+- **Duality**:
+  - Check if equations are dual (e.g., \( x \circ y = z \) vs. \( y \circ x = z \)).
+  
+#### Landmark Equations and Their Relationships
+
+1. **Equation 1:**
+   - **Implication**: If Equation 1 holds, check for simpler nested structures.
+   - **Example**:
+     - Simplify to see if it reduces to a single variable or constant.
+
+2. **Equation 2:**
+   - **Implication**: Check for commutative or associative properties that might simplify the structure.
+   - **Example**:
+     - Counterexample: \( x \circ y = y \circ (z \circ x) \)
+     - Simplify to see if it holds true in a simple magma.
+
+3. **Equation 3:**
+   - **Implication**: Analyze for duality or specific structural properties.
+   - **Example**:
+     - Counterexample: \( x = y \circ (y \circ z) \)
+     - Simplify to see if it holds true in a simple magma.
+
+### Summary
+- Use simplification techniques and counterexamples to check implications.
+- Identify common patterns and structures that imply certain properties.
+- Construct specific magma tables to find contradictions or valid examples.
+- Analyze variable counts, operation depths, and duality for deeper insights.

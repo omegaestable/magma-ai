@@ -83,7 +83,7 @@ def main() -> None:
     parser.add_argument("--no-leak-n", type=int, default=200)
     parser.add_argument("--holdout-count", type=int, default=100)
     parser.add_argument("--hardest-n", type=int, default=500)
-    parser.add_argument("--run-distill", action="store_true", help="Also run distillation + candidate evaluation")
+    parser.add_argument("--run-distill", action="store_true", help="Also run distillation ablation + candidate evaluation")
     parser.add_argument("--n-shots", type=int, default=150)
     parser.add_argument("--bootstrap-samples", type=int, default=10000)
     parser.add_argument("--min-overall-acc", type=float, default=0.60)
