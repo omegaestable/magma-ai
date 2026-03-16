@@ -1,0 +1,121 @@
+MAGMA IMPLICATION CHEATSHEET
+E1, E2: equations over magmas (set with binary operation *).
+Does every magma satisfying E1 also satisfy E2?
+
+IMPORTANT: Most random equational implications are FALSE.
+Your best strategy: try counterexamples first. Only say TRUE with strong proof.
+
+═══════════════════════════════════════
+STEP 1: CHECK COUNTEREXAMPLE MAGMAS
+═══════════════════════════════════════
+Try each model on E1 and E2. If any satisfies E1 but NOT E2 → FALSE.
+
+MODEL A — LEFT PROJECTION: a*b = a (every product returns left argument)
+  Under this rule, any expression evaluates to its LEFTMOST variable.
+  Examples: x*y → x.  (x*y)*z → x.  x*(y*z) → x.  y*(x*z) → y.
+  Equation holds iff leftmost variable is SAME on both sides.
+  
+  DO THIS: Find leftmost var of LHS(E1) and leftmost var of RHS(E1).
+           Find leftmost var of LHS(E2) and leftmost var of RHS(E2).
+  If E1 leftmost vars MATCH but E2 leftmost vars DIFFER → FALSE.
+  Counterexample: "Left projection a*b=a satisfies E1 but not E2."
+
+MODEL B — RIGHT PROJECTION: a*b = b (every product returns right argument)
+  Any expression evaluates to its RIGHTMOST variable.
+  Examples: x*y → y.  (x*y)*z → z.  x*(y*z) → z.  y*(x*z) → z.
+  Equation holds iff rightmost variable is SAME on both sides.
+  
+  DO THIS: Find rightmost var of LHS(E1) and rightmost var of RHS(E1).
+           Find rightmost var of LHS(E2) and rightmost var of RHS(E2).
+  If E1 rightmost vars MATCH but E2 rightmost vars DIFFER → FALSE.
+  Counterexample: "Right projection a*b=b satisfies E1 but not E2."
+
+MODEL C — CONSTANT: a*b = c (every product equals the same constant)
+  Any expression containing * evaluates to c. A bare variable stays itself.
+  Equation holds iff: both sides contain *, OR both sides are the same bare var.
+  Equation FAILS if: one side has * (→c) and other is a bare variable (→itself≠c).
+  
+  If E1 holds under constant but E2 fails → FALSE.
+  Counterexample: "Constant operation a*b=0 on {0,1} satisfies E1 but not E2."
+
+MODEL D — XOR: a*b = a+b mod 2 on {0,1}
+  For each variable, count its total occurrences on each side of the equation.
+  Equation holds iff every variable has SAME parity (odd/even) on both sides.
+  Example: x*(x*y) = y → LHS: x appears 2(even), y appears 1(odd).
+                          RHS: x appears 0(even), y appears 1(odd). HOLDS ✓
+  Example: x*y = y*(x*z) → z: LHS 0(even), RHS 1(odd). FAILS ✗
+  
+  If E1 holds under XOR but E2 fails → FALSE.
+
+═══════════════════════════════════════
+STEP 2: CHECK FOR OBVIOUS TRUE
+═══════════════════════════════════════
+These are the ONLY cases where you should answer TRUE:
+
+(A) SINGLETON: One side of E1 is a bare variable NOT appearing on the other side.
+    This forces the magma to have only one element. Then ANY E2 holds → TRUE.
+    Example: E1 = "x = y * (z * w)" → x is bare, x not in RHS → TRUE.
+    CAREFUL: E1 = "x = y * (x * z)" → x IS in RHS → NOT singleton.
+
+(B) x=x: If E2 is literally "x = x" → TRUE. Every magma satisfies x=x.
+
+(C) LEFT PROJECTION FORCING: E1 has the EXACT form x = x * EXPR where:
+    • Left side is exactly one bare variable x
+    • Right side starts with that same x followed by *
+    • The FIRST variable in EXPR (after x*) is NOT x
+    • That first variable appears exactly ONCE in EXPR
+    Examples that qualify: x=x*y, x=x*(y*z), x=x*(y*(x*z)), x=x*((y*z)*w)
+    Examples that do NOT: x=x*(x*y), x=x*(y*(z*y)), x=x*((x*y)*z)
+    
+    If E1 qualifies → E1 forces left projection.
+    Then E1⊨E2 iff leftmost var is SAME on both sides of E2.
+    Same → TRUE.  Different → FALSE.
+
+(D) RIGHT PROJECTION FORCING: E1 has the EXACT form x = EXPR * x where:
+    • Left side is exactly one bare variable x
+    • Right side ends with * followed by that same x
+    • The FIRST variable in EXPR (reading left to right) is NOT x
+    • That first variable appears exactly ONCE in EXPR
+    Examples that qualify: x=y*x, x=(y*z)*x, x=(y*(z*x))*x, x=((y*z)*w)*x
+    
+    If E1 qualifies → E1 forces right projection.
+    Then E1⊨E2 iff rightmost var is SAME on both sides of E2.
+    Same → TRUE.  Different → FALSE.
+
+═══════════════════════════════════════
+STEP 3: DEFAULT → FALSE
+═══════════════════════════════════════
+If no counterexample was found AND no TRUE test matched:
+  → Answer FALSE.
+  → For counterexample, try a 2-element magma {0,1}.
+     List all 4 products: 0*0=?, 0*1=?, 1*0=?, 1*1=?
+     Common choices: left proj (0,0,1,1), right proj (0,1,0,1),
+     AND (0,0,0,1), OR (0,1,1,1), const-0 (0,0,0,0).
+
+═══════════════════════════════════════
+EXAMPLES
+═══════════════════════════════════════
+
+Example 1: E1 = x=x*(y*z), E2 = x*y = y*x
+Step 1A: LP on E1: leftmost x vs x → match. LP on E2: x vs y → differ. → FALSE!
+Counterexample: Left projection a*b=a. E1: x=x✓. E2: x*y=x≠y=y*x.
+
+Example 2: E1 = x=x*(y*z), E2 = x*(y*z) = x*y
+Step 1A: LP on E1: x vs x → match. LP on E2: x vs x → match. No refutation.
+Step 1B: RP on E1: x vs z → differ. RP doesn't satisfy E1. No refutation.
+Step 2C: E1 = x=x*(y*z), EXPR=(y*z), first var=y≠x, y once ✓ → LEFT PROJ.
+E2 leftmost: x vs x → same → TRUE.
+
+Example 3: E1 = (x*y)*x = (x*z)*w, E2 = x*(y*y) = x*(z*y)
+Step 1A: LP on E1: x vs x → match. LP on E2: x vs x → match. No refutation.
+Step 1B: RP on E1: x vs w → differ. RP doesn't satisfy E1. Skip.
+Step 1C: CONST on E1: both sides have * → match. CONST on E2: both * → match.
+Step 1D: XOR on E1: LHS x:2,y:1. RHS x:1,z:1,w:1. x parity differs → fails E1.
+No counterexample found. Step 2: Not singleton, not x=x, not x=x*EXPR form.
+Step 3: → FALSE. Try {0,1} with AND: 0*0=0, 0*1=0, 1*0=0, 1*1=1. Check E1...
+
+CRITICAL REMINDERS:
+• DO NOT skip Step 1. Always check counterexamples FIRST.
+• x = x*(x*y) does NOT force left projection. Only x = x*(y*...) does.
+• Both sides having * does NOT mean the equations are related.
+• When in doubt → FALSE. FALSE is correct more often than TRUE.

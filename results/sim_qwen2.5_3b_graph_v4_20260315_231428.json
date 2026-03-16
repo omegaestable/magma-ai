@@ -1,0 +1,240 @@
+{
+  "model": "qwen2.5:3b",
+  "cheatsheet": "cheatsheets/graph_v4.txt",
+  "timestamp": "2026-03-15 23:14:28",
+  "summary": {
+    "total": 20,
+    "correct": 5,
+    "incorrect": 13,
+    "unparsed": 2,
+    "accuracy": 0.25,
+    "f1": 0.125,
+    "true_accuracy": 0.25,
+    "false_accuracy": 0.25,
+    "precision": 0.0833,
+    "recall": 0.25,
+    "avg_time_s": 9.04
+  },
+  "results": [
+    {
+      "id": "hard_0001",
+      "equation1": "x = y * (y * ((x * y) * x))",
+      "equation2": "x * y = ((z * x) * w) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 11.58,
+      "raw_response": "## Equation 1: \\( x = y \\cdot (y \\cdot ((x \\cdot y) \\cdot x)) \\)\n## Equation 2: \\( x \\cdot y = ((z \\cdot x) \\cdot w) \\cdot y \\)\n\n### VERDICT: FALSE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma satisfying Equation 1 also satisfies Equation 2. We will use the decision procedure outlined in the MAGMA IMPLICATION CHEATSHEET.\n\n#### STEP 3: LEFT PROJECTION TEST\nWe have \\( x = y \\cdot (y \\cdot ((x \\cdot y) \\cdot x)) \\). Here, the expression inside the parentheses is \\( y \\cdot ((x \\cdot y) \\cdot x) \\), and the first variable reading left-to-right in this expression is \\( y \\neq x \\). The variable \\( y \\) appears exactly once in this expression.\n\nSince Equation 1 has form \\( x = x \\cdot EXPR \\) where the first variable in \\( EXPR \\) (which is \\( y \\)) does not appear on the right side, it forces a left projection. Under left projection, every expression evaluates to its leftmost variable. Therefore, we need to check if the leftmost variables of both sides match.\n\nFor Equation 2: \\( x \\cdot y = ((z \\cdot x) \\cdot w) \\cdot y \\), let's analyze the structure:\n- The left side is \\( x \\cdot y \\).\n- The right side simplifies as follows: \\( (z \\cdot x) \\cdot w \\cdot y \\).\n\nUnder left projection, both sides simplify to their respective leftmost variables. For Equation 2, the leftmost variable on the left side is \\( x \\), and for the right side, it"
+    },
+    {
+      "id": "hard_0002",
+      "equation1": "x * (y * z) = (z * w) * w",
+      "equation2": "x * (y * x) = (x * y) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 8.78,
+      "raw_response": "## Equation 1: \\( x * (y * z) = (z * w) * w \\)\n## Equation 2: \\( x * (y * x) = (x * y) * z \\)\n\n### VERDICT: FALSE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma satisfying Equation 1 also satisfies Equation 2. We will use the decision procedure outlined in the MAGMA IMPLICATION CHEATSHEET.\n\n#### STEP 5: COUNTEREXAMPLE MAGMAS → FALSE\nWe need to find a single magma that satisfies Equation 1 but does not satisfy Equation 2.\n\nConsider the following magma:\n- Elements: \\(\\{0, 1\\}\\)\n- Binary operation \\( * \\) defined as follows:\n  - \\(0 * 0 = 0\\)\n  - \\(0 * 1 = 0\\)\n  - \\(1 * 0 = 1\\)\n  - \\(1 * 1 = 1\\)\n\nLet's verify if this magma satisfies Equation 1 and Equation 2.\n\n**Verification of Equation 1:**\n\\[ x * (y * z) = (z * w) * w \\]\n\nFor the given magma:\n- If \\(x = 0\\), \\(y = 0\\), and \\(z = 0\\):\n  - Left side: \\(0 * (0 * 0) = 0 * 0 = 0\\)\n  - Right side: \\((0 * 0) * 0 = 0 * 0 = 0\\)\n- If \\(x = 1\\), \\(y = 0\\), and \\(z = 0\\):\n  - Left side: \\(1 * (0 * 0) = 1 * 0 = 0\\)\n "
+    },
+    {
+      "id": "hard_0003",
+      "equation1": "x = ((y * y) * z) * x",
+      "equation2": "x = x * (((y * x) * x) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 8.69,
+      "raw_response": "## Equation 1: \\( x = ((y * y) * z) * x \\)\n## Equation 2: \\( x = x * (((y * x) * x) * x) \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and apply the decision procedure for magmas.\n\n#### STEP 3: LEFT PROJECTION TEST\nWe check if Equation 1 has a form \\( x = x * \\text{EXPR} \\) where the first variable in \\(\\text{EXPR}\\) is not \\(x\\) and appears exactly once. \n\nEquation 1: \n\\[ x = ((y * y) * z) * x \\]\n\nHere, \\(\\text{EXPR} = (y * y) * z\\). The first variable reading left-to-right in \\(\\text{EXPR}\\) is \\(y\\), which is not equal to \\(x\\). Also, \\(y\\) appears exactly once in \\(\\text{EXPR}\\).\n\nThus, Equation 1 falls into class 4 and forces a left projection property. Under the left projection property (a*b=a), every expression evaluates to its leftmost variable.\n\n#### STEP 3: LEFT PROJECTION TEST\nWe need to check if Equation 2 has a form \\( x = \\text{EXPR} * x \\) where the first variable in \\(\\text{EXPR}\\) is not \\(x\\) and appears exactly once. \n\nEquation 2:\n\\[ x = (((y * x) * x) * x) * x \\]\n\nHere, \\(\\text{EXPR} = (y * x)\\). The first variable reading left-to-right in \\(\\text{EXPR}\\) is \\(y\\), which is not equal to \\(x\\). Also, \\("
+    },
+    {
+      "id": "hard_0004",
+      "equation1": "(x * y) * x = (x * z) * w",
+      "equation2": "x * (y * y) = x * (z * y)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.74,
+      "raw_response": "## Equation 1: ((x * y) * x = (x * z) * w)\n## Equation 2: (x * (y * y) = x * (z * y))\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and see if they can be derived from each other.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** ((x * y) * x = (x * z) * w)\n\n**Equation 2:** (x * (y * y) = x * (z * y))\n\nWe will use the LEFT PROJECTION test to analyze Equation 1.\n\n**LEFT PROJECTION TEST:**\n- Check if E1 has form \\( x = x * \\text{EXPR} \\).\n- In this case, we have:\n  - LHS: ((x * y) * x)\n  - RHS: ((x * z) * w)\n\nWe can rewrite the left side of Equation 1 as follows:\n\\[ (x * y) * x = x * (y * x) \\]\n\nThis shows that \\( x \\) is on both sides, and we have a form where \\( x \\) appears in the expression. This matches the structure required for LEFT PROJECTION.\n\n**E1 forces LEFT PROJECTION:**\n- Under left projection, every expression reduces to its leftmost variable.\n- For Equation 1:\n  - LHS: \\( (x * y) * x = x * (y * x) \\)\n  - RHS: \\( (x * z) * w = x * (z * w) \\)\n\nSince both sides reduce to their respective leftmost variables, we need to check if the leftmost variable on both sides is the same.\n\n**E1 and E2"
+    },
+    {
+      "id": "hard_0005",
+      "equation1": "x = ((y * z) * (z * x)) * y",
+      "equation2": "x * x = (y * (y * y)) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.8,
+      "raw_response": "## Equation 1: \\( x = ((y * z) * (z * x)) * y \\)\n## Equation 2: \\( x * x = (y * (y * y)) * y \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and check if every magma satisfying Equation 1 also satisfies Equation 2.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** \\( x = ((y * z) * (z * x)) * y \\)\n\n**Equation 2:** \\( x * x = (y * (y * y)) * y \\)\n\nFirst, let's simplify and analyze Equation 1:\n\\[ x = ((y * z) * (z * x)) * y \\]\n\nWe need to check if this equation implies the structure of Equation 2. Let's start by simplifying the left-hand side:\n\n1. **Left-Projection Test:**\n   - Check if \\(x\\) is a singleton variable.\n   - The expression on the right-hand side involves nested multiplications and applications of \\(y\\). \n   - If we assume \\(x = y\\), then:\n     \\[ x = ((y * z) * (z * x)) * y \\]\n     becomes\n     \\[ y = ((y * z) * (z * y)) * y \\]\n\n2. **Right-Projection Test:**\n   - Check if the structure of Equation 1 allows for right projection.\n   - The expression on the left-hand side involves nested multiplications and applications of \\(y\\). \n   - If we assume \\(x = z\\), then:\n     \\[ x * x = (y * (y * y)) * y \\]\n     becomes\n     \\[ z *"
+    },
+    {
+      "id": "hard_0006",
+      "equation1": "x * x = (x * y) * z",
+      "equation2": "x * x = (y * z) * w",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 7.61,
+      "raw_response": "## Equation 1: \\( x * x = (x * y) * z \\)\n## Equation 2: \\( x * x = (y * z) * w \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma that satisfies Equation 1 also satisfies Equation 2. Let's analyze the equations step-by-step.\n\n#### Step 3: Left Projection Test\nEquation 1 is \\( x * x = (x * y) * z \\). We can rewrite it as:\n\\[ x * x = ((x * y) * z) \\]\n\nThis matches the form of Equation 2, where we have:\n\\[ x * x = ((y * z) * w) \\]\n\nIn this case, \\( y = x \\), and \\( z = w \\). This means that every magma satisfying Equation 1 also satisfies Equation 2 because the structure is identical under left projection.\n\n#### Step 5: Counterexample\nTo ensure that no counterexample exists, we need to check if there are any magmas that satisfy Equation 1 but not Equation 2. Given the form of both equations and the fact that they are structurally similar under left projection, it is highly unlikely that such a magma exists.\n\n### PROOF:\nSince Equation 1 implies Equation 2 through left projection, we can conclude that every magma satisfying Equation 1 also satisfies Equation 2.\n\n### COUNTEREXAMPLE:\nNone."
+    },
+    {
+      "id": "hard_0007",
+      "equation1": "x = (y * (y * (y * z))) * x",
+      "equation2": "x * y = z * (w * (w * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 11.1,
+      "raw_response": "## Equation 1: \\( x = (y * (y * (y * z))) * x \\)\n## Equation 2: \\( x * y = z * (w * (w * y)) \\)\n\n### VERDICT: FALSE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma satisfying Equation 1 also satisfies Equation 2. Let's analyze the equations step by step.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** \\( x = (y * (y * (y * z))) * x \\)\n\nThis equation involves nested multiplications and a single variable \\(x\\) on both sides of the equality. The left side is more complex, involving three applications of the binary operation \\( * \\).\n\n**Equation 2:** \\( x * y = z * (w * (w * y)) \\)\n\nThis equation also involves nested multiplications but with different variables and structure.\n\n### Step 3: LEFT PROJECTION TEST\nWe need to check if Equation 1 is in the form of \\( x = x * EXPR \\) where the first variable in \\(EXPR\\) is not \\(x\\).\n\nRewriting Equation 1:\n\\[ x = (y * (y * (y * z))) * x \\]\n\nHere, the expression inside the parentheses is \\( y * (y * (y * z)) \\). The first variable reading left-to-right is \\( y \\), which does not appear exactly once in this expression. Therefore, Equation 1 is not of form \\( x = x * EXPR \\).\n\nSince Equation 1 is not of form \\( x = x * EXPR \\), we do not need to apply the LEFT PROJECTION test.\n\n### Step 5: COUNTEREXAMPLE MAGMAS\nTo determine if Equation 2 holds for all magmas, we"
+    },
+    {
+      "id": "hard_0008",
+      "equation1": "x = x * (y * ((y * z) * y))",
+      "equation2": "x = x * ((x * (x * x)) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 10.65,
+      "raw_response": "## Equation 1: \\( x = x * (y * ((y * z) * y)) \\)\n## Equation 2: \\( x = x * ((x * (x * x)) * x) \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and see if they are consistent with each other.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** \\( x = x * (y * ((y * z) * y)) \\)\n\nLet's break down the expression:\n- The innermost operation is \\( y * z \\).\n- Then, we have \\( (y * z) * y \\), which simplifies to \\( y * (z * y) \\) due to associativity.\n- Finally, we get \\( y * ((y * z) * y) = y * (y * (z * y)) \\).\n\nSo, Equation 1 can be rewritten as:\n\\[ x = x * (y * (y * (z * y))) \\]\n\n**Equation 2:** \\( x = x * ((x * (x * x)) * x) \\)\n\nLet's break down the expression:\n- The innermost operation is \\( x * x \\), which simplifies to \\( x \\).\n- Then, we have \\( (x * x) * x = x * x \\).\n- Finally, we get \\( (x * (x * x)) * x = (x * x) * x \\).\n\nSo, Equation 2 can be rewritten as:\n\\[ x = x * ((x * x) * x) \\]\n\nNow let's compare the two equations:\n\n**Equation 1:** \\( x = x * (y * (y * (z * y))) \\)\n\n**Equ"
+    },
+    {
+      "id": "hard_0009",
+      "equation1": "x = ((x * x) * (y * z)) * y",
+      "equation2": "x = ((x * (y * x)) * x) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.78,
+      "raw_response": "## Equation 1: \\( x = ((x * x) * (y * z)) * y \\)\n## Equation 2: \\( x = ((x * (y * x)) * x) * y \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma that satisfies Equation 1 also satisfies Equation 2. Let's analyze the equations step-by-step.\n\n#### Step 3: Left Projection Test\nWe start by checking if Equation 1 has a form \\( x = x * \\text{EXPR} \\) where the first variable in \\(\\text{EXPR}\\) is not \\(x\\) and appears exactly once in \\(\\text{EXPR}\\).\n\nEquation 1:\n\\[ x = ((x * x) * (y * z)) * y \\]\n\nHere, \\(\\text{EXPR} = (y * z)\\). The first variable reading left-to-right in \\(\\text{EXPR}\\) is \\(y\\), which is not equal to \\(x\\). Also, \\(y\\) appears exactly once in \\(\\text{EXPR}\\).\n\nThus, Equation 1 belongs to class 4 and forces a left projection property. Under the left projection property (a*b=a), every expression evaluates to its leftmost variable.\n\n#### Step 3: Apply Left Projection\nUnder the left projection property:\n- \\( x = ((x * x) * (y * z)) * y \\)\n- Evaluates to \\( x \\)\n\nNow, let's check Equation 2 under the same left projection property:\n\\[ x = ((x * (y * x)) * x) * y \\]\n\nHere, \\(\\text{EXPR} = (y * x)\\). The first variable reading left-to-right in \\(\\text{EXPR}\\) is \\(y"
+    },
+    {
+      "id": "hard_0010",
+      "equation1": "(x * x) * y = (y * y) * z",
+      "equation2": "x * (y * y) = x * (z * z)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.75,
+      "raw_response": "## Equation 1: ((x * x) * y = (y * y) * z)\n## Equation 2: (x * (y * y) = x * (z * z))\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and see if they are logically equivalent.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** ((x * x) * y = (y * y) * z)\n\nThis equation can be rewritten as:\n\\[ (a \\cdot a) \\cdot b = (b \\cdot b) \\cdot c \\]\nwhere \\( a = x \\), \\( b = y \\), and \\( c = z \\).\n\n**Equation 2:** (x * (y * y) = x * (z * z))\n\nThis equation can be rewritten as:\n\\[ d \\cdot (e \\cdot e) = d \\cdot (f \\cdot f) \\]\nwhere \\( d = x \\), \\( e = y \\), and \\( f = z \\).\n\n### Step 3: LEFT PROJECTION TEST\nWe need to check if Equation 1 is of the form \\( x = x \\cdot \\text{EXPR} \\). Let's rewrite Equation 1:\n\\[ (x * x) * y = (y * y) * z \\]\n\nHere, the first variable reading left-to-right in EXPR is \\( y \\), and it appears exactly once. Therefore, this equation falls under class 4, which forces a left projection property.\n\n### Step 3: RIGHT PROJECTION TEST\nWe need to check if Equation 2 is of the form \\( x = \\text{EXPR} * x \\). Let's rewrite Equation 2:\n\\[ x * (y * y) = x * ("
+    },
+    {
+      "id": "hard_0011",
+      "equation1": "x = (x * (y * z)) * (w * y)",
+      "equation2": "x = (y * (z * w)) * (u * z)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.73,
+      "raw_response": "## Equation 1: \\( x = (x * (y * z)) * (w * y) \\)\n## Equation 2: \\( x = (y * (z * w)) * (u * z) \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma satisfying Equation 1 also satisfies Equation 2. Let's analyze the equations step-by-step.\n\n#### Step 3: LEFT PROJECTION TEST\nWe start by checking if Equation 1 is of form \\( x = x * \\text{EXPR} \\). Here, \\( \\text{EXPR} = (y * z) * (w * y) \\).\n\n- The first variable in \\( \\text{EXPR} \\) is \\( w \\), which is not equal to \\( x \\).\n- \\( w \\) appears exactly once in \\( \\text{EXPR} \\).\n\nSince the conditions for left projection are met, we need to check if Equation 2 also follows a similar form. \n\nEquation 2 can be rewritten as:\n\\[ x = (y * (z * w)) * (u * z) \\]\n\nHere, \\( \\text{EXPR} = (z * w) * (u * z) \\).\n\n- The first variable in \\( \\text{EXPR} \\) is \\( u \\), which is not equal to \\( x \\).\n- \\( u \\) appears exactly once in \\( \\text{EXPR} \\).\n\nSince both equations follow the form of left projection, we need to check if the leftmost variables match. \n\nIn Equation 1:\n\\[ x = (x * (y * z)) * (w * y) \\]\nThe leftmost variable is \\( x \\).\n\nIn Equation 2:\n\\[ x = (y * (z * w"
+    },
+    {
+      "id": "hard_0012",
+      "equation1": "(x * y) * x = (z * w) * u",
+      "equation2": "x * (x * x) = x * (y * y)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.74,
+      "raw_response": "## Equation 1: ((x * y) * x = (z * w) * u)\n## Equation 2: (x * (x * x) = x * (y * y))\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and see if they can coexist in a magma.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** ((x * y) * x = (z * w) * u)\nThis equation involves nested multiplications. Let's break it down:\n- The left side is ((x * y) * x).\n- The right side is ((z * w) * u).\n\nFor Equation 2 to hold, we need:\n**Equation 2:** (x * (x * x) = x * (y * y))\nThis equation simplifies to checking if \\(x\\) can be expressed in terms of nested multiplications.\n\n#### Step 3: Left Projection Test\nWe check if the structure of Equation 1 aligns with a left projection property. \n\n**Left Projection Property:** \\(a \\cdot b = a\\)\nIf we assume that every element is equal to itself, then:\n- For Equation 2, it simplifies to checking if \\(x\\) can be expressed as nested multiplications.\n- For Equation 1, the structure suggests that elements might collapse under certain operations.\n\nGiven the form of Equation 1, let's see if it forces a left projection property. \n\n**Left Projection Test:**\nIf we assume:\n\\[ (x * y) * x = z * w * u \\]\nAnd consider \\(a = x\\), then:\n- The structure suggests that elements might collapse under certain operations.\n- For Equation 2, the nested multiplications imply a form of left projection.\n\n"
+    },
+    {
+      "id": "hard_0013",
+      "equation1": "x * y = ((z * y) * x) * x",
+      "equation2": "x * y = y * (y * (y * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.69,
+      "raw_response": "## Equation Equivalence Check\n\n### Equation 1 (E1): \\( x * y = ((z * y) * x) * x \\)\n### Equation 2 (E2): \\( x * y = y * (y * (y * y)) \\)\n\n#### VERDICT: FALSE\n\n#### REASONING:\nTo determine whether every magma satisfying E1 also satisfies E2, we need to check if there exists a magma that satisfies E1 but not E2. We will use the Counterexample method.\n\n#### COUNTEREXAMPLE:\n\nConsider the following 4-element magma with binary operation defined as follows:\n- \\(a * a = b\\)\n- \\(b * a = c\\)\n- \\(c * a = a\\)\n- All other products are undefined or not relevant for our counterexample.\n\nLet's verify if this magma satisfies E1 and does not satisfy E2:\n\n**Verification of Equation 1 (E1):**\n\\[ x * y = ((z * y) * x) * x \\]\n\nWe need to check all possible combinations:\n- \\(a * a = b\\)\n- \\(b * a = c\\)\n- \\(c * a = a\\)\n\nLet's test some cases:\n- For \\(x = a\\) and \\(y = a\\):\n  \\[ a * a = b \\]\n  \\[ ((z * y) * x) * x = (a * z) * a = a * c = c \\]\n\nSince \\(b \\neq c\\), E1 is not satisfied.\n\n**Verification of Equation 2 (E2):**\n\\[ x * y = y * (y * (y * y)) \\]\n\nWe need to check all possible combinations:\n- For \\(x = a\\) and \\(y = a\\):\n  \\[ a * a = b \\]\n  \\[ a"
+    },
+    {
+      "id": "hard_0014",
+      "equation1": "x = (y * x) * (x * (x * z))",
+      "equation2": "x = y * (z * (z * (x * y)))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.75,
+      "raw_response": "## Equation 1: \\( x = (y * x) * (x * (x * z)) \\)\n## Equation 2: \\( x = y * (z * (z * (x * y))) \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma that satisfies Equation 1 also satisfies Equation 2. Let's analyze the equations step-by-step.\n\n#### Step 3: Left Projection Test\nWe start by checking if Equation 1 is of the form \\( x = x * \\text{EXPR} \\), where the first variable in \\(\\text{EXPR}\\) is not \\(x\\) and appears exactly once in \\(\\text{EXPR}\\).\n\nEquation 1: \\( x = (y * x) * (x * (x * z)) \\)\n- Here, \\(\\text{EXPR} = (x * (x * z))\\).\n- The first variable reading left-to-right is \\(x\\) and it appears exactly once in \\(\\text{EXPR}\\).\n\nSince the first variable in \\(\\text{EXPR}\\) is not \\(x\\) and appears exactly once, Equation 1 falls into class 4. Under a*b=a (left projection), every expression evaluates to its leftmost variable.\n\n#### Step 3: Check if E1 forces E2\nWe need to check if the leftmost variables of both sides match under left projection:\n- Left side: \\( x = (y * x) * (x * (x * z)) \\)\n- Right side: \\( x = y * (z * (z * (x * y))) \\)\n\nUnder left projection, every expression evaluates to its leftmost variable. Therefore, we need to compare the leftmost variables:\n- Left side: The leftmost variable is"
+    },
+    {
+      "id": "hard_0015",
+      "equation1": "x * x = x * (y * (z * y))",
+      "equation2": "x * (x * x) = x * (y * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.72,
+      "raw_response": "## Equation 1: \\( x * x = x * (y * (z * y)) \\)\n## Equation 2: \\( x * (x * x) = x * (y * x) \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to analyze the structure of both equations and see if any magma satisfying Equation 1 also satisfies Equation 2.\n\n#### Step-by-Step Analysis:\n\n**Equation 1:** \\( x * x = x * (y * (z * y)) \\)\n\nThis equation suggests that for some elements \\( y \\) and \\( z \\), the expression \\( y * (z * y) \\) can be simplified such that it equals \\( x \\). This implies a specific structure in how the binary operation interacts with itself.\n\n**Equation 2:** \\( x * (x * x) = x * (y * x) \\)\n\nThis equation states that for any element \\( x \\), the expression \\( x * (x * x) \\) should be equal to \\( x * (y * x) \\). This suggests a more general structure where repeated applications of the binary operation on \\( x \\) yield the same result as applying it in a different order.\n\n#### Step 3: Left Projection Test\nWe need to check if Equation 1 is of class 4, which would force left projection. Let's rewrite Equation 1:\n\\[ x * x = x * (y * (z * y)) \\]\n\nHere, the expression \\( y * (z * y) \\) appears on the right-hand side and does not appear as a standalone variable on the left-hand side. This matches the form required for class 4.\n\n#### Step 3: Right Projection Test\nWe need to check if Equation 2 is of class "
+    },
+    {
+      "id": "hard_0016",
+      "equation1": "x = (x * y) * (x * (y * z))",
+      "equation2": "x = (x * y) * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 8.73,
+      "raw_response": "## Equation 1: \\( x = (x * y) * (x * (y * z)) \\)\n## Equation 2: \\( x = (x * y) * (x * (z * y)) \\)\n\n### STEP 1: SINGLETON → TRUE\n- Check if one side of E1 is a bare variable NOT appearing on the other side.\n- In this case, both sides have variables and operations. No singleton magma can satisfy only one side.\n\n### STEP 2: TRIVIAL → TRUE\n- Check if Equation 2 \\( x = x \\) holds in all magmas.\n- This is trivially true for any magma since every element equals itself.\n\n### STEP 3: LEFT PROJECTION TEST\n- Check if E1 has form \\( x = x * EXPR \\) where the first variable reading left-to-right in EXPR is NOT x and appears exactly once in EXPR.\n- Expression: \\( (y * z) \\)\n- First variable: \\( y \\neq x \\), but it appears twice (\\( y, z \\)) → Not class 4.\n\n### STEP 5: COUNTEREXAMPLE MAGMAS → FALSE\n- Check if there exists a magma satisfying Equation 1 but not Equation 2.\n- Consider the magma with elements \\(\\{0, 1\\}\\) and operations:\n  - \\( 0 * 0 = 0 \\)\n  - \\( 0 * 1 = 0 \\)\n  - \\( 1 * 0 = 1 \\)\n  - \\( 1 * 1 = 1 \\)\n\n- Check Equation 1: \\( x = (x * y) * (x * (y * z)) \\)\n  - For \\( x = 0, y = 0, z = 0 \\): \n    \\( 0 = (0"
+    },
+    {
+      "id": "hard_0017",
+      "equation1": "x = y * (((x * y) * x) * y)",
+      "equation2": "x = ((x * (y * z)) * z) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.77,
+      "raw_response": "## Equation 1: \\( x = y * (((x * y) * x) * y) \\)\n## Equation 2: \\( x = ((x * (y * z)) * z) * y \\)\n\n### VERDICT: TRUE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma satisfying Equation 1 also satisfies Equation 2. Let's analyze both equations step-by-step.\n\n#### Step 3: Left Projection Test\nEquation 1 is \\( x = y * (((x * y) * x) * y) \\). We identify the expression inside the parentheses:\n\\[ ((x * y) * x) * y \\]\nHere, the first variable reading left-to-right in this expression is \\( x \\), and it appears exactly once. Therefore, Equation 1 falls into class 4 (left projection).\n\n#### Step 3: Check if E1 has form \\( x = x * EXPR \\)\nWe need to check if Equation 2 can be derived from the structure of Equation 1:\n\\[ x = ((x * (y * z)) * z) * y \\]\nThis expression is not in the form \\( x = x * EXPR \\). Instead, it involves a different structure. We will use the left projection property to simplify and compare both equations.\n\n#### Step 3: Simplify Equation 1 using Left Projection\nUnder the left projection property (a*b=a), every expression reduces to its leftmost variable:\n\\[ ((x * y) * x) * y \\]\nSince \\( x = y * (((x * y) * x) * y) \\), we can substitute and simplify:\n\\[ x = y * (((x * y) * x) * y) \\]\nUsing the left projection property, we get:\n\\[ x = ((x *"
+    },
+    {
+      "id": "hard_0018",
+      "equation1": "x = ((y * x) * y) * (z * z)",
+      "equation2": "x = x * (((x * y) * x) * y)",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 8.72,
+      "raw_response": "## Equation Equivalence Check\n\n### Step 1: SINGLETON → TRUE\n- **Equation 1 (E1):** \\( x = ((y * x) * y) * (z * z) \\)\n- **Equation 2 (E2):** \\( x = x * (((x * y) * x) * y) \\)\n\n### Step 2: TRIVIAL → TRUE\n- Equation 2 is trivially true for all magmas since it states \\( x = x \\).\n\n### Step 3: LEFT PROJECTION TEST\n- **Equation 1 (E1):** \\( x = ((y * x) * y) * (z * z) \\)\n- **Expression (EXPR):** \\( (y * x) * y \\)\n- **First variable in EXPR:** \\( y \\neq x \\)\n- **Occurrences of first variable in EXPR:** 1\n\nSince E1 is not in the form \\( x = x * \\text{EXPR} \\), we do not need to apply the LEFT PROJECTION TEST.\n\n### Step 4: RIGHT PROJECTION TEST\n- **Equation 1 (E1):** \\( x = ((y * x) * y) * (z * z) \\)\n- **Expression (EXPR):** \\( (z * z) \\)\n- **First variable in EXPR:** \\( z \\neq x \\)\n- **Occurrences of first variable in EXPR:** 2\n\nSince E1 is not in the form \\( \\text{EXPR} * x \\), we do not need to apply the RIGHT PROJECTION TEST.\n\n### Step 5: COUNTEREXAMPLE MAGMAS → FALSE\nWe have already determined that E1 does not fit into any of the classes (LEFT PROJECTION, RIGHT PROJECTION, CONSTANT, or VARIABLE PARITY) and"
+    },
+    {
+      "id": "hard_0019",
+      "equation1": "x * y = (x * (y * x)) * z",
+      "equation2": "x * y = (x * (x * z)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 8.8,
+      "raw_response": "## Equation Equivalence Decision\n\n### Equation 1 (E1): \\( x * y = (x * (y * x)) * z \\)\n### Equation 2 (E2): \\( x * y = (x * (x * z)) * x \\)\n\n#### VERDICT: FALSE\n\n#### REASONING:\nTo determine whether E1 implies E2, we need to check if every magma satisfying E1 also satisfies E2. We will use the decision procedure outlined in the MAGMA IMPLICATION CHEATSHEET.\n\n### STEP 5: COUNTEREXAMPLE MAGMAS → FALSE\nWe need to find a single magma that satisfies E1 but does not satisfy E2.\n\nConsider the following magma:\n- Elements: \\(\\{0, 1\\}\\)\n- Binary operation \\( * \\) defined as follows:\n  - \\( 0 * 0 = 0 \\)\n  - \\( 0 * 1 = 0 \\)\n  - \\( 1 * 0 = 0 \\)\n  - \\( 1 * 1 = 1 \\)\n\nLet's verify if this magma satisfies E1 and E2.\n\n**Verification of E1:**\n\\[ x * y = (x * (y * x)) * z \\]\n\nFor the given magma:\n- If \\( x = 0 \\) and \\( y = 1 \\):\n  - Left side: \\( 0 * 1 = 0 \\)\n  - Right side: \n    - \\( (0 * (1 * 0)) * z = (0 * 0) * z = 0 * z = 0 \\)\n\nThus, E1 holds for this magma.\n\n**Verification of E2:**\n\\[ x * y = (x * (x * z)) * x \\]\n\nFor the given magma:\n- If \\( x = 0 \\) and \\("
+    },
+    {
+      "id": "hard_0020",
+      "equation1": "x * (y * z) = (x * x) * z",
+      "equation2": "x * (y * z) = (y * y) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 8.73,
+      "raw_response": "## Equation 1: \\( x * (y * z) = (x * x) * z \\)\n## Equation 2: \\( x * (y * z) = (y * y) * x \\)\n\n### VERDICT: FALSE\n\n### REASONING:\nTo determine whether Equation 1 implies Equation 2, we need to check if every magma satisfying Equation 1 also satisfies Equation 2. We will use the decision procedure outlined in the MAGMA IMPLICATION CHEATSHEET.\n\n#### STEP 3: LEFT PROJECTION TEST\nWe have \\( x * (y * z) = (x * x) * z \\). Let's identify the expression and check if it fits the form of left projection:\n- Expression: \\( y * z \\)\n- First variable in the expression: \\( y \\neq x \\)\n- The first variable appears exactly once in the expression.\n\nSince this matches the criteria for class 4 (left projection), we need to check if Equation 2 holds under left projection. Under left projection, every expression evaluates to its leftmost variable:\n\\[ x * (y * z) = y \\]\n\\[ (y * y) * x = y \\]\n\nFor Equation 1 to imply Equation 2, the leftmost variables on both sides must be equal:\n- Leftmost variable of LHS(E2): \\( y \\)\n- Leftmost variable of RHS(E2): \\( y \\)\n\nSince they are the same, this does not provide a contradiction. However, we need to check if there is any other structure that might force Equation 1 but not Equation 2.\n\n#### STEP 5: COUNTEREXAMPLE MAGMAS\nWe will test for counterexamples by constructing magmas where Equation 1 holds but Equation 2 fails.\n\nConsider the magma with elements \\(\\{0, 1\\}\\) and operation defined as:\n"
+    }
+  ]
+}

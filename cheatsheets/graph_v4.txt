@@ -1,0 +1,188 @@
+MAGMA IMPLICATION CHEATSHEET
+E1,E2: equations over magmas (set with binary op *).
+Question: Does every magma satisfying E1 also satisfy E2?
+
+====== DECISION PROCEDURE ======
+
+STEP 1: SINGLETON → TRUE
+If one side of E1 is a bare variable NOT appearing on the other side,
+then E1 forces all elements equal (singleton magma). Any E2 holds. → TRUE.
+  Ex: x = y*(z*w) → x not in RHS → singleton → TRUE
+  Ex: x = y*(x*z) → x IS in RHS → NOT singleton → continue
+
+STEP 2: TRIVIAL → TRUE
+If E2 is x=x → TRUE (every magma satisfies x=x).
+
+STEP 3: LEFT PROJECTION TEST
+Check if E1 has form x = x * EXPR where:
+ (a) The FIRST variable reading left-to-right in EXPR is NOT x, AND
+ (b) That first variable appears EXACTLY ONCE in EXPR.
+
+YES examples (class 4 - forces left projection a*b=a):
+  x=x*y           EXPR=y, first var=y≠x, y appears 1x ✓
+  x=x*(y*z)       EXPR=(y*z), first=y≠x, 1x ✓
+  x=x*(y*(x*z))   EXPR=(y*(x*z)), first=y≠x, 1x ✓
+  x=x*((y*z)*w)   EXPR=((y*z)*w), first=y≠x, 1x ✓
+
+NO examples (NOT class 4):
+  x=x*(x*y)       first var=x → FAIL (this is class 9, much weaker)
+  x=x*(y*(z*y))   first=y but y appears 2x → FAIL
+  x=x*((x*y)*z)   first var=x → FAIL
+
+If E1 IS class 4 (left projection):
+  Under a*b=a, every expression evaluates to its LEFTMOST variable.
+  E1⊨E2 iff leftmost var of LHS(E2) = leftmost var of RHS(E2).
+  → Same leftmost var → TRUE    → Different → FALSE
+  Ex: E2 = x*(y*z) = x*y → leftmost: x vs x → TRUE
+  Ex: E2 = x*y = y*x → leftmost: x vs y → FALSE
+
+STEP 4: RIGHT PROJECTION TEST
+Check if E1 has form x = EXPR * x where:
+ (a) The FIRST variable reading left-to-right in EXPR is NOT x, AND
+ (b) That first variable appears EXACTLY ONCE in EXPR.
+
+YES examples (class 5 - forces right projection a*b=b):
+  x=y*x           EXPR=y, first=y≠x, 1x ✓
+  x=(y*z)*x       EXPR=(y*z), first=y≠x, 1x ✓
+  x=(y*(z*x))*x   EXPR=(y*(z*x)), first=y≠x, 1x ✓
+  x=((y*z)*w)*x   EXPR=((y*z)*w), first=y≠x, 1x ✓
+
+If E1 IS class 5 (right projection):
+  Under a*b=b, every expression evaluates to its RIGHTMOST variable.
+  E1⊨E2 iff rightmost var of LHS(E2) = rightmost var of RHS(E2).
+  → Same rightmost var → TRUE    → Different → FALSE
+
+STEP 5: COUNTEREXAMPLE MAGMAS → FALSE
+A single magma satisfying E1 but NOT E2 proves FALSE.
+Test these models on BOTH E1 and E2. If model satisfies E1 but not E2 → FALSE.
+
+(A) LEFT PROJECTION: a*b = a
+    Any expression reduces to its leftmost variable.
+    E holds iff leftmost vars match on both sides.
+    Most equations with a bare var on LHS are satisfied (leftmost=x both sides).
+
+(B) RIGHT PROJECTION: a*b = b
+    Any expression reduces to its rightmost variable.
+    E holds iff rightmost vars match on both sides.
+
+(C) CONSTANT: a*b = c (fixed constant, all products equal)
+    Any expression containing * evaluates to c.
+    A bare variable evaluates to itself.
+    E holds iff: both sides have * (→both=c, equal),
+    OR both sides are the same bare variable,
+    OR one side is bare var, other side IS that same var.
+    E fails if: one side has * (→c) and other is a bare var (unless that var=c).
+
+(D) VARIABLE PARITY (XOR on {0,1}, a*b = a⊕b):
+    For each variable, count its occurrences on each side of E.
+    E holds iff every variable has same parity (odd/even count) on both sides.
+    Ex: (x*y)*x = y → LHS: x appears 2(even), y appears 1(odd)
+                       RHS: x appears 0(even), y appears 1(odd) → same parity → holds
+    Ex: x*y = y*(x*z) → LHS z:0, RHS z:1 → different parity → fails
+
+Apply: if any model (A)-(D) satisfies E1 but NOT E2 → FALSE.
+Use that model as your counterexample.
+
+STEP 6: STRUCTURAL FILTERS → FALSE
+(a) BALANCE: Count * on each side of E1 and E2.
+    If E1 is balanced (same * count both sides) and E2 is NOT → FALSE.
+    Reason: any model (left proj, right proj, constant, XOR) satisfying
+    a balanced equation preserves balance.
+
+(b) E2 = x=y (different bare variables, no *):
+    Only singleton magmas satisfy this. If E1 is not singleton → FALSE.
+
+STEP 7: SUBSTITUTION → TRUE
+Try substituting variables in E1 to derive E2 or consequences:
+  From E1, substitute y→x: get a specialized equation E1'.
+  If E1' matches E2 directly → TRUE.
+  If E1' can be chained with E1 to produce E2 → TRUE.
+  Ex: E1 = x=x*y. Set y=x: x=x*x (idempotent).
+      Set y=z*w: x=x*(z*w). These are consequences of E1.
+
+STEP 8: DUALITY
+The dual of equation E: swap all * arguments (a*b becomes b*a).
+E1⊨E2 iff dual(E1)⊨dual(E2).
+Left projection ↔ right projection under duality.
+
+STEP 9: STRENGTH ORDERING
+Stronger equations (fewer satisfying magmas) imply more.
+Strength indicators:
+  - Bare variable on one side → very strong
+  - More distinct variables → generally stronger
+  - x=y is the strongest (forces singleton)
+  - x=x is the weakest (satisfied by everything)
+  Chain: x=y → x=x*y → x=x*(x*y) → x*x=x → x=x
+
+STEP 10: FINAL REASONING
+If no rule resolved it:
+• Try to find a 2-element magma ({0,1}, 4 entries) satisfying E1 but not E2.
+  There are only 16 possible binary operations on {0,1}. Common ones:
+  AND(0,0,0,1) OR(0,1,1,1) NAND(1,1,1,0) NOR(1,0,0,0) IMPL(1,1,0,1)
+  Format: (0*0, 0*1, 1*0, 1*1)
+  LP=(0,0,1,1) RP=(0,1,0,1) CONST0=(0,0,0,0)
+• Try algebraic derivation of E2 from E1 using substitution and rewriting.
+• If E1 is "obviously stronger" (simpler, bare vars, more constraints) → TRUE.
+• If E1 looks complex but E2 imposes different structural constraints → FALSE.
+
+====== CONSTANT-FORCING HINT ======
+If E1 has * on both sides, 3+ distinct variables, and is NOT satisfied
+by LP or RP, it MIGHT force constant operation (all products equal one value).
+If constant satisfies BOTH E1 and E2 → consider TRUE. But be cautious:
+many such equations do NOT force constant. Strong evidence:
+  - E1 equates products with DISJOINT variables: x*y=z*w (definitely constant)
+  - E1 equates with rearranged vars: x*y=(y*x)*z, x*y=y*((x*y)*z)
+If uncertain whether E1 forces constant, try a 2-element magma search.
+
+====== WORKED EXAMPLES ======
+
+EXAMPLE 1: E1 = x=x*(y*z), E2 = x*(y*z) = x*y
+Step 3: E1 = x=x*(y*z). EXPR=(y*z). First var = y ≠ x. y appears 1x in EXPR. ✓
+→ E1 forces LEFT PROJECTION.
+Step 3 test: E2 leftmost vars: LHS x*(y*z)→x, RHS x*y→x. Same! → TRUE.
+PROOF: E1 forces a*b=a. Under left projection, x*(y*z)=x and x*y=x.
+
+EXAMPLE 2: E1 = x=x*(y*(z*w)), E2 = x*y = y*x
+Step 3: EXPR=(y*(z*w)). First var=y≠x, 1x. ✓ → LEFT PROJECTION.
+Test E2: leftmost of x*y=x, leftmost of y*x=y. x≠y → FALSE.
+COUNTEREXAMPLE: Left projection a*b=a. Then x*y=x but y*x=y. x≠y.
+
+EXAMPLE 3: E1 = x*(y*z)=(z*x)*y, E2 = x*y = z*w
+Not singleton. Not x=x*EXPR. Not x=EXPR*x.
+Step 5A: LP satisfies E1? leftmost: x vs z. x≠z → LP fails on E1.
+Step 5B: RP satisfies E1? rightmost: z vs y. z≠y → RP fails on E1.
+Step 5C: CONST satisfies E1? Both sides have * → yes.
+  CONST satisfies E2? Both sides have * → yes. No refutation.
+Step 5D: Parity? E1 LHS: x:1,y:1,z:1. RHS: z:1,x:1,y:1. Same ✓.
+  E2 LHS: x:1,y:1. RHS: z:1,w:1. Different vars → parity fails on E2?
+  Actually z:0 vs z:1, w:0 vs w:1 → parity differs → XOR fails on E2.
+  But does XOR satisfy E1? x⊕(y⊕z) = x⊕y⊕z and (z⊕x)⊕y = z⊕x⊕y.
+  Same (XOR is associative and commutative). → XOR satisfies E1.
+  XOR fails E2 (z,w change sides). → FALSE.
+COUNTEREXAMPLE: XOR on {0,1}. E1 holds, E2 fails for x=0,y=0,z=0,w=1.
+
+EXAMPLE 4: E1 = x=x*(x*y), E2 = x*x = x
+Step 3: EXPR=(x*y), first var=x → FAIL. NOT class 4.
+Step 5A: LP satisfies E1? leftmost x=x ✓. LP satisfies E2? x*x→x, x→x ✓.
+  Both satisfied → no refutation from LP.
+Step 5B: RP satisfies E1? rightmost x vs y. x≠y → RP fails E1. No refutation.
+Step 7: Substitute y→x in E1: x=x*(x*x). This with E1 gives x*x=x*(x*y)...
+  This is complex. Try small magma:
+  {0,1}: 0*0=0,0*1=0,1*0=1,1*1=1 (left proj). E1:1=1*(1*0)=1*1=1✓, E2:1*1=1=1✓.
+  Try non-LP: 0*0=0,0*1=0,1*0=0,1*1=1 (AND).
+  E1: x=1,y=0: 1=1*(1*0)=1*0=0≠1. AND fails E1. Can't use.
+  No easy counterexample found + E1 is strong → lean TRUE.
+  Confirm: from x=x*(x*y), set y=x: x=x*(x*x). Since x=x*(x*y) for all y,
+  x*(x*y) always=x, so x*a=x when a=x*y. If x*y ranges over enough, x*a=x.
+  Then x*x=x follows. → TRUE.
+
+====== CRITICAL WARNINGS ======
+- Both TRUE and FALSE are equally likely. Do NOT default to either.
+- "Similar looking" equations may NOT imply each other.
+- x=x*f(x,y) and x=x*(x*f(x,y)) are VERY different in strength.
+  The first (class 4) forces left projection. The second (class 9) does NOT.
+- An equation with more * is not necessarily stronger.
+- Always try at least one counterexample magma before concluding TRUE.
+- If E1 has * on both sides and E2 has a bare var on one side,
+  check constant model: if both sides of E1 have * → constant satisfies E1.
+  If E2 has bare var vs expression with * → constant fails E2 → FALSE.
