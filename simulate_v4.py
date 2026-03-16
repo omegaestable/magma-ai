@@ -1,81 +1,10 @@
-"""Simulate graph_v4.txt rules on benchmarks to verify accuracy."""
+"""Simulate the current graph_v4.txt rule set on benchmarks."""
+import argparse
 import json
-import re
 
-def normalize(eq): return eq.replace(' ', '')
-def parse_sides(eq): return eq.split('=', 1)
-def count_ops(s): return s.count('*')
-def get_vars(s): return set(re.findall(r'[a-z]', s))
-def is_bare_var(s): return len(s) == 1 and s.isalpha()
-def leftmost_var(s):
-    for c in s:
-        if c.isalpha(): return c
-    return None
-def rightmost_var(s):
-    for c in reversed(s):
-        if c.isalpha(): return c
-    return None
+from rule_profiles import normalize, predict_implication
 
-def is_singleton_forcing(eq):
-    lhs, rhs = parse_sides(eq)
-    if is_bare_var(lhs) and lhs not in get_vars(rhs): return True
-    if is_bare_var(rhs) and rhs not in get_vars(lhs): return True
-    return False
-
-def is_left_absorptive_v2(eq):
-    """x=x*EXPR where first var in EXPR ≠ x and appears once in EXPR."""
-    lhs, rhs = parse_sides(eq)
-    if not is_bare_var(lhs): return False
-    x = lhs
-    if not rhs.startswith(x + '*'): return False
-    expr = rhs[2:]
-    fv = leftmost_var(expr)
-    if fv is None or fv == x: return False
-    return len(re.findall(fv, expr)) == 1
-
-def is_right_absorptive_v2(eq):
-    """x=EXPR*x where first var in EXPR ≠ x and appears once in EXPR."""
-    lhs, rhs = parse_sides(eq)
-    if not is_bare_var(lhs): return False
-    x = lhs
-    if not rhs.endswith('*' + x): return False
-    expr = rhs[:-2]
-    fv = leftmost_var(expr)
-    if fv is None or fv == x: return False
-    return len(re.findall(fv, expr)) == 1
-
-def left_proj_satisfies(eq):
-    lhs, rhs = parse_sides(eq)
-    return leftmost_var(lhs) == leftmost_var(rhs)
-
-def right_proj_satisfies(eq):
-    lhs, rhs = parse_sides(eq)
-    return rightmost_var(lhs) == rightmost_var(rhs)
-
-def const_satisfies(eq):
-    lhs, rhs = parse_sides(eq)
-    lo = count_ops(lhs) > 0
-    ro = count_ops(rhs) > 0
-    if lo and ro: return True
-    if not lo and not ro: return lhs == rhs
-    return False
-
-def parity_satisfies(eq):
-    """XOR model: count variable occurrences, check parity match."""
-    lhs, rhs = parse_sides(eq)
-    all_vars = get_vars(lhs) | get_vars(rhs)
-    for v in all_vars:
-        lcount = len(re.findall(v, lhs))
-        rcount = len(re.findall(v, rhs))
-        if (lcount % 2) != (rcount % 2):
-            return False
-    return True
-
-def is_balanced(eq):
-    lhs, rhs = parse_sides(eq)
-    return count_ops(lhs) == count_ops(rhs)
-
-def simulate(fname, label):
+def simulate(fname, label, profile_name):
     with open(fname) as f:
         problems = [json.loads(l) for l in f]
     
@@ -96,45 +25,7 @@ def simulate(fname, label):
         e2 = normalize(p['equation2'])
         answer = p['answer']
         
-        prediction = None
-        rule = None
-        
-        # Step 1: Singleton
-        if is_singleton_forcing(e1):
-            prediction, rule = True, 'singleton'
-        
-        # Step 2: Trivial
-        elif e2 == 'x=x':
-            prediction, rule = True, 'trivial'
-        
-        # Step 3: Left projection
-        elif is_left_absorptive_v2(e1):
-            prediction = left_proj_satisfies(e2)
-            rule = 'left_abs'
-        
-        # Step 4: Right projection
-        elif is_right_absorptive_v2(e1):
-            prediction = right_proj_satisfies(e2)
-            rule = 'right_abs'
-        
-        # Step 5: Counterexample magmas
-        elif left_proj_satisfies(e1) and not left_proj_satisfies(e2):
-            prediction, rule = False, 'counter_lp'
-        elif right_proj_satisfies(e1) and not right_proj_satisfies(e2):
-            prediction, rule = False, 'counter_rp'
-        elif const_satisfies(e1) and not const_satisfies(e2):
-            prediction, rule = False, 'counter_const'
-        elif parity_satisfies(e1) and not parity_satisfies(e2):
-            prediction, rule = False, 'counter_xor'
-        
-        # Step 6: Structural
-        elif is_balanced(e1) and not is_balanced(e2):
-            prediction, rule = False, 'balance'
-        
-        # Step 6b: Singleton target
-        elif (parse_sides(e2)[0] != parse_sides(e2)[1] and 
-              is_bare_var(parse_sides(e2)[0]) and is_bare_var(parse_sides(e2)[1])):
-            prediction, rule = False, 'singleton_target'
+        prediction, rule = predict_implication(e1, e2, profile_name=profile_name)
         
         if prediction is None:
             unsolved += 1
@@ -179,5 +70,10 @@ def simulate(fname, label):
         for pid, e1, e2, ans, pred, r in errors_detail:
             print(f"    {pid}: {r} | {e1} → {e2} | ans={ans} pred={pred}")
 
-simulate('data/benchmark/hard.jsonl', 'HARD')
-simulate('data/benchmark/normal.jsonl', 'NORMAL')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--profile', default='graph_v4', help='Named cheatsheet profile to simulate')
+args = parser.parse_args()
+
+simulate('data/benchmark/hard.jsonl', 'HARD', args.profile)
+simulate('data/benchmark/normal.jsonl', 'NORMAL', args.profile)

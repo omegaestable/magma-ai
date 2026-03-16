@@ -244,7 +244,7 @@ def main():
     
     full = '\n'.join(out)
     
-    path = 'cheatsheets/graph_v1.txt'
+    path = 'cheatsheets/graph_v4.txt'
     with open(path, 'w', encoding='utf-8') as f:
         f.write(full)
     

@@ -1,36 +1,15 @@
-"""Analyze TRUE problem coverage by source class across both benchmarks."""
+"""Analyze TRUE benchmark coverage in the v4-only world."""
+import argparse
 import json
 from collections import Counter
 
-with open('cheatsheets/graph_v2.txt') as f:
-    lines = f.readlines()
+from v4_graph import equation_class
+from rule_profiles import family_name, normalize
 
-map_start = next(i for i,l in enumerate(lines) if l.strip() == 'MAP')
-edges_start = next(i for i,l in enumerate(lines) if l.strip() == 'EDGES')
 
-eq_to_class = {}
-for line in lines[map_start+1:edges_start]:
-    line = line.strip()
-    if not line: continue
-    cid, eqs = line.split(':', 1)
-    for eq in eqs.split('|'):
-        eq_to_class[eq.strip()] = int(cid)
-
-import re
-
-def normalize(eq):
-    return eq.replace(' ', '')
-
-def is_singleton_forcing(eq):
-    parts = eq.split('=', 1)
-    lhs, rhs = parts[0], parts[1]
-    lv = set(re.findall(r'[a-z]', lhs))
-    rv = set(re.findall(r'[a-z]', rhs))
-    bl = len(lhs) == 1 and lhs.isalpha()
-    br = len(rhs) == 1 and rhs.isalpha()
-    if bl and lhs not in rv: return True
-    if br and rhs not in lv: return True
-    return False
+parser = argparse.ArgumentParser()
+parser.add_argument('--profile', default='graph_v4', help='Named cheatsheet profile to analyze')
+args = parser.parse_args()
 
 for fname, label in [('data/benchmark/hard.jsonl', 'HARD'), ('data/benchmark/normal.jsonl', 'NORMAL')]:
     with open(fname) as f:
@@ -39,10 +18,7 @@ for fname, label in [('data/benchmark/hard.jsonl', 'HARD'), ('data/benchmark/nor
     true_problems = [p for p in problems if p['answer']]
     
     # Categorize TRUE problems by source identification method
-    singleton_solved = 0
-    class4_solved = 0
-    class5_solved = 0
-    class41_solved = 0
+    family_counts = Counter()
     other_class_solved = Counter()
     unidentified = 0
     
@@ -50,34 +26,24 @@ for fname, label in [('data/benchmark/hard.jsonl', 'HARD'), ('data/benchmark/nor
         e1 = normalize(p['equation1'])
         e2 = normalize(p['equation2'])
         
-        # Check singleton
-        if is_singleton_forcing(e1):
-            singleton_solved += 1
+        family = family_name(e1, profile_name=args.profile)
+        if family != 'other':
+            family_counts[family] += 1
             continue
-        
-        c1 = eq_to_class.get(e1)
-        
-        if c1 == 4:
-            class4_solved += 1
-        elif c1 == 5:
-            class5_solved += 1
-        elif c1 == 41:
-            class41_solved += 1
-        elif c1 is None:
-            # Not in MAP - might be singleton-forcing (already checked) or unknown
+
+        c1 = equation_class(e1)
+        if c1 is None:
             unidentified += 1
         else:
             other_class_solved[c1] += 1
     
     print(f"\n{label} TRUE problems by source:")
     print(f"  Total TRUE: {len(true_problems)}")
-    print(f"  Singleton: {singleton_solved}")
-    print(f"  Class 4: {class4_solved}")
-    print(f"  Class 5: {class5_solved}")
-    print(f"  Class 41: {class41_solved}")
+    for family in ('singleton', 'left_family', 'right_family', 'const_family', 'square_family'):
+        print(f"  {family}: {family_counts[family]}")
     print(f"  Other classes: {sum(other_class_solved.values())}")
     if other_class_solved:
         print(f"    Top 10: {other_class_solved.most_common(10)}")
     print(f"  Unidentified: {unidentified}")
-    total_easy = singleton_solved + class4_solved + class5_solved + class41_solved
+    total_easy = sum(family_counts.values())
     print(f"  Covered by rules: {total_easy}/{len(true_problems)} ({100*total_easy/len(true_problems):.1f}%)")
