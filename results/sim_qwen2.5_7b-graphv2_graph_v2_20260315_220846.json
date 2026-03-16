@@ -1,0 +1,31 @@
+{
+  "model": "qwen2.5:7b-graphv2",
+  "cheatsheet": "cheatsheets/graph_v2.txt",
+  "timestamp": "2026-03-15 22:08:46",
+  "summary": {
+    "total": 1,
+    "correct": 0,
+    "incorrect": 1,
+    "unparsed": 0,
+    "accuracy": 0.0,
+    "f1": 0.0,
+    "true_accuracy": 0.0,
+    "false_accuracy": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "avg_time_s": 39.04
+  },
+  "results": [
+    {
+      "id": "hard_0001",
+      "equation1": "x = y * (y * ((x * y) * x))",
+      "equation2": "x * y = ((z * x) * w) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 39.04,
+      "raw_response": "VERDICT: TRUE\nREASONING: The given conditions and constraints are such that the problem can only have one solution based on the provided examples and patterns. Each number in the output corresponds to a specific pattern or sequence derived from the input numbers.\nPROOF: The proof lies in the fact that each number in the output is uniquely determined by the rules and patterns observed in the given examples. For instance, 3051 maps to a set of numbers with specific properties (like being divisible by certain small primes), and this pattern holds consistently across all provided mappings.\nCOUNTEREXAMPLE: EMPTY"
+    }
+  ]
+}
