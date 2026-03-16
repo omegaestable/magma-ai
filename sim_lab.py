@@ -41,6 +41,8 @@ import requests
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 DEFAULT_MODEL = "qwen2.5:3b"
+DEFAULT_NUM_PREDICT = 384
+DEFAULT_REQUEST_TIMEOUT_S = 180
 PROMPT_TEMPLATE_PATH = Path(__file__).parent / "prompts" / "evaluation.jinja2"
 CHEATSHEET_MAX_BYTES = 10_240  # 10 KB
 
@@ -223,7 +225,8 @@ def query_ollama(
     prompt: str,
     model: str,
     temperature: float = 0.0,
-    timeout: int = 600,
+    num_predict: int = DEFAULT_NUM_PREDICT,
+    timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> tuple[str, float]:
     """Send a prompt to Ollama and return (response_text, elapsed_seconds)."""
     t0 = time.time()
@@ -233,13 +236,13 @@ def query_ollama(
         "stream": False,
         "options": {
             "temperature": temperature,
-            "num_predict": 2048,
+            "num_predict": num_predict,
         },
     }
     r = requests.post(
         f"{OLLAMA_URL}/api/generate",
         json=payload,
-        timeout=timeout,
+        timeout=timeout_s,
     )
     r.raise_for_status()
     elapsed = time.time() - t0
@@ -256,11 +259,19 @@ def evaluate_problem(
     cheatsheet: str,
     model: str,
     temperature: float = 0.0,
+    num_predict: int = DEFAULT_NUM_PREDICT,
+    request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> Result:
     """Evaluate a single problem."""
     prompt = render_prompt(template, problem, cheatsheet)
     try:
-        response, elapsed = query_ollama(prompt, model, temperature)
+        response, elapsed = query_ollama(
+            prompt,
+            model,
+            temperature,
+            num_predict=num_predict,
+            timeout_s=request_timeout_s,
+        )
     except Exception as e:
         return Result(
             problem=problem,
@@ -286,13 +297,23 @@ def run_evaluation(
     cheatsheet: str,
     model: str,
     temperature: float = 0.0,
+    num_predict: int = DEFAULT_NUM_PREDICT,
+    request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
     verbose: bool = True,
 ) -> RunStats:
     """Run evaluation over a list of problems."""
     stats = RunStats()
 
     for i, problem in enumerate(problems):
-        result = evaluate_problem(problem, template, cheatsheet, model, temperature)
+        result = evaluate_problem(
+            problem,
+            template,
+            cheatsheet,
+            model,
+            temperature,
+            num_predict=num_predict,
+            request_timeout_s=request_timeout_s,
+        )
         stats.total += 1
         stats.elapsed_total += result.elapsed_s
         stats.results.append(result)
@@ -418,6 +439,8 @@ def run_comparison(
     template: jinja2.Template,
     model: str,
     temperature: float = 0.0,
+    num_predict: int = DEFAULT_NUM_PREDICT,
+    request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
     verbose: bool = True,
 ):
     """Run evaluation with multiple cheatsheets and compare."""
@@ -431,7 +454,16 @@ def run_comparison(
         label = Path(cs_path).stem
         print(f"\n▶ Evaluating: {cs_path}")
         cheatsheet = load_cheatsheet(cs_path)
-        stats = run_evaluation(problems, template, cheatsheet, model, temperature, verbose)
+        stats = run_evaluation(
+            problems,
+            template,
+            cheatsheet,
+            model,
+            temperature,
+            num_predict=num_predict,
+            request_timeout_s=request_timeout_s,
+            verbose=verbose,
+        )
         print_report(stats, label)
         all_stats.append((label, stats))
 
@@ -520,10 +552,16 @@ Examples:
                         help="Number of problems to evaluate (default: all)")
     parser.add_argument("--temperature", type=float, default=0.0,
                         help="Sampling temperature (default: 0.0)")
+    parser.add_argument("--num-predict", type=int, default=DEFAULT_NUM_PREDICT,
+                        help=f"Max generated tokens per response (default: {DEFAULT_NUM_PREDICT})")
+    parser.add_argument("--request-timeout", type=int, default=DEFAULT_REQUEST_TIMEOUT_S,
+                        help=f"HTTP timeout (seconds) per request (default: {DEFAULT_REQUEST_TIMEOUT_S})")
     parser.add_argument("--output", default=None,
                         help="Save results JSON to this path")
     parser.add_argument("--quick", action="store_true",
                         help="Quick smoke test: 5 problems")
+    parser.add_argument("--fast", action="store_true",
+                        help="Fast mode: set n=20 (if unset), num_predict=192, timeout=90")
     parser.add_argument("--compare", nargs="+", metavar="CHEATSHEET",
                         help="Compare multiple cheatsheets")
     parser.add_argument("--errors", action="store_true",
@@ -577,6 +615,12 @@ Examples:
     if args.quick:
         args.n = args.n or 5
 
+    # Fast mode
+    if args.fast:
+        args.n = args.n or 20
+        args.num_predict = min(args.num_predict, 192)
+        args.request_timeout = min(args.request_timeout, 90)
+
     # Load data
     if not Path(args.data).exists():
         print(f"ERROR: Data file not found: {args.data}")
@@ -594,6 +638,8 @@ Examples:
     print(f"  Data:       {args.data}")
     print(f"  Problems:   {len(problems)} (TRUE: {true_count}, FALSE: {false_count})")
     print(f"  Temperature: {args.temperature}")
+    print(f"  Num predict: {args.num_predict}")
+    print(f"  Timeout:     {args.request_timeout}s")
     if args.cheatsheet:
         print(f"  Cheatsheet: {args.cheatsheet}")
     print(f"{'═' * 60}\n")
@@ -602,7 +648,7 @@ Examples:
     if args.compare:
         run_comparison(
             args.compare, problems, template, args.model,
-            args.temperature, not args.quiet,
+            args.temperature, args.num_predict, args.request_timeout, not args.quiet,
         )
         return
 
@@ -610,7 +656,7 @@ Examples:
     cheatsheet = load_cheatsheet(args.cheatsheet)
     stats = run_evaluation(
         problems, template, cheatsheet, args.model,
-        args.temperature, not args.quiet,
+        args.temperature, args.num_predict, args.request_timeout, not args.quiet,
     )
     print_report(stats, Path(args.cheatsheet).stem if args.cheatsheet else args.model)
 

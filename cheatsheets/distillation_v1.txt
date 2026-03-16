@@ -1,0 +1,136 @@
+EQUATIONAL THEORIES OF MAGMAS — DISTILLATION CHEATSHEET
+A magma (M,*) is a set M with one binary operation *, no axioms assumed.
+"E1 implies E2" means: every magma satisfying E1 also satisfies E2.
+
+═══════════════════════════════════════════════════════════════
+STEP-BY-STEP DECISION ALGORITHM (follow in order)
+═══════════════════════════════════════════════════════════════
+
+STEP 1 — SINGLETON TEST (guarantees TRUE):
+Parse E1. If E1 has a SINGLE variable alone on one side that does NOT
+appear anywhere on the other side, then E1 forces all elements equal.
+Examples: "x = y * (z * w)" → x not on RHS → SINGLETON → TRUE for any E2.
+         "x = y * (y * (x * z))" → x IS on RHS → NOT singleton, continue.
+If E1 forces singleton → VERDICT: TRUE (E2 is trivially satisfied).
+
+STEP 2 — TRIVIAL IDENTITY / REFLEXIVITY:
+If E1 and E2 are the same equation (possibly with variables renamed), → TRUE.
+"x = x" (E1) is the trivial law; every equation implies it → TRUE.
+"x = y" (E2) is the singleton law; only singleton-forcing E1 implies it.
+
+STEP 3 — STRUCTURAL FILTERS (guarantee FALSE):
+(a) BALANCED ORDER TEST: Count * on each side of E1 and E2.
+    If E1 is "balanced" (same number of * on both sides), but E2 is
+    "unbalanced" (different number of * on each side), AND E1 does NOT
+    force singleton → VERDICT: FALSE.
+    Reason: balanced equations are satisfied by the constant operation
+    a*b=c for all a,b, and rewriting balanced equations preserves balance.
+
+(b) VARIABLE MULTIPLICITY TEST: Count how many times each variable
+    appears on each side.  If in E1 every variable appears the same
+    number of times on both sides, but in E2 some variable appears
+    different numbers of times → likely FALSE (not absolute but very strong).
+
+(c) VARIABLE PARITY TEST (mod 2): If in E1 every variable appears with
+    the same parity (odd/even count) on both sides, but in E2 some
+    variable has different parity → FALSE.
+
+STEP 4 — COUNTEREXAMPLE MAGMAS (proves FALSE):
+Try these concrete magmas. If one satisfies E1 but not E2 → FALSE.
+
+Magma A — Left projection on {0,1}: a*b = a for all a,b.
+  Table: 0*0=0, 0*1=0, 1*0=1, 1*1=1
+  Satisfies: any equation where both sides start with the same
+  leftmost variable (x = x*f(...), x*y = x*g(...)).
+  Fails: equations requiring commutativity or right projection.
+
+Magma B — Right projection on {0,1}: a*b = b for all a,b.
+  Table: 0*0=0, 0*1=1, 1*0=0, 1*1=1
+  Dual of Magma A. Satisfies equations where both sides end with
+  the same rightmost variable.
+
+Magma C — Constant-0 on {0,1}: a*b = 0 for all a,b.
+  Table: 0*0=0, 0*1=0, 1*0=0, 1*1=0
+  Satisfies: any equation where both sides have at least one *.
+  Fails: x = x*y, x = y*x, etc. (where one side is a bare variable).
+
+Magma D — XOR on {0,1}: a*b = (a+b) mod 2.
+  Table: 0*0=0, 0*1=1, 1*0=1, 1*1=0
+  Satisfies: x*x = y*y (all squares equal, =0), x*(x*y) = y.
+  Fails: x*y = y*x? No, XOR is commutative. Fails: x = x*x.
+
+Magma E — Cyclic on {0,1,2}: a*b = (a+1) mod 3.
+  Satisfies: x*y = x*z.  Fails: x*y = y*x, x = x*x.
+
+Magma F — Subtraction mod 3: a*b = (a-b) mod 3.
+  Satisfies Tarski's axiom. Tests group-like structures.
+
+STEP 5 — KEY ALGEBRAIC REASONING:
+(a) ABSORPTION CHAINS: If E1 is "x = x * f(x,y,z,...)" (x is alone
+    on LHS and is the leftmost var of RHS), this implies x = x*y (E4,
+    left-absorptive law). Why: set all of y,z,... to an arbitrary value.
+    The converse: E4 implies any "x = x * f(x,y,...)" automatically.
+    So equations of form x = x*f where f starts with a free variable
+    are between E1 (trivial) and E4 (left-absorptive) in strength.
+
+(b) E4 (x = x*y) implies: x = x*f(y,z,...) for any f. Also implies
+    x*(x*x) = x*y, x*(y*z) = x*w, etc.
+    E4 does NOT imply: x*y = y*x, x = y*x, (x*y)*z = x*(y*z), etc.
+
+(c) E5 (x = y*x) is dual to E4. Implies x = f(y,z,...)*x for any f.
+
+(d) IDEMPOTENT LAW E3 (x = x*x): Many equations imply E3 but E3
+    does not imply most equations. x = x*x is weaker than E4.
+
+(e) COMMUTATIVE LAW E43 (x*y = y*x): Does NOT imply associativity.
+    Does NOT imply x = x*y. Is implied by any equation with the
+    form f(x,y) = f(y,x) where f is symmetric in its arguments.
+
+(f) CONSTANT LAW E46 (x*y = z*w): All products are equal. Very strong.
+    Implies x*x = y*y, x*y = z*y, etc. but NOT x = x*y.
+
+(g) ASSOCIATIVE LAW E4512 (x*(y*z) = (x*y)*z): Implies many things
+    but is NOT implied by most single equations of order ≤ 4.
+
+STEP 6 — TRANSITIVITY AND KNOWN CHAINS:
+If E1 implies something intermediate that implies E2, then TRUE.
+Key chain (strongest to weakest):
+  x=y (E2) → x=x*y (E4) → x=x*(x*y) (E9) → x=x*(x*(x*y)) (E48) 
+  → x=x*(x*(x*(x*y))) (E412) → x=x*x (E3) → x=x (E1)
+Every eq implies E1 (trivial). Only singleton-forcing eqs imply E2.
+
+═══════════════════════════════════════════════════════════════
+DUALITY PRINCIPLE
+═══════════════════════════════════════════════════════════════
+Dual E* = reverse all products (a*b → b*a). E1⊧E2 ⟺ E1*⊧E2*.
+Example: E4 (x=x*y) is dual to E5 (x=y*x).
+
+═══════════════════════════════════════════════════════════════
+COMMON PITFALLS
+═══════════════════════════════════════════════════════════════
+• "x*x = y*(z*z)" does NOT force singleton — forces constant squares only.
+• No shared vars between sides → constant products, NOT necessarily singleton.
+• MORE variables → generally WEAKER equation, not stronger.
+• Same "shape" on both sides → weaker (more models satisfy it).
+• "Looking similar" does not mean implication holds.
+
+═══════════════════════════════════════════════════════════════
+QUICK REFERENCE
+═══════════════════════════════════════════════════════════════
+1. Bare variable not on other side → singleton → TRUE.
+2. E1 has form "x = x * f(...)" → implies E4. Check if E4 implies E2.
+3. Both balanced, same #vars → try counterexample magmas carefully.
+4. E1 forces constant products → TRUE iff E2 holds in all constant magmas.
+5. E1 equivalent to x=y iff it implies both E4 and E5.
+6. "x = f(y,z,...)" with x absent from f → equivalent to x=y → TRUE.
+
+═══════════════════════════════════════════════════════════════
+REASONING TEMPLATE
+═══════════════════════════════════════════════════════════════
+1. Parse equations → count variables, operations per side.
+2. Singleton test on E1 → if yes, TRUE.
+3. Balance/multiplicity filters → if violated, FALSE.
+4. Try counterexample magmas A-F on E1 and E2.
+5. Chain reasoning: does E1 imply E4/E5, and does E4/E5 imply E2?
+6. Direct algebraic manipulation E1 → E2.
+7. Default: lean FALSE (~37% of implications are true, ~63% false).
