@@ -1,0 +1,177 @@
+MAGMA IMPLICATION GUIDE v5
+E1, E2 are equations over a magma with one binary operation *.
+Question: does every magma satisfying E1 also satisfy E2?
+
+CRITICAL CALIBRATION
+- Eval is balanced 50/50. Do NOT default to FALSE because no proof family fired.
+- Say TRUE only from an explicit proof family below.
+- Say FALSE only from a named witness model or safe-false filter below.
+- NEVER say FALSE just because no TRUE family matched.
+- NEVER say TRUE just because no witness model refuted.
+
+DECISION WORKFLOW
+0. SINGLETON SCAN -- do this before anything else.
+1. Check SAME LAW.
+2. Check TRIVIAL TARGET.
+3. Check LEFT-PROJECTION / RIGHT-PROJECTION / CONSTANT / SQUARE-BRIDGE families.
+4. Only if no source family matches, test the four witness models for FALSE.
+5. Only after all checks, use safe-false filters.
+
+0. SINGLETON SCAN (MANDATORY FIRST CHECK) -> TRUE OR CONTINUE
+Identify the variable on the LHS of E1. Call it x.
+Scan the RHS of E1 for the letter x. Does x appear ANYWHERE in the RHS?
+  NO -> E1 is singleton. Every E2 is implied. Answer TRUE. Stop here.
+  YES -> x is present in RHS. Continue to check 1.
+
+The singleton rule applies even when the RHS is long and complicated.
+It fires whenever the LHS variable is completely absent from the RHS.
+
+Singleton E1 examples (TRUE for any E2 whatsoever):
+  x = y * z
+  x = (y * z) * w
+  x = ((y * y) * z) * w
+  x = y * ((z * w) * (z * w))
+  x = (y * (y * (z * z))) * w
+  x = y * ((y * (z * z)) * y)
+  x = y * (z * (w * (z * z)))
+  x = ((y * (y * y)) * z) * w
+  x = (y * (z * w)) * (z * w)
+  x = ((y * y) * (z * z)) * y
+  x = y * ((y * (z * w)) * w)
+  x = (y * z) * (z * (z * y))
+  x = y * (z * ((z * w) * z))
+  x = (((y * y) * y) * y) * y
+  x = y * ((z * (z * w)) * z)
+  x = ((y * z) * (w * z)) * z
+  x = y * (z * (y * (y * z)))
+  x = ((y * z) * y) * (z * w)
+  x = (y * ((z * w) * w)) * w
+  x = ((y * (z * w)) * u) * v
+  x = (y * (z * w)) * (u * v)
+  x = ((y * (z * z)) * y) * z
+
+Non-examples (NOT singleton because x appears in RHS):
+  x = y * (x * z)         x in RHS
+  x = x * (y * z)         x in RHS
+  x = ((y * x) * z) * w   x in RHS
+
+1. SAME LAW -> TRUE
+If E1 and E2 are the same equation up to consistent variable renaming, TRUE.
+
+2. TRIVIAL TARGET -> TRUE
+If E2 is x=x, TRUE.
+
+3. LEFT-PROJECTION FAMILY -> TRUE/FALSE BY LEFTMOST VARIABLE
+E1 must have the form x = x * EXPR.
+
+Safety gate: does x appear inside EXPR (after the first x*)?
+  YES -> x is inside EXPR. Only the explicitly listed graph-backed shapes apply.
+         The generic rule does NOT apply when x is inside EXPR.
+  NO  -> x is not inside EXPR. Both listed shapes and the generic rule apply.
+
+Graph-backed members (force a*b = a), x NOT inside EXPR:
+  x = x * y
+  x = x * (y * z)
+  x = x * ((y * z) * w)
+  x = x * (y * (z * y))
+  x = x * (y * ((z * w) * u))
+  x = x * ((y * z) * (w * u))
+  x = x * ((y * (z * w)) * w)
+  and variable-renamings of these shapes.
+
+Graph-backed members, x also appears inside EXPR:
+  x = x * (y * (x * z))
+  x = x * (y * (z * (x * y)))
+  and variable-renamings of these shapes.
+
+Generic rule (apply only when x NOT inside EXPR):
+  If E1 = x * EXPR, the first variable in EXPR is not x,
+  that first variable appears exactly once in EXPR,
+  and x does not appear anywhere in EXPR, then E1 is left-projection.
+
+These force a*b = a.
+Consequence: E1 => E2 iff the leftmost variable on both sides of E2 is the same.
+  Same leftmost variable -> TRUE.
+  Different leftmost variable -> FALSE via left projection.
+
+Left-projection TRUE examples:
+  x = x * ((y * (z * w)) * w)  =>  x * y = (x * (z * w)) * u
+    LHS leftmost x, RHS leftmost x. Same. TRUE.
+  x = x * (y * (z * y))        =>  x = (x * (x * (x * y))) * x
+    LHS leftmost x, RHS leftmost x. Same. TRUE.
+  x = x * ((y * z) * (w * u))  =>  x = (x * (x * (y * x))) * x
+    LHS leftmost x, RHS leftmost x. Same. TRUE.
+  x = x * (y * ((z * w) * u))  =>  (x * x) * y = (x * y) * z
+    LHS leftmost x, RHS leftmost x. Same. TRUE.
+
+4. RIGHT-PROJECTION FAMILY -> TRUE/FALSE BY RIGHTMOST VARIABLE
+E1 must have the form x = EXPR * x where x is the very last variable in RHS.
+
+Graph-backed members (force a*b = b):
+  x = y * x
+  x = (y * z) * x
+  x = ((y * y) * z) * x
+  x = ((y * z) * w) * x
+  x = (y * (y * (y * z))) * x
+  and variable-renamings of these shapes.
+
+Generic rule (apply only when x NOT inside EXPR):
+  If E1 = EXPR * x, the first variable in EXPR is not x,
+  that first variable appears exactly once in EXPR,
+  and x does not appear anywhere inside EXPR, then E1 is right-projection.
+  CAUTION: this generic rule is narrow. When uncertain, rely on listed shapes only.
+
+These force a*b = b.
+Consequence: E1 => E2 iff the rightmost variable on both sides of E2 is the same.
+  Rightmost variable = the last variable letter reading the expression left to right.
+  Same rightmost -> TRUE.  Different rightmost -> FALSE via right projection.
+
+Right-projection TRUE examples:
+  x = ((y * y) * z) * x  =>  x = y * (y * (z * (w * x)))
+    Rightmost of x is x; rightmost of y*(y*(z*(w*x))) is x. Same. TRUE.
+  x = ((y * z) * w) * x  =>  x = y * ((z * (w * u)) * x)
+    Rightmost of x is x; rightmost of y*((z*(w*u))*x) is x. Same. TRUE.
+
+5. CONSTANT-PRODUCT FAMILY -> TRUE/FALSE BY WHETHER E2 HAS PRODUCTS
+Graph-backed members (force all products equal to one constant c):
+  x*y=z*w,  x*y=y*z,  x*y=z*y,  x*x=y*z,  x*y=(y*x)*z,  x*y=(y*z)*x
+  and variable-renamings of these shapes.
+Consequences:
+  both sides of E2 contain * -> TRUE.
+  one bare side and one product side in E2 -> FALSE via constant.
+  E2 is x=x -> TRUE.
+Do NOT generalise constant-product to every E1 where both sides have products.
+That generalisation produces false positives. Use only the listed source shapes.
+
+6. SQUARE-BRIDGE FAMILY -> NARROW EXTRA TRUE LANE
+Graph-backed sources:
+  x=y*(x*x),  x=(y*x)*(y*x),  x=(y*(y*z))*(w*x),  x=(y*(y*x))*(z*x),
+  x=(x*x)*y,  x=(x*y)*(z*z)
+Safe TRUE targets: x=((x*y)*x)*(z*x),  x=y*(z*(w*(u*x))),
+  x*y=z*(y*(w*y)),  x*x=x*((y*z)*w)
+Only apply if E1 exactly matches a listed source and E2 exactly matches a listed target
+(up to variable renaming). Do not generalise.
+
+7. FALSE VIA SMALL WITNESS MODELS
+Always verify E1 first. A model is valid only if it satisfies E1 for ALL assignments.
+
+LEFT PROJECTION: a*b=a.  E holds iff leftmost variables match on both sides.
+RIGHT PROJECTION: a*b=b.  E holds iff rightmost variables match on both sides.
+CONSTANT: a*b=0.  E holds iff both sides contain *, or both sides are same bare var.
+XOR ON {0,1}: a*b=a+b mod 2.  E holds iff each variable has same total parity both sides.
+
+If any model satisfies E1 but not E2, answer FALSE and name it.
+If none of these four models refutes E2 given E1, that is NOT a license to default to FALSE.
+
+8. SAFE FALSE FILTERS (use only after 0-7 failed)
+- If E2 is x=y and E1 is not singleton-forcing, FALSE.
+- If E1 is balanced and E2 is unbalanced, and E1 is not in singleton/projection/
+  constant/square-bridge families, FALSE.
+
+9. WARNINGS
+- Do NOT use "most hard problems are FALSE". The eval is balanced 50/50.
+- Singleton check 0 overrides everything. If x is absent from RHS of E1, TRUE always.
+- Left-proj means E2 truth depends ONLY on matching leftmost variables.
+- Right-proj means E2 truth depends ONLY on matching rightmost variables.
+- For FALSE you must name a witness model or safe-false filter.
+- For TRUE you must name the proof family.

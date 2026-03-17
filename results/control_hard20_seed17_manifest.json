@@ -1,0 +1,31 @@
+{
+  "source": "data\\benchmark\\control_balanced_normal100_hard20_seed17.jsonl",
+  "description": "20 hard-only problems extracted from control_balanced_normal100_hard20_seed17",
+  "counts": {
+    "total": 20,
+    "true": 10,
+    "false": 10
+  },
+  "problem_ids": [
+    "hard_0002",
+    "hard_0121",
+    "hard_0047",
+    "hard_0059",
+    "hard_0183",
+    "hard_0151",
+    "hard_0196",
+    "hard_0118",
+    "hard_0157",
+    "hard_0113",
+    "hard_0191",
+    "hard_0065",
+    "hard_0115",
+    "hard_0117",
+    "hard_0114",
+    "hard_0016",
+    "hard_0186",
+    "hard_0098",
+    "hard_0009",
+    "hard_0062"
+  ]
+}

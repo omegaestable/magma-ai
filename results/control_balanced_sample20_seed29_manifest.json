@@ -1,0 +1,38 @@
+{
+  "seed": 29,
+  "source": "data\\benchmark\\control_balanced_normal100_hard20_seed17.jsonl",
+  "description": "20-problem sample from the balanced 120-problem control slice",
+  "counts": {
+    "total": 20,
+    "true": 10,
+    "false": 10,
+    "normal_total": 16,
+    "hard_total": 4,
+    "normal_true": 8,
+    "normal_false": 8,
+    "hard_true": 2,
+    "hard_false": 2
+  },
+  "problem_ids": [
+    "normal_0305",
+    "normal_0184",
+    "normal_0772",
+    "normal_0053",
+    "normal_0718",
+    "normal_0126",
+    "normal_0277",
+    "hard_0047",
+    "normal_0832",
+    "normal_0594",
+    "hard_0186",
+    "normal_0244",
+    "hard_0196",
+    "normal_0842",
+    "normal_0263",
+    "normal_0808",
+    "normal_0911",
+    "normal_0347",
+    "hard_0191",
+    "normal_0468"
+  ]
+}

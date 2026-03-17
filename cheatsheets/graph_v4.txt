@@ -5,7 +5,21 @@ Question: does every magma satisfying E1 also satisfy E2?
 CRITICAL CALIBRATION
 - Stage 1 evaluation is balanced 50/50. Do NOT default to FALSE from prior odds.
 - Say TRUE only from an explicit proof family below.
-- Say FALSE only from an actual counterexample pattern.
+- Say FALSE only from a named witness model below that satisfies E1 and refutes E2.
+- NEVER say FALSE just because no TRUE family matched.
+- NEVER say TRUE just because no witness model refuted.
+- If E1 matches singleton / left family / right family / constant-product / square-bridge,
+  STOP and conclude from that family. Do not keep searching for fake counterexamples.
+- If no proof family fires, test ALL four witness models in section 8 before using a safe false filter.
+- Never use words like likely, plausible, probably. Give one named family or one named model.
+
+DECISION WORKFLOW
+1. Check SAME LAW / SINGLETON / TRIVIAL TARGET.
+2. Check whether E1 is in LEFT / RIGHT / CONSTANT / SQUARE family.
+3. If a source family matches, decide E2 from that family immediately.
+4. Only if no source family matches, try LEFT PROJECTION / RIGHT PROJECTION /
+   CONSTANT / XOR as counterexample models.
+5. Only after those checks, use the safe false filters.
 
 1. SAME LAW -> TRUE
 If E1 and E2 are the same equation up to consistent variable renaming, TRUE.
@@ -27,8 +41,13 @@ Graph-backed members of the class of x=x*y include:
   x=x*(y*(z*y))
   x=x*((y*z)*w)
 and variable-renamings of these shapes.
+Also use the generic syntactic rule:
+  if E1 has the form x=x*EXPR, the first variable in EXPR is not x,
+  and that first variable appears exactly once in EXPR, then E1 is in this family.
+This generic rule is valid even if the exact tree shape is not listed above.
 These force a*b=a.
 Then E1=>E2 iff the leftmost variable on both sides of E2 is the same.
+Same leftmost variable -> TRUE. Different leftmost variable -> FALSE via left projection.
 
 5. RIGHT-PROJECTION FAMILY -> TRUE/FALSE BY RIGHTMOST VARIABLE
 Graph-backed members of the class of x=y*x include:
@@ -38,8 +57,13 @@ Graph-backed members of the class of x=y*x include:
   x=(y*(y*(y*z)))*x
   x=((y*z)*w)*x
 and variable-renamings of these shapes.
+Also use the generic syntactic rule:
+  if E1 has the form x=EXPR*x, the first variable in EXPR is not x,
+  and that first variable appears exactly once in EXPR, then E1 is in this family.
+This generic rule is valid even if the exact tree shape is not listed above.
 These force a*b=b.
 Then E1=>E2 iff the rightmost variable on both sides of E2 is the same.
+Same rightmost variable -> TRUE. Different rightmost variable -> FALSE via right projection.
 
 6. CONSTANT-PRODUCT FAMILY -> TRUE/FALSE BY WHETHER E2 HAS PRODUCTS
 Graph-backed members of the class of x*y=z*w include:
@@ -56,6 +80,7 @@ Consequences:
   if E2 is x=x -> TRUE
   if one side of E2 is bare and the other contains * -> FALSE via constant model
   if E2 is x=y -> not automatic; only singleton gives that
+If E1 is in this family, do NOT search for another model first. Conclude from these consequences.
 
 7. SQUARE-BRIDGE FAMILY -> A SMALL EXTRA TRUE LANE
 Graph-backed source members include:
@@ -73,6 +98,7 @@ Safe TRUE targets from this lane include:
   x*y=z*(y*(w*y))
   x*x=x*((y*z)*w)
 If E1 matches one of the listed source shapes and E2 matches one of the listed target shapes up to renaming, TRUE.
+If E1 is not one of these listed source shapes, do NOT generalize square-bridge.
 
 8. FALSE VIA SMALL COUNTEREXAMPLE MODELS
 Always check E1 first. A model is useful only if it satisfies E1 for all assignments.
@@ -90,8 +116,10 @@ XOR ON {0,1}: a*b=a+b mod 2
   E holds iff each variable has the same parity on both sides.
 
 If any one of these models satisfies E1 but not E2, answer FALSE and name it.
+If none of these four models refutes E2, that is NOT a license to default to FALSE.
 
 9. SAFE FALSE FILTERS
+Use these only after sections 1-8 failed.
 - If E2 is x=y and E1 is not singleton-forcing, FALSE.
 - If E1 is balanced and E2 is unbalanced, and E1 is not already in singleton,
   projection, constant-product, or square-bridge families, FALSE.
@@ -109,6 +137,8 @@ If any one of these models satisfies E1 but not E2, answer FALSE and name it.
   Reason: E1 is in the constant-product family, and both sides of E2 contain *.
 - x=x*(y*(x*z)) => x=((x*y)*(z*w))*u is TRUE.
   Reason: E1 is in the left-projection family, and both sides of E2 start with x.
+- x=x*((y*(z*w))*w) => x*y=(x*(z*w))*u is TRUE.
+  Reason: E1 matches the generic left-projection rule, and both sides of E2 start with x.
 - x=(y*x)*(y*x) => x=((x*y)*x)*(z*x) is TRUE.
   Reason: E1 is in the graph-backed square-bridge family, and E2 is one of its known target shapes.
 
@@ -117,4 +147,5 @@ If any one of these models satisfies E1 but not E2, answer FALSE and name it.
 - x=x*(x*y) is NOT the same as x=x*y.
 - Similar-looking equations may belong to different graph classes.
 - The square-bridge lane is narrow. Do NOT generalize it to every equation ending in x.
-- Counterexample first for FALSE; explicit family first for TRUE.
+- For FALSE, you must name a witness model from section 8 or a safe false filter from section 9.
+- For TRUE, you must name the proof family from sections 1-7.
