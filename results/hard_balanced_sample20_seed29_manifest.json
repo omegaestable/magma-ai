@@ -1,0 +1,32 @@
+{
+  "seed": 29,
+  "source": "data\\benchmark\\hard.jsonl",
+  "description": "Balanced 20-problem sample from hard benchmark",
+  "counts": {
+    "total": 20,
+    "true": 10,
+    "false": 10
+  },
+  "problem_ids": [
+    "hard_0068",
+    "hard_0191",
+    "hard_0041",
+    "hard_0037",
+    "hard_0084",
+    "hard_0173",
+    "hard_0046",
+    "hard_0017",
+    "hard_0150",
+    "hard_0013",
+    "hard_0006",
+    "hard_0014",
+    "hard_0108",
+    "hard_0121",
+    "hard_0144",
+    "hard_0196",
+    "hard_0176",
+    "hard_0161",
+    "hard_0198",
+    "hard_0132"
+  ]
+}

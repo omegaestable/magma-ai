@@ -1,0 +1,240 @@
+{
+  "model": "qwen2.5:3b",
+  "cheatsheet": "cheatsheets/graph_v6.txt",
+  "timestamp": "2026-03-16 22:14:51",
+  "summary": {
+    "total": 20,
+    "correct": 10,
+    "incorrect": 10,
+    "unparsed": 0,
+    "accuracy": 0.5,
+    "f1": 0.0,
+    "true_accuracy": 0.0,
+    "false_accuracy": 1.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "avg_time_s": 4.72
+  },
+  "results": [
+    {
+      "id": "hard_0002",
+      "equation1": "x * (y * z) = (z * w) * w",
+      "equation2": "x * (y * x) = (x * y) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.69,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x * (y * z) = (z * w) * w) implies Equation 2 (x * (y * x) = (x * y) * z) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and binary operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nLet's verify if this magma satisfies Equation 1 (x * (y * z) = (z * w) * w):\n\n1. For x = a, y = a, and z = a:\n   - LHS: a * (a * a) = a * a = a\n   - RHS: (a * a) * a = a * a = a\n\n2. For x = b, y = a, and z = a:\n   - LHS: b * (a * a) = b * a = b\n   - RHS: (a * a) * b = a * b = b\n\n3. For x = a, y = b, and z = a:\n   - LHS: a * (b * a) = a * b = b\n   - RHS: (a * b) * a = b * a = b\n\n4. For x = b, y = b, and z = a:\n   - LHS: b * (b * a) = b * b = a\n   - RHS: (b * b) * a = a * a = a\n\n5. For x = a, y = a, and z = b:\n   - LHS: a"
+    },
+    {
+      "id": "hard_0121",
+      "equation1": "x = ((y * y) * z) * x",
+      "equation2": "x = y * (y * (z * (w * x)))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.93,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((y * y) * z) * x) implies Equation 2 (x = y * (y * (z * (w * x)))) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nLet's verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((y * y) * z) * x):\n- If y = a and z = a, then:\n  - y * y = a * a = a\n  - (y * y) * z = a * a = a\n  - ((y * y) * z) * x = a * a = a\n\nThus, for y = a and z = a, Equation 1 holds as x = a.\n\nFor Equation 2 (x = y * (y * (z * (w * x)))):\n- If y = a, z = a, w = b:\n  - z * (w * x) = a * (b * x)\n  - Since we don't have the full operation table for all elements, let's consider possible values of x.\n  \nIf x = a:\n  - w * x = b * a = b\n  - z * (w * x) = a * b = b\n\nNow, y * (y * (z * (w * x))) becomes:\n- y * (y * (z * (w * x))) = a * (a * b) = a * b = b\n\nThus, for y"
+    },
+    {
+      "id": "hard_0047",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.9,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = (y * x) * (x * (z * z))) implies Equation 2 (x = y * ((y * x) * (z * y))) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nWe will check if this magma satisfies both equations.\n\nFor Equation 1 (x = (y * x) * (x * (z * z))):\n- If y = a, x = a, and z = a:\n  - y * x = a * a = a\n  - x * (z * z) = a * (a * a) = a * a = a\n  - (y * x) * (x * (z * z)) = a * a = a\n\nThus, for these assignments, Equation 1 holds.\n\nFor Equation 2 (x = y * ((y * x) * (z * y))):\n- If y = a, x = a, and z = a:\n  - y * x = a * a = a\n  - (y * x) * (z * y) = a * (a * a) = a * a = a\n\nThus, for these assignments, Equation 2 holds.\n\nNow let's check if this magma satisfies both equations simultaneously. We need to find values of y, x, and z such that:\n- x = (y * x) * (x * (z * z))\n- x = y * ((y * x) * (z * y"
+    },
+    {
+      "id": "hard_0059",
+      "equation1": "x = ((y * z) * z) * x",
+      "equation2": "x = x * ((y * (y * x)) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.88,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((y * z) * z) * x) implies Equation 2 (x = x * ((y * (y * x)) * x)) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((y * z) * z) * x):\nLet's test with y = a, z = b:\n- (a * b) * b = b * b = a\n- (a * a) * x = a * x\n\nSince we don't know the value of x in this magma, let's assume x is either a or b. If x = a:\n- a * a = a\n- a * x = a * a = a\n\nIf x = b:\n- b * a = b\n- b * x = b * b = a\n\nIn both cases, the equation holds.\n\nFor Equation 2 (x = x * ((y * (y * x)) * x)):\nLet's test with y = a and z = b again:\n- (a * (a * a)) * x = (a * a) * x = a * x\n\nIf x = a:\n- a * a = a\n- a * x = a * a = a\n\nIf x = b:\n- b * a = b\n- b * x = b * b = a\n\nIn both cases, the equation does not hold.\n\nThus, we have found a"
+    },
+    {
+      "id": "hard_0183",
+      "equation1": "x = x * (y * (x * z))",
+      "equation2": "x = ((x * y) * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.71,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = x * (y * (x * z))) implies Equation 2 (x = ((x * y) * (z * w)) * u) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nWe will check if this magma satisfies both equations.\n\nFor Equation 1 (x = x * (y * (x * z))):\n- If x = a, y = a, and z = a:\n  - x * (y * (x * z)) = a * (a * (a * a)) = a * b = b\n  - Therefore, a * b = a does not hold.\n\nFor Equation 2 (x = ((x * y) * (z * w)) * u):\n- If x = a, y = a, z = a, and w = a:\n  - (x * y) * (z * w) = (a * a) * (a * a) = a * b\n  - Therefore, ((a * a) * (a * a)) * a = b * a = b does not hold.\n\nSince we found a magma where E1 holds but E2 does not, we can conclude that Equation 1 does not imply Equation 2 over all magmas. \n\nPROOF: \n- The provided magma satisfies x = x * (y * (x * z)) for some assignments of y and z.\n- However, it fails to satisfy x = ((x * y) * (z * w"
+    },
+    {
+      "id": "hard_0151",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.76,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = (y * x) * (x * (z * z))) implies Equation 2 (x = y * ((y * x) * (z * y))) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nWe will check if this magma satisfies both equations.\n\nFor Equation 1 (x = (y * x) * (x * (z * z))):\n- If y = a, x = a, and z = a:\n  - y * x = a * a = a\n  - x * (z * z) = a * (a * a) = a * a = a\n  - (y * x) * (x * (z * z)) = a * a = a\n\nThus, for these assignments, Equation 1 holds.\n\nFor Equation 2 (x = y * ((y * x) * (z * y))):\n- If y = a, x = a, and z = a:\n  - y * x = a * a = a\n  - (y * x) * (z * y) = a * (a * a) = a * a = a\n\nThus, for these assignments, Equation 2 holds.\n\nNow let's check if this magma satisfies both equations simultaneously. We need to find values of y, x, and z such that:\n- x = (y * x) * (x * (z * z))\n- x = y * ((y * x) * (z * y"
+    },
+    {
+      "id": "hard_0196",
+      "equation1": "x = x * ((y * (z * w)) * w)",
+      "equation2": "x * y = (x * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.73,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = x * ((y * (z * w)) * w)) implies Equation 2 (x * y = (x * (z * w)) * u) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and binary operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will check if this magma satisfies both equations.\n\nFor Equation 1 (x = x * ((y * (z * w)) * w)):\n- Let's set x = a, y = a, z = b, and w = b.\n- Then we have: \n  - y * (z * w) = a * (b * b) = a\n  - (y * (z * w)) * w = a * b = b\n  - x * ((y * (z * w)) * w) = a * b = b\n\nSince x = a, we have:\n- a = a * b = b\n\nThis does not hold in our magma. Therefore, Equation 1 is not satisfied.\n\nFor Equation 2 (x * y = (x * (z * w)) * u):\n- Let's set x = a, y = a, z = b, and w = b.\n- Then we have:\n  - z * w = b * b = a\n  - x * (z * w) = a * a = a\n\nWe need to find u such that:\n- a * a = a * a * u\n\nSince the magma is small, let's check possible values for u. If we"
+    },
+    {
+      "id": "hard_0118",
+      "equation1": "x = ((y * z) * y) * (x * z)",
+      "equation2": "x = (((y * x) * y) * y) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.75,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((y * z) * y) * (x * z)) implies Equation 2 (x = (((y * x) * y) * y) * y) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nLet's verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((y * z) * y) * (x * z)):\n1. If x = a, y = a and z = a: \n   - (a * a) * a = a\n2. If x = b, y = a and z = a:\n   - (a * a) * a = a\n\nFor Equation 2 (x = (((y * x) * y) * y) * y):\n1. If x = a, y = a: \n   - ((a * a) * a) * a = b\n2. If x = b, y = a:\n   - ((a * a) * a) * a = b\n\nIn this magma, Equation 1 holds but Equation 2 does not hold for all possible assignments of x, y, and z. Therefore, we have found a counterexample.\n\nPROOF: \nNo named proof family fired because the witness model was used to show that E1 can be true while E2 is false in some cases.\n\nCOUNTEREXAMPLE:\nThe magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n-"
+    },
+    {
+      "id": "hard_0157",
+      "equation1": "x * y = (x * z) * (y * w)",
+      "equation2": "x * y = (x * y) * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.64,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x * y = (x * z) * (y * w)) implies Equation 2 (x * y = (x * y) * (z * x)) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nLet's verify if this magma satisfies Equation 1 (x * y = (x * z) * (y * w)):\n\n1. For x = a, y = a:\n   - LHS: a * a = a\n   - RHS: (a * a) * (a * a) = a * a = a\n\n2. For x = b, y = a:\n   - LHS: b * a = b\n   - RHS: (b * a) * (a * b) = b * b = a\n\n3. For x = a, y = b:\n   - LHS: a * b = b\n   - RHS: (a * b) * (b * a) = b * b = a\n\n4. For x = b, y = b:\n   - LHS: b * b = a\n   - RHS: (b * b) * (b * b) = a * a = a\n\nIn this magma, Equation 1 holds for all cases.\n\nNow let's check if it satisfies Equation 2 (x * y = (x * y) * (z * x)):\n\n1. For x = a, y = a:\n   - LHS: a * a = a\n"
+    },
+    {
+      "id": "hard_0113",
+      "equation1": "x = x * (y * (z * (x * y)))",
+      "equation2": "x = x * (((y * x) * z) * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.62,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = x * (y * (z * (x * y)))) implies Equation 2 (x = x * (((y * x) * z) * w)) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will check if both equations hold in this magma.\n\nFor Equation 1 (x = x * (y * (z * (x * y))):\n- If x = a, y = a, z = a:\n  - x = a\n  - y * (z * (x * y)) = b * (a * a) = b * a = b\n  - x * (y * (z * (x * y))) = a * b = b ≠ a\n\nThus, Equation 1 does not hold in this magma.\n\nFor Equation 2 (x = x * (((y * x) * z) * w)):\n- If x = a, y = a, z = a, w = a:\n  - ((y * x) * z) * w = (a * a) * a * a = a * a * a = a\n  - x * (((y * x) * z) * w) = a * a = a\n\nThus, Equation 2 holds in this magma.\n\nSince we found a magma where E1 does not hold but E2 does, we can conclude that E1 does not imply E2 over all magmas. Therefore, the correct verdict is FALSE.\n\nPROOF: Empty (as per"
+    },
+    {
+      "id": "hard_0191",
+      "equation1": "x = x * ((y * z) * (w * u))",
+      "equation2": "x = (x * (x * (y * x))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.72,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = x * ((y * z) * (w * u))) implies Equation 2 (x = (x * (x * (y * x))) * x) over all magmas, we need to analyze the structure and implications of these equations.\n\nFirstly, let's rewrite both equations for clarity:\n- **Equation 1**: \\( x = x \\cdot ((y \\cdot z) \\cdot (w \\cdot u)) \\)\n- **Equation 2**: \\( x = (x \\cdot (x \\cdot (y \\cdot x))) \\cdot x \\)\n\n### Analysis\n\n#### Equation 1\n\\( x = x \\cdot ((y \\cdot z) \\cdot (w \\cdot u)) \\)\n\nThis equation states that the element \\( x \\) can be expressed as a product involving other elements \\( y, z, w, \\) and \\( u \\).\n\n#### Equation 2\n\\( x = (x \\cdot (x \\cdot (y \\cdot x))) \\cdot x \\)\n\nThis equation suggests that \\( x \\) is the result of multiplying \\( x \\) with itself in a nested structure involving \\( y \\).\n\n### Checking for Implication\n\nTo check if every magma satisfying Equation 1 also satisfies Equation 2, we need to see if Equation 2 holds whenever Equation 1 does.\n\nConsider a specific example where:\n- Let \\( y = z = w = u = x \\)\n\nSubstituting these into Equation 1:\n\\[ x = x \\cdot ((x \\cdot x) \\cdot (x \\cdot x)) \\]\nThis simplifies to:\n\\[ x = x \\cdot (x \\cdot x) \\cdot x \\]\n\nNow, let's see if this holds in the context of Equation 2:\n\\["
+    },
+    {
+      "id": "hard_0065",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.64,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = x * (y * (z * y))) implies Equation 2 (x = (x * (x * (x * y))) * x) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and binary operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nLet's verify if this magma satisfies both equations.\n\nFor Equation 1 (x = x * (y * (z * y))):\n- If x = a, y = a, and z = a:\n  - x = a\n  - y = a\n  - z = a\n  - y * (z * y) = a * (a * a) = a * a = a\n  - x * (y * (z * y)) = a * a = a\n\nThus, Equation 1 holds for these assignments.\n\nFor Equation 2 (x = (x * (x * (x * y))) * x):\n- If x = a and y = b:\n  - x = a\n  - x * (x * (x * y)) = a * (a * (a * b)) = a * (a * b) = a * b = b\n  - (x * (x * (x * y))) * x = b * a = b\n\nThus, Equation 2 does not hold for these assignments.\n\nTherefore, we have found a magma where E1 holds but E2 does not. Hence, E1 does not imply E2 over all magmas.\n\nPROOF: \n- The provided magma satisfies the conditions of"
+    },
+    {
+      "id": "hard_0115",
+      "equation1": "x = ((y * z) * w) * x",
+      "equation2": "x = y * ((z * (w * u)) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.62,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((y * z) * w) * x) implies Equation 2 (x = y * ((z * (w * u)) * x)) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nLet's verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((y * z) * w) * x):\n- If y = a, z = a, and w = a:\n  - (a * a) * a = a * a = a\n  - Therefore, x = a holds.\n  \nFor Equation 2 (x = y * ((z * (w * u)) * x)):\n- If y = a, z = a, w = b, and u = b:\n  - (a * (b * (b * b))) * a = a * (b * b) * a\n  - Since b * b = b: \n    - a * b * a = a * b * a\n\nIn this magma, the operations do not satisfy Equation 2. Specifically:\n- The structure of ((z * (w * u)) * x) does not match the form required by y * ((z * (w * u)) * x).\n\nThus, we have found a counterexample where E1 holds but E2 does not.\n\nPROOF: \nNo proof is provided as the problem statement asks for a counterexample rather than proving that E1 implies E2. The counterexample shows that there exists at least one magma where E"
+    },
+    {
+      "id": "hard_0117",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.59,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = x * (y * (z * y))) implies Equation 2 (x = (x * (x * (x * y))) * x) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nConsider the following magma with elements {a, b} and binary operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = b\n\nLet's verify if this magma satisfies both equations.\n\nFor Equation 1 (x = x * (y * (z * y))):\n- If x = a, y = a, and z = a:\n  - x = a\n  - y = a\n  - z = a\n  - y * (z * y) = a * (a * a) = a * a = a\n  - x * (y * (z * y)) = a * a = a\n\nThus, Equation 1 holds for these values.\n\nFor Equation 2 (x = (x * (x * (x * y))) * x):\n- If x = a and y = b:\n  - x = a\n  - x * (x * (x * y)) = a * (a * (a * b))\n    - First, calculate innermost: a * b = b\n    - Then, continue with the next operation: a * b = b\n    - Finally, multiply by x again: b * a = b\n\nThus, Equation 2 does not hold for these values.\n\nTherefore, we have found a magma where E1 holds but E2 does not. Hence, E1 does not imply E2 over all magmas.\n\nPROOF: Empty"
+    },
+    {
+      "id": "hard_0114",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.7,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((y * x) * z) * (z * y)) implies Equation 2 (x = (y * (y * (x * x))) * x) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((y * x) * z) * (z * y)):\n- Let's set x = a, y = a, and z = a.\n- Then, y * x = a * a = a\n- So, (y * x) * z = a * a = a\n- And, z * y = a * a = a\n- Therefore, ((y * x) * z) * (z * y) = a * a = a\n\nThus, x = a satisfies the equation: \na = a.\n\nFor Equation 2 (x = (y * (y * (x * x))) * x):\n- Let's set x = a and y = a.\n- Then, x * x = a * a = a\n- So, y * (x * x) = a * a = a\n- Therefore, y * (y * (x * x)) = a * a = a\n\nThus, x = a satisfies the equation:\na = a.\n\nHowever, we need to check if this magma also satisfies Equation 2 for all possible assignments. Let's consider other possible values of x and y:\n\nFor x = b and"
+    },
+    {
+      "id": "hard_0016",
+      "equation1": "x = (x * y) * (x * (y * z))",
+      "equation2": "x = (x * y) * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.7,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nEquation 1 (E1) \\( x = (x * y) * (x * (y * z)) \\) does not necessarily imply Equation 2 (E2) \\( x = (x * y) * (x * (z * y)) \\). We can find a counterexample to show that E1 does not always lead to E2.\n\nConsider the following magma with elements {a, b} and binary operation defined as follows:\n- \\( a * a = a \\)\n- \\( a * b = b \\)\n- \\( b * a = b \\)\n- \\( b * b = b \\)\n\nLet's verify if E1 holds in this magma:\n\\[ x = (x * y) * (x * (y * z)) \\]\n\nFor the witness model, we can assign:\n- \\( x = a \\)\n- \\( y = a \\)\n- \\( z = b \\)\n\nThen,\n\\[ x = a \\]\n\\[ (x * y) = (a * a) = a \\]\n\\[ (x * (y * z)) = (a * (a * b)) = (a * b) = b \\]\n\nThus, the right-hand side becomes:\n\\[ (x * y) * (x * (y * z)) = a * b = b \\]\n\nSince \\( x = a \\neq b \\), E1 does not hold in this witness model.\n\nNow let's verify if E2 holds in this magma:\n\\[ x = (x * y) * (x * (z * y)) \\]\n\nFor the same assignments:\n- \\( x = a \\)\n- \\( y = a \\)\n- \\( z = b \\)\n\nThen,\n\\[ x = a \\]\n\\[ (x * y) = (a * a) = a"
+    },
+    {
+      "id": "hard_0186",
+      "equation1": "x = (y * (x * (y * x))) * y",
+      "equation2": "x * (x * y) = z * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.72,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = (y * (x * (y * x))) * y) implies Equation 2 (x * (x * y) = z * (y * x)) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will verify if this magma satisfies Equation 1 (E1) but not Equation 2 (E2).\n\n### Verification of E1 in the Magma:\n\nGiven E1: x = (y * (x * (y * x))) * y\n\nLet's test with specific values:\n- Let \\( y = a \\)\n- Then, \\( y * x = a * x \\)\n\nWe need to check if \\( x = (a * (x * (a * x))) * a \\) holds.\n\n1. Calculate \\( x * (a * x) \\):\n   - If \\( x = a \\), then \\( x * (a * x) = a * (a * a) = a * a = a \\)\n   - If \\( x = b \\), then \\( x * (a * x) = b * (a * b) = b * a = b \\)\n\n2. Calculate \\( (x * (a * x)) * y \\):\n   - For \\( x = a \\): \\( (a * a) * a = a * a = a \\)\n   - For \\( x = b \\): \\( (b * a) * a = b * a = b \\)\n\n3. Calculate \\( ((x * ("
+    },
+    {
+      "id": "hard_0098",
+      "equation1": "x * y = y * ((x * y) * z)",
+      "equation2": "x * x = y * (y * (y * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.79,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x * y = y * ((x * y) * z)) implies Equation 2 (x * x = y * (y * (y * y))) over all magmas, we need to find a magma that satisfies Equation 1 but does not satisfy Equation 2. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will verify if this magma satisfies both equations.\n\n### Verification of Equation 1 (x * y = y * ((x * y) * z))\n\nLet's check all possible combinations:\n1. \\(a * a = a\\)\n2. \\(a * b = b\\)\n3. \\(b * a = b\\)\n4. \\(b * b = a\\)\n\nNow, let's verify the equation for different cases:\n\n- For \\(x = a\\) and \\(y = a\\):\n  \\[\n  x * y = a * a = a\n  \\]\n  \\[\n  y * (x * y) = a * a = a\n  \\]\n  \\[\n  (x * y) * z = a * a = a\n  \\]\n  \\[\n  y * ((x * y) * z) = a * a = a\n  \\]\n  Thus, \\(a * a = a * a\\).\n\n- For \\(x = b\\) and \\(y = a\\):\n  \\[\n  x * y = b * a = b\n  \\]\n  \\[\n  y * (x * y) = a * b = b\n  \\]\n  \\[\n  (x * y) *"
+    },
+    {
+      "id": "hard_0009",
+      "equation1": "x = ((x * x) * (y * z)) * y",
+      "equation2": "x = ((x * (y * x)) * x) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.69,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((x * x) * (y * z)) * y) implies Equation 2 (x = ((x * (y * x)) * x) * y) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and binary operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((x * x) * (y * z)) * y):\n1. If x = a, then:\n   - (a * a) = a\n   - (y * z) is not defined in the given magma.\n2. If x = b, then:\n   - (b * b) = a\n   - (y * z) is not defined in the given magma.\n\nSince y and z are not defined in this magma, we cannot evaluate ((x * x) * (y * z)) for any x. Therefore, Equation 1 does not hold in this magma.\n\nFor Equation 2 (x = ((x * (y * x)) * x) * y):\n1. If x = a:\n   - (a * (y * a)) is not defined.\n2. If x = b:\n   - (b * (y * b)) is not defined.\n\nSince y and z are not defined in this magma, we cannot evaluate ((x * (y * x)) * x) for any x. Therefore, Equation 2 does not hold in this magma either.\n\nThus, the magma satisfies both equations E1 and E2, which"
+    },
+    {
+      "id": "hard_0062",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.6,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: \nTo determine whether Equation 1 (x = ((y * x) * z) * (z * y)) implies Equation 2 (x = (y * (y * (x * x))) * x) over all magmas, we need to find a magma where E1 holds but E2 does not. \n\nLet's consider the following magma with elements {a, b} and operation defined as follows:\n- a * a = a\n- a * b = b\n- b * a = b\n- b * b = a\n\nWe will verify if this magma satisfies both equations.\n\nFor Equation 1 (x = ((y * x) * z) * (z * y)):\n- Let's set x = a, y = a, and z = a.\n- Then, y * x = a * a = a\n- So, (y * x) * z = a * a = a\n- And, z * y = a * a = a\n- Therefore, ((y * x) * z) * (z * y) = a * a = a\n\nThus, x = a satisfies the equation when x = a.\n\nFor Equation 2 (x = (y * (y * (x * x))) * x):\n- Let's set x = a and y = a.\n- Then, x * x = a * a = a\n- So, y * (x * x) = a * a = a\n- Therefore, y * (y * (x * x)) = a * a = a\n\nThus, x = a satisfies the equation when x = a.\n\nHowever, let's check if this magma satisfies both equations simultaneously:\n- For Equation 1: x = a and z = b.\n- Then, ((y * x) *"
+    }
+  ]
+}

@@ -2,40 +2,35 @@ MAGMA IMPLICATION GUIDE v6
 E1, E2 are equations over a magma with one binary operation *.
 Question: does every magma satisfying E1 also satisfy E2?
 
-CALIBRATION
-- Eval is balanced 50/50. Never default to FALSE.
-- Say TRUE only from a named proof family below.
+OUTPUT
+- First line must be exactly: VERDICT: TRUE or VERDICT: FALSE
+- Never write: VERDICT: must be exactly TRUE or FALSE
+
+CRITICAL CALIBRATION
+- Eval is balanced 50/50. Do NOT default to FALSE because no proof family fired.
+- Say TRUE only from an explicit proof family below.
 - Say FALSE only from a named witness model or safe-false filter below.
-- If no TRUE family fired and no witness refuted, that means CONTINUE/UNKNOWN, not FALSE.
-- Never invent a custom finite magma. Use only the four witness models listed here.
-- A witness model is valid only if E1 holds in that model for ALL assignments.
-- One assignment is never enough.
+- NEVER say FALSE just because no TRUE family matched.
+- NEVER say TRUE just because no witness model refuted.
 
-DECISION ORDER
-1. SINGLETON SCAN. If it fires, answer TRUE immediately and stop.
-2. SAME LAW.
-3. TRIVIAL TARGET.
-4. LEFT-PROJECTION or RIGHT-PROJECTION.
-5. CONSTANT-PRODUCT.
-6. SQUARE-BRIDGE.
-7. Only now test the four witness models for FALSE.
-8. Only after that use safe-false filters.
+DECISION WORKFLOW
+0. SINGLETON SCAN -- do this before anything else.
+1. Check SAME LAW.
+2. Check TRIVIAL TARGET.
+3. Check LEFT-PROJECTION / RIGHT-PROJECTION / CONSTANT / SQUARE-BRIDGE families.
+4. Only if no source family matches, test the four witness models for FALSE.
+5. Only after all checks, use safe-false filters.
 
-1. SINGLETON SCAN (MANDATORY FIRST CHECK)
-Singleton applies only when the LHS of E1 is a single variable x.
-Ask exactly this:
-- Is the LHS of E1 a bare variable x?
-- Does x appear anywhere in the RHS of E1?
+0. SINGLETON SCAN (MANDATORY FIRST CHECK) -> TRUE OR CONTINUE
+Singleton applies only when the LHS of E1 is a bare variable x.
+Scan the RHS of E1 for x.
+  x absent from RHS -> E1 is singleton. Every E2 is implied. Answer TRUE. Stop.
+  x present in RHS -> continue.
 
-If LHS is a bare variable and x does NOT appear anywhere in the RHS, then E1 is singleton.
-Singleton means every E2 is implied. Answer TRUE immediately. Stop.
+Singleton overrides everything.
+If singleton fires, do NOT inspect E2 and do NOT test witness models.
 
-When singleton fires:
-- Do NOT inspect E2.
-- Do NOT test witness models.
-- Do NOT call it projection.
-
-Examples of singleton E1:
+Singleton examples:
   x = y * z
   x = (y * z) * w
   x = ((y * y) * z) * w
@@ -44,34 +39,32 @@ Examples of singleton E1:
   x = ((y * (z * w)) * u) * v
   x = (y * (z * w)) * (u * v)
 
-Non-singleton examples:
+Non-examples:
   x = y * (x * z)
   x = x * (y * z)
   x = ((y * x) * z) * w
 
-Important trap:
+Projection trap:
   x = y * (z * (w * (z * z))) is singleton, not left-projection.
-  Projection needs the RHS to literally start with x * or literally end with * x.
+  Left-projection needs RHS to literally start with x *.
+  Right-projection needs RHS to literally end with * x.
 
-2. SAME LAW -> TRUE
+1. SAME LAW -> TRUE
 If E1 and E2 are the same equation up to consistent variable renaming, TRUE.
 
-3. TRIVIAL TARGET -> TRUE
+2. TRIVIAL TARGET -> TRUE
 If E2 is x = x, TRUE.
 
-4. LEFT-PROJECTION FAMILY
+3. LEFT-PROJECTION FAMILY -> TRUE/FALSE BY LEFTMOST VARIABLE
 Literal gate:
-- E1 must have the exact outer form x = x * EXPR.
-- If the RHS does not literally begin with x *, left-projection does not apply.
+  E1 must have the form x = x * EXPR.
+  If the RHS does not literally start with x *, left-projection does NOT apply.
 
-Safe generic lane:
-- x does not appear anywhere in EXPR.
-- The leftmost variable of EXPR is not x.
-- That leftmost variable appears exactly once in EXPR.
+Safety gate: does x appear inside EXPR?
+  YES -> only the explicitly listed x-in-EXPR shapes apply.
+  NO  -> both listed shapes and the generic rule apply.
 
-Then E1 forces a * b = a.
-
-This generic lane includes:
+Graph-backed members (force a * b = a), x NOT inside EXPR:
   x = x * y
   x = x * (y * z)
   x = x * ((y * z) * w)
@@ -79,17 +72,24 @@ This generic lane includes:
   x = x * (y * ((z * w) * u))
   x = x * ((y * z) * (w * u))
   x = x * ((y * (z * w)) * w)
+  and variable-renamings of these shapes.
 
-Extra exact x-in-EXPR lane (allowed only for these exact source shapes and renamings):
+Graph-backed members, x also appears inside EXPR:
   x = x * (y * (x * z))
   x = x * (y * (z * (x * y)))
+  and variable-renamings of these shapes.
 
-Consequence under left projection:
-- E1 implies E2 iff the leftmost variable on the two sides of E2 is the same.
-- Same leftmost variable -> TRUE.
-- Different leftmost variable -> FALSE via left projection.
+Generic rule (apply only when x NOT inside EXPR):
+  If E1 = x * EXPR, the first variable in EXPR is not x,
+  that first variable appears exactly once in EXPR,
+  and x does not appear anywhere in EXPR, then E1 is left-projection.
 
-Hard TRUE anchors that are all left-projection:
+These force a * b = a.
+Consequence: E1 => E2 iff the leftmost variable on both sides of E2 is the same.
+  Same leftmost variable -> TRUE.
+  Different leftmost variable -> FALSE via left projection.
+
+Useful TRUE anchors:
   x = x * (y * (z * y))       => x = (x * (x * (x * y))) * x
   x = x * ((y * z) * (w * u)) => x = (x * (x * (y * x))) * x
   x = x * ((y * (z * w)) * w) => x * y = (x * (z * w)) * u
@@ -97,56 +97,60 @@ Hard TRUE anchors that are all left-projection:
   x = x * (y * (x * z))       => x = ((x * y) * (z * w)) * u
   x = x * (y * (z * (x * y))) => x = x * (((y * x) * z) * w)
 
-5. RIGHT-PROJECTION FAMILY
+4. RIGHT-PROJECTION FAMILY -> TRUE/FALSE BY RIGHTMOST VARIABLE
 Literal gate:
-- E1 must have the exact outer form x = EXPR * x.
-- The final variable on the RHS must literally be x.
-- If the RHS does not literally end with * x, right-projection does not apply.
+  E1 must have the form x = EXPR * x where x is the very last variable in RHS.
+  If the RHS does not literally end with * x, right-projection does NOT apply.
 
-Safe generic lane:
-- x does not appear anywhere in EXPR.
-- The leftmost variable of EXPR is not x.
-- That leftmost variable appears exactly once in EXPR.
-
-Then E1 forces a * b = b.
-
-This generic lane includes:
+Graph-backed members (force a * b = b), x NOT inside EXPR:
   x = y * x
   x = (y * z) * x
   x = ((y * z) * z) * x
   x = ((y * y) * z) * x
   x = ((y * z) * w) * x
   x = (y * (y * (y * z))) * x
+  and variable-renamings of these shapes.
 
-Consequence under right projection:
-- E1 implies E2 iff the rightmost variable on the two sides of E2 is the same.
-- Same rightmost variable -> TRUE.
-- Different rightmost variable -> FALSE via right projection.
+Graph-backed members, x also appears inside EXPR:
+  x = (((y * x) * y) * z) * x
+  and variable-renamings of this shape.
 
-Hard TRUE anchors that are all right-projection:
-  x = ((y * y) * z) * x => x = y * (y * (z * (w * x)))
-  x = ((y * z) * w) * x => x = y * ((z * (w * u)) * x)
-  x = ((y * z) * z) * x => x = x * ((y * (y * x)) * x)
+Generic rule (apply only when x NOT inside EXPR):
+  If E1 = EXPR * x, the first variable in EXPR is not x,
+  that first variable appears exactly once in EXPR,
+  and x does not appear anywhere inside EXPR, then E1 is right-projection.
+  CAUTION: this generic rule is narrow. When uncertain, rely on listed shapes only.
 
-6. CONSTANT-PRODUCT FAMILY
-Use only these exact source shapes and renamings:
+These force a * b = b.
+Consequence: E1 => E2 iff the rightmost variable on both sides of E2 is the same.
+  Rightmost variable = the last variable letter reading the expression left to right.
+  Same rightmost -> TRUE. Different rightmost -> FALSE via right projection.
+
+Useful TRUE anchors:
+  x = ((y * y) * z) * x   => x = y * (y * (z * (w * x)))
+  x = ((y * z) * w) * x   => x = y * ((z * (w * u)) * x)
+  x = ((y * z) * z) * x   => x = x * ((y * (y * x)) * x)
+  x = (((y * x) * y) * z) * x => x * y = z * (w * (z * y))
+
+5. CONSTANT-PRODUCT FAMILY -> TRUE/FALSE BY WHETHER E2 HAS PRODUCTS
+Graph-backed members (force all products equal to one constant c):
   x * y = z * w
   x * y = y * z
   x * y = z * y
   x * x = y * z
   x * y = (y * x) * z
   x * y = (y * z) * x
+  and variable-renamings of these shapes.
 
-These force all products to one constant c.
 Consequences:
-- If both sides of E2 contain *, TRUE.
-- If one side of E2 is bare and the other side contains *, FALSE via constant.
-- If E2 is x = x, TRUE.
+  both sides of E2 contain * -> TRUE.
+  one bare side and one product side in E2 -> FALSE via constant.
+  E2 is x = x -> TRUE.
 
-Do not generalize this family to arbitrary product = product equations.
+Do NOT generalize constant-product to every E1 where both sides have products.
 
-7. SQUARE-BRIDGE FAMILY
-Safe source shapes:
+6. SQUARE-BRIDGE FAMILY -> NARROW EXTRA TRUE LANE
+Graph-backed sources:
   x = y * (x * x)
   x = (y * x) * (y * x)
   x = (y * (y * z)) * (w * x)
@@ -154,51 +158,38 @@ Safe source shapes:
   x = (x * x) * y
   x = (x * y) * (z * z)
 
-Safe TRUE target shapes:
+Safe TRUE targets:
   x = ((x * y) * x) * (z * x)
   x = y * (z * (w * (u * x)))
   x * y = z * (y * (w * y))
   x * x = x * ((y * z) * w)
 
-Apply only when E1 exactly matches a listed source and E2 exactly matches a listed target,
-up to variable renaming. Do not generalize.
+Direct example:
+  x = (y * (y * z)) * (w * x) => x = y * (z * (w * (u * x))) is TRUE.
 
-8. FALSE VIA FOUR WITNESS MODELS ONLY
-Use only these four models:
+Apply only if E1 exactly matches a listed source and E2 exactly matches a listed target
+(up to variable renaming). Do not generalize.
 
-LEFT PROJECTION: a * b = a
-- An equation holds iff the leftmost variables on its two sides match.
+7. FALSE VIA SMALL WITNESS MODELS
+Always verify E1 first. A model is valid only if it satisfies E1 for ALL assignments.
+One assignment is never enough.
 
-RIGHT PROJECTION: a * b = b
-- An equation holds iff the rightmost variables on its two sides match.
+LEFT PROJECTION: a * b = a. E holds iff leftmost variables match on both sides.
+RIGHT PROJECTION: a * b = b. E holds iff rightmost variables match on both sides.
+CONSTANT: a * b = 0. E holds iff both sides contain *, or both sides are same bare var.
+XOR ON {0,1}: a * b = a + b mod 2. E holds iff each variable has same total parity both sides.
 
-CONSTANT: a * b = 0
-- An equation holds iff both sides contain *, or both sides are the same bare variable.
+If any model satisfies E1 but not E2, answer FALSE and name it.
+If none of these four models refutes E2 given E1, that is NOT a license to default to FALSE.
+Do not invent a custom table or a custom magma.
 
-XOR ON {0,1}: a * b = a + b mod 2
-- An equation holds iff each variable has the same parity on both sides.
-
-Witness procedure:
-- First check whether E1 holds in the witness model using the criterion above.
-- If E1 fails in that witness, discard it.
-- If E1 holds and E2 fails, answer FALSE and name that witness.
-- If no witness refutes, keep going. That is not evidence for FALSE.
-
-Common witness mistakes to avoid:
-- Do not build your own operation table.
-- Do not test only one assignment.
-- Do not say "consider x=0, y=1" as a refutation.
-- Do not use the constant witness on singleton E1 unless the constant criterion says E1 holds.
-- Do not use left/right projection witnesses unless their hold-criteria actually make E1 true.
-
-9. SAFE FALSE FILTERS (ONLY AFTER 1-8 FAIL)
+8. SAFE FALSE FILTERS (use only after 0-7 failed)
 - If E2 is x = y and E1 is not singleton-forcing, FALSE.
 - If E1 is balanced and E2 is unbalanced, and E1 is not in singleton/projection/
   constant/square-bridge families, FALSE.
 
-10. FINAL WARNINGS
-- Singleton overrides everything else.
-- If singleton fired, answer TRUE immediately.
-- Projection families require literal outer shape matching.
-- For FALSE, name the witness model or safe-false filter.
-- For TRUE, name the proof family.
+9. WARNINGS
+- Singleton check 0 overrides everything.
+- Projection only applies after literal outer-shape matching.
+- For FALSE you must name a witness model or safe-false filter.
+- For TRUE you must name the proof family.
