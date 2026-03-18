@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from dataclasses import field
 
 
 def normalize(eq: str) -> str:
@@ -107,6 +108,12 @@ class CheatsheetProfile:
     square_right_targets: set[str]
     square_left_sources: set[str]
     square_left_targets: set[str]
+    c887_sources: set[str] = field(default_factory=set)
+    c887_targets: set[str] = field(default_factory=set)
+    left_generic_enabled: bool = True
+    left_generic_require_x_absent: bool = False
+    right_generic_enabled: bool = True
+    right_generic_require_x_absent: bool = False
 
 
 GRAPH_V4 = CheatsheetProfile(
@@ -154,8 +161,105 @@ GRAPH_V4 = CheatsheetProfile(
 )
 
 
+GRAPH_V7 = CheatsheetProfile(
+    name='graph_v7',
+    left_family={
+        canonicalize('x=x*y'),
+        canonicalize('x=x*(y*z)'),
+        canonicalize('x=x*((y*z)*w)'),
+        canonicalize('x=x*(y*(z*y))'),
+        canonicalize('x=x*(y*((z*w)*u))'),
+        canonicalize('x=x*((y*z)*(w*u))'),
+        canonicalize('x=x*((y*(z*w))*w)'),
+        canonicalize('x=x*(((y*z)*w)*u)'),
+        canonicalize('x=x*((y*z)*(z*z))'),
+        canonicalize('x=x*(y*(x*z))'),
+        canonicalize('x=x*(y*(z*(x*y)))'),
+        canonicalize('x=x*(y*(x*(z*w)))'),
+    },
+    right_family={
+        canonicalize('x=y*x'),
+        canonicalize('x=(y*z)*x'),
+        canonicalize('x=((y*z)*z)*x'),
+        canonicalize('x=((y*y)*z)*x'),
+        canonicalize('x=((y*z)*w)*x'),
+        canonicalize('x=(y*(y*(y*z)))*x'),
+        canonicalize('x=(((y*x)*y)*z)*x'),
+        canonicalize('x=(y*(y*z))*x'),
+        canonicalize('x=(((y*z)*x)*z)*x'),
+        canonicalize('x=(((y*y)*z)*w)*x'),
+        canonicalize('x=((y*(z*y))*w)*x'),
+        canonicalize('x=(y*((z*x)*w))*x'),
+        canonicalize('x=(((y*z)*y)*w)*x'),
+        canonicalize('x=(((y*x)*z)*y)*x'),
+        canonicalize('x=(y*((x*z)*z))*x'),
+    },
+    const_family={
+        canonicalize('x*y=z*w'),
+        canonicalize('x*y=y*z'),
+        canonicalize('x*y=z*y'),
+        canonicalize('x*x=y*z'),
+        canonicalize('x*y=(y*x)*z'),
+        canonicalize('x*y=(y*z)*x'),
+        canonicalize('x*y=y*((x*y)*z)'),
+        canonicalize('x*y=((z*w)*x)*u'),
+        canonicalize('x*y=((z*y)*x)*x'),
+        canonicalize('x*y=(y*y)*(z*w)'),
+        canonicalize('x*y=z*(w*(z*u))'),
+        canonicalize('x*y=z*(x*(w*x))'),
+        canonicalize('x*y=z*(w*(u*u))'),
+        canonicalize('x*y=(z*w)*(w*z)'),
+        canonicalize('x*y=y*(z*(y*z))'),
+        canonicalize('x*y=(z*z)*(w*x)'),
+        canonicalize('x*y=(z*w)*(z*x)'),
+        canonicalize('x*y=(y*y)*z'),
+        canonicalize('x*y=((z*y)*y)*w'),
+        canonicalize('x*y=y*((z*w)*w)'),
+        canonicalize('x*y=z*(y*(x*w))'),
+        canonicalize('x*y=z*((w*y)*z)'),
+        canonicalize('x*y=z*((z*w)*u)'),
+        canonicalize('x*y=y*((z*z)*w)'),
+        canonicalize('x*y=z*((z*x)*z)'),
+    },
+    square_right_sources={
+        canonicalize('x=y*(x*x)'),
+        canonicalize('x=(y*x)*(y*x)'),
+        canonicalize('x=(y*(y*z))*(w*x)'),
+        canonicalize('x=(y*(y*x))*(z*x)'),
+    },
+    square_right_targets={
+        canonicalize('x=((x*y)*x)*(z*x)'),
+        canonicalize('x=y*(z*(w*(u*x)))'),
+        canonicalize('x*y=z*(y*(w*y))'),
+    },
+    square_left_sources={
+        canonicalize('x=(x*x)*y'),
+        canonicalize('x=(x*y)*(z*z)'),
+    },
+    square_left_targets={
+        canonicalize('x*x=x*((y*z)*w)'),
+    },
+    c887_sources={
+        canonicalize('x=y*((x*y)*(z*z))'),
+        canonicalize('x=y*(((z*z)*x)*y)'),
+        canonicalize('x=(y*y)*(z*(x*z))'),
+        canonicalize('x=((y*x)*y)*(z*z)'),
+        canonicalize('x=(y*(x*(z*z)))*y'),
+        canonicalize('x=((y*y)*(z*x))*z'),
+    },
+    c887_targets={
+        canonicalize('x=x*(((x*y)*x)*y)'),
+    },
+    left_generic_enabled=True,
+    left_generic_require_x_absent=True,
+    right_generic_enabled=False,
+    right_generic_require_x_absent=False,
+)
+
+
 PROFILES = {
     GRAPH_V4.name: GRAPH_V4,
+    GRAPH_V7.name: GRAPH_V7,
 }
 
 
@@ -171,10 +275,14 @@ def is_left_family(eq: str, profile: CheatsheetProfile) -> bool:
     lhs, rhs = parse_sides(eq)
     if canonicalize(eq) in profile.left_family:
         return True
+    if not profile.left_generic_enabled:
+        return False
     if not is_bare_var(lhs) or not rhs.startswith(lhs + '*'):
         return False
     expr = rhs[2:]
     first_var = leftmost_var(expr)
+    if profile.left_generic_require_x_absent and lhs in get_vars(expr):
+        return False
     return first_var is not None and first_var != lhs and len(re.findall(first_var, expr)) == 1
 
 
@@ -182,10 +290,14 @@ def is_right_family(eq: str, profile: CheatsheetProfile) -> bool:
     lhs, rhs = parse_sides(eq)
     if canonicalize(eq) in profile.right_family:
         return True
+    if not profile.right_generic_enabled:
+        return False
     if not is_bare_var(lhs) or not rhs.endswith('*' + lhs):
         return False
     expr = rhs[:-2]
     first_var = leftmost_var(expr)
+    if profile.right_generic_require_x_absent and lhs in get_vars(expr):
+        return False
     return first_var is not None and first_var != lhs and len(re.findall(first_var, expr)) == 1
 
 
@@ -201,12 +313,20 @@ def is_square_left_family(eq: str, profile: CheatsheetProfile) -> bool:
     return canonicalize(eq) in profile.square_left_sources
 
 
+def is_c887_family(eq: str, profile: CheatsheetProfile) -> bool:
+    return canonicalize(eq) in profile.c887_sources
+
+
 def square_right_target_matches(eq: str, profile: CheatsheetProfile) -> bool:
     return canonicalize(eq) in profile.square_right_targets
 
 
 def square_left_target_matches(eq: str, profile: CheatsheetProfile) -> bool:
     return canonicalize(eq) in profile.square_left_targets
+
+
+def c887_target_matches(eq: str, profile: CheatsheetProfile) -> bool:
+    return canonicalize(eq) in profile.c887_targets
 
 
 def predict_implication(e1: str, e2: str, profile_name: str = 'graph_v4') -> tuple[bool | None, str]:
@@ -224,6 +344,8 @@ def predict_implication(e1: str, e2: str, profile_name: str = 'graph_v4') -> tup
         return right_proj_satisfies(e2), 'right_family'
     if is_const_family(e1, profile):
         return const_satisfies(e2), 'const_family'
+    if is_c887_family(e1, profile) and c887_target_matches(e2, profile):
+        return True, 'c887_family'
     if is_square_right_family(e1, profile) and square_right_target_matches(e2, profile):
         return True, 'square_family'
     if is_square_left_family(e1, profile) and square_left_target_matches(e2, profile):
@@ -255,6 +377,8 @@ def family_name(eq: str, profile_name: str = 'graph_v4') -> str:
         return 'right_family'
     if is_const_family(eq, profile):
         return 'const_family'
+    if is_c887_family(eq, profile):
+        return 'c887_family'
     if is_square_right_family(eq, profile) or is_square_left_family(eq, profile):
         return 'square_family'
     return 'other'

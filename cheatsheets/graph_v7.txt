@@ -1,0 +1,180 @@
+IF one side of E1 is a bare variable v and v is absent from the other side
+THEN TRUE.
+STOP.
+
+IF E1 and E2 are the same law up to consistent variable renaming
+THEN TRUE.
+STOP.
+
+IF E2 is x = x
+THEN TRUE.
+STOP.
+
+IF E1 is one of these exact LEFT-PROJECTION sources with x inside EXPR, up to renaming:
+  x = x * (y * (x * z))
+  x = x * (y * (z * (x * y)))
+  x = x * (y * (x * (z * w)))
+THEN use LEFT-PROJECTION.
+THEN TRUE iff the leftmost variable on the two sides of E2 is the same.
+THEN FALSE via LEFT PROJECTION otherwise.
+STOP.
+
+IF E1 is one of these exact LEFT-PROJECTION sources with x absent from EXPR, up to renaming:
+  x = x * y
+  x = x * (y * z)
+  x = x * ((y * z) * w)
+  x = x * (y * (z * y))
+  x = x * (y * ((z * w) * u))
+  x = x * ((y * z) * (w * u))
+  x = x * ((y * (z * w)) * w)
+  x = x * (((y * z) * w) * u)
+  x = x * ((y * z) * (z * z))
+THEN use LEFT-PROJECTION.
+THEN TRUE iff the leftmost variable on the two sides of E2 is the same.
+THEN FALSE via LEFT PROJECTION otherwise.
+STOP.
+
+IF E1 has the form x = x * EXPR and x is absent from EXPR and the first variable of EXPR is not x and appears exactly once in EXPR
+THEN use LEFT-PROJECTION.
+THEN TRUE iff the leftmost variable on the two sides of E2 is the same.
+THEN FALSE via LEFT PROJECTION otherwise.
+STOP.
+
+IF E1 is one of these exact RIGHT-PROJECTION sources, up to renaming:
+  x = y * x
+  x = (y * z) * x
+  x = ((y * z) * z) * x
+  x = ((y * y) * z) * x
+  x = ((y * z) * w) * x
+  x = (y * (y * (y * z))) * x
+THEN use RIGHT-PROJECTION.
+THEN TRUE iff the rightmost variable on the two sides of E2 is the same.
+THEN FALSE via RIGHT PROJECTION otherwise.
+STOP.
+
+IF E1 is one of these exact RIGHT-PROJECTION sources, up to renaming:
+  x = (((y * x) * y) * z) * x
+  x = (y * (y * z)) * x
+  x = (((y * z) * x) * z) * x
+  x = (((y * y) * z) * w) * x
+  x = ((y * (z * y)) * w) * x
+THEN use RIGHT-PROJECTION.
+THEN TRUE iff the rightmost variable on the two sides of E2 is the same.
+THEN FALSE via RIGHT PROJECTION otherwise.
+STOP.
+
+IF E1 is one of these exact RIGHT-PROJECTION sources, up to renaming:
+  x = (y * ((z * x) * w)) * x
+  x = (((y * z) * y) * w) * x
+  x = (((y * x) * z) * y) * x
+  x = (y * ((x * z) * z)) * x
+THEN use RIGHT-PROJECTION.
+THEN TRUE iff the rightmost variable on the two sides of E2 is the same.
+THEN FALSE via RIGHT PROJECTION otherwise.
+STOP.
+
+IF E1 is one of these exact CONSTANT-PRODUCT sources, up to renaming:
+  x * y = z * w
+  x * y = y * z
+  x * y = z * y
+  x * x = y * z
+  x * y = (y * x) * z
+  x * y = (y * z) * x
+THEN use CONSTANT-PRODUCT.
+THEN TRUE iff both sides of E2 contain *.
+THEN FALSE via CONSTANT if E2 has one bare side and one product side.
+STOP.
+
+IF E1 is one of these exact CONSTANT-PRODUCT sources, up to renaming:
+  x * y = y * ((x * y) * z)
+  x * y = ((z * w) * x) * u
+  x * y = ((z * y) * x) * x
+  x * y = (y * y) * (z * w)
+  x * y = z * (w * (z * u))
+  x * y = z * (x * (w * x))
+  x * y = z * (w * (u * u))
+  x * y = (z * w) * (w * z)
+  x * y = y * (z * (y * z))
+THEN use CONSTANT-PRODUCT.
+THEN TRUE iff both sides of E2 contain *.
+THEN FALSE via CONSTANT if E2 has one bare side and one product side.
+STOP.
+
+IF E1 is one of these exact CONSTANT-PRODUCT sources, up to renaming:
+  x * y = (z * z) * (w * x)
+  x * y = (z * w) * (z * x)
+  x * y = (y * y) * z
+  x * y = ((z * y) * y) * w
+  x * y = y * ((z * w) * w)
+  x * y = z * (y * (x * w))
+  x * y = z * ((w * y) * z)
+  x * y = z * ((z * w) * u)
+THEN use CONSTANT-PRODUCT.
+THEN TRUE iff both sides of E2 contain *.
+THEN FALSE via CONSTANT if E2 has one bare side and one product side.
+STOP.
+
+IF E1 is one of these exact CONSTANT-PRODUCT sources, up to renaming:
+  x * y = y * ((z * z) * w)
+  x * y = z * ((z * x) * z)
+THEN use CONSTANT-PRODUCT.
+THEN TRUE iff both sides of E2 contain *.
+THEN FALSE via CONSTANT if E2 has one bare side and one product side.
+STOP.
+
+IF E1 is one of these exact C887 sources, up to renaming:
+  x = y * ((x * y) * (z * z))
+  x = y * (((z * z) * x) * y)
+  x = (y * y) * (z * (x * z))
+  x = ((y * x) * y) * (z * z)
+  x = (y * (x * (z * z))) * y
+  x = ((y * y) * (z * x)) * z
+AND E2 is x = x * (((x * y) * x) * y), up to renaming
+THEN TRUE.
+STOP.
+
+IF E1 is one of these exact SQUARE-BRIDGE sources, up to renaming:
+  x = y * (x * x)
+  x = (y * x) * (y * x)
+  x = (y * (y * z)) * (w * x)
+  x = (y * (y * x)) * (z * x)
+AND E2 is one of these exact safe targets, up to renaming:
+  x = ((x * y) * x) * (z * x)
+  x = y * (z * (w * (u * x)))
+  x * y = z * (y * (w * y))
+THEN TRUE.
+STOP.
+
+IF E1 is one of these exact SQUARE-BRIDGE sources, up to renaming:
+  x = (x * x) * y
+  x = (x * y) * (z * z)
+AND E2 is x * x = x * ((y * z) * w), up to renaming
+THEN TRUE.
+STOP.
+
+IF no earlier TRUE rule fired
+THEN check the FALSE rules below before answering FALSE.
+
+IF no earlier TRUE rule fired and the leftmost variable on the two sides of E1 is the same and the leftmost variable on the two sides of E2 is different
+THEN FALSE via LEFT PROJECTION.
+STOP.
+
+IF no earlier TRUE rule fired and the rightmost variable on the two sides of E1 is the same and the rightmost variable on the two sides of E2 is different
+THEN FALSE via RIGHT PROJECTION.
+STOP.
+
+IF no earlier TRUE rule fired and each variable has the same parity on the two sides of E1 and some variable has different parity on the two sides of E2
+THEN FALSE via XOR.
+STOP.
+
+IF no earlier TRUE rule fired and both sides of E1 contain * and E2 has one bare side and one product side
+THEN FALSE via CONSTANT.
+STOP.
+
+IF no earlier TRUE rule fired and E2 is x = y
+THEN FALSE.
+STOP.
+
+IF no earlier TRUE rule fired and E1 is balanced and E2 is unbalanced
+THEN FALSE.
+STOP.
