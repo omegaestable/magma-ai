@@ -9,14 +9,14 @@ Usage:
     # Quick smoke test (5 problems, default model)
     python sim_lab.py --quick
 
-    # Full hard benchmark
-    python sim_lab.py --data data/benchmark/hard.jsonl --model qwen2.5:3b
+    # Full hard benchmark with the default 7b model
+    python sim_lab.py --data data/benchmark/hard.jsonl
 
-    # With cheatsheet
-    python sim_lab.py --data data/benchmark/hard.jsonl --cheatsheet cheatsheets/v1.txt
+    # Control run with a blank cheatsheet
+    python sim_lab.py --data data/benchmark/control_balanced_normal100_hard20_seed17.jsonl --cheatsheet cheatsheets/control_blank.txt
 
     # Normal benchmark, subset
-    python sim_lab.py --data data/benchmark/normal.jsonl --n 100 --model llama3.2:3b
+    python sim_lab.py --data data/benchmark/normal.jsonl --n 100
 
     # Compare two cheatsheets
     python sim_lab.py --compare cheatsheets/v1.txt cheatsheets/v2.txt --data data/benchmark/hard.jsonl --n 50
@@ -40,7 +40,7 @@ import requests
 # ---------------------------------------------------------------------------
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-DEFAULT_MODEL = "qwen2.5:3b"
+DEFAULT_MODEL = "qwen2.5:7b"
 DEFAULT_NUM_PREDICT = 384
 DEFAULT_REQUEST_TIMEOUT_S = 180
 PROMPT_TEMPLATE_PATH = Path(__file__).parent / "prompts" / "evaluation.jinja2"
@@ -119,7 +119,12 @@ class RunStats:
 # Problem loading
 # ---------------------------------------------------------------------------
 
-def load_problems(path: str, n: Optional[int] = None, shuffle: bool = False) -> list[Problem]:
+def load_problems(
+    path: str,
+    n: Optional[int] = None,
+    shuffle: bool = False,
+    answer_filter: str = "all",
+) -> list[Problem]:
     """Load problems from a JSONL file."""
     problems = []
     with open(path, "r", encoding="utf-8") as f:
@@ -136,6 +141,11 @@ def load_problems(path: str, n: Optional[int] = None, shuffle: bool = False) -> 
                 equation2=obj["equation2"],
                 answer=bool(obj["answer"]),
             ))
+
+    if answer_filter == "true":
+        problems = [problem for problem in problems if problem.answer]
+    elif answer_filter == "false":
+        problems = [problem for problem in problems if not problem.answer]
 
     if shuffle:
         import random
@@ -535,8 +545,9 @@ def main():
         epilog="""
 Examples:
   python sim_lab.py --quick                              # 5-problem smoke test
-  python sim_lab.py --data data/benchmark/hard.jsonl     # full hard benchmark
-  python sim_lab.py --cheatsheet cheatsheets/v1.txt      # test a cheatsheet
+    python sim_lab.py --data data/benchmark/hard.jsonl     # full hard benchmark with 7b
+    python sim_lab.py --cheatsheet cheatsheets/control_blank.txt
+                                                                                                         # test a blank control cheatsheet
   python sim_lab.py --compare cs1.txt cs2.txt --n 50     # compare cheatsheets
   python sim_lab.py --list-models                        # show available Ollama models
         """,
@@ -550,6 +561,8 @@ Examples:
                         help="Path to cheatsheet text file")
     parser.add_argument("--n", type=int, default=None,
                         help="Number of problems to evaluate (default: all)")
+    parser.add_argument("--answer-filter", choices=["all", "true", "false"], default="all",
+                        help="Filter benchmark items by ground-truth label before shuffle/n")
     parser.add_argument("--temperature", type=float, default=0.0,
                         help="Sampling temperature (default: 0.0)")
     parser.add_argument("--num-predict", type=int, default=DEFAULT_NUM_PREDICT,
@@ -626,7 +639,7 @@ Examples:
         print(f"ERROR: Data file not found: {args.data}")
         sys.exit(1)
 
-    problems = load_problems(args.data, args.n, args.shuffle)
+    problems = load_problems(args.data, args.n, args.shuffle, args.answer_filter)
     template = load_template(args.template)
 
     true_count = sum(1 for p in problems if p.answer)
@@ -636,6 +649,8 @@ Examples:
     print(f"{'═' * 60}")
     print(f"  Model:      {args.model}")
     print(f"  Data:       {args.data}")
+    if args.answer_filter != "all":
+        print(f"  Label set:  {args.answer_filter.upper()} only")
     print(f"  Problems:   {len(problems)} (TRUE: {true_count}, FALSE: {false_count})")
     print(f"  Temperature: {args.temperature}")
     print(f"  Num predict: {args.num_predict}")
