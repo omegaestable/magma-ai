@@ -1,0 +1,130 @@
+{
+  "model": "qwen2.5:3b",
+  "cheatsheet": "cheatsheets/graph_v8.txt",
+  "timestamp": "2026-03-17 21:54:31",
+  "summary": {
+    "total": 10,
+    "correct": 0,
+    "incorrect": 10,
+    "unparsed": 0,
+    "accuracy": 0.0,
+    "f1": 0.0,
+    "true_accuracy": 0.0,
+    "false_accuracy": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "avg_time_s": 4.59
+  },
+  "results": [
+    {
+      "id": "normal_0001",
+      "equation1": "x = ((y * (x * y)) * z) * w",
+      "equation2": "x = (y * (x * z)) * (y * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 5.32,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine whether the statement should be true or false in all cases. Therefore, we cannot definitively say that it must be either TRUE or FALSE without additional context or specific examples.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0002",
+      "equation1": "x * y = z * (w * (u * u))",
+      "equation2": "x * (y * y) = (z * w) * z",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.52,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0004",
+      "equation1": "x = y * (z * ((w * u) * u))",
+      "equation2": "x = ((y * z) * x) * (x * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.5,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0005",
+      "equation1": "x = y * ((x * z) * (w * u))",
+      "equation2": "x = (((x * x) * x) * x) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.54,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0007",
+      "equation1": "x = (y * z) * (z * (w * z))",
+      "equation2": "x * y = z * (w * (y * z))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.5,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0009",
+      "equation1": "x = y * (((z * z) * w) * y)",
+      "equation2": "x * y = (y * z) * (x * z)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.5,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0010",
+      "equation1": "x * y = (z * w) * (w * z)",
+      "equation2": "(x * x) * y = (y * x) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.52,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0011",
+      "equation1": "x = y * (y * ((z * x) * y))",
+      "equation2": "x = ((y * y) * x) * (z * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.48,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0013",
+      "equation1": "x = (y * y) * ((y * z) * w)",
+      "equation2": "x = ((y * z) * (x * y)) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.5,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    },
+    {
+      "id": "normal_0018",
+      "equation1": "x = y * ((x * (x * y)) * z)",
+      "equation2": "x = y * (z * ((x * y) * w))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.51,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The rules provided do not specify a clear condition to determine the truth value of E2 for all possible cases. Therefore, we cannot definitively state whether E2 must be TRUE or FALSE without additional context or specific conditions.\n\nPROOF: Not applicable as no proof is required due to the lack of specified conditions.\n\nCOUNTEREXAMPLE: Not applicable as no counterexample can be provided without further information or a clear condition for E2."
+    }
+  ]
+}

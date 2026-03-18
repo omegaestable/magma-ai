@@ -1,0 +1,130 @@
+{
+  "model": "qwen2.5:3b",
+  "cheatsheet": "cheatsheets/graph_ultimate_100k.txt",
+  "timestamp": "2026-03-17 21:39:49",
+  "summary": {
+    "total": 10,
+    "correct": 0,
+    "incorrect": 10,
+    "unparsed": 0,
+    "accuracy": 0.0,
+    "f1": 0.0,
+    "true_accuracy": 0.0,
+    "false_accuracy": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "avg_time_s": 5.03
+  },
+  "results": [
+    {
+      "id": "normal_0001",
+      "equation1": "x = ((y * (x * y)) * z) * w",
+      "equation2": "x = (y * (x * z)) * (y * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 6.77,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided set of numbers does not contain a subset that sums to 2023.\n\nPROOF: Not applicable (as the VERDICT is FALSE).\n\nCOUNTEREXAMPLE: None of the given sets can be used to sum up to 2023."
+    },
+    {
+      "id": "normal_0002",
+      "equation1": "x * y = z * (w * (u * u))",
+      "equation2": "x * (y * y) = (z * w) * z",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.85,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0004",
+      "equation1": "x = y * (z * ((w * u) * u))",
+      "equation2": "x = ((y * z) * x) * (x * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.84,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0005",
+      "equation1": "x = y * ((x * z) * (w * u))",
+      "equation2": "x = (((x * x) * x) * x) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.82,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0007",
+      "equation1": "x = (y * z) * (z * (w * z))",
+      "equation2": "x * y = z * (w * (y * z))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.84,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0009",
+      "equation1": "x = y * (((z * z) * w) * y)",
+      "equation2": "x * y = (y * z) * (x * z)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.85,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0010",
+      "equation1": "x * y = (z * w) * (w * z)",
+      "equation2": "(x * x) * y = (y * x) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.83,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0011",
+      "equation1": "x = y * (y * ((z * x) * y))",
+      "equation2": "x = ((y * y) * x) * (z * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.86,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0013",
+      "equation1": "x = (y * y) * ((y * z) * w)",
+      "equation2": "x = ((y * z) * (x * y)) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.85,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    },
+    {
+      "id": "normal_0018",
+      "equation1": "x = y * ((x * (x * y)) * z)",
+      "equation2": "x = y * (z * ((x * y) * w))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.85,
+      "raw_response": "VERDICT: FALSE\n\nREASONING: The provided list of numbers does not contain a specific number that is guaranteed to be in the list based on its structure or properties.\n\nPROOF: Not applicable (as the list contains many valid numbers but no single number can be proven to always be present).\n\nCOUNTEREXAMPLE: 4095\n\nThe number 4095 is not included in the provided list, which serves as a counterexample for the claim that all numbers must be present."
+    }
+  ]
+}

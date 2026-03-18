@@ -1,0 +1,207 @@
+IF a listed equation matches only by vague similarity, star count, reassociation, or deleting symbols
+THEN treat it as NO MATCH.
+STOP.
+
+IF your only reason is balanced vs unbalanced, ignore that reason and continue
+THEN NO MATCH.
+STOP.
+
+IF E1 and E2 are the same law up to one consistent renaming
+THEN TRUE.
+STOP.
+
+IF one side of E1 is a bare variable v and v is absent from the other side
+THEN TRUE.
+STOP.
+
+IF E2 is x = x
+THEN TRUE.
+STOP.
+
+IF E1 is one of these exact C41 sources, up to one consistent renaming:
+  x*x=y*z|x*y=y*z|x*y=z*w|x*y=y*(x*z)|x*y=y*(y*z)|x*y=y*(z*x)|x*y=y*(z*z)|x*y=y*(z*w)|x*y=z*(x*x)
+  x*y=z*(x*z)|x*y=z*(x*w)|x*y=z*(y*x)|x*y=z*(y*z)|x*y=z*(y*w)|x*y=z*(z*x)|x*y=z*(z*z)|x*y=z*(z*w)
+  x*y=z*(w*x)|x*y=z*(w*z)|x*y=z*(w*w)|x*y=z*(w*u)|x*y=(y*x)*z|x*y=(y*y)*z|x*y=(y*z)*x|x*y=(y*z)*z
+  x*y=(y*z)*w|x*y=(z*x)*x|x*y=(z*x)*z|x*y=(z*x)*w|x*y=(z*y)*x|x*y=(z*y)*z|x*y=(z*y)*w|x*y=(z*z)*x
+  x*y=(z*z)*z|x*y=(z*z)*w|x*y=(z*w)*x|x*y=(z*w)*z|x*y=(z*w)*w|x*y=(z*w)*u|x*y=y*(x*(x*z))
+  x*y=y*(x*(y*z))|x*y=y*(x*(z*x))|x*y=y*(x*(z*w))|x*y=y*(y*(x*z))|x*y=y*(y*(y*z))|x*y=y*(y*(z*x))
+  x*y=y*(y*(z*z))|x*y=y*(y*(z*w))|x*y=y*(z*(x*x))|x*y=y*(z*(x*w))|x*y=y*(z*(y*x))|x*y=y*(z*(y*z))
+  x*y=y*(z*(y*w))|x*y=y*(z*(z*z))|x*y=y*(z*(z*w))|x*y=y*(z*(w*x))|x*y=y*(z*(w*z))|x*y=y*(z*(w*w))
+  x*y=y*(z*(w*u))|x*y=z*(x*(x*x))|x*y=z*(x*(x*z))|x*y=z*(x*(x*w))|x*y=z*(x*(y*x))|x*y=z*(x*(y*w))
+  x*y=z*(x*(z*x))|x*y=z*(x*(z*z))|x*y=z*(x*(z*w))|x*y=z*(x*(w*x))|x*y=z*(x*(w*z))|x*y=z*(x*(w*w))
+  x*y=z*(x*(w*u))|x*y=z*(y*(x*x))|x*y=z*(y*(x*w))|x*y=z*(y*(y*x))|x*y=z*(y*(y*z))|x*y=z*(y*(y*w))
+  x*y=z*(y*(z*z))|x*y=z*(y*(z*w))|x*y=z*(y*(w*x))|x*y=z*(y*(w*z))|x*y=z*(y*(w*w))|x*y=z*(y*(w*u))
+  x*y=z*(z*(x*x))|x*y=z*(z*(x*z))|x*y=z*(z*(x*w))|x*y=z*(z*(y*z))|x*y=z*(z*(y*w))|x*y=z*(z*(z*x))
+  x*y=z*(z*(z*z))|x*y=z*(z*(z*w))|x*y=z*(z*(w*x))|x*y=z*(z*(w*z))|x*y=z*(z*(w*w))|x*y=z*(z*(w*u))
+  x*y=z*(w*(x*x))|x*y=z*(w*(x*z))|x*y=z*(w*(x*w))|x*y=z*(w*(x*u))|x*y=z*(w*(y*x))|x*y=z*(w*(y*z))
+  x*y=z*(w*(y*w))|x*y=z*(w*(y*u))|x*y=z*(w*(z*x))|x*y=z*(w*(z*z))|x*y=z*(w*(z*w))|x*y=z*(w*(z*u))
+  x*y=z*(w*(w*x))|x*y=z*(w*(w*z))|x*y=z*(w*(w*w))|x*y=z*(w*(w*u))|x*y=z*(w*(u*x))|x*y=z*(w*(u*z))
+  x*y=z*(w*(u*w))|x*y=z*(w*(u*u))|x*y=z*(w*(u*v))|x*y=y*((x*x)*z)|x*y=y*((x*y)*z)|x*y=y*((x*z)*x)
+  x*y=y*((x*z)*w)|x*y=y*((y*x)*z)|x*y=y*((y*y)*z)|x*y=y*((y*z)*x)|x*y=y*((y*z)*z)|x*y=y*((y*z)*w)
+  x*y=y*((z*x)*x)|x*y=y*((z*x)*w)|x*y=y*((z*y)*x)|x*y=y*((z*y)*z)|x*y=y*((z*y)*w)|x*y=y*((z*z)*z)
+  x*y=y*((z*z)*w)|x*y=y*((z*w)*x)|x*y=y*((z*w)*z)|x*y=y*((z*w)*w)|x*y=y*((z*w)*u)|x*y=z*((x*x)*x)
+  x*y=z*((x*x)*z)|x*y=z*((x*x)*w)|x*y=z*((x*y)*x)|x*y=z*((x*y)*w)|x*y=z*((x*z)*x)|x*y=z*((x*z)*z)
+  x*y=z*((x*z)*w)|x*y=z*((x*w)*x)|x*y=z*((x*w)*z)|x*y=z*((x*w)*w)|x*y=z*((x*w)*u)|x*y=z*((y*x)*x)
+  x*y=z*((y*x)*w)|x*y=z*((y*y)*x)|x*y=z*((y*y)*z)|x*y=z*((y*y)*w)|x*y=z*((y*z)*z)|x*y=z*((y*z)*w)
+  x*y=z*((y*w)*x)|x*y=z*((y*w)*z)|x*y=z*((y*w)*w)|x*y=z*((y*w)*u)|x*y=z*((z*x)*x)|x*y=z*((z*x)*z)
+  x*y=z*((z*x)*w)|x*y=z*((z*y)*z)|x*y=z*((z*y)*w)|x*y=z*((z*z)*x)|x*y=z*((z*z)*z)|x*y=z*((z*z)*w)
+  x*y=z*((z*w)*x)|x*y=z*((z*w)*z)|x*y=z*((z*w)*w)|x*y=z*((z*w)*u)|x*y=z*((w*x)*x)|x*y=z*((w*x)*z)
+  x*y=z*((w*x)*w)|x*y=z*((w*x)*u)|x*y=z*((w*y)*x)|x*y=z*((w*y)*z)|x*y=z*((w*y)*w)|x*y=z*((w*y)*u)
+  x*y=z*((w*z)*x)|x*y=z*((w*z)*z)|x*y=z*((w*z)*w)|x*y=z*((w*z)*u)|x*y=z*((w*w)*x)|x*y=z*((w*w)*z)
+  x*y=z*((w*w)*w)|x*y=z*((w*w)*u)|x*y=z*((w*u)*x)|x*y=z*((w*u)*z)|x*y=z*((w*u)*w)|x*y=z*((w*u)*u)
+  x*y=z*((w*u)*v)|x*y=(y*x)*(x*z)|x*y=(y*x)*(y*z)|x*y=(y*x)*(z*x)|x*y=(y*x)*(z*w)|x*y=(y*y)*(x*z)
+  x*y=(y*y)*(y*z)|x*y=(y*y)*(z*x)|x*y=(y*y)*(z*z)|x*y=(y*y)*(z*w)|x*y=(y*z)*(x*x)|x*y=(y*z)*(x*w)
+  x*y=(y*z)*(y*x)|x*y=(y*z)*(y*z)|x*y=(y*z)*(y*w)|x*y=(y*z)*(z*z)|x*y=(y*z)*(z*w)|x*y=(y*z)*(w*x)
+  x*y=(y*z)*(w*z)|x*y=(y*z)*(w*w)|x*y=(y*z)*(w*u)|x*y=(z*x)*(x*x)|x*y=(z*x)*(x*z)|x*y=(z*x)*(x*w)
+  x*y=(z*x)*(y*x)|x*y=(z*x)*(y*w)|x*y=(z*x)*(z*x)|x*y=(z*x)*(z*z)|x*y=(z*x)*(z*w)|x*y=(z*x)*(w*x)
+  x*y=(z*x)*(w*z)|x*y=(z*x)*(w*w)|x*y=(z*x)*(w*u)|x*y=(z*y)*(x*x)|x*y=(z*y)*(x*w)|x*y=(z*y)*(y*x)
+  x*y=(z*y)*(y*z)|x*y=(z*y)*(y*w)|x*y=(z*y)*(z*z)|x*y=(z*y)*(z*w)|x*y=(z*y)*(w*x)|x*y=(z*y)*(w*z)
+  x*y=(z*y)*(w*w)|x*y=(z*y)*(w*u)|x*y=(z*z)*(x*x)|x*y=(z*z)*(x*z)|x*y=(z*z)*(x*w)|x*y=(z*z)*(y*z)
+  x*y=(z*z)*(y*w)|x*y=(z*z)*(z*x)|x*y=(z*z)*(z*z)|x*y=(z*z)*(z*w)|x*y=(z*z)*(w*x)|x*y=(z*z)*(w*z)
+  x*y=(z*z)*(w*w)|x*y=(z*z)*(w*u)|x*y=(z*w)*(x*x)|x*y=(z*w)*(x*z)|x*y=(z*w)*(x*w)|x*y=(z*w)*(x*u)
+  x*y=(z*w)*(y*x)|x*y=(z*w)*(y*z)|x*y=(z*w)*(y*w)|x*y=(z*w)*(y*u)|x*y=(z*w)*(z*x)|x*y=(z*w)*(z*z)
+  x*y=(z*w)*(z*w)|x*y=(z*w)*(z*u)|x*y=(z*w)*(w*x)|x*y=(z*w)*(w*z)|x*y=(z*w)*(w*w)|x*y=(z*w)*(w*u)
+  x*y=(z*w)*(u*x)|x*y=(z*w)*(u*z)|x*y=(z*w)*(u*w)|x*y=(z*w)*(u*u)|x*y=(z*w)*(u*v)|x*y=(y*(x*x))*z
+  x*y=(y*(x*y))*z|x*y=(y*(x*z))*x|x*y=(y*(x*z))*w|x*y=(y*(y*x))*z|x*y=(y*(y*y))*z|x*y=(y*(y*z))*x
+  x*y=(y*(y*z))*z|x*y=(y*(y*z))*w|x*y=(y*(z*x))*x|x*y=(y*(z*x))*w|x*y=(y*(z*y))*x|x*y=(y*(z*y))*z
+  x*y=(y*(z*y))*w|x*y=(y*(z*z))*z|x*y=(y*(z*z))*w|x*y=(y*(z*w))*x|x*y=(y*(z*w))*z|x*y=(y*(z*w))*w
+  x*y=(y*(z*w))*u|x*y=(z*(x*x))*x|x*y=(z*(x*x))*z|x*y=(z*(x*x))*w|x*y=(z*(x*y))*x|x*y=(z*(x*y))*w
+  x*y=(z*(x*z))*x|x*y=(z*(x*z))*z|x*y=(z*(x*z))*w|x*y=(z*(x*w))*x|x*y=(z*(x*w))*z|x*y=(z*(x*w))*w
+  x*y=(z*(x*w))*u|x*y=(z*(y*x))*x|x*y=(z*(y*x))*w|x*y=(z*(y*y))*x|x*y=(z*(y*y))*z|x*y=(z*(y*y))*w
+  x*y=(z*(y*z))*z|x*y=(z*(y*z))*w|x*y=(z*(y*w))*x|x*y=(z*(y*w))*z|x*y=(z*(y*w))*w|x*y=(z*(y*w))*u
+  x*y=(z*(z*x))*x|x*y=(z*(z*x))*z|x*y=(z*(z*x))*w|x*y=(z*(z*y))*z|x*y=(z*(z*y))*w|x*y=(z*(z*z))*x
+  x*y=(z*(z*z))*z|x*y=(z*(z*z))*w|x*y=(z*(z*w))*x|x*y=(z*(z*w))*z|x*y=(z*(z*w))*w|x*y=(z*(z*w))*u
+  x*y=(z*(w*x))*x|x*y=(z*(w*x))*z|x*y=(z*(w*x))*w|x*y=(z*(w*x))*u|x*y=(z*(w*y))*x|x*y=(z*(w*y))*z
+  x*y=(z*(w*y))*w|x*y=(z*(w*y))*u|x*y=(z*(w*z))*x|x*y=(z*(w*z))*z|x*y=(z*(w*z))*w|x*y=(z*(w*z))*u
+  x*y=(z*(w*w))*x|x*y=(z*(w*w))*z|x*y=(z*(w*w))*w|x*y=(z*(w*w))*u|x*y=(z*(w*u))*x|x*y=(z*(w*u))*z
+  x*y=(z*(w*u))*w|x*y=(z*(w*u))*u|x*y=(z*(w*u))*v|x*y=((y*x)*x)*z|x*y=((y*x)*y)*z|x*y=((y*x)*z)*x
+  x*y=((y*x)*z)*w|x*y=((y*y)*x)*z|x*y=((y*y)*y)*z|x*y=((y*y)*z)*x|x*y=((y*y)*z)*z|x*y=((y*y)*z)*w
+  x*y=((y*z)*x)*x|x*y=((y*z)*x)*w|x*y=((y*z)*y)*x|x*y=((y*z)*y)*z|x*y=((y*z)*y)*w|x*y=((y*z)*z)*z
+  x*y=((y*z)*z)*w|x*y=((y*z)*w)*x|x*y=((y*z)*w)*z|x*y=((y*z)*w)*w|x*y=((y*z)*w)*u|x*y=((z*x)*x)*x
+  x*y=((z*x)*x)*z|x*y=((z*x)*x)*w|x*y=((z*x)*y)*x|x*y=((z*x)*y)*w|x*y=((z*x)*z)*x|x*y=((z*x)*z)*z
+  x*y=((z*x)*z)*w|x*y=((z*x)*w)*x|x*y=((z*x)*w)*z|x*y=((z*x)*w)*w|x*y=((z*x)*w)*u|x*y=((z*y)*x)*x
+  x*y=((z*y)*x)*w|x*y=((z*y)*y)*x|x*y=((z*y)*y)*z|x*y=((z*y)*y)*w|x*y=((z*y)*z)*z|x*y=((z*y)*z)*w
+  x*y=((z*y)*w)*x|x*y=((z*y)*w)*z|x*y=((z*y)*w)*w|x*y=((z*y)*w)*u|x*y=((z*z)*x)*x|x*y=((z*z)*x)*z
+  x*y=((z*z)*x)*w|x*y=((z*z)*y)*z|x*y=((z*z)*y)*w|x*y=((z*z)*z)*x|x*y=((z*z)*z)*z|x*y=((z*z)*z)*w
+  x*y=((z*z)*w)*x|x*y=((z*z)*w)*z|x*y=((z*z)*w)*w|x*y=((z*z)*w)*u|x*y=((z*w)*x)*x|x*y=((z*w)*x)*z
+  x*y=((z*w)*x)*w|x*y=((z*w)*x)*u|x*y=((z*w)*y)*x|x*y=((z*w)*y)*z|x*y=((z*w)*y)*w|x*y=((z*w)*y)*u
+  x*y=((z*w)*z)*x|x*y=((z*w)*z)*z|x*y=((z*w)*z)*w|x*y=((z*w)*z)*u|x*y=((z*w)*w)*x|x*y=((z*w)*w)*z
+  x*y=((z*w)*w)*w|x*y=((z*w)*w)*u|x*y=((z*w)*u)*x|x*y=((z*w)*u)*z|x*y=((z*w)*u)*w|x*y=((z*w)*u)*u
+  x*y=((z*w)*u)*v
+THEN TRUE iff both sides of E2 contain *.
+THEN FALSE otherwise.
+STOP.
+
+IF E1 is one of these exact C4 sources, up to one consistent renaming:
+  x=x*y|x=x*(y*z)|x=x*(y*(x*z))|x=x*(y*(y*z))|x=x*(y*(z*y))|x=x*(y*(z*z))|x=x*(y*(z*w))
+  x=x*((y*z)*z)|x=x*((y*z)*w)|x=x*(y*(x*(y*z)))|x=x*(y*(x*(z*w)))|x=x*(y*(y*(x*z)))
+  x=x*(y*(y*(y*z)))|x=x*(y*(y*(z*w)))|x=x*(y*(z*(x*y)))|x=x*(y*(z*(x*z)))|x=x*(y*(z*(x*w)))
+  x=x*(y*(z*(y*y)))|x=x*(y*(z*(y*w)))|x=x*(y*(z*(z*z)))|x=x*(y*(z*(z*w)))|x=x*(y*(z*(w*y)))
+  x=x*(y*(z*(w*z)))|x=x*(y*(z*(w*w)))|x=x*(y*(z*(w*u)))|x=x*(y*((x*x)*z))|x=x*(y*((x*y)*z))
+  x=x*(y*((x*z)*y))|x=x*(y*((x*z)*z))|x=x*(y*((x*z)*w))|x=x*(y*((y*x)*z))|x=x*(y*((y*y)*z))
+  x=x*(y*((y*z)*w))|x=x*(y*((z*x)*y))|x=x*(y*((z*x)*z))|x=x*(y*((z*x)*w))|x=x*(y*((z*y)*y))
+  x=x*(y*((z*y)*w))|x=x*(y*((z*z)*z))|x=x*(y*((z*z)*w))|x=x*(y*((z*w)*y))|x=x*(y*((z*w)*z))
+  x=x*(y*((z*w)*w))|x=x*(y*((z*w)*u))|x=x*((y*z)*(x*y))|x=x*((y*z)*(x*w))|x=x*((y*z)*(y*y))
+  x=x*((y*z)*(y*w))|x=x*((y*z)*(z*z))|x=x*((y*z)*(z*w))|x=x*((y*z)*(w*y))|x=x*((y*z)*(w*z))
+  x=x*((y*z)*(w*w))|x=x*((y*z)*(w*u))|x=x*((y*(x*y))*z)|x=x*((y*(x*z))*w)|x=x*((y*(y*x))*z)
+  x=x*((y*(y*z))*w)|x=x*((y*(z*x))*z)|x=x*((y*(z*x))*w)|x=x*((y*(z*y))*w)|x=x*((y*(z*z))*z)
+  x=x*((y*(z*z))*w)|x=x*((y*(z*w))*z)|x=x*((y*(z*w))*w)|x=x*((y*(z*w))*u)|x=x*(((y*z)*z)*z)
+  x=x*(((y*z)*z)*w)|x=x*(((y*z)*w)*z)|x=x*(((y*z)*w)*w)|x=x*(((y*z)*w)*u)
+THEN TRUE iff the leftmost variable on the two sides of E2 is the same.
+THEN FALSE otherwise.
+STOP.
+
+IF E1 is one of these exact C5 sources, up to one consistent renaming:
+  x=y*x|x=(y*z)*x|x=(y*(y*z))*x|x=(y*(z*w))*x|x=((y*x)*z)*x|x=((y*y)*z)*x|x=((y*z)*y)*x
+  x=((y*z)*z)*x|x=((y*z)*w)*x|x=(y*(y*(y*z)))*x|x=(y*(y*(z*w)))*x|x=(y*(z*(y*w)))*x
+  x=(y*(z*(z*w)))*x|x=(y*(z*(w*u)))*x|x=(y*((x*y)*z))*x|x=(y*((x*z)*z))*x|x=(y*((x*z)*w))*x
+  x=(y*((y*y)*z))*x|x=(y*((y*z)*w))*x|x=(y*((z*x)*z))*x|x=(y*((z*x)*w))*x|x=(y*((z*y)*w))*x
+  x=(y*((z*z)*w))*x|x=(y*((z*w)*z))*x|x=(y*((z*w)*w))*x|x=(y*((z*w)*u))*x|x=((y*x)*(z*y))*x
+  x=((y*x)*(z*w))*x|x=((y*y)*(y*z))*x|x=((y*y)*(z*y))*x|x=((y*y)*(z*w))*x|x=((y*z)*(y*w))*x
+  x=((y*z)*(z*w))*x|x=((y*z)*(w*y))*x|x=((y*z)*(w*z))*x|x=((y*z)*(w*u))*x|x=((y*(x*x))*z)*x
+  x=((y*(x*y))*z)*x|x=((y*(x*z))*y)*x|x=((y*(x*z))*z)*x|x=((y*(x*z))*w)*x|x=((y*(y*x))*z)*x
+  x=((y*(y*y))*z)*x|x=((y*(y*z))*y)*x|x=((y*(y*z))*w)*x|x=((y*(z*x))*y)*x|x=((y*(z*x))*z)*x
+  x=((y*(z*x))*w)*x|x=((y*(z*y))*w)*x|x=((y*(z*z))*z)*x|x=((y*(z*z))*w)*x|x=((y*(z*w))*y)*x
+  x=((y*(z*w))*z)*x|x=((y*(z*w))*w)*x|x=((y*(z*w))*u)*x|x=(((y*x)*y)*z)*x|x=(((y*x)*z)*y)*x
+  x=(((y*x)*z)*z)*x|x=(((y*x)*z)*w)*x|x=(((y*y)*y)*z)*x|x=(((y*y)*z)*y)*x|x=(((y*y)*z)*w)*x
+  x=(((y*z)*x)*z)*x|x=(((y*z)*x)*w)*x|x=(((y*z)*y)*w)*x|x=(((y*z)*z)*z)*x|x=(((y*z)*z)*w)*x
+  x=(((y*z)*w)*y)*x|x=(((y*z)*w)*z)*x|x=(((y*z)*w)*w)*x|x=(((y*z)*w)*u)*x
+THEN TRUE iff the rightmost variable on the two sides of E2 is the same.
+THEN FALSE otherwise.
+STOP.
+
+IF E1 is one of these exact C13 sources, up to one consistent renaming:
+  x=y*(x*x)|x=y*(z*x)|x=y*((x*x)*x)|x=y*((x*z)*x)|x=y*((y*z)*x)|x=y*((z*x)*x)|x=y*((z*z)*x)
+  x=y*((z*w)*x)|x=(y*x)*(y*x)|x=(y*x)*(z*x)|x=(y*y)*(x*x)|x=(y*y)*(z*x)|x=(y*z)*(x*x)|x=(y*z)*(y*x)
+  x=(y*z)*(w*x)|x=y*((x*(x*x))*x)|x=y*((x*(x*z))*x)|x=y*((x*(y*z))*x)|x=y*((x*(z*x))*x)
+  x=y*((x*(z*z))*x)|x=y*((x*(z*w))*x)|x=y*((y*(x*z))*x)|x=y*((y*(y*z))*x)|x=y*((y*(z*x))*x)
+  x=y*((y*(z*w))*x)|x=y*((z*(x*x))*x)|x=y*((z*(x*z))*x)|x=y*((z*(x*w))*x)|x=y*((z*(y*x))*x)
+  x=y*((z*(y*w))*x)|x=y*((z*(z*x))*x)|x=y*((z*(z*z))*x)|x=y*((z*(z*w))*x)|x=y*((z*(w*x))*x)
+  x=y*((z*(w*z))*x)|x=y*((z*(w*w))*x)|x=y*((z*(w*u))*x)|x=y*(((x*x)*x)*x)|x=y*(((x*x)*z)*x)
+  x=y*(((x*y)*z)*x)|x=y*(((x*z)*x)*x)|x=y*(((x*z)*z)*x)|x=y*(((x*z)*w)*x)|x=y*(((y*x)*z)*x)
+  x=y*(((y*y)*z)*x)|x=y*(((y*z)*x)*x)|x=y*(((y*z)*w)*x)|x=y*(((z*x)*x)*x)|x=y*(((z*x)*z)*x)
+  x=y*(((z*x)*w)*x)|x=y*(((z*y)*x)*x)|x=y*(((z*y)*w)*x)|x=y*(((z*z)*x)*x)|x=y*(((z*z)*z)*x)
+  x=y*(((z*z)*w)*x)|x=y*(((z*w)*x)*x)|x=y*(((z*w)*z)*x)|x=y*(((z*w)*w)*x)|x=y*(((z*w)*u)*x)
+  x=(y*x)*((z*z)*x)|x=(y*x)*((z*w)*x)|x=(y*y)*((y*z)*x)|x=(y*y)*((z*w)*x)|x=(y*z)*((x*x)*x)
+  x=(y*z)*((x*y)*x)|x=(y*z)*((x*w)*x)|x=(y*z)*((y*x)*x)|x=(y*z)*((y*y)*x)|x=(y*z)*((y*w)*x)
+  x=(y*z)*((z*x)*x)|x=(y*z)*((z*w)*x)|x=(y*z)*((w*x)*x)|x=(y*z)*((w*y)*x)|x=(y*z)*((w*w)*x)
+  x=(y*z)*((w*u)*x)|x=(y*(x*x))*(z*x)|x=(y*(x*y))*(z*x)|x=(y*(x*z))*(y*x)|x=(y*(x*z))*(w*x)
+  x=(y*(y*x))*(z*x)|x=(y*(y*y))*(z*x)|x=(y*(y*z))*(x*x)|x=(y*(y*z))*(y*x)|x=(y*(y*z))*(w*x)
+  x=(y*(z*x))*(y*x)|x=(y*(z*x))*(z*x)|x=(y*(z*x))*(w*x)|x=(y*(z*y))*(w*x)|x=(y*(z*z))*(x*x)
+  x=(y*(z*z))*(w*x)|x=(y*(z*w))*(x*x)|x=(y*(z*w))*(y*x)|x=(y*(z*w))*(z*x)|x=(y*(z*w))*(u*x)
+  x=((y*x)*y)*(z*x)|x=((y*x)*z)*(x*x)|x=((y*x)*z)*(y*x)|x=((y*x)*z)*(w*x)|x=((y*y)*x)*(z*x)
+  x=((y*y)*y)*(z*x)|x=((y*y)*z)*(x*x)|x=((y*y)*z)*(y*x)|x=((y*y)*z)*(w*x)|x=((y*z)*x)*(w*x)
+  x=((y*z)*y)*(x*x)|x=((y*z)*y)*(w*x)|x=((y*z)*z)*(x*x)|x=((y*z)*z)*(w*x)|x=((y*z)*w)*(x*x)
+  x=((y*z)*w)*(y*x)|x=((y*z)*w)*(z*x)|x=((y*z)*w)*(u*x)
+AND E2 is one of these exact C13 safe targets, up to one consistent renaming:
+  x=((x*y)*x)*(z*x)|x=y*(x*(x*(x*x)))|x=y*(x*(x*(z*x)))|x=y*(x*(y*(z*x)))|x=y*(x*(z*(x*x)))
+  x=y*(x*(z*(y*x)))|x=y*(x*(z*(z*x)))|x=y*(x*(z*(w*x)))|x=y*(y*(x*(z*x)))|x=y*(y*(y*(z*x)))
+  x=y*(y*(z*(x*x)))|x=y*(y*(z*(y*x)))|x=y*(y*(z*(w*x)))|x=y*(z*(x*(x*x)))|x=y*(z*(x*(y*x)))
+  x=y*(z*(x*(z*x)))|x=y*(z*(x*(w*x)))|x=y*(z*(y*(x*x)))|x=y*(z*(y*(y*x)))|x=y*(z*(y*(w*x)))
+  x=y*(z*(z*(x*x)))|x=y*(z*(z*(z*x)))|x=y*(z*(z*(w*x)))|x=y*(z*(w*(x*x)))|x=y*(z*(w*(y*x)))
+  x=y*(z*(w*(z*x)))|x=y*(z*(w*(w*x)))|x=y*(z*(w*(u*x)))|x*y=y*(x*(z*y))|x*y=y*(y*(y*y))
+  x*y=y*(y*(z*y))|x*y=y*(z*(y*y))|x*y=y*(z*(z*y))|x*y=y*(z*(w*y))|x*y=z*(x*(y*y))|x*y=z*(x*(w*y))
+  x*y=z*(y*(y*y))|x*y=z*(y*(z*y))|x*y=z*(y*(w*y))|x*y=z*(z*(y*y))|x*y=z*(z*(z*y))|x*y=z*(z*(w*y))
+  x*y=z*(w*(y*y))|x*y=z*(w*(z*y))|x*y=z*(w*(w*y))|x*y=z*(w*(u*y))
+THEN TRUE.
+STOP.
+
+IF E1 is one of these exact C24 sources, up to one consistent renaming:
+  x=(x*x)*y|x=(x*y)*z|x=(x*x)*(y*y)|x=(x*x)*(y*z)|x=(x*y)*(x*y)|x=(x*y)*(x*z)|x=(x*y)*(z*y)
+  x=(x*y)*(z*z)|x=(x*y)*(z*w)|x=(x*(x*x))*y|x=(x*(x*y))*z|x=(x*(y*x))*z|x=(x*(y*y))*z|x=(x*(y*z))*z
+  x=(x*(y*z))*w|x=(x*x)*(y*(x*z))|x=(x*x)*(y*(y*z))|x=(x*x)*(y*(z*y))|x=(x*x)*(y*(z*z))
+  x=(x*x)*(y*(z*w))|x=(x*y)*(x*(z*z))|x=(x*y)*(x*(z*w))|x=(x*y)*(z*(x*y))|x=(x*y)*(z*(x*z))
+  x=(x*y)*(z*(x*w))|x=(x*y)*(z*(y*y))|x=(x*y)*(z*(y*w))|x=(x*y)*(z*(z*z))|x=(x*y)*(z*(z*w))
+  x=(x*y)*(z*(w*y))|x=(x*y)*(z*(w*z))|x=(x*y)*(z*(w*w))|x=(x*y)*(z*(w*u))|x=(x*x)*((y*y)*z)
+  x=(x*x)*((y*z)*z)|x=(x*x)*((y*z)*w)|x=(x*y)*((x*x)*z)|x=(x*y)*((x*y)*z)|x=(x*y)*((x*z)*y)
+  x=(x*y)*((x*z)*z)|x=(x*y)*((x*z)*w)|x=(x*y)*((z*x)*y)|x=(x*y)*((z*x)*z)|x=(x*y)*((z*x)*w)
+  x=(x*y)*((z*y)*y)|x=(x*y)*((z*y)*w)|x=(x*y)*((z*z)*z)|x=(x*y)*((z*z)*w)|x=(x*y)*((z*w)*y)
+  x=(x*y)*((z*w)*z)|x=(x*y)*((z*w)*w)|x=(x*y)*((z*w)*u)|x=(x*(x*x))*(y*z)|x=(x*(x*y))*(y*z)
+  x=(x*(x*y))*(z*y)|x=(x*(x*y))*(z*w)|x=(x*(y*x))*(z*y)|x=(x*(y*x))*(z*w)|x=(x*(y*y))*(x*z)
+  x=(x*(y*y))*(z*y)|x=(x*(y*y))*(z*w)|x=(x*(y*z))*(x*w)|x=(x*(y*z))*(z*z)|x=(x*(y*z))*(z*w)
+  x=(x*(y*z))*(w*y)|x=(x*(y*z))*(w*z)|x=(x*(y*z))*(w*w)|x=(x*(y*z))*(w*u)|x=(x*(x*(x*x)))*y
+  x=(x*(x*(x*y)))*z|x=(x*(x*(y*x)))*z|x=(x*(x*(y*y)))*z|x=(x*(x*(y*z)))*y|x=(x*(x*(y*z)))*z
+  x=(x*(x*(y*z)))*w|x=(x*(y*(x*x)))*z|x=(x*(y*(x*y)))*z|x=(x*(y*(x*z)))*z|x=(x*(y*(x*z)))*w
+  x=(x*(y*(y*x)))*z|x=(x*(y*(y*y)))*z|x=(x*(y*(y*z)))*w|x=(x*(y*(z*x)))*z|x=(x*(y*(z*x)))*w
+  x=(x*(y*(z*y)))*w|x=(x*(y*(z*z)))*z|x=(x*(y*(z*z)))*w|x=(x*(y*(z*w)))*z|x=(x*(y*(z*w)))*w
+  x=(x*(y*(z*w)))*u|x=(x*((x*x)*x))*y|x=(x*((x*x)*y))*z|x=(x*((x*y)*x))*z|x=(x*((x*y)*y))*z
+  x=(x*((x*y)*z))*y|x=(x*((x*y)*z))*z|x=(x*((x*y)*z))*w|x=(x*((y*x)*x))*z|x=(x*((y*x)*y))*z
+  x=(x*((y*x)*z))*z|x=(x*((y*x)*z))*w|x=(x*((y*y)*x))*z|x=(x*((y*y)*y))*z|x=(x*((y*y)*z))*w
+  x=(x*((y*z)*x))*z|x=(x*((y*z)*x))*w|x=(x*((y*z)*y))*w|x=(x*((y*z)*z))*z|x=(x*((y*z)*z))*w
+  x=(x*((y*z)*w))*z|x=(x*((y*z)*w))*w|x=(x*((y*z)*w))*u
+AND E2 is one of these exact C24 safe targets, up to one consistent renaming:
+  x*x=x*((y*z)*w)
+THEN TRUE.
+STOP.
+
+IF E1 is one of these exact C887 sources, up to one consistent renaming:
+  x=y*((x*y)*(z*z))|x=y*(((z*z)*x)*y)|x=(y*y)*(z*(x*z))|x=((y*x)*y)*(z*z)|x=(y*(x*(z*z)))*y
+  x=((y*y)*(z*x))*z
+AND E2 is one of these exact C887 safe targets, up to one consistent renaming:
+  x=x*(((x*y)*x)*y)
+THEN TRUE.
+STOP.
+
+IF no earlier rule fired
+THEN FALSE.
+STOP.

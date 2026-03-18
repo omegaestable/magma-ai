@@ -1,0 +1,130 @@
+{
+  "model": "qwen2.5:3b",
+  "cheatsheet": "cheatsheets/graph_v8.txt",
+  "timestamp": "2026-03-17 21:57:46",
+  "summary": {
+    "total": 10,
+    "correct": 0,
+    "incorrect": 0,
+    "unparsed": 10,
+    "accuracy": 0.0,
+    "f1": 0.0,
+    "true_accuracy": 0.0,
+    "false_accuracy": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "avg_time_s": 4.81
+  },
+  "results": [
+    {
+      "id": "normal_0002",
+      "equation1": "x * y = z * (w * (u * u))",
+      "equation2": "x * (y * y) = (z * w) * z",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.79,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0010",
+      "equation1": "x * y = (z * w) * (w * z)",
+      "equation2": "(x * x) * y = (y * x) * x",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.8,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0032",
+      "equation1": "x * y = y * (z * (y * z))",
+      "equation2": "x * y = y * ((y * z) * z)",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.79,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0046",
+      "equation1": "x = (y * (x * z)) * (y * x)",
+      "equation2": "x = (y * y) * ((y * z) * x)",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.79,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0066",
+      "equation1": "x * y = (z * z) * (w * x)",
+      "equation2": "x * x = (x * (y * x)) * z",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.82,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0068",
+      "equation1": "x * y = (z * w) * (z * x)",
+      "equation2": "x * y = z * (z * (x * x))",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.81,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0070",
+      "equation1": "x * y = (y * y) * z",
+      "equation2": "x * (y * z) = (x * x) * y",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.82,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0072",
+      "equation1": "x = ((y * (z * y)) * w) * x",
+      "equation2": "x = (x * (y * (z * z))) * x",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.82,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0077",
+      "equation1": "x * y = (y * y) * (z * w)",
+      "equation2": "x * y = ((z * w) * x) * w",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.81,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    },
+    {
+      "id": "normal_0101",
+      "equation1": "x * y = ((z * y) * y) * w",
+      "equation2": "x * y = (y * x) * z",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.81,
+      "raw_response": "VERDICT: must be exactly FALSE.\nREASONING: The provided rules cover specific conditions for E1 and E2 to determine whether the statement \"x = x*(((x*y)*x)*y)\" is TRUE or FALSE. However, these rules do not provide a direct match between any of the given sources (C24, C887) and targets (safe targets). Therefore, without additional information or specific matches, we cannot definitively determine whether the statement is TRUE or FALSE based on the provided rules.\n\nPROOF: Empty\n\nCOUNTEREXAMPLE: Empty"
+    }
+  ]
+}
