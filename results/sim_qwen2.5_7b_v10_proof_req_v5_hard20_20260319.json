@@ -1,0 +1,241 @@
+{
+  "model": "qwen2.5:7b",
+  "cheatsheet": "cheatsheets/v10_proof_required.txt",
+  "timestamp": "2026-03-18 20:08:58",
+  "summary": {
+    "total": 20,
+    "correct": 11,
+    "incorrect": 9,
+    "unparsed": 0,
+    "accuracy": 0.55,
+    "f1": 0.6087,
+    "true_accuracy": 0.7,
+    "false_accuracy": 0.4,
+    "precision": 0.5385,
+    "recall": 0.7,
+    "quality_score": 0.25,
+    "avg_time_s": 15.29
+  },
+  "results": [
+    {
+      "id": "hard_0002",
+      "equation1": "x * (y * z) = (z * w) * w",
+      "equation2": "x * (y * x) = (x * y) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.23,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will use the Z3A magma as a counterexample to show that E1 does not imply E2.\n\nPROOF:\n\nFirst, let's verify that E1 holds on all inputs of Z3A:\n- Z3A is defined by the table [[0, 1], [1, 0]].\n- For any \\( x, y, z \\) in Z3A, we have:\n  - If \\( x = 0 \\):\n    - \\( (x * (y * z)) = (0 * ((y * z))) = 0 \\)\n    - \\( ((z * w) * w) = ((z * w) * w) = 0 \\) for any \\( w \\in Z3A \\)\n  - If \\( x = 1 \\):\n    - \\( (x * (y * z)) = (1 * ((y * z))) = 1 \\)\n    - \\( ((z * w) * w) = ((z * w) * w) = 1 \\) for any \\( w \\in Z3A \\)\n\nThus, E1 holds on all inputs of Z3A.\n\nNext, let's check if E2 fails on some input of Z3A:\n- Consider the specific case where \\( x = y = z = w = 0 \\):\n  - For E2: \\( x * (y * (z * (w * x))) = 0 * (0 * (0 * (0 * 0))) \\)\n    - Since \\( 0 * 0 = 0 \\), we have:\n      - \\( 0 * (0 * (0 * 0)) = 0 * (0 * 0) = 0 * 0 = 0 \\)\n  - For E1: \\( x"
+    },
+    {
+      "id": "hard_0121",
+      "equation1": "x = ((y * y) * z) * x",
+      "equation2": "x = y * (y * (z * (w * x)))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.22,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using the provided strategies and patterns.\n\n1. **Pattern 2 Check**: The RHS of Equation 1 ends with \"* x\". This matches Pattern 2.\n   - E1: \\(x = ((y * y) * z) * x\\)\n   - Rightmost leaf of RHS is \\(x\\), so RP holds trivially (rightmost leaf = x).\n   - Check if E2 also holds for the rightmost leaf:\n     - E2: \\(x = y * (y * (z * (w * x)))\\)\n     - The rightmost leaf here is also \\(x\\). So, RP might satisfy both equations.\n\n2. **Absorption Strategy**: Let's see if we can derive absorption from Equation 1.\n   - From E1: \\(x = ((y * y) * z) * x\\), it seems that the term \\((y * y) * z\\) could be simplified or absorbed, but let's try to substitute and simplify directly.\n\n3. **Substitution Strategy**: Let’s set some variables equal in both equations.\n   - Set \\(y = x\\) in E1: \n     \\[\n     x = ((x * x) * z) * x\n     \\]\n     This simplifies to:\n     \\[\n     x = (x * z) * x\n     \\]\n     Now, let’s see if this implies something useful. If we set \\(z = 0\\) in the simplified form of E1, it becomes:\n     \\[\n     x = (x * 0) * x = x * x = x\n     \\]\n     This is a tautology and doesn't provide new information directly.\n\n4. **Term Rewriting Strategy**: Let’s try to rewrite terms from E1 into E2.\n  "
+    },
+    {
+      "id": "hard_0047",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.7,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using the provided strategies and patterns.\n\n1. **Pattern 1 Check**: The RHS of E1 starts with \"x *\". This pattern does not apply since the RHS of E1 is \\((y * x) * (x * (z * z))\\), which does not start with \"x *\".\n\n2. **Pattern 2 Check**: The RHS of E1 ends with \"* x\". This pattern also does not apply as the RHS of E1 does not end with \"* x\".\n\n3. **Absorption Strategy**:\n   - Let's check if we can derive absorption laws from E1.\n   - Consider \\(x = (y * x) * (x * (z * z))\\).\n   - If we set \\(y = x\\) in the equation, it simplifies to \\(x = (x * x) * (x * (z * z))\\). This does not directly give us an absorption law.\n\n4. **Variable Substitution**:\n   - Let's try substituting specific values into E1 and see if we can derive any useful identities.\n   - Setting \\(y = x\\) in the equation, we get \\(x = (x * x) * (x * (z * z))\\). This does not simplify to a clear absorption law.\n\n5. **Transitivity Strategy**:\n   - We need to check if there is an intermediate law that can help us.\n   - Let's assume some intermediate laws and see if they hold.\n   - Consider the commutativity of \\(y\\) and \\(z\\): \\((y * z) = (z * y)\\). This does not directly simplify our equation.\n\n6. **Term Rewriting**:\n   - We need to substitute \\(x = (y * x) * (x * (z *"
+    },
+    {
+      "id": "hard_0059",
+      "equation1": "x = ((y * z) * z) * x",
+      "equation2": "x = x * ((y * (y * x)) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.24,
+      "raw_response": "VERDICT: TRUE\nREASONING: We will use Strategy 2 — VARIABLE SUBSTITUTION to verify this implication.\n\nStarting with Equation 1:\n\\[ x = ((y * z) * z) * x \\]\n\nWe can set \\( y = x \\), which simplifies the equation to:\n\\[ x = ((x * z) * z) * x \\]\n\nNext, we need to show that this implies Equation 2:\n\\[ x = x * (y * (y * (y * x))) \\]\n\nSubstituting \\( y = x \\) into Equation 2 gives us:\n\\[ x = x * (x * (x * (x * x))) \\]\n\nNow, we need to show that the simplified form of Equation 1 implies this new equation. Let's analyze the structure of both equations.\n\nFrom Equation 1 with \\( y = x \\):\n\\[ x = ((x * z) * z) * x \\]\n\nWe can see that the right-hand side has a nested structure involving \\( x \\). To simplify, let’s denote:\n\\[ A = (x * z) * z \\]\nThus, we have:\n\\[ x = A * x \\]\n\nNow consider Equation 2 with \\( y = x \\):\n\\[ x = x * (x * (x * (x * x))) \\]\n\nWe can see that the right-hand side is a nested structure of \\( x \\). Let’s denote:\n\\[ B = x * (x * (x * x)) \\]\nThus, we have:\n\\[ x = x * B \\]\n\nTo show that Equation 1 implies Equation 2, we need to establish some properties. Notice that in both equations, the right-hand side is a nested structure involving \\( x \\). We can use absorption laws and variable substitution.\n\nFrom Equation 1 with \\( y = x \\):\n\\[ x"
+    },
+    {
+      "id": "hard_0183",
+      "equation1": "x = x * (y * (x * z))",
+      "equation2": "x = ((x * y) * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.33,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will use Strategy 4 — TERM REWRITING to show that E1 does not imply E2.\n\nPROOF:\n\nLet's start by rewriting the equations using term substitution and absorption laws.\n\nGiven:\nE1: \\( x = x * (y * (x * z)) \\)\n\nWe can rewrite this as:\n\\[ x = x * ((y * x) * z) \\]\n\nNow, let's consider E2:\n\\[ x = ((x * y) * (z * w)) * u \\]\n\nTo show that E1 does not imply E2, we need to find a magma where E1 holds but E2 fails.\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\( * \\):\n\n\\[\n\\begin{array}{c|ccc}\n* & 0 & 1 & 2 \\\\\n\\hline\n0 & 0 & 1 & 2 \\\\\n1 & 1 & 2 & 0 \\\\\n2 & 2 & 0 & 1 \\\\\n\\end{array}\n\\]\n\nThis magma is the cyclic group of order 3, denoted as \\( \\mathbb{Z}_3 \\).\n\nFirst, we verify that E1 holds on \\( M \\):\n\n\\[ x = x * (y * (x * z)) \\]\n\nFor any \\( x, y, z \\in \\{0, 1, 2\\} \\), the equation should hold. Let's check a few cases:\n\n- For \\( x = 0 \\):\n  - \\( 0 = 0 * (y * (0 * z)) \\)\n  - Since \\( 0 * a = 0 \\) for any \\( a \\in M \\), this simplifies to:\n    \\[ 0 = 0 * y = 0 \\"
+    },
+    {
+      "id": "hard_0151",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.47,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using the provided strategies and patterns.\n\n1. **Pattern 1 Check**: The RHS of E1 starts with \"x *\". This pattern does not apply since the RHS of E1 is \\((y * x) * (x * (z * z))\\), which does not start with \"x *\".\n\n2. **Pattern 2 Check**: The RHS of E1 ends with \"* x\". This pattern also does not apply as the RHS of E1 does not end with \"* x\".\n\n3. **Absorption Strategy**:\n   - Let's check if we can derive absorption laws from E1.\n   - Consider \\(x = (y * x) * (x * (z * z))\\).\n   - If we set \\(y = x\\) in the equation, it simplifies to \\(x = (x * x) * (x * (z * z))\\). This does not directly give us an absorption law.\n\n4. **Variable Substitution**:\n   - Let's try substituting specific values into E1 and see if we can derive any useful identities.\n   - Setting \\(y = x\\) in the equation, we get \\(x = (x * x) * (x * (z * z))\\). This does not simplify to a clear absorption law.\n\n5. **Transitivity Strategy**:\n   - We need to check if there is an intermediate law that can help us.\n   - Let's assume some intermediate laws and see if they hold.\n   - Consider the commutativity of \\(y\\) and \\(z\\): \\((y * z) = (z * y)\\). This does not directly simplify our equation.\n\n6. **Term Rewriting**:\n   - We need to substitute \\(x = (y * x) * (x * (z *"
+    },
+    {
+      "id": "hard_0196",
+      "equation1": "x = x * ((y * (z * w)) * w)",
+      "equation2": "x * y = (x * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.54,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will use Strategy 4 — TERM REWRITING to show that E1 does not imply E2.\n\nPROOF:\n\nLet's start by rewriting the equations using term substitution and absorption laws.\n\nGiven:\nE1: \\( x = x * ((y * (z * w)) * w) \\)\n\nWe need to check if this implies:\nE2: \\( x * y = (x * (z * w)) * u \\)\n\nFirst, let's analyze E1. We can see that the right-hand side of E1 has a structure where \\(w\\) is repeated and nested within other operations. This suggests we might be able to simplify or absorb terms.\n\nLet's assume some specific values for variables in E1:\n- Let \\( y = x \\), \\( z = 0 \\), \\( w = 0 \\).\n\nThen, substituting these into E1:\n\\[ x = x * ((x * (0 * 0)) * 0) \\]\nSince \\( 0 * 0 = 0 \\):\n\\[ x = x * (x * 0) \\]\nAnd since \\( x * 0 = 0 \\):\n\\[ x = x * 0 \\]\nBy the properties of magmas, this simplifies to:\n\\[ x = 0 \\]\n\nNow, let's check if E2 holds under these values. Substitute \\( x = 0 \\) into E2:\n\\[ 0 * y = (0 * (z * w)) * u \\]\nSince \\( z = 0 \\) and \\( w = 0 \\):\n\\[ 0 * y = (0 * 0) * u \\]\nAnd since \\( 0 * 0 = 0 \\):\n\\[ 0 * y = 0 * u \\]\nBy the properties of magmas, this simpl"
+    },
+    {
+      "id": "hard_0118",
+      "equation1": "x = ((y * z) * y) * (x * z)",
+      "equation2": "x = (((y * x) * y) * y) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.58,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using the key proof strategies and patterns provided.\n\n1. **Pattern 1 Check**: The RHS of E1 starts with \"x *\". This pattern does not apply since it starts with \"((y * z) * y)\".\n2. **Pattern 2 Check**: The RHS of E1 ends with \"* (x * z)\". This pattern also does not directly apply, but we can use absorption and variable substitution strategies.\n\nLet's try to derive a simpler form or find an intermediate law that might help us prove the implication:\n\n- **Strategy 3 - Transitivity**:\n  We need to check if there is any intermediate law L such that E1 implies L and L in turn implies E2.\n  \n  Let's consider the equation \\( x = ((y * z) * y) * (x * z) \\). If we can show this forces some simpler form, it might help.\n\n- **Strategy 4 - Term Rewriting**:\n  We will try to substitute and simplify. Notice that if we set \\( y = x \\), the equation simplifies significantly:\n\n  \\[\n  x = ((x * z) * x) * (x * z)\n  \\]\n\n  This doesn't immediately give us a clear path, so let's consider another approach.\n\n- **Absorption Law**:\n  Let's check if we can derive an absorption law from E1. Suppose \\( x * y = x \\):\n\n  If \\( x * y = x \\), then:\n\n  \\[\n  x = ((y * z) * y) * (x * z)\n  \\]\n\n  becomes\n\n  \\[\n  x = (y * y) * (x * z)\n  \\]\n\n  and further simplifies to\n\n  \\[\n  x = y * (x * z)\n "
+    },
+    {
+      "id": "hard_0157",
+      "equation1": "x * y = (x * z) * (y * w)",
+      "equation2": "x * y = (x * y) * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 16.02,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will use the Left Projection (LP) magma as a counterexample to show that Equation 1 does not imply Equation 2.\n\nPROOF: \n\nConsider the LP magma with the following Cayley table:\n```\n[[0,0],[1,1]]\n```\n\nFor this magma, the operation \\( x * y = x \\).\n\n**Equation 1 (E1):**\n\\[ x * y = (x * z) * (y * w) \\]\nSubstituting the LP rules into E1:\n\\[ x = (x * z) * (y * w) \\]\nSince \\( x * z = x \\) and \\( y * w = y \\):\n\\[ x = x * y \\]\nBy the definition of LP, this simplifies to:\n\\[ x = x \\]\nThus, E1 holds for all inputs in the LP magma.\n\n**Equation 2 (E2):**\n\\[ x * y = (x * y) * (z * x) \\]\nSubstituting the LP rules into E2:\n\\[ x = (x * y) * (z * x) \\]\nSince \\( x * y = x \\) and \\( z * x = z \\):\n\\[ x = x * z \\]\nBy the definition of LP, this simplifies to:\n\\[ x = x \\]\nThus, E2 also holds for all inputs in the LP magma.\n\nHowever, we need to check if there is any magma where E1 holds but E2 does not. Consider a different magma that satisfies E1 but fails E2:\n\n**Counterexample Magma:**\n```\n[[0,1],[1,0]]\n```\n\nFor this magma (XOR), the operation \\( x * y = (x + y) \\mod 2 \\).\n\n**Equation 1"
+    },
+    {
+      "id": "hard_0113",
+      "equation1": "x = x * (y * (z * (x * y)))",
+      "equation2": "x = x * (((y * x) * z) * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.6,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will use Strategy 4 — TERM REWRITING to attempt a proof and find a counterexample.\n\nFirst, let's try to rewrite E2 using the identity derived from E1:\nE1: \\( x = x * (y * (z * (x * y))) \\)\n\nWe can set \\( z = x \\) in E1 to simplify it:\n\\[ x = x * (y * (x * (x * y))) \\]\n\nNow, let's rewrite E2 using this identity. Set \\( w = x \\):\nE2: \\( x = x * ((y * x) * (z * (w * x))) \\)\n\nSubstitute the simplified form of E1 into E2:\n\\[ x = x * ((y * x) * (z * (x * y))) \\]\n\nSince we are trying to find a counterexample, let's consider a magma where \\( x * y = 0 \\) for all \\( x, y \\). This is the C0 magma.\n\nIn C0:\n- E1: \\( x = x * (y * (z * (x * y))) \\)\n  - For any \\( x, y, z \\), \\( x * y = 0 \\).\n  - So, \\( x * (y * (z * (x * y))) = x * (y * (z * 0)) = x * (y * 0) = x * 0 = x \\).\n  - Therefore, E1 holds in C0.\n\n- E2: \\( x = x * ((y * x) * (z * (w * x))) \\)\n  - For any \\( x, y, z, w \\), \\( x * y = 0 \\).\n  - So, \\( x * ((y * x"
+    },
+    {
+      "id": "hard_0191",
+      "equation1": "x = x * ((y * z) * (w * u))",
+      "equation2": "x = (x * (x * (y * x))) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.12,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nFirst, substitute \\( y = x \\) and \\( z = x \\) into Equation 1:\n\\[ x = x * ((x * x) * (w * u)) \\]\n\nThis simplifies to:\n\\[ x = x * (x * (w * u)) \\]\n\nNow, let's apply the same substitutions in Equation 2:\n\\[ x = (x * (x * (x * (w * u)))) * x \\]\n\nSince we have substituted \\( y = x \\) and \\( z = x \\), both equations now look like this when simplified:\n\\[ x = x * (x * (w * u)) \\]\nand\n\\[ x = (x * (x * (x * (w * u)))) * x \\]\n\nFrom the first equation, we can see that it forces a form where \\( x \\) is absorbed by some term. Let's check if this implies the second equation.\n\nBy substituting and simplifying:\n1. From Equation 1: \\( x = x * (x * (w * u)) \\)\n2. Substitute into Equation 2: \n\\[ x = (x * (x * (x * (w * u)))) * x \\]\n\nSince both sides of the equation are now in a form where they can be simplified using absorption, we see that:\n\\[ x * (x * (w * u)) = x \\]\nand\n\\[ (x * (x * (x * (w * u)))) * x = x * (x * (w * u)) = x \\]\n\nThus, Equation 1 implies Equation 2.\n\nPROOF: By substituting \\( y = x \\) and \\( z = x \\), both equations simplify to the same form where absorption is"
+    },
+    {
+      "id": "hard_0065",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.39,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nFirst, substitute \\( y = x \\) and \\( z = x \\) into Equation 1:\n\\[ x = x * (x * (x * x)) \\]\n\nThis simplifies to:\n\\[ x = x * (x * x^2) \\]\nSince the magma is arbitrary, we can denote any term involving repeated application of the operation as a single variable. Let's denote \\( x^3 \\) for simplicity.\n\nNow, let’s assume that this equation holds in some magma. We need to show that it implies Equation 2:\n\\[ x = (x * (x * (x * y))) * x \\]\n\nBy substituting \\( y = x \\), we get:\n\\[ x = (x * (x * (x * x))) * x \\]\nThis simplifies to:\n\\[ x = (x * x^3) * x \\]\n\nSince the operation is associative and the equation holds for any magma, this implies that the term \\( x * x^3 \\) must simplify in a way that allows the right side of Equation 2 to hold. Given the structure of the equations and the fact that we can derive simpler identities through variable substitution, it follows that:\n\\[ x = (x * (x * (x * y))) * x \\]\n\nThus, Equation 1 implies Equation 2.\n\nPROOF: By substituting \\( y = x \\) in both equations, we see that if Equation 1 holds for any magma, then the structure of the operation allows Equation 2 to hold as well. This is due to the absorption and substitution properties derived from the initial equation.\n\nCOUNTEREXAMPLE: EMPTY"
+    },
+    {
+      "id": "hard_0115",
+      "equation1": "x = ((y * z) * w) * x",
+      "equation2": "x = y * ((z * (w * u)) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.08,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using the provided strategies and patterns.\n\n1. **Pattern 1 Check**:\n   - E1: \\( x = ((y * z) * w) * x \\)\n     RHS starts with \"x *\", so Pattern 1 applies.\n   - E2: \\( x = y * ((z * (w * u)) * x) \\)\n     The leftmost leaf of the RHS is not \\( x \\), so this pattern does not apply.\n\n2. **Pattern 2 Check**:\n   - E1: \\( x = ((y * z) * w) * x \\)\n     RHS ends with \"* x\", so Pattern 2 applies.\n   - E2: \\( x = y * ((z * (w * u)) * x) \\)\n     The rightmost leaf of the RHS is not \\( x \\), so this pattern does not apply.\n\n3. **Absorption Strategy**:\n   - Let's check if we can derive absorption from E1.\n     From \\( x = ((y * z) * w) * x \\):\n     - If we set \\( y = x \\), the equation becomes \\( x = (x * z) * w * x \\).\n     - This does not directly imply left or right absorption, so let's try another approach.\n\n4. **Variable Substitution**:\n   - Set \\( y = x \\) and \\( z = x \\):\n     E1: \\( x = ((x * x) * w) * x \\)\n     Simplify using the fact that in many magmas, repeated elements might simplify (though not necessarily trivially here).\n     This does not directly lead to a simple absorption law.\n\n5. **Term Rewriting**:\n   - Substitute \\( x = ((y * z) * w) * x \\)"
+    },
+    {
+      "id": "hard_0117",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.08,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nFirst, we substitute \\( y = x \\) and \\( z = x \\) into Equation 1:\n\\[ x = x * (x * (x * x)) \\]\n\nThis simplifies to:\n\\[ x = x * (x * x^2) \\]\nSince the magma is arbitrary, let's denote the operation by \\(*\\). We can simplify further using absorption properties. If we assume \\( x * x = x \\), then:\n\\[ x = x * (x * x) = x * x = x \\]\n\nNow, consider Equation 2 with these substitutions:\n\\[ x = (x * (x * (x * x))) * x \\]\nThis simplifies to:\n\\[ x = (x * (x * x^2)) * x \\]\nAgain, assuming \\( x * x = x \\):\n\\[ x = (x * x) * x = x * x = x \\]\n\nThus, both equations hold under the assumption that \\( x * x = x \\). This suggests a strong implication. To further verify, we can use Strategy 3 — TRANSITIVITY.\n\nIf Equation 1 implies \\( x * x = x \\), and this identity is used in Equation 2, then:\n\\[ x = (x * (x * (x * x))) * x = (x * (x * x)) * x = (x * x) * x = x * x = x \\]\n\nTherefore, E1 implies E2.\n\nPROOF: \nBy substituting \\( y = x \\) and \\( z = x \\) into Equation 1, we get:\n\\[ x = x * (x * (x * x)) \\]\nAssuming \\( x * x = x \\), this simplifies to"
+    },
+    {
+      "id": "hard_0114",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.55,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nFirst, substitute \\( y = x \\) and \\( z = x \\) into Equation 1:\n\\[ x = ((x * x) * x) * (x * x). \\]\n\nSimplify the right-hand side of the equation. Since we are dealing with a magma, let's denote the operation by \\(*\\):\n\\[ x = (x * x) * (x * x). \\]\n\nNow, consider the properties that might hold in this context. If we assume the magma is commutative and idempotent (i.e., \\( x * x = x \\)), then:\n\\[ x = (x * x) * (x * x) = x * x = x. \\]\n\nThis shows that Equation 1 holds under these assumptions.\n\nNext, let's check if this implies Equation 2:\n\\[ x = (x * (x * (x * x))) * x. \\]\n\nAgain, using the same assumptions of commutativity and idempotence:\n\\[ x = (x * (x * x)) * x = (x * x) * x = x * x = x. \\]\n\nThus, Equation 2 also holds under these assumptions.\n\nSince we have shown that substituting specific values into Equation 1 leads to a form of the equation that is consistent with Equation 2, and given the nature of magmas where such substitutions often hold due to their structure, we can conclude that Equation 1 implies Equation 2.\n\nPROOF: By setting \\( y = x \\) and \\( z = x \\) in both equations, we see that if Equation 1 holds under these conditions, then Equation 2 must also hold. This is because the substitutions simplify both equations to a form where they are equivalent under the assumptions"
+    },
+    {
+      "id": "hard_0016",
+      "equation1": "x = (x * y) * (x * (y * z))",
+      "equation2": "x = (x * y) * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.93,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using the key proof strategies and patterns provided.\n\n1. **Pattern 1 Check**: The RHS of E1 starts with \"x *\". This means we should check if LP can satisfy both equations.\n   - For E1: \\( x = (x * y) * (x * (y * z)) \\)\n     - Leftmost leaf of the RHS is \\( x \\), so LP might hold this equation. Let's verify:\n       - On LP, any expression reduces to its leftmost variable. So, \\( (x * y) * (x * (y * z)) \\) simplifies to \\( x \\).\n   - For E2: \\( x = (x * y) * (x * (z * y)) \\)\n     - Leftmost leaf of the RHS is also \\( x \\), so LP might hold this equation too. Let's verify:\n       - On LP, any expression reduces to its leftmost variable. So, \\( (x * y) * (x * (z * y)) \\) simplifies to \\( x \\).\n\n2. **Pattern 2 Check**: The RHS of E1 ends with \"* x\". This means we should check if RP can satisfy both equations.\n   - For E1: \\( x = (x * y) * (x * (y * z)) \\)\n     - Rightmost leaf of the RHS is \\( x \\), so RP might hold this equation. Let's verify:\n       - On RP, any expression reduces to its rightmost variable. So, \\( (x * y) * (x * (y * z)) \\) simplifies to \\( x \\).\n   - For E2: \\( x = (x * y) * (x * (z * y)) \\)\n     - Rightmost leaf of the"
+    },
+    {
+      "id": "hard_0186",
+      "equation1": "x = (y * (x * (y * x))) * y",
+      "equation2": "x * (x * y) = z * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.96,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a magma where Equation 1 (x = (y * (x * (y * x))) * y) does not hold but Equation 2 (x * (x * y) = z * (y * x)) holds. Let's use the Left Projection (LP) as our counterexample.\n\nPROOF: \n\n1. **Verify E1 on LP**:\n   - The Cayley table for LP is [[0,0],[1,1]].\n   - For any input \\(x\\) and \\(y\\), we have \\(x * y = x\\).\n   - Let's evaluate the right-hand side of Equation 1: \\((y * (x * (y * x))) * y\\).\n     - Since \\(x * y = x\\), this simplifies to:\n       \\[\n       (y * (x * (y * x))) * y = (y * (x * y)) * y = (y * x) * y = x * y = x\n       \\]\n   - Therefore, Equation 1 holds on LP: \\(x = x\\).\n\n2. **Verify E2 on LP**:\n   - Let's evaluate the right-hand side of Equation 2: \\(z * (y * x)\\).\n     - Since \\(x * y = x\\) and \\(y * x = y\\), this simplifies to:\n       \\[\n       z * (y * x) = z * y\n       \\]\n   - For any inputs, we have \\(x * (x * y) = x * y = y\\).\n     - Therefore, Equation 2 holds on LP: \\(x * (x * y) = y\\) and \\(z * (y * x) = z * y\\).\n\n3. **Check if E"
+    },
+    {
+      "id": "hard_0098",
+      "equation1": "x * y = y * ((x * y) * z)",
+      "equation2": "x * x = y * (y * (y * y))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.89,
+      "raw_response": "VERDICT: TRUE\nREASONING: We will use Strategy 2 - Variable Substitution to verify that E1 implies E2.\n\n**Step 1: Apply variable substitution in E1**\n\nGiven:\n\\[ \\text{E1: } x * y = y * ((x * y) * z) \\]\n\nSet \\( y = x \\):\n\\[ x * x = x * (x * (x * z)) \\]\n\nNow, set \\( z = x \\):\n\\[ x * x = x * (x * (x * x)) \\]\n\n**Step 2: Simplify the expression**\n\nWe need to show that this implies:\n\\[ \\text{E2: } x * x = y * (y * (y * y)) \\]\n\nFrom E1, we have:\n\\[ x * x = x * (x * (x * x)) \\]\n\nLet's denote \\( a = x * x \\). Then the equation becomes:\n\\[ a = a * (a * a) \\]\n\nThis suggests that for any magma where \\( x * x = a \\), it must be true that \\( a * (a * a) = a \\).\n\n**Step 3: Apply to E2**\n\nNow, consider E2:\n\\[ x * x = y * (y * (y * y)) \\]\n\nIf we set \\( y = x \\):\n\\[ x * x = x * (x * (x * x)) \\]\n\nThis is exactly the same as our derived equation from E1. Therefore, if E1 holds, then E2 must also hold.\n\n**Proof:**\n\nSince setting \\( y = x \\) in both equations results in identical expressions, and we have shown that any magma satisfying E1 will satisfy E2 by substitution, we conclude that:\n\\[ \\text{E1 implies E2.} \\]\n\nTherefore"
+    },
+    {
+      "id": "hard_0009",
+      "equation1": "x = ((x * x) * (y * z)) * y",
+      "equation2": "x = ((x * (y * x)) * x) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 15.41,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nFirst, we substitute \\( y = x \\) and \\( z = x \\) into Equation 1:\n\\[ x = ((x * x) * (x * x)) * x. \\]\n\nThis simplifies to:\n\\[ x = (x * x) * (x * x). \\]\n\nNow, let's denote this simplified equation as E3: \n\\[ x = (x * x) * (x * x). \\]\n\nNext, we need to show that Equation 2 follows from E3. Substitute \\( y = x \\) and \\( z = x \\) into Equation 2:\n\\[ x = ((x * (x * x)) * x) * x. \\]\n\nThis simplifies to:\n\\[ x = ((x * x^2) * x) * x. \\]\n\nSince we have already established that \\( x = (x * x) * (x * x) \\), let's denote this as E4: \n\\[ x = (x * x) * (x * x). \\]\n\nNow, consider the term \\( x^2 \\):\n\\[ x^2 = (x * x). \\]\n\nSubstitute \\( x^2 \\) into Equation 2:\n\\[ x = ((x * x^2) * x) * x. \\]\n\\[ x = ((x * (x * x)) * x) * x. \\]\n\\[ x = ((x * x^2) * x) * x. \\]\n\nSince \\( x^2 = x * x \\), we can rewrite the equation as:\n\\[ x = ((x * (x * x)) * x) * x. \\]\n\nThis is exactly what E4 simplifies to, confirming that Equation 2 follows from Equation "
+    },
+    {
+      "id": "hard_0062",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.48,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will use the Z3A magma as a counterexample to show that E1 does not imply E2.\n\nPROOF: \n\nFirst, let's verify that E1 holds on all inputs of Z3A:\n- For \\( x = y * (y * (x * x)) \\):\n  - If \\( x = 0 \\), then the equation becomes \\( 0 = y * (y * (0 * 0)) \\). Since \\( 0 * 0 = 0 \\) and \\( y * 0 = y \\), we have \\( 0 = y * y \\). This is true because in Z3A, \\( a * b = (a + b) \\mod 3 \\), so if \\( y = 0 \\), then \\( 0 * 0 = 0 \\); and if \\( y = 1 \\), then \\( 1 * 1 = 2 \\mod 3 = 2 \\neq 0 \\). However, the equation holds for all inputs since \\( y * y = (y + y) \\mod 3 \\).\n  \nNext, let's verify that E2 fails on some input of Z3A:\n- For \\( x = (x * (x * (x * y))) * x \\):\n  - If we set \\( x = 0 \\) and \\( y = 1 \\), then the equation becomes \\( 0 = (0 * (0 * (0 * 1))) * 0 \\).\n    - Calculate inside out: \n      - \\( 0 * 1 = 1 \\)\n      - \\( 0 * 1 = 1 \\)\n      - \\( 0 * 1 = 1 \\)\n    - So, the equation becomes \\( 0 = (0 * 1"
+    }
+  ]
+}

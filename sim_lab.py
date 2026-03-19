@@ -114,6 +114,15 @@ class RunStats:
     def avg_time(self) -> float:
         return self.elapsed_total / self.total if self.total else 0.0
 
+    @property
+    def quality_score(self) -> float:
+        """Fraction of parsed responses with properly filled PROOF/CE fields."""
+        parsed = [r for r in self.results if r.verdict is not None]
+        if not parsed:
+            return 0.0
+        good = sum(1 for r in parsed if parse_proof_quality(r.raw_response, r.verdict))
+        return good / len(parsed)
+
 
 # ---------------------------------------------------------------------------
 # Problem loading
@@ -197,6 +206,8 @@ def render_prompt(template: jinja2.Template, problem: Problem, cheatsheet: str =
 # ---------------------------------------------------------------------------
 
 _VERDICT_RE = re.compile(r"VERDICT\s*:\s*(TRUE|FALSE)", re.IGNORECASE)
+_PROOF_RE = re.compile(r"PROOF\s*:(.*?)(?=COUNTEREXAMPLE\s*:|$)", re.IGNORECASE | re.DOTALL)
+_CE_RE = re.compile(r"COUNTEREXAMPLE\s*:(.*?)$", re.IGNORECASE | re.DOTALL)
 
 
 def parse_verdict(response: str) -> Optional[bool]:
@@ -205,6 +216,18 @@ def parse_verdict(response: str) -> Optional[bool]:
     if m:
         return m.group(1).upper() == "TRUE"
     return None
+
+
+def parse_proof_quality(response: str, verdict: Optional[bool]) -> bool:
+    """Check if PROOF/COUNTEREXAMPLE field is properly filled for the verdict."""
+    if verdict is None:
+        return False
+    if verdict:  # TRUE → PROOF must be non-empty
+        m = _PROOF_RE.search(response)
+        return bool(m and m.group(1).strip())
+    else:  # FALSE → COUNTEREXAMPLE must be non-empty
+        m = _CE_RE.search(response)
+        return bool(m and m.group(1).strip())
 
 
 # ---------------------------------------------------------------------------
@@ -394,6 +417,7 @@ def print_report(stats: RunStats, label: str = ""):
     print(f"  Precision (TRUE): {stats.precision:.1%}")
     print(f"  Recall (TRUE):    {stats.recall:.1%}")
     print(f"  ─────────────────────────────────")
+    print(f"  Quality score:    {stats.quality_score:.1%}")
     print(f"  Avg time/problem: {stats.avg_time:.1f}s")
     print(f"  Total time:       {stats.elapsed_total:.1f}s")
     print()
@@ -416,6 +440,7 @@ def save_results(stats: RunStats, output_path: str, model: str, cheatsheet_path:
             "false_accuracy": round(stats.false_accuracy, 4),
             "precision": round(stats.precision, 4),
             "recall": round(stats.recall, 4),
+            "quality_score": round(stats.quality_score, 4),
             "avg_time_s": round(stats.avg_time, 2),
         },
         "results": [

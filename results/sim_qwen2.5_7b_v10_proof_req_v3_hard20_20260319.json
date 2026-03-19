@@ -1,0 +1,241 @@
+{
+  "model": "qwen2.5:7b",
+  "cheatsheet": "cheatsheets/v10_proof_required.txt",
+  "timestamp": "2026-03-18 19:53:21",
+  "summary": {
+    "total": 20,
+    "correct": 7,
+    "incorrect": 13,
+    "unparsed": 0,
+    "accuracy": 0.35,
+    "f1": 0.0,
+    "true_accuracy": 0.0,
+    "false_accuracy": 0.7,
+    "precision": 0.0,
+    "recall": 0.0,
+    "quality_score": 0.75,
+    "avg_time_s": 14.5
+  },
+  "results": [
+    {
+      "id": "hard_0002",
+      "equation1": "x * (y * z) = (z * w) * w",
+      "equation2": "x * (y * x) = (x * y) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 16.35,
+      "raw_response": "VERDICT: FALSE\nREASONING: We will verify this by finding a counterexample using the given canonical magmas and applying the verification protocol.\n\n**Step 1: Check LP (Left Projection)**\n- E1: \\( x * (y * z) = (z * w) * w \\)\n  - Leftmost leaf of RHS is \\( w \\), not \\( x \\). So, LP fails to satisfy E1.\n- E2: \\( x * (y * x) = (x * y) * z \\)\n  - Leftmost leaf of RHS is \\( x \\).\n  - Verify E2 on LP:\n    - For all inputs, \\( x * (y * x) = x \\) and \\( (x * y) * z = x \\), so E2 holds.\n- Since LP satisfies both E1 and E2, it cannot be a counterexample.\n\n**Step 2: Check RP (Right Projection)**\n- E1: \\( x * (y * z) = (z * w) * w \\)\n  - Rightmost leaf of RHS is \\( w \\), not \\( x \\). So, RP fails to satisfy E1.\n- E2: \\( x * (y * x) = (x * y) * z \\)\n  - Rightmost leaf of RHS is \\( x \\).\n  - Verify E2 on RP:\n    - For all inputs, \\( x * (y * x) = x \\) and \\( (x * y) * z = x \\), so E2 holds.\n- Since RP satisfies both E1 and E2, it cannot be a counterexample.\n\n**Step 3: Check XOR (Z/2Z addition)**\n- E1: \\( x * (y * z) = (z * w) * w \\)\n  - Using the"
+    },
+    {
+      "id": "hard_0121",
+      "equation1": "x = ((y * y) * z) * x",
+      "equation2": "x = y * (y * (z * (w * x)))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.25,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = ((y * y) * z) * x) holds but Equation 2 (x = y * (y * (z * (w * x)))) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\(*\\):\n\n```\n* | 0 1\n--+-----\n0 | 0 0\n1 | 0 1\n```\n\nThis is the **Constant zero** (C0) magma, where every product is 0.\n\n### Verification of Equation 1 on C0:\n\nFor any \\( x, y, z \\in M \\):\n- The left-hand side of Equation 1: \\( x = ((y * y) * z) * x \\)\n- Since \\( y * y = 0 \\), the expression simplifies to:\n  - \\( (0 * z) * x = 0 * x = 0 \\)\n- Therefore, \\( x = 0 \\).\n\nSo, Equation 1 holds for all inputs in C0.\n\n### Verification of Equation 2 on C0:\n\nFor any \\( x, y, z, w \\in M \\):\n- The left-hand side of Equation 2: \\( x = y * (y * (z * (w * x))) \\)\n- Since every product is 0:\n  - \\( w * x = 0 \\)\n  - \\( z * 0 = 0 \\)\n  - \\( y * 0 = 0 \\)\n  - Therefore, the expression simplifies to: \\( x = y * 0 = 0 \\)\n\nSo, Equation 2 also holds for all inputs in C0.\n\nHowever, we need a counterexample where Equation 1 holds but Equation "
+    },
+    {
+      "id": "hard_0047",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.19,
+      "raw_response": "VERDICT: TRUE\nREASONING: We will use Strategy 2 — VARIABLE SUBSTITUTION to verify this implication.\n\nGiven Equation 1 (E1): \\( x = (y * x) * (x * (z * z)) \\)\n\nWe can set \\( y = x \\), which simplifies E1 as follows:\n\\[ x = (x * x) * (x * (z * z)) \\]\n\nNow, let's consider the simplified form of E2 with this substitution:\n\\[ x = x * ((x * x) * (z * (w * x))) \\]\n\nSince \\( y = x \\), we can replace \\( y \\) in E2 with \\( x \\):\n\\[ x = x * ((x * x) * (z * (w * x))) \\]\n\nNow, let's analyze the simplified form of both equations:\n- For E1: \\( x = (x * x) * (x * (z * z)) \\)\n- For E2: \\( x = x * ((x * x) * (z * (w * x))) \\)\n\nWe can see that in both cases, the left side is simply \\( x \\). On the right side, we have a term involving \\( x \\) and other variables. By substituting specific values or using absorption properties, we can show that E1 implies E2.\n\nFor example, if we set \\( z = 0 \\) and \\( w = 0 \\), both equations simplify to:\n- For E1: \\( x = (x * x) * (x * 0) = (x * x) * x \\)\n- For E2: \\( x = x * ((x * x) * (0 * (0 * x))) = x * ((x * x) * 0) = x * (x * x"
+    },
+    {
+      "id": "hard_0059",
+      "equation1": "x = ((y * z) * z) * x",
+      "equation2": "x = x * ((y * (y * x)) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.29,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = ((y * z) * z) * x) holds but Equation 2 (x = x * ((y * (y * x)) * x)) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\( * \\):\n\n\\[\n\\begin{array}{c|ccc}\n* & a & b & c \\\\\n\\hline\na & a & b & c \\\\\nb & b & a & c \\\\\nc & c & c & c \\\\\n\\end{array}\n\\]\n\nThis magma is known as the \"constant zero\" magma (C0), where \\( x * y = 0 \\) for all \\( x, y \\).\n\n**Verification of Equation 1:**\n\nFor any \\( x, y, z \\in M \\):\n\n- If \\( x = a \\):\n  - \\( ((y * z) * z) * a = (b * b) * a = a * a = a \\)\n  - So, \\( a = a \\), which is true.\n\n- If \\( x = b \\):\n  - \\( ((y * z) * z) * b = (a * a) * b = a * a = a \\)\n  - So, \\( b = a \\), which is false in the magma but we need to check further as it might hold under specific conditions.\n\n- If \\( x = c \\):\n  - \\( ((y * z) * z) * c = (c * c) * c = c * c = c \\)\n  - So, \\( c = c \\), which is true.\n\nSince the equation holds for all inputs in this magma, we proceed to check Equation 2:\n\n**Verification of Equation 2"
+    },
+    {
+      "id": "hard_0183",
+      "equation1": "x = x * (y * (x * z))",
+      "equation2": "x = ((x * y) * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.88,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = x * (y * (x * z))) holds but Equation 2 (x = ((x * y) * (z * w)) * u) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\(*\\):\n\n```\n* | 0 1\n--+-----\n0 | 0 0\n1 | 0 1\n```\n\nThis is the Constant zero (C0) magma, where \\( x * y = 0 \\) for all \\( x, y \\).\n\n**Verification of Equation 1:**\n\nFor any \\( x, y, z \\in M \\):\n\\[ x * (y * (x * z)) = x * (y * 0) = x * 0 = 0 \\]\nThus, \\( x = 0 \\), which is consistent with the equation.\n\n**Verification of Equation 2:**\n\nFor any \\( x, y, z, w, u \\in M \\):\n\\[ ((x * y) * (z * w)) * u = ((0) * (0)) * u = 0 * u = 0 \\]\nThus, \\( x = 0 \\), which is consistent with the equation.\n\nHowever, we need to find a specific counterexample where Equation 1 holds but Equation 2 does not. Let's consider another magma:\n\nConsider the magma \\( M' \\) with the following Cayley table for operation \\(*\\):\n\n```\n* | 0 1\n--+-----\n0 | 0 0\n1 | 0 1\n```\n\nThis is the same as C0, but let's verify it again to ensure we can find a counterexample.\n\n**Verification of Equation 1"
+    },
+    {
+      "id": "hard_0151",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.65,
+      "raw_response": "VERDICT: TRUE\nREASONING: We will use Strategy 2 — VARIABLE SUBSTITUTION to verify this implication.\n\nGiven Equation 1 (E1): \\( x = (y * x) * (x * (z * z)) \\)\n\nWe can set \\( y = x \\), which simplifies E1 as follows:\n\\[ x = (x * x) * (x * (z * z)) \\]\n\nNow, let's consider the simplified form of E2 with this substitution:\n\\[ x = x * ((x * x) * (z * (w * x))) \\]\n\nSince \\( y = x \\), we can replace \\( y \\) in E2 with \\( x \\):\n\\[ x = x * ((x * x) * (z * (w * x))) \\]\n\nNow, let's analyze the simplified form of both equations:\n- For E1: \\( x = (x * x) * (x * (z * z)) \\)\n- For E2: \\( x = x * ((x * x) * (z * (w * x))) \\)\n\nWe can see that in both cases, the left side is simply \\( x \\). On the right side, we have a term involving \\( x \\) and other variables. By substituting specific values or using absorption properties, we can show that E1 implies E2.\n\nFor example, if we set \\( z = 0 \\) and \\( w = 0 \\), both equations simplify to:\n- For E1: \\( x = (x * x) * (x * 0) = (x * x) * x \\)\n- For E2: \\( x = x * ((x * x) * (0 * (0 * x))) = x * ((x * x) * 0) = x * (x * x"
+    },
+    {
+      "id": "hard_0196",
+      "equation1": "x = x * ((y * (z * w)) * w)",
+      "equation2": "x * y = (x * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.6,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 holds but Equation 2 does not hold.\n\n**Equation 1:** \\( x = x * ((y * (z * w)) * w) \\)\n\n**Equation 2:** \\( x * y = (x * (z * w)) * u \\)\n\nLet's check the magmas one by one:\n\n### LP (Left Projection)\n- **Equation 1 on LP:**\n  - Leftmost leaf of RHS is \\(w\\), not \\(x\\). So, LP fails E1.\n  \n- **Equation 2 on LP:**\n  - Leftmost leaf of RHS is \\(u\\), not \\(x\\). So, LP fails E2.\n\nSince both equations fail for LP, we cannot use it as a counterexample. \n\n### RP (Right Projection)\n- **Equation 1 on RP:**\n  - Rightmost leaf of RHS is \\(w\\), not \\(x\\). So, RP fails E1.\n  \n- **Equation 2 on RP:**\n  - Rightmost leaf of RHS is \\(u\\), not \\(x\\). So, RP fails E2.\n\nSince both equations fail for RP, we cannot use it as a counterexample. \n\n### XOR (Z/2Z addition)\n- **Equation 1 on XOR:**\n  \\[\n  x = x * ((y * (z * w)) * w) \n  \\]\n  - Simplify the RHS using XOR properties:\n    \\[\n    y * (z * w) = (y + z + w) \\mod 2\n    \\]\n    \\[\n    (y + z + w) * w = ((y + z + w) + w) \\mod 2 = (y + z)"
+    },
+    {
+      "id": "hard_0118",
+      "equation1": "x = ((y * z) * y) * (x * z)",
+      "equation2": "x = (((y * x) * y) * y) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.6,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = ((y * z) * y) * (x * z)) holds but Equation 2 (x = (((y * x) * y) * y) * y) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with Cayley table defined as follows:\n\\[\nM = \\begin{array}{c|cc}\n* & a & b \\\\\n\\hline\na & a & b \\\\\nb & b & a \\\\\n\\end{array}\n\\]\n\nFirst, we verify that Equation 1 holds for all inputs in \\( M \\):\n\n- For \\( x = a \\):\n  - \\( ((y * z) * y) * (x * z) \\)\n    - If \\( y = a \\), then \\( (a * z) * a = a * a = a \\). So, \\( ((a * z) * a) * (a * z) = a * (a * z) = a * z \\).\n      - For \\( z = a \\): \\( a * a = a \\), so the expression evaluates to \\( a \\).\n      - For \\( z = b \\): \\( a * b = b \\), so the expression evaluates to \\( b \\).\n    - If \\( y = b \\), then \\( (b * z) * b = b * b = a \\). So, \\( ((b * z) * b) * (b * z) = a * (b * z) = a * z \\).\n      - For \\( z = a \\): \\( a * a = a \\), so the expression evaluates to \\( a \\).\n      - For \\( z = b \\): \\( a * b = b \\), so the expression evaluates to \\( b"
+    },
+    {
+      "id": "hard_0157",
+      "equation1": "x * y = (x * z) * (y * w)",
+      "equation2": "x * y = (x * y) * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.86,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x * y = (x * z) * (y * w)) holds but Equation 2 (x * y = (x * y) * (z * x)) does not.\n\nPROOF: (Empty)\n\nCOUNTEREXAMPLE:\nConsider the magma \\( M \\) with the following Cayley table for a 3-element set \\(\\{0, 1, 2\\}\\):\n\n\\[\n\\begin{array}{c|ccc}\n* & 0 & 1 & 2 \\\\\n\\hline\n0 & 0 & 1 & 2 \\\\\n1 & 1 & 1 & 1 \\\\\n2 & 2 & 1 & 1 \\\\\n\\end{array}\n\\]\n\nThis magma is known as the \"right zero semigroup\" or \\( C_0 \\) (constant zero), where for all \\( a, b \\in M \\), \\( a * b = 0 \\).\n\n**Verification of Equation 1:**\n\nFor any \\( x, y, z, w \\in M \\):\n\\[\nx * y = 0\n\\]\nand\n\\[\n(x * z) * (y * w) = 0 * 0 = 0.\n\\]\n\nThus, Equation 1 holds for all inputs in \\( M \\).\n\n**Verification of Equation 2:**\n\nFor any \\( x, y, z \\in M \\):\n\\[\nx * y = 0\n\\]\nand\n\\[\n(x * y) * (z * x) = 0 * 0 = 0.\n\\]\n\nHowever, if we choose specific values to check the failure of Equation 2:\n- Let \\( x = 1 \\), \\( y = 1 \\), and \\( z = 2 \\"
+    },
+    {
+      "id": "hard_0113",
+      "equation1": "x = x * (y * (z * (x * y)))",
+      "equation2": "x = x * (((y * x) * z) * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.34,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 holds but Equation 2 does not hold.\n\n**Step-by-step Analysis:**\n\n1. **Equation 1:** \\( x = x * (y * (z * (x * y))) \\)\n   - Let's check the leftmost leaf of the right-hand side expression.\n   - The leftmost leaf is \\( x \\).\n\n2. **Equation 2:** \\( x = x * ((y * x) * z) * w \\)\n   - Check the leftmost leaf of the right-hand side expression.\n   - The leftmost leaf is \\( x \\).\n\nFrom PATTERN 1, since both equations have their leftmost leaf as \\( x \\), we need to check if they hold on all magmas. However, we should also verify if there's a magma where Equation 2 fails while Equation 1 holds.\n\n3. **Checking LP (Left Projection):**\n   - On LP: \\( x * y = x \\).\n   - For Equation 1:\n     \\[\n     x = x * (y * (z * (x * y))) = x * (y * (z * x)) = x * (y * z) = x\n     \\]\n     So, LP satisfies Equation 1.\n   - For Equation 2:\n     \\[\n     x = x * ((y * x) * z) * w = x * (x * z) * w = x * z * w = x\n     \\]\n     So, LP also satisfies Equation 2.\n\n4. **Checking RP (Right Projection):**\n   - On RP: \\( x * y = y \\).\n   - For Equation 1:\n     \\[\n     x = x * (y * (z * (x * y))) = x"
+    },
+    {
+      "id": "hard_0191",
+      "equation1": "x = x * ((y * z) * (w * u))",
+      "equation2": "x = (x * (x * (y * x))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.2,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = x * ((y * z) * (w * u))) holds but Equation 2 (x = (x * (x * (y * x))) * x) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for a non-trivial operation, which we will denote as \\( * \\):\n\n\\[\n\\begin{array}{c|ccc}\n* & 0 & 1 & 2 \\\\\n\\hline\n0 & 0 & 1 & 2 \\\\\n1 & 1 & 2 & 0 \\\\\n2 & 2 & 0 & 1 \\\\\n\\end{array}\n\\]\n\nThis magma is the cyclic group of order 3, denoted as \\( \\mathbb{Z}_3 \\).\n\n**Verification of Equation 1:**\n\nLet's check if \\( x = x * ((y * z) * (w * u)) \\) holds for all \\( x, y, z, w, u \\in M \\):\n\n- For any \\( x \\), the left side is simply \\( x \\).\n- The right side involves a series of operations. Let's consider an example with specific values:\n  - Take \\( x = 0 \\):\n    \\[\n    0 * ((y * z) * (w * u)) = 0\n    \\]\n  - For any other value, the operation will cycle through the elements in such a way that the result is always the same as the left side.\n\nSince this holds for all \\( x, y, z, w, u \\), Equation 1 is satisfied by \\( M \\).\n\n**Verification of Equation 2:**\n\nNow let's check if \\( x = (x * (x * (y"
+    },
+    {
+      "id": "hard_0065",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.24,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = x * (y * (z * y))) holds but Equation 2 (x = (x * (x * (x * y))) * x) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\(*\\):\n\n```\n* | 0 1\n--+-----\n0 | 0 0\n1 | 0 1\n```\n\nThis is a valid magma, and it can be identified as the constant zero magma (C0), where every product is 0.\n\n**Verification of Equation 1:**\n\nFor any \\( x, y, z \\in M \\):\n- If \\( x = 0 \\): \\( 0 * (y * (z * y)) = 0 \\)\n- If \\( x = 1 \\): \\( 1 * (y * (z * y)) = 0 \\)\n\nIn both cases, the left-hand side and right-hand side of Equation 1 are equal to 0. Therefore, Equation 1 holds for all inputs in \\( M \\).\n\n**Verification of Equation 2:**\n\nFor any \\( x, y \\in M \\):\n- If \\( x = 0 \\): \\( (0 * (0 * (0 * y))) * 0 = 0 * (0 * 0) * 0 = 0 * 0 * 0 = 0 \\)\n- If \\( x = 1 \\): \\( (1 * (1 * (1 * y))) * 1 = 0 * (0 * 0) * 1 = 0 * 0 * 1 = 0 \\)\n\nIn both cases, the left-hand side and right-hand side of Equation 2 are equal"
+    },
+    {
+      "id": "hard_0115",
+      "equation1": "x = ((y * z) * w) * x",
+      "equation2": "x = y * ((z * (w * u)) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.18,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = ((y * z) * w) * x) holds but Equation 2 (x = y * ((z * (w * u)) * x)) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\(*\\):\n\n```\n* | 0 1\n--+-----\n0 | 0 0\n1 | 0 1\n```\n\nThis is the Constant zero (C0) magma, where every product is 0.\n\n**Verification of Equation 1:**\n\nFor any \\( x, y, z, w \\in M \\):\n- The left-hand side of Equation 1 is \\( x = ((y * z) * w) * x \\).\n- Since all products are 0 in C0, we have:\n  - \\( (y * z) = 0 \\)\n  - \\( (0 * w) = 0 \\)\n  - Therefore, \\( ((y * z) * w) = 0 \\)\n  - And finally, \\( (0 * x) = 0 \\)\n\nThus, Equation 1 holds for all inputs in C0.\n\n**Verification of Equation 2:**\n\nFor any \\( x, y, z, w, u \\in M \\):\n- The left-hand side of Equation 2 is \\( x = y * ((z * (w * u)) * x) \\).\n- Since all products are 0 in C0, we have:\n  - \\( (w * u) = 0 \\)\n  - \\( (z * 0) = 0 \\)\n  - Therefore, \\( (z * (w * u)) = 0 \\)\n  - And finally, \\( (y * "
+    },
+    {
+      "id": "hard_0117",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.72,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = x * (y * (z * y))) holds but Equation 2 (x = (x * (x * (x * y))) * x) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for operation \\( * \\):\n\n\\[\n\\begin{array}{c|ccc}\n* & a & b & c \\\\\n\\hline\na & a & b & c \\\\\nb & b & a & c \\\\\nc & c & c & c \\\\\n\\end{array}\n\\]\n\nThis magma is known as the \"constant zero\" magma \\( C_0 \\), where all products are 0. Let's verify:\n\n1. **Equation 1: \\( x = x * (y * (z * y)) \\)**\n   - For any \\( x, y, z \\in M \\):\n     - If \\( x = a \\): \\( a * (b * (c * b)) = a * (b * c) = a * b = a \\)\n     - If \\( x = b \\): \\( b * (a * (c * a)) = b * (a * c) = b * a = b \\)\n     - If \\( x = c \\): \\( c * (c * (c * c)) = c * (c * c) = c * c = c \\)\n   - Therefore, Equation 1 holds for all inputs in \\( M \\).\n\n2. **Equation 2: \\( x = (x * (x * (x * y))) * x \\)**\n   - For any \\( x, y \\in M \\):\n     - If \\( x = a \\): \\( a * (a * (a"
+    },
+    {
+      "id": "hard_0114",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.78,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = ((y * x) * z) * (z * y)) holds but Equation 2 (x = (y * (y * (x * x))) * x) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with Cayley table for XOR (Z/2Z addition):\n\n\\[\n\\begin{array}{c|cc}\n* & 0 & 1 \\\\\n\\hline\n0 & 0 & 1 \\\\\n1 & 1 & 0 \\\\\n\\end{array}\n\\]\n\n**Verification of Equation 1:**\n\nFor \\( x = ((y * x) * z) * (z * y) \\):\n\n- If \\( x = 0 \\):\n  - \\( 0 = ((y * 0) * z) * (z * y) \\)\n  - Since \\( y * 0 = y \\), this simplifies to:\n    - \\( 0 = (y * z) * (z * y) \\)\n  - If \\( y = 0 \\):\n    - \\( 0 = (0 * z) * (z * 0) \\)\n    - Since \\( 0 * z = 0 \\), this simplifies to:\n      - \\( 0 = 0 * 0 = 0 \\)\n  - If \\( y = 1 \\):\n    - \\( 0 = (1 * z) * (z * 1) \\)\n    - Since \\( 1 * z = 1 - z \\), this simplifies to:\n      - \\( 0 = (1 - z) * (1 - z) = 1 - (1 - z) = z \\)\n\n- If \\( x = 1 \\):\n  -"
+    },
+    {
+      "id": "hard_0016",
+      "equation1": "x = (x * y) * (x * (y * z))",
+      "equation2": "x = (x * y) * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.79,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = (x * y) * (x * (y * z))) holds but Equation 2 (x = (x * y) * (x * (z * y))) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for a ternary operation \\( * \\):\n\n\\[\n\\begin{array}{c|ccc}\n* & x & y & z \\\\\n\\hline\nx & x & y & z \\\\\ny & y & z & x \\\\\nz & z & x & y \\\\\n\\end{array}\n\\]\n\nFirst, we verify that Equation 1 holds for all inputs in \\( M \\):\n\n- For \\( x = (x * y) * (x * (y * z)) \\):\n  - If \\( x = x \\), then \\( x * y = x \\) and \\( x * (y * z) = x * z = z \\). So, \\( (x * y) * (x * (y * z)) = x * z = z \\neq x \\).\n  - If \\( x = y \\), then \\( y * y = y \\) and \\( y * (y * z) = y * z = x \\). So, \\( (y * y) * (y * (y * z)) = y * x = y \\).\n  - If \\( x = z \\), then \\( z * y = x \\) and \\( z * (y * z) = z * x = y \\). So, \\( (z * y) * (z * (y * z)) = x * y = y \\).\n\nSince the table is symmetric and all cases are checked, we can see that Equation 1 holds"
+    },
+    {
+      "id": "hard_0186",
+      "equation1": "x = (y * (x * (y * x))) * y",
+      "equation2": "x * (x * y) = z * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.8,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = (y * (x * (y * x))) * y) holds but Equation 2 (x * (x * y) = z * (y * x)) does not.\n\nCOUNTEREXAMPLE:\n\nConsider the magma \\( M \\) with the following Cayley table for a ternary operation \\( * \\):\n\n\\[\n\\begin{array}{c|ccc}\n* & 0 & 1 & 2 \\\\\n\\hline\n0 & 0 & 1 & 2 \\\\\n1 & 1 & 2 & 0 \\\\\n2 & 2 & 0 & 1 \\\\\n\\end{array}\n\\]\n\nThis magma is the cyclic group of order 3, denoted as \\( \\mathbb{Z}_3 \\).\n\n**Verification of Equation 1:**\n\nLet's check if \\( x = (y * (x * (y * x))) * y \\) holds for all \\( x, y \\in M \\):\n\n- For \\( x = 0 \\):\n  - \\( (0 * (0 * (0 * 0))) * 0 = (0 * (0 * 0)) * 0 = (0 * 0) * 0 = 0 * 0 = 0 \\)\n  - So, \\( 0 = 0 \\), which is true.\n\n- For \\( x = 1 \\):\n  - \\( (1 * (1 * (1 * 1))) * 1 = (1 * (1 * 1)) * 1 = (1 * 1) * 1 = 2 * 1 = 0 \\)\n  - So, \\( 1 = 0 \\), which is false.\n\n- For \\( x = 2 \\):\n "
+    },
+    {
+      "id": "hard_0098",
+      "equation1": "x * y = y * ((x * y) * z)",
+      "equation2": "x * x = y * (y * (y * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 11.85,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a magma where Equation 1 holds but Equation 2 does not.\nPROOF: (empty)\nCOUNTEREXAMPLE: LP\n\n**Explanation:**\n\n- **Equation 1:** \\( x * y = y * ((x * y) * z) \\)\n\nFor the Left Projection (LP) magma, we have:\n\\[ x * y = x \\]\n\nLet's substitute into Equation 1:\n\\[ x * y = y * ((x * y) * z) \\]\n\\[ x = y * (x * z) \\]\nSince \\( x * z = x \\):\n\\[ x = y * x \\]\n\n- **Equation 2:** \\( x * x = y * (y * (y * y)) \\)\n\nFor the Left Projection magma, we have:\n\\[ x * x = x \\]\nAnd for any variable:\n\\[ y * (y * (y * y)) = y * (y * y) = y * y = y \\]\n\nSo Equation 2 becomes:\n\\[ x = y \\]\n\nThis is not always true. For example, if we take \\( x = 0 \\) and \\( y = 1 \\):\n\\[ 0 = 1 \\]\nwhich is false.\n\nThus, LP satisfies Equation 1 but fails Equation 2, making the implication false."
+    },
+    {
+      "id": "hard_0009",
+      "equation1": "x = ((x * x) * (y * z)) * y",
+      "equation2": "x = ((x * (y * x)) * x) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.72,
+      "raw_response": "VERDICT: TRUE\nREASONING: We will use Strategy 2 - Variable Substitution to verify this implication.\n\nGiven Equation 1 (E1): \\( x = ((x * x) * (y * z)) * y \\)\n\nWe can set \\( y = x \\) and \\( z = x \\), which simplifies E1 as follows:\n\\[ x = ((x * x) * (x * x)) * x \\]\n\nNow, let's simplify the inner expression step by step. Assuming a magma where absorption might hold, we have:\n\\[ x * x = x \\]\nThus,\n\\[ ((x * x) * (x * x)) * x = (x * x) * x = x * x = x \\]\n\nSo, E1 simplifies to \\( x = x \\), which is trivially true.\n\nNow let's consider Equation 2 (E2): \\( x = ((x * (y * x)) * x) * y \\)\n\nAgain, substituting \\( y = x \\):\n\\[ x = ((x * (x * x)) * x) * x \\]\n\nUsing the same absorption property:\n\\[ x * x = x \\]\nThus,\n\\[ (x * (x * x)) * x = (x * x) * x = x * x = x \\]\n\nSo, E2 simplifies to \\( x = x \\), which is also trivially true.\n\nSince both equations simplify to the same identity under variable substitution, and given that absorption properties hold in this context, we can conclude that Equation 1 implies Equation 2. Therefore, the implication holds for all magmas where such absorption properties are valid.\n\nPROOF: By substituting \\( y = x \\) and \\( z = x \\) into both equations, we see that they simplify to \\( x = x \\), which is always true"
+    },
+    {
+      "id": "hard_0062",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.67,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 holds but Equation 2 does not.\nPROOF: (empty)\nCOUNTEREXAMPLE: LP\n\n**Explanation:**\n\n- **Equation 1:** \\( x = ((y * x) * z) * (z * y) \\)\n\nFor the Left Projection (LP) magma, we have:\n\\[ x * y = x \\]\n\nLet's substitute this into Equation 1:\n\\[ x = ((x * x) * z) * (z * x) \\]\nSince \\( x * x = x \\):\n\\[ x = (x * z) * (z * x) \\]\nUsing the property of LP, both \\( x * z = x \\) and \\( z * x = x \\):\n\\[ x = (x * x) * x \\]\nAgain using \\( x * x = x \\):\n\\[ x = x * x \\]\nThis is always true for any \\( x \\).\n\n- **Equation 2:** \\( x = y * (y * (x * x)) \\)\n\nFor the same LP magma:\n\\[ x = y * (y * (x * x)) \\]\nSince \\( x * x = x \\):\n\\[ x = y * (y * x) \\]\nUsing the property of LP, \\( y * x = y \\):\n\\[ x = y * y \\]\nThis is not necessarily true for all \\( x \\) and \\( y \\). For example, if we take \\( x = 0 \\) and \\( y = 1 \\), then:\n\\[ 0 = 1 * (1 * 0) \\]\nSince \\( 1 * 0 = 1 \\):\n\\[ 0 = 1 * 1 \\]\nThis is false because in LP, \\( 1 * 1"
+    }
+  ]
+}
