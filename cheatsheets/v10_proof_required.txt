@@ -196,4 +196,4 @@ Given "Does E1 imply E2?":
    e. C0 check: all products = 0. E1 becomes x=0, holds only for trivial eq.
 3. ALWAYS verify E1 holds on your chosen CE before writing COUNTEREXAMPLE.
 4. If NO valid CE found from all 5 checks → answer TRUE with a proof attempt.
-   Do NOT output FALSE without a verified CE — lean TRUE when in doubt.
+  Do NOT output FALSE without a verified CE — lean TRUE when in doubt.

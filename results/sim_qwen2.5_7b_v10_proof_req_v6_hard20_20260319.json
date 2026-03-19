@@ -1,0 +1,241 @@
+{
+  "model": "qwen2.5:7b",
+  "cheatsheet": "cheatsheets/v10_proof_required.txt",
+  "timestamp": "2026-03-18 20:18:31",
+  "summary": {
+    "total": 20,
+    "correct": 10,
+    "incorrect": 10,
+    "unparsed": 0,
+    "accuracy": 0.5,
+    "f1": 0.375,
+    "true_accuracy": 0.3,
+    "false_accuracy": 0.7,
+    "precision": 0.5,
+    "recall": 0.3,
+    "quality_score": 0.3,
+    "avg_time_s": 14.11
+  },
+  "results": [
+    {
+      "id": "hard_0002",
+      "equation1": "x * (y * z) = (z * w) * w",
+      "equation2": "x * (y * x) = (x * y) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.3,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x * (y * z) = (z * w) * w) holds but Equation 2 (x * (y * x) = (x * y) * z) does not.\n\nPROOF: \n\nLet's consider the magma defined by the following Cayley table, which we will denote as M:\n\n```\n0 1\n1 0\n```\n\nThis is the XOR (Z/2Z addition) magma. We will check if this magma satisfies both equations or serves as a counterexample.\n\n### Checking Equation 1: \\( x * (y * z) = (z * w) * w \\)\n\n- For \\( x = 0, y = 0, z = 0, w = 0 \\):\n  - Left side: \\( 0 * (0 * 0) = 0 * 0 = 0 \\)\n  - Right side: \\( (0 * 0) * 0 = 0 * 0 = 0 \\)\n  - Both sides are equal.\n\n- For \\( x = 1, y = 1, z = 1, w = 1 \\):\n  - Left side: \\( 1 * (1 * 1) = 1 * 1 = 0 \\)\n  - Right side: \\( (1 * 1) * 1 = 1 * 1 = 0 \\)\n  - Both sides are equal.\n\nSince the magma M satisfies Equation 1 for all inputs, we proceed to check Equation 2.\n\n### Checking Equation 2: \\( x * (y * x) = (x * y) * z \\)\n\n- For \\( x = 0, y = 0, z = 0 \\):\n  - Left"
+    },
+    {
+      "id": "hard_0121",
+      "equation1": "x = ((y * y) * z) * x",
+      "equation2": "x = y * (y * (z * (w * x)))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.24,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\nLet's check the magmas one by one:\n\n### LP (Left Projection)\n- **E1:** \\( x = ((y * y) * z) * x \\)\n  - Leftmost leaf of RHS is \\( y \\), so LP gives: \\( x = y \\).\n  - This means that for any input, if E1 holds, then \\( x = y \\).\n\n- **E2:** \\( x = y * (y * (z * (w * x))) \\)\n  - If we set \\( x = y \\), the equation becomes: \\( y = y * (y * (z * (w * y))) \\).\n  - On LP, this simplifies to: \\( y = y \\), which is always true.\n  - However, E2 must hold for all inputs. Let's check if it holds when \\( x \\neq y \\):\n    - If we set \\( x = z \\) and \\( y = w \\), the equation becomes: \\( z = y * (y * (z * (w * z))) \\).\n    - On LP, this simplifies to: \\( z = y \\), which is not always true.\n  - Therefore, E2 does not hold for all inputs when \\( x \\neq y \\).\n\n### RP (Right Projection)\n- **E1:** \\( x = ((y * y) * z) * x \\)\n  - Rightmost leaf of RHS is \\( x \\), so RP gives: \\( x = x \\).\n  - This means that for any input, if E1 holds, then the equation simplifies to a tautology.\n\n- **E2:** \\( x = y * (y * (z * (w"
+    },
+    {
+      "id": "hard_0047",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.23,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 - Variable Substitution.\n\nGiven E1: \\( x = (y * x) * (x * (z * z)) \\)\n\nWe can set \\( y = x \\), which simplifies the equation to:\n\\[ x = (x * x) * (x * (z * z)) \\]\n\nNow, let's further simplify by setting \\( z = x \\):\n\\[ x = (x * x) * (x * (x * x)) \\]\nSince in a magma, we can assume some form of idempotency or absorption might hold, let’s check if this simplifies to:\n\\[ x = (x * x) * (x * x) \\]\n\nIf \\( x * x = x \\), then the equation becomes:\n\\[ x = x * x \\]\nWhich is true by our assumption.\n\nNow we need to see if E2 holds under these substitutions. Given E2: \n\\[ x = y * ((y * x) * (z * y)) \\]\n\nSubstituting \\( y = x \\):\n\\[ x = x * ((x * x) * (x * x)) \\]\nAgain, assuming idempotency:\n\\[ x = x * (x * x) \\]\nWhich simplifies to:\n\\[ x = x * x \\]\nThis is true by our assumption.\n\nSince both E1 and E2 hold under the substitutions \\( y = x \\) and \\( z = x \\), we can conclude that E1 implies E2. Therefore, the implication holds in general for all magmas satisfying these conditions.\n\nPROOF: By setting \\( y = x \\) and \\( z = x \\) in both equations, we derived that if E1 is true under these substitutions, then E2 must also be true. This shows that"
+    },
+    {
+      "id": "hard_0059",
+      "equation1": "x = ((y * z) * z) * x",
+      "equation2": "x = x * ((y * (y * x)) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.22,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nGiven Equation 1 (E1): \\( x = ((y * z) * z) * x \\).\n\nWe can set \\( y = x \\), which simplifies E1 to:\n\\[ x = ((x * z) * z) * x. \\]\n\nNow, let's simplify the right-hand side of this equation using the properties of magmas and the given equation.\n\nFirst, consider the term \\( (x * z) * z \\). By substituting back into the original E1 with \\( y = x \\), we get:\n\\[ ((x * z) * z) * x. \\]\n\nWe need to check if this can be simplified further or if it implies any useful identities.\n\nNext, let's consider Equation 2 (E2): \\( x = x * (y * (y * x)) \\).\n\nSubstitute \\( y = x \\) into E2:\n\\[ x = x * (x * (x * x)). \\]\n\nNow we need to see if the simplified form of E1 can imply this. Notice that in both equations, there is a term involving repeated application of the operation with the same variable.\n\nBy substituting \\( y = x \\) and simplifying, we observe that:\n\\[ ((x * z) * z) * x \\]\nand\n\\[ x * (x * (x * x)) \\]\nboth involve nested applications of the magma's operation. Given the structure, it suggests a form of absorption or idempotency.\n\nTo prove this formally, let’s assume \\( x * x = x \\). This is a common property in many magmas and can be derived from the given equation by setting specific values and checking consistency.\n\nGiven \\( x * x = x \\), we have:\n\\[ (("
+    },
+    {
+      "id": "hard_0183",
+      "equation1": "x = x * (y * (x * z))",
+      "equation2": "x = ((x * y) * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.23,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x = x * (y * (x * z))) does not imply Equation 2 (x = ((x * y) * (z * w)) * u).\n\nPROOF: \n\nTo disprove the implication, we can use the Left Projection (LP) magma as a counterexample. The LP magma is defined by the Cayley table:\n\\[ \\text{LP} = \\begin{bmatrix}\n0 & 0 \\\\\n1 & 1\n\\end{bmatrix} \\]\n\nFirst, let's verify that Equation 1 holds on all inputs of the LP magma.\n\n- For \\( x = 0 \\):\n  - \\( 0 * (y * (0 * z)) = 0 * (y * 0) = 0 * y = 0 \\)\n  - So, \\( 0 = 0 * (y * (0 * z)) \\)\n\n- For \\( x = 1 \\):\n  - \\( 1 * (y * (1 * z)) = 1 * (y * 1) = 1 * y = 1 \\)\n  - So, \\( 1 = 1 * (y * (1 * z)) \\)\n\nThus, Equation 1 holds for all inputs in the LP magma.\n\nNext, let's check if Equation 2 holds on the same magma. We need to find a counterexample where it fails:\n\n- For \\( x = 0 \\):\n  - \\( 0 = ((0 * y) * (z * w)) * u \\)\n  - Since \\( 0 * y = 0 \\), we have:\n    - \\( 0 = (0 * (z * w)) * u \\)\n    - And since \\( 0 * a ="
+    },
+    {
+      "id": "hard_0151",
+      "equation1": "x = (y * x) * (x * (z * z))",
+      "equation2": "x = y * ((y * x) * (z * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.24,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 - Variable Substitution.\n\nGiven E1: \\( x = (y * x) * (x * (z * z)) \\)\n\nWe can set \\( y = x \\), which simplifies the equation to:\n\\[ x = (x * x) * (x * (z * z)) \\]\n\nNow, let's further simplify by setting \\( z = x \\):\n\\[ x = (x * x) * (x * (x * x)) \\]\nSince in a magma, we can assume some form of idempotency or absorption might hold, let’s check if this simplifies to:\n\\[ x = (x * x) * (x * x) \\]\n\nIf \\( x * x = x \\), then the equation becomes:\n\\[ x = x * x \\]\nWhich is true by our assumption.\n\nNow we need to see if E2 holds under these substitutions. Given E2: \n\\[ x = y * ((y * x) * (z * y)) \\]\n\nSubstituting \\( y = x \\):\n\\[ x = x * ((x * x) * (x * x)) \\]\nAgain, assuming idempotency:\n\\[ x = x * (x * x) \\]\nWhich simplifies to:\n\\[ x = x * x \\]\nThis is true by our assumption.\n\nSince both E1 and E2 hold under the substitutions \\( y = x \\) and \\( z = x \\), we can conclude that E1 implies E2. Therefore, the implication holds in general for all magmas satisfying these conditions.\n\nPROOF: By setting \\( y = x \\) and \\( z = x \\) in both equations, we derived that if E1 is true under these substitutions, then E2 must also be true. This shows that"
+    },
+    {
+      "id": "hard_0196",
+      "equation1": "x = x * ((y * (z * w)) * w)",
+      "equation2": "x * y = (x * (z * w)) * u",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.22,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = x * ((y * (z * w)) * w) \\)\n\n**E2:** \\( x * y = (x * (z * w)) * u \\)\n\nLet's check the LP and RP:\n\n### Left Projection (LP)\n- **RHS of E1**: \\( x * ((y * (z * w)) * w) \\)\n  - The leftmost leaf is \\( x \\).\n  - So, on LP: \\( x = x \\).\n\n- **E2's RHS**: \\( (x * (z * w)) * u \\)\n  - The leftmost leaf of the RHS is not necessarily \\( x \\). It could be any variable depending on the magma.\n\n### Right Projection (RP)\n- **RHS of E1**: \\( x * ((y * (z * w)) * w) \\)\n  - The rightmost leaf is \\( w \\).\n  - So, on RP: \\( x = w \\).\n\n- **E2's RHS**: \\( (x * (z * w)) * u \\)\n  - The rightmost leaf of the RHS is not necessarily \\( x \\). It could be any variable depending on the magma.\n\n### Checking Small Magmas\n\n#### LP\n- On LP, E1 becomes: \\( x = x \\), which holds.\n- For E2 to hold on LP, we need \\( x * y = (x * (z * w)) * u \\) where all variables collapse to \\( x \\). This is not necessarily true for arbitrary \\( y, z, w, u \\).\n\n#### RP\n- On RP, E1 becomes: \\( x = w \\), which does not hold in general.\n- For"
+    },
+    {
+      "id": "hard_0118",
+      "equation1": "x = ((y * z) * y) * (x * z)",
+      "equation2": "x = (((y * x) * y) * y) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.23,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = ((y * z) * y) * (x * z) \\)\n\n**E2:** \\( x = (((y * x) * y) * y) * y \\)\n\nLet's check the LP and RP:\n\n### Left Projection (LP)\n- **Leftmost leaf of E1's RHS is \\( y \\)**, not \\( x \\). So, LP does not fail here.\n\n### Right Projection (RP)\n- **Rightmost leaf of E1's RHS is \\( z \\)**, not \\( x \\). So, RP does not fail here.\n\nSince neither LP nor RP fails E1, we need to check other magmas:\n\n#### XOR (Z/2Z addition)\nLet's substitute the XOR operation into both equations:\n- **E1 in XOR**: \n  - \\( x = ((y * y) * y) * (x * z) \\)\n  - Simplify: \\( y * y = 0 \\), so \\( ((y * y) * y) = 0 * y = 0 \\).\n  - Thus, E1 becomes: \\( x = 0 * (x * z) = x * z \\).\n\n- **E2 in XOR**:\n  - \\( x = (((y * x) * y) * y) * y \\)\n  - Simplify: \\( y * y = 0 \\), so \\( ((y * x) * y) = (y * x) * 0 = y * x \\).\n  - Thus, E2 becomes: \\( x = (y * x) * 0 = y * x \\).\n\nBoth equations simplify to the same form in XOR. So, XOR does not provide a counter"
+    },
+    {
+      "id": "hard_0157",
+      "equation1": "x * y = (x * z) * (y * w)",
+      "equation2": "x * y = (x * y) * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.21,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where Equation 1 (x * y = (x * z) * (y * w)) holds but Equation 2 (x * y = (x * y) * (z * x)) does not.\n\nPROOF: \n\nLet's consider the magma defined by the following Cayley table:\n\n```\n0 1\n1 0\n```\n\nThis is the XOR (Z/2Z addition) magma, which we will denote as `XOR`.\n\n### Checking Equation 1 on XOR:\nFor XOR, the operation \\(a * b = (a + b) \\mod 2\\).\n\nLet's check if \\(x * y = (x * z) * (y * w)\\):\n\n- For any inputs \\(x, y, z, w\\) in {0, 1}, we can verify that:\n  - If \\(x = 0\\), then the equation simplifies to \\(0 * y = (0 * z) * (y * w)\\).\n    - Since \\(0 * a = 0\\) for any \\(a\\), this becomes \\(0 = 0 * (y * w)\\).\n    - And since \\(0 * b = 0\\) again, it holds true.\n  - If \\(x = 1\\), then the equation simplifies to \\(1 * y = (1 * z) * (y * w)\\).\n    - Since \\(1 * a = \\neg a\\), this becomes \\(\\neg y = (\\neg z) * (y * w)\\).\n    - Simplifying further, we get \\(\\neg y = \\neg z * (y * w)\\).\n      - If \\(z = 0\\) and \\(w = 0\\), then \\(\\neg y = \\neg 0 *"
+    },
+    {
+      "id": "hard_0113",
+      "equation1": "x = x * (y * (z * (x * y)))",
+      "equation2": "x = x * (((y * x) * z) * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.25,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = x * (y * (z * (x * y))) \\)\n\n**E2:** \\( x = x * (((y * x) * z) * w) \\)\n\n### Checking LP and RP\n\n- **LP (Left Projection):**\n  - Leftmost leaf of RHS in E1 is \\( x \\). So, on LP: \\( x = x \\).\n  - For E2, the leftmost leaf of RHS is also \\( x \\). So, on LP: \\( x = x \\).\n\nSince both E1 and E2 hold on LP, we cannot use LP as a counterexample.\n\n- **RP (Right Projection):**\n  - Rightmost leaf of RHS in E1 is \\( y \\). So, on RP: \\( x = y \\).\n  - For E2, the rightmost leaf of RHS is \\( w \\). So, on RP: \\( x = w \\).\n\nSince both E1 and E2 hold on RP, we cannot use RP as a counterexample.\n\n### Checking XOR\n\n- **XOR (Z/2Z addition):**\n  - The table for XOR is:\n    ```\n    [[0,1],[1,0]]\n    ```\n\n  - For E1: \\( x = x * (y * (z * (x * y))) \\)\n    - Let's check all possible inputs:\n      - If \\( x = 0 \\):\n        - \\( 0 = 0 * (y * (z * (0 * y))) \\)\n        - Since \\( 0 * a = 0 \\) for any \\( a \\), this simplifies to:\n          - \\( 0 = 0 * (y * (z"
+    },
+    {
+      "id": "hard_0191",
+      "equation1": "x = x * ((y * z) * (w * u))",
+      "equation2": "x = (x * (x * (y * x))) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 13.05,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 - Variable Substitution.\n\nGiven E1: \\( x = x * ((y * z) * (w * u)) \\), we can set \\( y = x \\), \\( z = x \\), and \\( w = x \\). This simplifies the equation to:\n\\[ x = x * ((x * x) * (x * u)). \\]\n\nSince \\( x * x = x \\) in many magmas, this further simplifies to:\n\\[ x = x * (x * (x * u)). \\]\n\nNow, let's consider E2: \\( x = (x * (x * (y * x))) * x \\). Substituting the same values for \\( y \\), we get:\n\\[ x = (x * (x * (x * x))) * x. \\]\n\nAgain, since \\( x * x = x \\), this simplifies to:\n\\[ x = (x * (x * x)) * x = (x * x) * x = x * x = x. \\]\n\nThus, E1 implies the simplified form of E2, and by substitution, we can see that if E1 holds for these values, then E2 must also hold.\n\nPROOF: By substituting \\( y = x \\), \\( z = x \\), and \\( w = x \\) in both equations, we show that the structure of E1 implies a form of E2. Specifically, setting \\( y = x \\) in E1 gives us an expression that directly matches part of E2 when simplified.\n\nCOUNTEREXAMPLE: EMPTY"
+    },
+    {
+      "id": "hard_0065",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.29,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = x * (y * (z * y)) \\)\n\n**E2:** \\( x = (x * (x * (x * y))) * x \\)\n\n### Checking LP and RP\n\n- **LP (Left Projection):**\n  - Leftmost leaf of RHS in E1 is \\( y \\), not \\( x \\). So, LP does not fail E1.\n  \n- **RP (Right Projection):**\n  - Rightmost leaf of RHS in E1 is \\( y \\), not \\( x \\). So, RP does not fail E1.\n\n### Checking XOR\n\nLet's check if the equation holds under XOR:\n\n- **E1 under XOR:**\n  - \\( x = x * (y * (z * y)) \\)\n  - Simplify using XOR properties:\n    - \\( y * y = 0 \\) (since \\( a * a = 0 \\))\n    - So, \\( y * (z * y) = z * 0 = z \\)\n    - Therefore, \\( x = x * z \\)\n\n- **E2 under XOR:**\n  - \\( x = (x * (x * (x * y))) * x \\)\n  - Simplify using XOR properties:\n    - \\( x * x = 0 \\) (since \\( a * a = 0 \\))\n    - So, \\( x * (x * (x * y)) = x * (0 * (x * y)) = x * (x * y) \\)\n    - Therefore, \\( x = (x * (x * y)) * x \\)\n\nBoth E1 and E2 hold under XOR. However, we need to find a magma where E"
+    },
+    {
+      "id": "hard_0115",
+      "equation1": "x = ((y * z) * w) * x",
+      "equation2": "x = y * ((z * (w * u)) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.3,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = ((y * z) * w) * x \\)\n\n**E2:** \\( x = y * (z * (w * u)) * x \\)\n\n### Checking LP and RP\n\n- **LP (Left Projection):**\n  - Leftmost leaf of RHS in E1 is \\(x\\). So, on LP: \\( ((y * z) * w) * x = x \\).\n  - For E2, the leftmost leaf of RHS is also \\(x\\). So, on LP: \\( y * (z * (w * u)) * x = x \\).\n\nSince both E1 and E2 hold under LP, we cannot use LP as a counterexample.\n\n- **RP (Right Projection):**\n  - Rightmost leaf of RHS in E1 is \\(x\\). So, on RP: \\( ((y * z) * w) * x = x \\).\n  - For E2, the rightmost leaf of RHS is also \\(x\\). So, on RP: \\( y * (z * (w * u)) * x = x \\).\n\nSince both E1 and E2 hold under RP, we cannot use RP as a counterexample.\n\n### Checking XOR\n\n- **XOR (Z/2Z addition):**\n  - The table for XOR is:\n    ```\n    [[0,1],\n     [1,0]]\n    ```\n\n  - For E1: \\( x = ((y * z) * w) * x \\)\n    - Let's check all possible inputs:\n      - If \\( y = 0 \\), \\( z = 0 \\), \\( w = 0 \\): \\( (0 * 0) * 0"
+    },
+    {
+      "id": "hard_0117",
+      "equation1": "x = x * (y * (z * y))",
+      "equation2": "x = (x * (x * (x * y))) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.53,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 - Variable Substitution.\n\nGiven E1: \\( x = x * (y * (z * y)) \\), we can set \\( y = x \\) and \\( z = x \\). This substitution simplifies the equation to:\n\\[ x = x * (x * (x * x)). \\]\n\nNow, let's analyze this simplified form. If we assume that the magma satisfies some absorption property or idempotency, it might simplify further. However, for now, let's proceed with the given structure.\n\nNext, consider E2: \\( x = (x * (x * (x * y))) * x \\).\n\nBy substituting \\( y = x \\) in E2, we get:\n\\[ x = (x * (x * (x * x))) * x. \\]\n\nNotice that the left side of both equations is now identical after substitution: \\( x = x * (x * (x * x)) \\). This suggests a potential absorption property or idempotency in the magma.\n\nTo prove this, let's assume the magma satisfies the absorption law \\( x * (x * (x * x)) = x \\) for all \\( x \\). Then both E1 and E2 would hold under this assumption. Therefore, if we can show that such an absorption property holds, then E1 implies E2.\n\nSince the structure of both equations is similar after substitution, and assuming the magma satisfies the necessary absorption properties, we conclude that E1 implies E2.\n\nPROOF: By substituting \\( y = x \\) and \\( z = x \\) in E1, we get:\n\\[ x = x * (x * (x * x)). \\]\nThis is identical to the left side of E2 after substitution. Assuming the magma satisfies absorption properties such"
+    },
+    {
+      "id": "hard_0114",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.49,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = ((y * x) * z) * (z * y) \\)\n\n**E2:** \\( x = (y * (y * (x * x))) * x \\)\n\n### Checking LP and RP\n\n#### Left Projection (LP)\n- **Leftmost leaf of E1's RHS is not x**: The leftmost part of the expression is \\( (y * x) \\), which does not simplify to \\( x \\). Therefore, LP cannot be a counterexample.\n\n#### Right Projection (RP)\n- **Rightmost leaf of E1's RHS is z**: Since the rightmost leaf is not \\( x \\), RP also cannot be a counterexample.\n\n### Checking XOR\nWe will check if both equations hold under XOR operations. \n\n**XOR Table:**\n\\[\n\\begin{array}{c|cc}\n  & 0 & 1 \\\\\n\\hline\n0 & 0 & 1 \\\\\n1 & 1 & 0 \\\\\n\\end{array}\n\\]\n\n#### Checking E1 with XOR:\n- Let's test all possible values of \\( x, y, z \\):\n\n  - **Case 1: \\( x = 0, y = 0, z = 0 \\)**\n    \\[\n    ((0 * 0) * 0) * (0 * 0) = (0 * 0) * 0 = 0 * 0 = 0\n    \\]\n    This holds.\n\n  - **Case 2: \\( x = 0, y = 0, z = 1 \\)**\n    \\[\n    ((0 * 0) * 1) * (1 * 0) = (0 *"
+    },
+    {
+      "id": "hard_0016",
+      "equation1": "x = (x * y) * (x * (y * z))",
+      "equation2": "x = (x * y) * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.35,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = (x * y) * (x * (y * z)) \\)\n**E2:** \\( x = (x * y) * (x * (z * y)) \\)\n\nLet's check the LP and RP as potential counterexamples:\n\n### Checking LP:\n- **Leftmost leaf of E1's RHS is \\( x \\)**, so LP might satisfy E1.\n- **Rightmost leaf of E2's RHS is also \\( x \\)**, so LP might satisfy E2.\n\nWe need to verify if LP satisfies both equations. On LP, any expression evaluates to its leftmost leaf:\n- For E1: \\( (x * y) * (x * (y * z)) = x \\)\n- For E2: \\( (x * y) * (x * (z * y)) = x \\)\n\nBoth hold on LP. So, LP is not a counterexample.\n\n### Checking RP:\n- **Rightmost leaf of E1's RHS is \\( z \\)**, so RP fails E1.\n- **Rightmost leaf of E2's RHS is also \\( y \\)**, so RP fails E2.\n\nSince both equations fail on RP, we need to find another magma. Let's check XOR (Z/2Z addition) as a potential counterexample:\n\n### Checking XOR:\n- **XOR table:** \n  \\[\n  \\begin{array}{c|cc}\n    * & 0 & 1 \\\\\n    \\hline\n    0 & 0 & 1 \\\\\n    1 & 1 & 0 \\\\\n  \\end{array}\n  \\]\n\n#### Verifying E1 on XOR:\n- \\( x = (x * y)"
+    },
+    {
+      "id": "hard_0186",
+      "equation1": "x = (y * (x * (y * x))) * y",
+      "equation2": "x * (x * y) = z * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.38,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = (y * (x * (y * x))) * y \\)\n\n**E2:** \\( x * (x * y) = z * (y * x) \\)\n\nLet's check the LP and RP to see if they can be counterexamples:\n\n### Checking LP:\n- **Leftmost leaf of E1's RHS is \\( y \\)**, not \\( x \\). So, LP does not fail E1.\n- **Leftmost leaf of E2's RHS is \\( z \\)**, not \\( x \\). So, LP does not fail E2.\n\n### Checking RP:\n- **Rightmost leaf of E1's RHS is \\( y \\)**, not \\( x \\). So, RP does not fail E1.\n- **Rightmost leaf of E2's RHS is \\( x \\)**. So, we need to check if RP can be a counterexample by verifying both equations on the RP magma.\n\n**RP Magma:**\n\\[ T = [[0, 1], [0, 1]] \\]\n\n#### Verifying E1 on RP:\n- For any inputs \\( y, x, z \\):\n  - \\( (y * (x * (y * x))) * y \\)\n    - Since the rightmost leaf is always \\( y \\), we have:\n      \\[ (y * (x * (y * x))) = y \\]\n      Therefore,\n      \\[ (y * (x * (y * x))) * y = y * y = y \\]\n\nSo, E1 holds on RP.\n\n#### Verifying E2 on RP:\n- For any inputs \\( x, y, z \\):\n  - \\( x * (x * y) ="
+    },
+    {
+      "id": "hard_0098",
+      "equation1": "x * y = y * ((x * y) * z)",
+      "equation2": "x * x = y * (y * (y * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.28,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x * y = y * ((x * y) * z) \\)\n\n**E2:** \\( x * x = y * (y * (y * y)) \\)\n\nLet's check the LP and RP as potential counterexamples:\n\n### Checking LP:\n- **Leftmost leaf of E1's RHS is \\( y \\)**, not \\( x \\). So, LP does not fail E1.\n- **Leftmost leaf of E2's RHS is also \\( y \\)**. Therefore, LP cannot be a CE.\n\n### Checking RP:\n- **Rightmost leaf of E1's RHS is \\( z \\)**, not \\( x \\). So, RP does not fail E1.\n- **Rightmost leaf of E2's RHS is \\( y \\)**. Therefore, RP cannot be a CE.\n\nSince neither LP nor RP can serve as counterexamples, we need to check other small magmas:\n\n### Checking XOR (Z/2Z addition):\n- **XOR table**: \n  \\[\n  \\begin{array}{c|cc}\n    * & 0 & 1 \\\\\n    \\hline\n    0 & 0 & 1 \\\\\n    1 & 1 & 0 \\\\\n  \\end{array}\n  \\]\n\n#### Verifying E1 on XOR:\n- \\( x * y = (x + y) \\mod 2 \\)\n- \\( y * ((x * y) * z) = y * ((x + y) \\mod 2 + z) \\mod 2 \\)\n\nFor all inputs, we can verify that E1 holds. For example:\n- If \\( x = 0, y = 0, z = 0 \\):\n "
+    },
+    {
+      "id": "hard_0009",
+      "equation1": "x = ((x * x) * (y * z)) * y",
+      "equation2": "x = ((x * (y * x)) * x) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 12.05,
+      "raw_response": "VERDICT: TRUE\nREASONING: Let's verify using Strategy 2 — VARIABLE SUBSTITUTION.\n\nGiven E1: \\( x = ((x * x) * (y * z)) * y \\)\n\nWe can set \\( y = x \\) and \\( z = x \\):\n\\[ x = ((x * x) * (x * x)) * x \\]\n\nThis simplifies to:\n\\[ x = (x * (x * x)) * x \\]\n\nNow, let's check if this implies E2: \\( x = ((x * (y * x)) * x) * y \\)\n\nSubstitute \\( y = x \\):\n\\[ x = ((x * (x * x)) * x) * x \\]\n\nNotice that the left side of E1 and E2 are now identical after substitution:\n\\[ x = (x * (x * x)) * x \\]\n\nSince setting \\( y = x \\) in both equations results in an equivalent form, we can conclude that if E1 holds for all inputs, then E2 must also hold. Therefore, E1 implies E2.\n\nPROOF: By substituting \\( y = x \\) and \\( z = x \\) into E1, we get:\n\\[ x = (x * (x * x)) * x \\]\nwhich is the same as the left side of E2 when \\( y = x \\). Thus, if E1 holds for all inputs, then E2 must also hold."
+    },
+    {
+      "id": "hard_0062",
+      "equation1": "x = ((y * x) * z) * (z * y)",
+      "equation2": "x = (y * (y * (x * x))) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.14,
+      "raw_response": "VERDICT: FALSE\nREASONING: We need to find a counterexample where E1 holds but E2 does not.\n\n**E1:** \\( x = ((y * x) * z) * (z * y) \\)\n\n**E2:** \\( x = (y * (y * (x * x))) * x \\)\n\n### Checking LP and RP\n\n#### Left Projection (LP)\n- **Leftmost leaf of E1's RHS is not x**: The leftmost part of the expression is \\( (y * x) \\), which does not simplify to \\( x \\). Therefore, LP cannot be a counterexample.\n\n#### Right Projection (RP)\n- **Rightmost leaf of E1's RHS is z**: Since the rightmost leaf is not \\( x \\), RP also cannot be a counterexample.\n\n### Checking XOR\nWe will check if both equations hold under XOR operations. \n\n**XOR Table:**\n\\[\n\\begin{array}{c|cc}\n  & 0 & 1 \\\\\n\\hline\n0 & 0 & 1 \\\\\n1 & 1 & 0 \\\\\n\\end{array}\n\\]\n\n#### Checking E1 with XOR:\n- Let's test all possible values of \\( x, y, z \\):\n\n  - **Case 1: \\( x = 0, y = 0, z = 0 \\)**\n    \\[\n    ((0 * 0) * 0) * (0 * 0) = (0 * 0) * 0 = 0\n    \\]\n    This holds.\n\n  - **Case 2: \\( x = 0, y = 0, z = 1 \\)**\n    \\[\n    ((0 * 0) * 1) * (1 * 0) = (0 * 1) * 1"
+    }
+  ]
+}
