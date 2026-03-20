@@ -2,24 +2,34 @@
 """
 SAIR Equational Theories — Stage 1 Simulation Lab
 
-Local evaluation harness that mirrors the official competition pipeline.
-Uses Ollama for inference so everything runs offline with no API keys.
+Evaluation harness that mirrors the official SAIR playground and competition
+pipeline.  Supports both Ollama (local) and OpenRouter (cloud) inference.
+
+Matches the official format:
+  - Official HF problem subsets: normal, hard, hard1, hard2
+  - Complete-prompt mode (cheatsheet IS the full prompt template)
+  - 3 repeats per problem (configurable)
+  - Strict F1 scoring (unparsed TRUE→FN, unparsed FALSE→FP)
+  - 10 KB cheatsheet cap
 
 Usage:
-    # Quick smoke test (5 problems, default model)
-    python sim_lab.py --quick
+    # Quick smoke test (5 problems, OpenRouter)
+    python sim_lab.py --quick --openrouter
 
-    # Full hard benchmark with the default 7b model
-    python sim_lab.py --data data/benchmark/hard.jsonl
+    # Run official hard2 subset via OpenRouter
+    python sim_lab.py --subset hard2 --openrouter
 
-    # Control run with a blank cheatsheet
-    python sim_lab.py --data data/benchmark/control_balanced_normal100_hard20_seed17.jsonl --cheatsheet cheatsheets/control_blank.txt
+    # Run with a cheatsheet
+    python sim_lab.py --subset normal --n 100 --cheatsheet cheatsheets/v10_proof_required.txt --openrouter
 
-    # Normal benchmark, subset
-    python sim_lab.py --data data/benchmark/normal.jsonl --n 100
+    # Ollama (local, offline)
+    python sim_lab.py --subset hard2
 
     # Compare two cheatsheets
-    python sim_lab.py --compare cheatsheets/v1.txt cheatsheets/v2.txt --data data/benchmark/hard.jsonl --n 50
+    python sim_lab.py --compare cs1.txt cs2.txt --subset hard2 --n 50 --openrouter
+
+    # 3 repeats per problem (matches official benchmark)
+    python sim_lab.py --subset hard2 --repeats 3 --openrouter
 """
 
 import argparse
@@ -40,11 +50,22 @@ import requests
 # ---------------------------------------------------------------------------
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-DEFAULT_MODEL = "qwen2.5:7b"
-DEFAULT_NUM_PREDICT = 384
-DEFAULT_REQUEST_TIMEOUT_S = 180
+DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct"
+DEFAULT_MODEL_OLLAMA = "llama3.3:70b"
+DEFAULT_NUM_PREDICT = 1024
+DEFAULT_REQUEST_TIMEOUT_S = 600          # 10 min — matches competition cap
+DEFAULT_REPEATS = 1
 PROMPT_TEMPLATE_PATH = Path(__file__).parent / "prompts" / "evaluation.jinja2"
-CHEATSHEET_MAX_BYTES = 10_240  # 10 KB
+CHEATSHEET_MAX_BYTES = 10_240            # 10 KB (official cap)
+
+# OpenRouter (same provider the SAIR benchmark uses)
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+
+# Official HuggingFace dataset info
+HF_DATASET = "SAIRfoundation/equational-theories-selected-problems"
+HF_SUBSETS = ("normal", "hard", "hard1", "hard2")
+HF_CACHE_DIR = Path(__file__).parent / "data" / "hf_cache"
 
 
 # ---------------------------------------------------------------------------
@@ -64,6 +85,7 @@ class Problem:
 @dataclass
 class Result:
     problem: Problem
+    repeat_id: int
     verdict: Optional[bool]          # None = unparsed
     raw_response: str
     elapsed_s: float
@@ -72,18 +94,24 @@ class Result:
 
 @dataclass
 class RunStats:
-    total: int = 0
+    """Aggregate metrics matching the official SAIR benchmark leaderboard."""
+    total: int = 0                   # total runs (problems × repeats)
     correct: int = 0
     incorrect: int = 0
     unparsed: int = 0
-    true_total: int = 0
+    true_total: int = 0              # runs where ground truth = TRUE
     true_correct: int = 0
-    false_total: int = 0
+    false_total: int = 0             # runs where ground truth = FALSE
     false_correct: int = 0
-    predicted_true: int = 0
-    predicted_true_correct: int = 0
     elapsed_total: float = 0.0
     results: list = field(default_factory=list)
+
+    # Strict confusion matrix (official scoring)
+    # Unparsed TRUE → FN, Unparsed FALSE → FP
+    tp: int = 0   # predicted TRUE,  answer TRUE
+    fp: int = 0   # predicted TRUE,  answer FALSE  (+ unparsed FALSE)
+    fn: int = 0   # predicted FALSE, answer TRUE    (+ unparsed TRUE)
+    tn: int = 0   # predicted FALSE, answer FALSE
 
     @property
     def accuracy(self) -> float:
@@ -99,16 +127,21 @@ class RunStats:
 
     @property
     def precision(self) -> float:
-        return self.predicted_true_correct / self.predicted_true if self.predicted_true else 0.0
+        return self.tp / (self.tp + self.fp) if (self.tp + self.fp) else 0.0
 
     @property
     def recall(self) -> float:
-        return self.true_correct / self.true_total if self.true_total else 0.0
+        return self.tp / (self.tp + self.fn) if (self.tp + self.fn) else 0.0
 
     @property
     def f1(self) -> float:
+        """Strict F1 — matches official SAIR leaderboard calculation."""
         p, r = self.precision, self.recall
         return 2 * p * r / (p + r) if (p + r) else 0.0
+
+    @property
+    def parse_success_rate(self) -> float:
+        return (self.total - self.unparsed) / self.total if self.total else 0.0
 
     @property
     def avg_time(self) -> float:
@@ -125,18 +158,46 @@ class RunStats:
 
 
 # ---------------------------------------------------------------------------
-# Problem loading
+# Problem loading — official HF datasets + local JSONL
 # ---------------------------------------------------------------------------
 
+def download_hf_subset(subset: str) -> Path:
+    """Download an official HF problem subset JSONL if not cached."""
+    if subset not in HF_SUBSETS:
+        raise ValueError(f"Unknown subset '{subset}'. Choose from: {HF_SUBSETS}")
+    cache_path = HF_CACHE_DIR / f"{subset}.jsonl"
+    if cache_path.exists():
+        return cache_path
+    url = (
+        f"https://huggingface.co/datasets/{HF_DATASET}"
+        f"/resolve/main/data/{subset}.jsonl"
+    )
+    print(f"Downloading {subset} dataset from HuggingFace …")
+    HF_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    r = requests.get(url, timeout=60)
+    r.raise_for_status()
+    cache_path.write_bytes(r.content)
+    print(f"  Cached → {cache_path}  ({len(r.content):,} bytes)")
+    return cache_path
+
+
 def load_problems(
-    path: str,
+    path: Optional[str] = None,
+    subset: Optional[str] = None,
     n: Optional[int] = None,
     shuffle: bool = False,
     answer_filter: str = "all",
 ) -> list[Problem]:
-    """Load problems from a JSONL file."""
+    """Load problems from a local JSONL file or an official HF subset."""
+    if subset:
+        resolved = download_hf_subset(subset)
+    elif path:
+        resolved = Path(path)
+    else:
+        raise ValueError("Provide --data <file> or --subset <name>")
+
     problems = []
-    with open(path, "r", encoding="utf-8") as f:
+    with open(resolved, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -152,9 +213,9 @@ def load_problems(
             ))
 
     if answer_filter == "true":
-        problems = [problem for problem in problems if problem.answer]
+        problems = [p for p in problems if p.answer]
     elif answer_filter == "false":
-        problems = [problem for problem in problems if not problem.answer]
+        problems = [p for p in problems if not p.answer]
 
     if shuffle:
         import random
@@ -167,7 +228,7 @@ def load_problems(
 
 
 # ---------------------------------------------------------------------------
-# Prompt rendering
+# Prompt rendering — complete-prompt mode (matches competition submission)
 # ---------------------------------------------------------------------------
 
 def load_template(path: Optional[str] = None) -> jinja2.Template:
@@ -178,7 +239,7 @@ def load_template(path: Optional[str] = None) -> jinja2.Template:
 
 
 def load_cheatsheet(path: Optional[str]) -> str:
-    """Load and validate cheatsheet size."""
+    """Load and validate cheatsheet size (10 KB official cap)."""
     if not path:
         return ""
     p = Path(path)
@@ -193,7 +254,12 @@ def load_cheatsheet(path: Optional[str]) -> str:
 
 
 def render_prompt(template: jinja2.Template, problem: Problem, cheatsheet: str = "") -> str:
-    """Render the evaluation prompt for a single problem."""
+    """Render the evaluation prompt for a single problem.
+
+    In the official competition, the *complete prompt* (template + cheatsheet)
+    is what gets sent to the model.  The template uses {{ equation1 }} and
+    {{ equation2 }} placeholders.
+    """
     return template.render(
         equation1=problem.equation1,
         equation2=problem.equation2,
@@ -283,31 +349,81 @@ def query_ollama(
 
 
 # ---------------------------------------------------------------------------
+# OpenRouter inference (cloud — same provider as SAIR benchmark)
+# ---------------------------------------------------------------------------
+
+def query_openrouter(
+    prompt: str,
+    model: str,
+    api_key: str,
+    temperature: float = 0.0,
+    max_tokens: int = DEFAULT_NUM_PREDICT,
+    timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
+) -> tuple[str, float]:
+    """Send a prompt to OpenRouter and return (response_text, elapsed_seconds)."""
+    t0 = time.time()
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    r = requests.post(
+        OPENROUTER_URL,
+        headers=headers,
+        json=payload,
+        timeout=timeout_s,
+    )
+    r.raise_for_status()
+    data = r.json()
+    elapsed = time.time() - t0
+    text = data["choices"][0]["message"]["content"]
+    return text, elapsed
+
+
+# ---------------------------------------------------------------------------
 # Evaluation engine
 # ---------------------------------------------------------------------------
+
+# Module-level backend state (set from CLI)
+_backend = "ollama"       # "ollama" or "openrouter"
+_api_key = ""             # OpenRouter API key when using cloud
+
 
 def evaluate_problem(
     problem: Problem,
     template: jinja2.Template,
     cheatsheet: str,
     model: str,
+    repeat_id: int = 1,
     temperature: float = 0.0,
     num_predict: int = DEFAULT_NUM_PREDICT,
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> Result:
-    """Evaluate a single problem."""
+    """Evaluate a single problem (one repeat)."""
     prompt = render_prompt(template, problem, cheatsheet)
     try:
-        response, elapsed = query_ollama(
-            prompt,
-            model,
-            temperature,
-            num_predict=num_predict,
-            timeout_s=request_timeout_s,
-        )
+        if _backend == "openrouter":
+            response, elapsed = query_openrouter(
+                prompt, model, _api_key,
+                temperature=temperature,
+                max_tokens=num_predict,
+                timeout_s=request_timeout_s,
+            )
+        else:
+            response, elapsed = query_ollama(
+                prompt, model, temperature,
+                num_predict=num_predict,
+                timeout_s=request_timeout_s,
+            )
     except Exception as e:
         return Result(
             problem=problem,
+            repeat_id=repeat_id,
             verdict=None,
             raw_response=f"ERROR: {e}",
             elapsed_s=0.0,
@@ -317,11 +433,56 @@ def evaluate_problem(
     verdict = parse_verdict(response)
     return Result(
         problem=problem,
+        repeat_id=repeat_id,
         verdict=verdict,
         raw_response=response,
         elapsed_s=elapsed,
         parsed_ok=verdict is not None,
     )
+
+
+def _update_stats(stats: RunStats, result: Result) -> str:
+    """Update stats with one result and return mark character."""
+    problem = result.problem
+    stats.total += 1
+    stats.elapsed_total += result.elapsed_s
+    stats.results.append(result)
+
+    if problem.answer:
+        stats.true_total += 1
+    else:
+        stats.false_total += 1
+
+    if result.verdict is None:
+        stats.unparsed += 1
+        # Strict scoring: unparsed TRUE → FN, unparsed FALSE → FP
+        if problem.answer:
+            stats.fn += 1
+        else:
+            stats.fp += 1
+        return "?"
+
+    is_correct = result.verdict == problem.answer
+    if is_correct:
+        stats.correct += 1
+        if problem.answer:
+            stats.true_correct += 1
+        else:
+            stats.false_correct += 1
+    else:
+        stats.incorrect += 1
+
+    # Confusion matrix
+    if result.verdict and problem.answer:
+        stats.tp += 1
+    elif result.verdict and not problem.answer:
+        stats.fp += 1
+    elif not result.verdict and problem.answer:
+        stats.fn += 1
+    else:
+        stats.tn += 1
+
+    return "✓" if is_correct else "✗"
 
 
 def run_evaluation(
@@ -332,65 +493,36 @@ def run_evaluation(
     temperature: float = 0.0,
     num_predict: int = DEFAULT_NUM_PREDICT,
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
+    repeats: int = DEFAULT_REPEATS,
     verbose: bool = True,
 ) -> RunStats:
-    """Run evaluation over a list of problems."""
+    """Run evaluation over a list of problems (with repeats)."""
     stats = RunStats()
+    total_runs = len(problems) * repeats
+    run_idx = 0
 
     for i, problem in enumerate(problems):
-        result = evaluate_problem(
-            problem,
-            template,
-            cheatsheet,
-            model,
-            temperature,
-            num_predict=num_predict,
-            request_timeout_s=request_timeout_s,
-        )
-        stats.total += 1
-        stats.elapsed_total += result.elapsed_s
-        stats.results.append(result)
-
-        # Ground truth tracking
-        if problem.answer:
-            stats.true_total += 1
-        else:
-            stats.false_total += 1
-
-        # Verdict tracking
-        if result.verdict is None:
-            stats.unparsed += 1
-            mark = "?"
-        else:
-            if result.verdict:
-                stats.predicted_true += 1
-            is_correct = result.verdict == problem.answer
-            if is_correct:
-                stats.correct += 1
-                if problem.answer:
-                    stats.true_correct += 1
-                    if result.verdict:
-                        stats.predicted_true_correct += 1
-                else:
-                    stats.false_correct += 1
-                mark = "✓"
-            else:
-                stats.incorrect += 1
-                if result.verdict and not problem.answer:
-                    pass  # false positive — predicted TRUE but answer FALSE
-                elif not result.verdict and problem.answer:
-                    pass  # false negative — predicted FALSE but answer TRUE
-                mark = "✗"
-
-        if verbose:
-            gt = "T" if problem.answer else "F"
-            pred = "T" if result.verdict is True else ("F" if result.verdict is False else "?")
-            print(
-                f"  [{i+1:4d}/{len(problems)}] {problem.id:15s}  "
-                f"gt={gt} pred={pred} {mark}  "
-                f"{result.elapsed_s:5.1f}s  "
-                f"acc={stats.accuracy:.1%}  f1={stats.f1:.1%}"
+        for rep in range(1, repeats + 1):
+            run_idx += 1
+            result = evaluate_problem(
+                problem, template, cheatsheet, model,
+                repeat_id=rep,
+                temperature=temperature,
+                num_predict=num_predict,
+                request_timeout_s=request_timeout_s,
             )
+            mark = _update_stats(stats, result)
+
+            if verbose:
+                gt = "T" if problem.answer else "F"
+                pred = "T" if result.verdict is True else ("F" if result.verdict is False else "?")
+                rep_label = f"r{rep}" if repeats > 1 else ""
+                print(
+                    f"  [{run_idx:4d}/{total_runs}] {problem.id:15s} {rep_label:3s} "
+                    f"gt={gt} pred={pred} {mark}  "
+                    f"{result.elapsed_s:5.1f}s  "
+                    f"acc={stats.accuracy:.1%}  f1={stats.f1:.1%}"
+                )
 
     return stats
 
@@ -400,34 +532,41 @@ def run_evaluation(
 # ---------------------------------------------------------------------------
 
 def print_report(stats: RunStats, label: str = ""):
-    """Print a formatted evaluation report."""
+    """Print a formatted evaluation report matching SAIR benchmark metrics."""
     header = f"═══ Results{': ' + label if label else ''} ═══"
     print(f"\n{'═' * len(header)}")
     print(header)
     print(f"{'═' * len(header)}")
-    print(f"  Total:            {stats.total}")
+    print(f"  Total runs:       {stats.total}")
     print(f"  Correct:          {stats.correct}")
     print(f"  Incorrect:        {stats.incorrect}")
     print(f"  Unparsed:         {stats.unparsed}")
     print(f"  ─────────────────────────────────")
     print(f"  Accuracy:         {stats.accuracy:.1%}")
-    print(f"  F1 (TRUE class):  {stats.f1:.1%}")
-    print(f"  TRUE accuracy:    {stats.true_accuracy:.1%}  ({stats.true_correct}/{stats.true_total})")
-    print(f"  FALSE accuracy:   {stats.false_accuracy:.1%}  ({stats.false_correct}/{stats.false_total})")
+    print(f"  F1 (strict):      {stats.f1:.1%}")
     print(f"  Precision (TRUE): {stats.precision:.1%}")
     print(f"  Recall (TRUE):    {stats.recall:.1%}")
+    print(f"  Parse rate:       {stats.parse_success_rate:.1%}")
+    print(f"  ─────────────────────────────────")
+    print(f"  TRUE accuracy:    {stats.true_accuracy:.1%}  ({stats.true_correct}/{stats.true_total})")
+    print(f"  FALSE accuracy:   {stats.false_accuracy:.1%}  ({stats.false_correct}/{stats.false_total})")
+    print(f"  TP/FP/FN/TN:      {stats.tp}/{stats.fp}/{stats.fn}/{stats.tn}")
     print(f"  ─────────────────────────────────")
     print(f"  Quality score:    {stats.quality_score:.1%}")
-    print(f"  Avg time/problem: {stats.avg_time:.1f}s")
+    print(f"  Avg time/run:     {stats.avg_time:.1f}s")
     print(f"  Total time:       {stats.elapsed_total:.1f}s")
     print()
 
 
-def save_results(stats: RunStats, output_path: str, model: str, cheatsheet_path: Optional[str]):
-    """Save detailed results to JSON."""
+def save_results(stats: RunStats, output_path: str, model: str,
+                 cheatsheet_path: Optional[str], subset: Optional[str] = None,
+                 repeats: int = 1):
+    """Save detailed results to JSON (mirrors SAIR benchmark schema)."""
     data = {
         "model": model,
         "cheatsheet": cheatsheet_path or "(none)",
+        "subset": subset or "(local)",
+        "repeats": repeats,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "summary": {
             "total": stats.total,
@@ -435,17 +574,24 @@ def save_results(stats: RunStats, output_path: str, model: str, cheatsheet_path:
             "incorrect": stats.incorrect,
             "unparsed": stats.unparsed,
             "accuracy": round(stats.accuracy, 4),
-            "f1": round(stats.f1, 4),
-            "true_accuracy": round(stats.true_accuracy, 4),
-            "false_accuracy": round(stats.false_accuracy, 4),
+            "f1_score": round(stats.f1, 4),
             "precision": round(stats.precision, 4),
             "recall": round(stats.recall, 4),
+            "parse_success_rate": round(stats.parse_success_rate, 4),
+            "true_accuracy": round(stats.true_accuracy, 4),
+            "false_accuracy": round(stats.false_accuracy, 4),
+            "tp": stats.tp,
+            "fp": stats.fp,
+            "fn": stats.fn,
+            "tn": stats.tn,
             "quality_score": round(stats.quality_score, 4),
             "avg_time_s": round(stats.avg_time, 2),
+            "total_time_s": round(stats.elapsed_total, 2),
         },
         "results": [
             {
                 "id": r.problem.id,
+                "repeat_id": r.repeat_id,
                 "equation1": r.problem.equation1,
                 "equation2": r.problem.equation2,
                 "ground_truth": r.problem.answer,
@@ -476,11 +622,13 @@ def run_comparison(
     temperature: float = 0.0,
     num_predict: int = DEFAULT_NUM_PREDICT,
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
+    repeats: int = DEFAULT_REPEATS,
     verbose: bool = True,
 ):
     """Run evaluation with multiple cheatsheets and compare."""
+    total_runs = len(problems) * repeats
     print(f"\n{'═' * 60}")
-    print(f"  COMPARISON MODE — {len(cheatsheet_paths)} cheatsheets × {len(problems)} problems")
+    print(f"  COMPARISON MODE — {len(cheatsheet_paths)} cheatsheets × {len(problems)} problems × {repeats} repeats")
     print(f"  Model: {model}")
     print(f"{'═' * 60}\n")
 
@@ -490,24 +638,20 @@ def run_comparison(
         print(f"\n▶ Evaluating: {cs_path}")
         cheatsheet = load_cheatsheet(cs_path)
         stats = run_evaluation(
-            problems,
-            template,
-            cheatsheet,
-            model,
-            temperature,
-            num_predict=num_predict,
+            problems, template, cheatsheet, model,
+            temperature, num_predict=num_predict,
             request_timeout_s=request_timeout_s,
-            verbose=verbose,
+            repeats=repeats, verbose=verbose,
         )
         print_report(stats, label)
         all_stats.append((label, stats))
 
     # Comparison table
-    print(f"\n{'═' * 70}")
+    print(f"\n{'═' * 80}")
     print(f"  COMPARISON SUMMARY")
-    print(f"{'═' * 70}")
-    print(f"  {'Cheatsheet':<25s} {'Acc':>7s} {'F1':>7s} {'T_acc':>7s} {'F_acc':>7s} {'Unp':>5s}")
-    print(f"  {'─' * 25} {'─' * 7} {'─' * 7} {'─' * 7} {'─' * 7} {'─' * 5}")
+    print(f"{'═' * 80}")
+    print(f"  {'Cheatsheet':<25s} {'Acc':>7s} {'F1':>7s} {'T_acc':>7s} {'F_acc':>7s} {'Parse':>7s} {'Unp':>5s}")
+    print(f"  {'─' * 25} {'─' * 7} {'─' * 7} {'─' * 7} {'─' * 7} {'─' * 7} {'─' * 5}")
     for label, s in all_stats:
         print(
             f"  {label:<25s} "
@@ -515,6 +659,7 @@ def run_comparison(
             f"{s.f1:>6.1%} "
             f"{s.true_accuracy:>6.1%} "
             f"{s.false_accuracy:>6.1%} "
+            f"{s.parse_success_rate:>6.1%} "
             f"{s.unparsed:>5d}"
         )
     print()
@@ -569,23 +714,29 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python sim_lab.py --quick                              # 5-problem smoke test
-    python sim_lab.py --data data/benchmark/hard.jsonl     # full hard benchmark with 7b
-    python sim_lab.py --cheatsheet cheatsheets/control_blank.txt
-                                                                                                         # test a blank control cheatsheet
-  python sim_lab.py --compare cs1.txt cs2.txt --n 50     # compare cheatsheets
-  python sim_lab.py --list-models                        # show available Ollama models
+  python sim_lab.py --quick --openrouter                       # 5-problem smoke test (cloud)
+  python sim_lab.py --subset normal --n 100 --openrouter       # 100 normal problems (cloud)
+  python sim_lab.py --subset hard2 --cheatsheet cs/v10.txt --openrouter  # with cheatsheet
+  python sim_lab.py --subset hard2 --repeats 3 --openrouter    # 3 repeats per problem
+  python sim_lab.py --data data/benchmark/control_hard20_seed17.jsonl   # local file (Ollama)
+  python sim_lab.py --compare cs1.txt cs2.txt --subset hard2 --n 50 --openrouter
+  python sim_lab.py --list-models                              # show available Ollama models
+  python sim_lab.py --list-subsets                             # show official HF subsets
         """,
     )
 
-    parser.add_argument("--data", default="data/benchmark/hard.jsonl",
-                        help="Path to JSONL benchmark file")
+    parser.add_argument("--subset", choices=list(HF_SUBSETS), default=None,
+                        help="Official HF problem subset (downloads automatically)")
+    parser.add_argument("--data", default=None,
+                        help="Path to local JSONL benchmark file")
     parser.add_argument("--model", default=DEFAULT_MODEL,
                         help=f"Ollama model name (default: {DEFAULT_MODEL})")
     parser.add_argument("--cheatsheet", default=None,
-                        help="Path to cheatsheet text file")
+                        help="Path to cheatsheet text file (complete prompt content)")
     parser.add_argument("--n", type=int, default=None,
                         help="Number of problems to evaluate (default: all)")
+    parser.add_argument("--repeats", type=int, default=DEFAULT_REPEATS,
+                        help=f"Repeats per problem (default: {DEFAULT_REPEATS}, official benchmark uses 3)")
     parser.add_argument("--answer-filter", choices=["all", "true", "false"], default="all",
                         help="Filter benchmark items by ground-truth label before shuffle/n")
     parser.add_argument("--temperature", type=float, default=0.0,
@@ -597,9 +748,9 @@ Examples:
     parser.add_argument("--output", default=None,
                         help="Save results JSON to this path")
     parser.add_argument("--quick", action="store_true",
-                        help="Quick smoke test: 5 problems")
+                        help="Quick smoke test: 5 problems from hard2")
     parser.add_argument("--fast", action="store_true",
-                        help="Fast mode: set n=20 (if unset), num_predict=192, timeout=90")
+                        help="Fast mode: set n=20 (if unset), num_predict=512, timeout=120")
     parser.add_argument("--compare", nargs="+", metavar="CHEATSHEET",
                         help="Compare multiple cheatsheets")
     parser.add_argument("--errors", action="store_true",
@@ -610,6 +761,12 @@ Examples:
                         help="Suppress per-problem output")
     parser.add_argument("--list-models", action="store_true",
                         help="List available Ollama models and exit")
+    parser.add_argument("--list-subsets", action="store_true",
+                        help="List official HF problem subsets and exit")
+    parser.add_argument("--openrouter", action="store_true",
+                        help="Use OpenRouter API instead of Ollama (requires --api-key or OPENROUTER_API_KEY env)")
+    parser.add_argument("--api-key", default=None,
+                        help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
     parser.add_argument("--template", default=None,
                         help="Custom prompt template path")
     parser.add_argument("--ollama-url", default=None,
@@ -620,6 +777,16 @@ Examples:
     if args.ollama_url:
         global OLLAMA_URL
         OLLAMA_URL = args.ollama_url
+
+    # List subsets mode
+    if args.list_subsets:
+        print("Official HF problem subsets:")
+        print("  normal  — 1000 problems (500 TRUE, 500 FALSE) programmatic selection")
+        print("  hard    — 200 problems (74 TRUE, 126 FALSE) human+AI co-curated")
+        print("  hard1   — 69 problems (24 TRUE, 45 FALSE) deduped hard subset")
+        print("  hard2   — 200 problems (100 TRUE, 100 FALSE) human+AI co-curated")
+        print(f"\nDataset: https://huggingface.co/datasets/{HF_DATASET}")
+        sys.exit(0)
 
     # List models mode
     if args.list_models:
@@ -632,63 +799,98 @@ Examples:
             print(f"  • {m}")
         sys.exit(0)
 
-    # Check Ollama
-    if not check_ollama():
-        print("ERROR: Ollama is not running at", OLLAMA_URL)
-        print("Start Ollama with: ollama serve")
-        print("Or set OLLAMA_URL env var to point to your Ollama instance.")
-        sys.exit(1)
-
-    # Check model availability
-    available = list_models()
-    if available and args.model not in available:
-        print(f"WARNING: Model '{args.model}' not found locally.")
-        print(f"Available models: {', '.join(available)}")
-        print(f"Pull it with: ollama pull {args.model}")
-        resp = input("Continue anyway (Ollama will try to pull)? [y/N] ")
-        if resp.lower() != "y":
+    # Resolve backend
+    global _backend, _api_key
+    if args.openrouter:
+        _backend = "openrouter"
+        _api_key = args.api_key or OPENROUTER_API_KEY
+        if not _api_key:
+            print("ERROR: OpenRouter requires an API key.")
+            print("  Pass --api-key <key> or set OPENROUTER_API_KEY env var.")
             sys.exit(1)
+        # Default model for OpenRouter
+        if args.model == DEFAULT_MODEL_OLLAMA:
+            args.model = DEFAULT_MODEL
+        print(f"Backend: OpenRouter (model: {args.model})")
+    else:
+        _backend = "ollama"
+        # Default model for Ollama
+        if args.model == DEFAULT_MODEL:
+            args.model = DEFAULT_MODEL_OLLAMA
+        # Check Ollama
+        if not check_ollama():
+            print("ERROR: Ollama is not running at", OLLAMA_URL)
+            print("Start Ollama with: ollama serve")
+            print("Or use --openrouter for cloud inference.")
+            sys.exit(1)
+        # Check model availability
+        available = list_models()
+        if available and args.model not in available:
+            print(f"WARNING: Model '{args.model}' not found locally.")
+            print(f"Available models: {', '.join(available)}")
+            print(f"Pull it with: ollama pull {args.model}")
+            resp = input("Continue anyway (Ollama will try to pull)? [y/N] ")
+            if resp.lower() != "y":
+                sys.exit(1)
 
-    # Quick mode
+    # Quick mode — uses hard2 by default
     if args.quick:
         args.n = args.n or 5
+        if not args.subset and not args.data:
+            args.subset = "hard2"
 
     # Fast mode
     if args.fast:
         args.n = args.n or 20
-        args.num_predict = min(args.num_predict, 192)
-        args.request_timeout = min(args.request_timeout, 90)
+        args.num_predict = min(args.num_predict, 512)
+        args.request_timeout = min(args.request_timeout, 120)
+
+    # Default subset if nothing specified
+    if not args.subset and not args.data:
+        args.subset = "hard2"
 
     # Load data
-    if not Path(args.data).exists():
+    if args.data and not Path(args.data).exists():
         print(f"ERROR: Data file not found: {args.data}")
         sys.exit(1)
 
-    problems = load_problems(args.data, args.n, args.shuffle, args.answer_filter)
+    problems = load_problems(
+        path=args.data,
+        subset=args.subset,
+        n=args.n,
+        shuffle=args.shuffle,
+        answer_filter=args.answer_filter,
+    )
     template = load_template(args.template)
 
     true_count = sum(1 for p in problems if p.answer)
     false_count = len(problems) - true_count
+    source = args.subset or args.data
+    total_runs = len(problems) * args.repeats
     print(f"\n{'═' * 60}")
     print(f"  SAIR Equational Theories — Stage 1 Simulation Lab")
     print(f"{'═' * 60}")
-    print(f"  Model:      {args.model}")
-    print(f"  Data:       {args.data}")
+    print(f"  Backend:     {'OpenRouter' if _backend == 'openrouter' else 'Ollama'}")
+    print(f"  Model:       {args.model}")
+    print(f"  Source:      {source}")
     if args.answer_filter != "all":
-        print(f"  Label set:  {args.answer_filter.upper()} only")
-    print(f"  Problems:   {len(problems)} (TRUE: {true_count}, FALSE: {false_count})")
+        print(f"  Label set:   {args.answer_filter.upper()} only")
+    print(f"  Problems:    {len(problems)} (TRUE: {true_count}, FALSE: {false_count})")
+    print(f"  Repeats:     {args.repeats}")
+    print(f"  Total runs:  {total_runs}")
     print(f"  Temperature: {args.temperature}")
     print(f"  Num predict: {args.num_predict}")
     print(f"  Timeout:     {args.request_timeout}s")
     if args.cheatsheet:
-        print(f"  Cheatsheet: {args.cheatsheet}")
+        print(f"  Cheatsheet:  {args.cheatsheet}")
     print(f"{'═' * 60}\n")
 
     # Comparison mode
     if args.compare:
         run_comparison(
             args.compare, problems, template, args.model,
-            args.temperature, args.num_predict, args.request_timeout, not args.quiet,
+            args.temperature, args.num_predict, args.request_timeout,
+            args.repeats, not args.quiet,
         )
         return
 
@@ -696,7 +898,8 @@ Examples:
     cheatsheet = load_cheatsheet(args.cheatsheet)
     stats = run_evaluation(
         problems, template, cheatsheet, args.model,
-        args.temperature, args.num_predict, args.request_timeout, not args.quiet,
+        args.temperature, args.num_predict, args.request_timeout,
+        args.repeats, not args.quiet,
     )
     print_report(stats, Path(args.cheatsheet).stem if args.cheatsheet else args.model)
 
@@ -709,9 +912,11 @@ Examples:
     else:
         ts = time.strftime("%Y%m%d_%H%M%S")
         cs_label = Path(args.cheatsheet).stem if args.cheatsheet else "no_cheatsheet"
-        output_path = f"results/sim_{args.model.replace(':', '_')}_{cs_label}_{ts}.json"
+        sub_label = args.subset or Path(args.data).stem if args.data else "local"
+        output_path = f"results/sim_{args.model.replace(':', '_').replace('/', '_')}_{sub_label}_{cs_label}_{ts}.json"
 
-    save_results(stats, output_path, args.model, args.cheatsheet)
+    save_results(stats, output_path, args.model, args.cheatsheet,
+                 subset=args.subset, repeats=args.repeats)
 
 
 if __name__ == "__main__":
