@@ -1,0 +1,6 @@
+{"id": "hard1_0050", "index": 50, "difficulty": "hard", "equation1": "x = x * (((y * z) * w) * u)", "equation2": "x = ((x * x) * (x * y)) * y", "answer": true}
+{"id": "hard1_0021", "index": 21, "difficulty": "hard", "equation1": "x = y * ((y * x) * (x * y))", "equation2": "x = (y * (x * y)) * x", "answer": false}
+{"id": "hard1_0052", "index": 52, "difficulty": "hard", "equation1": "x = (y * x) * (y * x)", "equation2": "x = ((x * y) * x) * (z * x)", "answer": true}
+{"id": "hard1_0043", "index": 43, "difficulty": "hard", "equation1": "x * x = y * (x * (z * w))", "equation2": "x * x = y * ((x * x) * z)", "answer": false}
+{"id": "hard1_0007", "index": 7, "difficulty": "hard", "equation1": "x = (y * (y * (y * z))) * x", "equation2": "x * y = z * (w * (w * y))", "answer": true}
+{"id": "hard1_0042", "index": 42, "difficulty": "hard", "equation1": "x = (y * x) * (x * z)", "equation2": "x = x * (y * (x * (y * z)))", "answer": false}
