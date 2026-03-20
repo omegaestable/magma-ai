@@ -1,0 +1,14 @@
+{"id": "hard2_0064", "index": 64, "difficulty": "hard", "equation1": "x = (y * z) * (z * (x * y))", "equation2": "x = y * (z * (y * (z * x)))", "answer": false}
+{"id": "hard2_0038", "index": 38, "difficulty": "hard", "equation1": "x = y * ((x * (x * y)) * y)", "equation2": "x = y * (y * (y * (z * w)))", "answer": false}
+{"id": "hard2_0124", "index": 124, "difficulty": "hard", "equation1": "x = ((x * x) * y) * (y * z)", "equation2": "x * x = x * (x * (y * z))", "answer": false}
+{"id": "hard2_0091", "index": 91, "difficulty": "hard", "equation1": "x = y * (((x * z) * x) * w)", "equation2": "x = ((y * (y * y)) * x) * z", "answer": true}
+{"id": "hard2_0021", "index": 21, "difficulty": "hard", "equation1": "x * y = y * ((z * w) * x)", "equation2": "(x * x) * y = (z * y) * x", "answer": true}
+{"id": "hard2_0051", "index": 51, "difficulty": "hard", "equation1": "x = (y * ((y * x) * x)) * y", "equation2": "x * (x * y) = z * (z * y)", "answer": false}
+{"id": "hard2_0004", "index": 4, "difficulty": "hard", "equation1": "x = (((y * y) * x) * x) * z", "equation2": "x = y * ((x * (y * z)) * w)", "answer": true}
+{"id": "hard2_0050", "index": 50, "difficulty": "hard", "equation1": "x = y * ((z * x) * z)", "equation2": "x = ((y * (z * z)) * w) * x", "answer": true}
+{"id": "hard2_0019", "index": 19, "difficulty": "hard", "equation1": "x = (((y * y) * z) * x) * w", "equation2": "x * y = ((y * x) * y) * y", "answer": true}
+{"id": "hard2_0024", "index": 24, "difficulty": "hard", "equation1": "x = y * (z * (x * x))", "equation2": "x = y * (y * ((x * z) * x))", "answer": true}
+{"id": "hard2_0152", "index": 152, "difficulty": "hard", "equation1": "(x * y) * x = (z * w) * u", "equation2": "x * (x * x) = (y * z) * w", "answer": false}
+{"id": "hard2_0169", "index": 169, "difficulty": "hard", "equation1": "x = (y * (y * (x * y))) * y", "equation2": "x = (x * ((x * x) * x)) * x", "answer": false}
+{"id": "hard2_0042", "index": 42, "difficulty": "hard", "equation1": "x * (y * x) = (z * w) * u", "equation2": "x * (y * z) = (w * x) * w", "answer": false}
+{"id": "hard2_0028", "index": 28, "difficulty": "hard", "equation1": "x * y = y * ((y * z) * x)", "equation2": "x * y = ((z * x) * y) * x", "answer": true}

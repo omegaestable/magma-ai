@@ -90,6 +90,7 @@ class Result:
     raw_response: str
     elapsed_s: float
     parsed_ok: bool
+    usage: Optional[dict[str, int]] = None
 
 
 @dataclass
@@ -112,6 +113,9 @@ class RunStats:
     fp: int = 0   # predicted TRUE,  answer FALSE  (+ unparsed FALSE)
     fn: int = 0   # predicted FALSE, answer TRUE    (+ unparsed TRUE)
     tn: int = 0   # predicted FALSE, answer FALSE
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    reasoning_tokens: int = 0
 
     @property
     def accuracy(self) -> float:
@@ -326,7 +330,7 @@ def query_ollama(
     temperature: float = 0.0,
     num_predict: int = DEFAULT_NUM_PREDICT,
     timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
-) -> tuple[str, float]:
+) -> tuple[str, float, Optional[dict[str, int]]]:
     """Send a prompt to Ollama and return (response_text, elapsed_seconds)."""
     t0 = time.time()
     payload = {
@@ -345,7 +349,7 @@ def query_ollama(
     )
     r.raise_for_status()
     elapsed = time.time() - t0
-    return r.json().get("response", ""), elapsed
+    return r.json().get("response", ""), elapsed, None
 
 
 # ---------------------------------------------------------------------------
@@ -359,8 +363,8 @@ def query_openrouter(
     temperature: float = 0.0,
     max_tokens: int = DEFAULT_NUM_PREDICT,
     timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
-) -> tuple[str, float]:
-    """Send a prompt to OpenRouter and return (response_text, elapsed_seconds)."""
+) -> tuple[str, float, Optional[dict[str, int]]]:
+    """Send a prompt to OpenRouter and return (response_text, elapsed_seconds, usage)."""
     t0 = time.time()
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -382,7 +386,15 @@ def query_openrouter(
     data = r.json()
     elapsed = time.time() - t0
     text = data["choices"][0]["message"]["content"]
-    return text, elapsed
+    usage = data.get("usage")
+    normalized_usage = None
+    if usage:
+        normalized_usage = {
+            "prompt_tokens": int(usage.get("prompt_tokens") or usage.get("input_tokens") or usage.get("promptTokens") or 0),
+            "completion_tokens": int(usage.get("completion_tokens") or usage.get("output_tokens") or usage.get("completionTokens") or 0),
+            "reasoning_tokens": int(usage.get("reasoning_tokens") or usage.get("reasoningTokens") or 0),
+        }
+    return text, elapsed, normalized_usage
 
 
 # ---------------------------------------------------------------------------
@@ -408,14 +420,14 @@ def evaluate_problem(
     prompt = render_prompt(template, problem, cheatsheet)
     try:
         if _backend == "openrouter":
-            response, elapsed = query_openrouter(
+            response, elapsed, usage = query_openrouter(
                 prompt, model, _api_key,
                 temperature=temperature,
                 max_tokens=num_predict,
                 timeout_s=request_timeout_s,
             )
         else:
-            response, elapsed = query_ollama(
+            response, elapsed, usage = query_ollama(
                 prompt, model, temperature,
                 num_predict=num_predict,
                 timeout_s=request_timeout_s,
@@ -428,6 +440,7 @@ def evaluate_problem(
             raw_response=f"ERROR: {e}",
             elapsed_s=0.0,
             parsed_ok=False,
+            usage=None,
         )
 
     verdict = parse_verdict(response)
@@ -438,6 +451,7 @@ def evaluate_problem(
         raw_response=response,
         elapsed_s=elapsed,
         parsed_ok=verdict is not None,
+        usage=usage,
     )
 
 
@@ -447,6 +461,10 @@ def _update_stats(stats: RunStats, result: Result) -> str:
     stats.total += 1
     stats.elapsed_total += result.elapsed_s
     stats.results.append(result)
+    if result.usage:
+        stats.prompt_tokens += int(result.usage.get("prompt_tokens", 0) or 0)
+        stats.completion_tokens += int(result.usage.get("completion_tokens", 0) or 0)
+        stats.reasoning_tokens += int(result.usage.get("reasoning_tokens", 0) or 0)
 
     if problem.answer:
         stats.true_total += 1
@@ -587,6 +605,10 @@ def save_results(stats: RunStats, output_path: str, model: str,
             "quality_score": round(stats.quality_score, 4),
             "avg_time_s": round(stats.avg_time, 2),
             "total_time_s": round(stats.elapsed_total, 2),
+            "prompt_tokens": stats.prompt_tokens,
+            "completion_tokens": stats.completion_tokens,
+            "reasoning_tokens": stats.reasoning_tokens,
+            "total_tokens": stats.prompt_tokens + stats.completion_tokens + stats.reasoning_tokens,
         },
         "results": [
             {
@@ -600,6 +622,7 @@ def save_results(stats: RunStats, output_path: str, model: str,
                 "parsed_ok": r.parsed_ok,
                 "elapsed_s": round(r.elapsed_s, 2),
                 "raw_response": r.raw_response,
+                "usage": r.usage,
             }
             for r in stats.results
         ],
