@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import jinja2
 import math
 import re
 from collections import defaultdict
@@ -134,7 +135,10 @@ def estimate_tokens(text: str) -> int:
 def render_prompt_text(equation1: str, equation2: str, cheatsheet_text: str) -> str:
     if not cheatsheet_text:
         return ""
-    return cheatsheet_text.replace("{{ equation1 }}", equation1).replace("{{ equation2 }}", equation2)
+    return jinja2.Template(cheatsheet_text).render(
+        equation1=equation1,
+        equation2=equation2,
+    )
 
 
 def load_cheatsheet_text(cheatsheet_path: str) -> str:
