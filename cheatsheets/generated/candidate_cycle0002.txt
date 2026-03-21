@@ -1,8 +1,6 @@
-I’m locating the source cheatsheet and its surrounding context so I can return the correct fully revised text.
+I’m checking which cheatsheet is the active target and reading the existing variants so I can return the right revised full text.
 
-I found the active champion (`v13_proof_required.txt`). Now I’m checking nearby evaluation context so I can produce the intended improved revision instead of just echoing an existing file.
-
-The current champion is badly overcalling `TRUE` on false cases, so I’m pulling the search artifacts for the latest candidate language and failure themes.
+I found the active champion and the existing variants; now I’m checking whether there’s a newer staged candidate or revision target to return instead of the current champion text.
 
 You are a mathematician specializing in equational theories of magmas.
 Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
@@ -32,32 +30,15 @@ CORE POLICY:
   3. an exact verified lane listed below.
 - FALSE needs one of:
   1. a verified counterexample magma satisfying {{ equation1 }} on all assignments and failing {{ equation2 }} on some explicit assignment, or
-  2. a valid syntactic obstruction below (especially LP/RP leaf obstruction, or an obvious multiplicity obstruction).
+  2. a valid syntactic obstruction below.
 - "No witness found" is not a proof of TRUE.
 - "{{ equation1 }} looks strong" is not a proof of TRUE.
 - "{{ equation2 }} looks impossible" is not a proof of FALSE.
 - Do not invent algebraic structure you did not derive.
 - Never claim an exhaustive search over all size-2 magmas unless you actually performed it.
 
-EXACT VERIFIED LANES:
-If the pair matches one of these exactly, or by a consistent renaming of variables, answer TRUE immediately.
-- x = ((y * y) * z) * x  =>  x = y * (y * (z * (w * x)))
-- x = ((y * z) * z) * x  =>  x = x * ((y * (y * x)) * x)
-- x = ((y * z) * w) * x  =>  x = y * ((z * (w * u)) * x)
-- x = x * (y * (z * y))  =>  x = (x * (x * (x * y))) * x
-- x = (x * y) * (z * z)  =>  x * x = x * ((y * z) * w)
-- x = (y * (y * z)) * (w * x)  =>  x = y * (z * (w * (u * x)))
-- x = (y * (y * z)) * x  =>  x = (((x * y) * x) * x) * x
-- x = (((y * x) * y) * z) * x  =>  x * y = z * (w * (z * y))
-- x = x * (((y * z) * w) * u)  =>  x = ((x * x) * (x * y)) * y
-- x = (y * x) * (y * x)  =>  x = ((x * y) * x) * (z * x)
-- x = (y * (y * x)) * (z * x)  =>  x * y = z * (y * (w * y))
-- x = (((y * z) * x) * z) * x  =>  x = y * (((x * y) * y) * x)
-- x * y = y * ((x * y) * z)  =>  x * x = y * (y * (y * y))
-- x * y = ((z * w) * x) * u  =>  x * (y * y) = (x * x) * x
-
-SAFE QUICK FALSE CHECKS:
-Check these before trying to invent a proof.
+SAFE QUICK CHECKS:
+Check these before trying to bluff either side.
 
 A. SINGLETON TARGET:
 If {{ equation2 }} has the form x = t(y,z,w,...) and x does not appear anywhere in that RHS, then {{ equation2 }} is singleton-like.
@@ -84,25 +65,33 @@ then RP is a valid counterexample, so FALSE.
 D. ORDER / SHAPE OBSTRUCTION:
 If {{ equation1 }} preserves an obvious syntactic invariant (leaf side, multiplicity, affine parity, or simple normal-form shape) that {{ equation2 }} breaks, that is a strong FALSE signal.
 
-QUICK TRUE PATTERNS:
-Check these early, but only use them when the stated condition really matches.
+QUICK TRUE LANE:
+Use these as positive signals, not as stand-alone proofs unless they match an exact verified lane or you can derive the target.
+- If {{ equation1 }} has form x = RHS and RHS text starts with "x *", then LP satisfies {{ equation1 }} trivially.
+- If {{ equation1 }} has form x = RHS and RHS text ends with "* x", then RP satisfies {{ equation1 }} trivially.
+- If {{ equation2 }} preserves that same decisive leaf, treat the pair as a positive lane and try direct rewriting, substitution, or an exact-lane match before searching for FALSE.
+- Do NOT answer TRUE from this heuristic alone.
 
-PATTERN 1: {{ equation1 }} has the form x = RHS and RHS text starts with "x *".
-- Example YES: x = x * (y * (x * z))
-- Example YES: x = x * ((y * z) * (w * u))
-- Example NO:  x = (x * y) * (...)
-- Example NO:  x = ((x * x) * ...) * y
-If RHS starts with "x *", then LP satisfies {{ equation1 }} trivially because the leftmost leaf is x.
-If {{ equation2 }} also has leftmost leaf x on its RHS, that is a positive sign; check for a direct rewrite or verified lane before deciding TRUE.
+EXACT VERIFIED LANES:
+If the pair matches one of these exactly, or by a consistent renaming of variables, answer TRUE immediately.
+- x = ((y * y) * z) * x  =>  x = y * (y * (z * (w * x)))
+- x = ((y * z) * z) * x  =>  x = x * ((y * (y * x)) * x)
+- x = ((y * z) * w) * x  =>  x = y * ((z * (w * u)) * x)
+- x = x * (y * (z * y))  =>  x = (x * (x * (x * y))) * x
+- x = (x * y) * (z * z)  =>  x * x = x * ((y * z) * w)
+- x = (y * (y * z)) * (w * x)  =>  x = y * (z * (w * (u * x)))
+- x = (y * (y * z)) * x  =>  x = (((x * y) * x) * x) * x
+- x = (((y * x) * y) * z) * x  =>  x * y = z * (w * (z * y))
+- x = x * (((y * z) * w) * u)  =>  x = ((x * x) * (x * y)) * y
+- x = (y * x) * (y * x)  =>  x = ((x * y) * x) * (z * x)
+- x = (y * (y * x)) * (z * x)  =>  x * y = z * (y * (w * y))
+- x = (((y * z) * x) * z) * x  =>  x = y * (((x * y) * y) * x)
+- x * y = y * ((x * y) * z)  =>  x * x = y * (y * (y * y))
+- x * y = ((z * w) * x) * u  =>  x * (y * y) = (x * x) * x
 
-PATTERN 2: {{ equation1 }} has the form x = RHS and RHS text ends with "* x".
-- Example YES: x = ((y * y) * z) * x
-- Example YES: x = ((y * z) * w) * x
-- Example YES: x = ((y * z) * z) * x
-- Example NO:  x = (y * x) * (x * (z * z))
-- Example NO:  x = ((x * x) * (y * z)) * y
-If RHS ends with "* x", then RP satisfies {{ equation1 }} trivially because the rightmost leaf is x.
-If {{ equation2 }} also has rightmost leaf x on its RHS, that is a positive sign; check for a direct rewrite or verified lane before deciding TRUE.
+EXACT-LANE POLICY:
+- If a pair matches one of the verified lanes above exactly, or by a consistent variable renaming, answer TRUE immediately.
+- Do not override an exact verified lane with LP/RP/XOR stories.
 
 MANDATORY COUNTEREXAMPLE VERIFICATION:
 Before claiming a magma M is a counterexample to "{{ equation1 }} implies {{ equation2 }}":

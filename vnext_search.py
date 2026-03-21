@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import shutil
 import subprocess
@@ -123,7 +124,9 @@ def run_eval(model: str, benchmark_stem: str, cheatsheet_path: Path) -> Path:
         "--output",
         str(output_path),
     ]
-    subprocess.run(command, cwd=ROOT, check=True)
+    env = os.environ.copy()
+    env.setdefault("PYTHONIOENCODING", "utf-8")
+    subprocess.run(command, cwd=ROOT, check=True, env=env)
     return output_path
 
 
