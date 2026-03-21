@@ -775,8 +775,6 @@ Examples:
                         help="Use OpenRouter API instead of Ollama (requires --api-key or OPENROUTER_API_KEY env)")
     parser.add_argument("--api-key", default=None,
                         help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
-    parser.add_argument("--template", default=None,
-                        help="Deprecated and ignored. Prompts now come entirely from the cheatsheet file.")
     parser.add_argument("--ollama-url", default=None,
                         help="Ollama API URL (default: http://localhost:11434)")
 
@@ -865,8 +863,6 @@ Examples:
         print("ERROR: A cheatsheet prompt is required.")
         print("  Pass --cheatsheet <path> so the simulator has a full prompt template.")
         sys.exit(1)
-    if args.template:
-        print("WARNING: --template is deprecated and ignored; using only the cheatsheet prompt.")
 
     problems = load_problems(
         path=args.data,
