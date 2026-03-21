@@ -1,0 +1,47 @@
+{
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "champion_path": "cheatsheets/v13_proof_required.txt",
+  "promoted_path": "cheatsheets/v_next.txt",
+  "copilot": {
+    "command": "copilot",
+    "adapter_script": "invoke_copilot_candidate.py",
+    "model": ""
+  },
+  "gates": {
+    "source_subset_path": "data/hf_cache/normal.jsonl",
+    "gate_seeds": [0, 1, 2],
+    "shuffle_seed": 20260320,
+    "items_per_label": 10,
+    "benchmark_stems": [
+      "normal_balanced20_true10_false10_seed0",
+      "normal_balanced20_true10_false10_seed1",
+      "normal_balanced20_true10_false10_seed2"
+    ]
+  },
+  "promotion": {
+    "required_seed_wins": 2,
+    "mean_metric": "accuracy",
+    "parse_rate_tolerance": 0.0,
+    "max_true_accuracy_drop": 0.35,
+    "max_false_accuracy_drop": 0.35
+  },
+  "search": {
+    "max_cycles_per_run": 3,
+    "max_budget_usd": 1.0,
+    "mutation_focuses": [
+      "quick TRUE lane",
+      "FALSE counterexample cookbook",
+      "format lock and brevity",
+      "anti-collapse guard",
+      "witness library refinement"
+    ]
+  },
+  "artifacts": {
+    "state_dir": "results/vnext_search",
+    "ledger_path": "results/vnext_search/ledger.jsonl",
+    "manifest_path": "results/vnext_search/champion_manifest.json",
+    "status_path": "results/vnext_search/status.md",
+    "candidate_dir": "cheatsheets/generated",
+    "context_dir": "results/vnext_search/context"
+  }
+}

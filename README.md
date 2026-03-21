@@ -28,6 +28,9 @@ These commands run:
 
 - `normal_balanced10_true5_false5_seed0`
 - `normal_balanced12_true6_false6_seed0`
+- `normal_balanced20_true10_false10_seed0`
+- `normal_balanced20_true10_false10_seed1`
+- `normal_balanced20_true10_false10_seed2`
 - `hard1_balanced6_true3_false3_seed0`
 - `hard1_balanced14_true7_false7_seed0`
 - `hard2_balanced14_true7_false7_seed0`
@@ -56,3 +59,43 @@ sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v13_p
 ```
 
 The scoreboard summary is in `results/scoreboard.md`.
+
+## Background VNext Search
+
+This repo now includes an iterative search controller that only promotes `v_next`
+when a candidate beats the current champion consistently on the fixed balanced20
+normal gate suite using `meta-llama/llama-3.3-70b-instruct` in playground-parity
+mode.
+
+Build the fixed balanced20 gates:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py build-gates
+```
+
+Baseline the current champion across the 3-seed gate suite:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py baseline
+```
+
+Run one candidate cycle:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py cycle
+```
+
+Run a bounded unattended search loop:
+
+```powershell
+.\run_vnext_search.ps1 -Action loop -Cycles 3 -BudgetUsd 1.0 -Background
+```
+
+Check status:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py status
+```
+
+Workflow artifacts are written under `results/vnext_search/` and staged
+candidates are written under `cheatsheets/generated/`.

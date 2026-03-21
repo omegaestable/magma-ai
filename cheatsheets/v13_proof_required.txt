@@ -2,6 +2,7 @@ E1 is {{ equation1 }} and E2 is {{ equation2 }}
 OUTPUT LOCK (behavior only; keep the math policy below):
 - Think silently. Do not output steps, headings, scratch work, or analysis.
 - The first output token must be exactly: VERDICT:
+- On the next line, output exactly one token: TRUE or FALSE.
 - Output exactly these four headers in this order and nothing before them:
   VERDICT:
   REASONING:
@@ -9,6 +10,8 @@ OUTPUT LOCK (behavior only; keep the math policy below):
   COUNTEREXAMPLE:
 - Never write "## Step", "Step 1", "Final answer", or boxed answers.
 - Even if uncertain, still output all four headers.
+- Never write prose on the VERDICT line or immediately after it.
+- Keep each section brief. Do not repeat REASONING or PROOF headers.
 - Do not answer TRUE merely because {{ equation1 }} looks strong or because no witness is obvious.
 - Do not answer FALSE without a verified counterexample.
 
@@ -18,19 +21,14 @@ Read {{ equation1 }}'s RHS (the right side of the = sign in {{ equation1 }}).
 
 PATTERN 1 — RHS TEXT starts with "x *" (the letter x, then space, then *):
   YES: "x = x * (y * (x * z))"         RHS = "x * (y * (x * z))"  ← starts "x *"
-  YES: "x = x * ((y * z) * (w * u))"   RHS starts "x *"
   NO:  "x = (x * y) * (...)"            RHS starts "(" not "x *"
-  NO:  "x = ((x * x) * ...) * y"        RHS starts "(" not "x *"
   If RHS starts "x *": LP holds {{ equation1 }} trivially (leftmost leaf = x).
   Also check {{ equation2 }}: is leftmost leaf of {{ equation2 }}'s RHS = x? If YES → VERDICT: TRUE.
   (Both LP and RP cannot separate {{ equation1 }} from {{ equation2 }} in this pattern.)
 
 PATTERN 2 — RHS TEXT ends with "* x" (final tokens are "* x", no closing paren):
   YES: "x = ((y * y) * z) * x"    RHS = "((y * y) * z) * x"  ← ends "* x"
-  YES: "x = ((y * z) * w) * x"    RHS ends "* x"
-  YES: "x = ((y * z) * z) * x"    RHS ends "* x"
   NO:  "x = (y * x) * (x * (z * z))"  RHS ends "z))" not "* x"
-  NO:  "x = ((x * x) * (y * z)) * y"  RHS ends "* y" not "* x"
   If RHS ends "* x": RP holds {{ equation1 }} trivially (rightmost leaf = x).
   Also check {{ equation2 }}: is rightmost leaf of {{ equation2 }}'s RHS = x? If YES → VERDICT: TRUE.
 
@@ -39,7 +37,9 @@ BEFORE claiming any magma M as counterexample for "{{ equation1 }} implies {{ eq
 1. CHECK {{ equation1 }} holds on ALL inputs of M. If {{ equation1 }} FAILS on M, M is INVALID — stop.
 2. CHECK {{ equation2 }} fails on SOME input of M. If {{ equation2 }} holds on all, M is NOT a CE.
 Only if both steps pass: M is a valid counterexample, VERDICT FALSE.
-If no valid CE found after checking: lean toward TRUE, not FALSE.
+For FALSE, COUNTEREXAMPLE must include: MAGMA, ASSIGNMENT, CHECK(E1 holds, E2 fails).
+If you cannot fill all three, do not output FALSE.
+If LP/RP/XOR/Z3A/C0 yield no verified CE, output TRUE.
 CRITICAL WARNING: Most equations with 3+ variables (free variable z, w, etc.)
 are very restrictive. Small magmas (LP, RP, XOR) satisfy very FEW of them.
 Do NOT assume a simple magma satisfies a complex equation — ALWAYS verify.
@@ -62,6 +62,7 @@ RP (Right Projection): x*y = y for all x,y.
   FAST EVAL RULE: on RP, A*B = B always. So any nested expr = its RIGHTMOST
   LEAF variable in the parse tree (ignore all left-side arguments).
     ((y*y)*z)*x     → rightmost leaf = x → evaluates to x
+    ((y*(x*y))*z)*w → rightmost leaf = w → evaluates to w  ← NOT x!
     x*(y*(x*z))     → rightmost leaf = z → evaluates to z  ← NOT x!
     (y*x)*(x*(z*z)) → rightmost leaf = z → evaluates to z  ← NOT x!
   QUICK TEST for "x = RHS": find rightmost leaf of RHS.
@@ -70,17 +71,16 @@ RP (Right Projection): x*y = y for all x,y.
 
 XOR (Z/2Z addition): x*y = (x+y) mod 2.
   Table (size 2): [[0,1],[1,0]]
-  Properties: commutative, associative, x*x = 0, x*0 = x.
+  Property: x*x = 0.
   XOR satisfies very few equational laws with free variables.
 
 Z3A (Z/3Z addition): x*y = (x+y) mod 3.
   Table (size 3): [[0,1,2],[1,2,0],[2,0,1]]
-  Properties: commutative, associative, x*x*x = 0, order 3.
   Z3A satisfies very few equational laws with 3+ variables.
 
 C0 (Constant zero): x*y = 0 for all x,y.
   Table (size 2): [[0,0],[0,0]]
-  Properties: all products are 0. Satisfies x*y = z*w type equations.
+  All products are 0.
 
 === HOW TO VERIFY AN EQUATION ON A MAGMA ===
 
@@ -123,15 +123,6 @@ Strategy 4 — TERM REWRITING: If {{ equation1 }} says x = f(x,y,...), substitut
 identity into {{ equation2 }} systematically. If every occurrence of "x" in {{ equation2 }} can be
 replaced using {{ equation1 }} to make {{ equation2 }} hold, then TRUE.
 
-=== KEY PATTERNS (from verified database) ===
-
-PATTERN A — Strong equations imply everything:
-  Equations with structure like "x = y * (... complex term with x,y,z ...)"
-  where the free variable z makes the equation very restrictive often imply
-  simpler equations. If you verify such {{ equation1 }} on LP and LP FAILS {{ equation1 }}, and on RP
-  and RP FAILS {{ equation1 }}, and on XOR and XOR FAILS {{ equation1 }}: {{ equation1 }} is likely very strong.
-  If no small magma satisfies {{ equation1 }} except trivial ones, {{ equation1 }} probably implies {{ equation2 }}.
-
 === FALSE COUNTEREXAMPLE COOKBOOK ===
 
 When {{ equation1 }} is a "weak" equation (LP or RP satisfies it), use that magma as CE:
@@ -144,10 +135,6 @@ LP satisfies these common forms:
 RP satisfies:
   x = y * x — right-absorb law
   x = (... anything ...) * x — because (...)*x = x on RP
-
-XOR satisfies:
-  Equations balanced under mod-2 arithmetic
-  x = y * ((y * (y * x)) * y) — check: y*(y*x)=y+y+x=x, y*x=y+x, y*(y+x)=x ✓
 
 TO DISPROVE {{ equation1 }} → {{ equation2 }} (i.e., show FALSE):
   1. Pick a candidate CE magma (LP, RP, XOR, Z3A, C0)
@@ -164,12 +151,13 @@ MISTAKE 1: Using LP/RP as CE without checking leftmost/rightmost leaf first.
   If leaf ≠ x, that magma CANNOT be CE. Do this check FIRST, before anything.
 
 MISTAKE 2: Defaulting to FALSE when no CE is obvious.
-  If you cannot find a valid small CE, the answer is likely TRUE.
-  Many TRUE implications have proofs via substitution + absorption chains.
+  If you cannot find a valid small CE, keep checking or prove TRUE explicitly.
+
+MISTAKE 4: Rejecting a CE as invalid and then still answering FALSE.
+  Invalid CE means discard it; if no other CE works, answer TRUE.
 
 MISTAKE 3: Confusing left-absorb (x*y=x) with right-absorb (x*y=y).
   These are different! LP gives x*y=x. RP gives x*y=y.
-  Check your magma table: LP = [[0,0],[1,1]], RP = [[0,1],[0,1]].
 
 === DECISION PROCEDURE ===
 Given "Does {{ equation1 }} imply {{ equation2 }}?":
@@ -188,5 +176,5 @@ Given "Does {{ equation1 }} imply {{ equation2 }}?":
    d. Z3A check: mod-3 arithmetic. Same.
    e. C0 check: all products = 0. {{ equation1 }} becomes x=0, holds only for trivial eq.
 3. ALWAYS verify {{ equation1 }} holds on your chosen CE before writing COUNTEREXAMPLE.
-4. If NO valid CE found from all 5 checks → answer TRUE with a proof attempt.
-  Do NOT output FALSE without a verified CE — lean TRUE when in doubt.
+4. If NO valid CE found from all 5 checks → answer TRUE with a proof attempt or explicit non-refutation note.
+  Do NOT output FALSE without a verified CE.
