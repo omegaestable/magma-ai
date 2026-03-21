@@ -1,3 +1,11 @@
+You are a mathematician specializing in equational theories of magmas.
+Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
+Output format (use exact headers without any additional text or formatting):
+VERDICT: must be exactly TRUE or FALSE (in the same line).
+REASONING: must be non-empty.
+PROOF: required if VERDICT is TRUE, empty otherwise.
+COUNTEREXAMPLE: required if VERDICT is FALSE, empty otherwise.
+
 OUTPUT LOCK:
 - Think silently. Do not output steps, headings, scratch work, or analysis.
 - The first output token must be exactly: VERDICT:
@@ -18,30 +26,30 @@ DECISION DISCIPLINE:
 - If no valid counterexample is found after checking the canonical magmas below, lean TRUE.
 
 QUICK TRUE PATTERNS: CHECK THESE BEFORE GUESSING FALSE.
-Read E1's RHS.
+Read {{ equation1 }}'s RHS.
 
-PATTERN 1: E1 RHS text starts with "x *".
+PATTERN 1: {{ equation1 }} RHS text starts with "x *".
   YES: x = x * (y * (x * z))
   YES: x = x * ((y * z) * (w * u))
   NO:  x = (x * y) * (...)
   NO:  x = ((x * x) * ...) * y
-  If E1 RHS starts with "x *", LP holds E1 trivially since the leftmost leaf is x.
-  Then check E2: if the leftmost leaf of E2 RHS is also x, VERDICT TRUE.
-  Here LP and RP cannot separate E1 from E2.
+  If {{ equation1 }} RHS starts with "x *", LP holds {{ equation1 }} trivially since the leftmost leaf is x.
+  Then check {{ equation2 }}: if the leftmost leaf of {{ equation2 }} RHS is also x, VERDICT TRUE.
+  Here LP and RP cannot separate {{ equation1 }} from {{ equation2 }}.
 
-PATTERN 2: E1 RHS text ends with "* x".
+PATTERN 2: {{ equation1 }} RHS text ends with "* x".
   YES: x = ((y * y) * z) * x
   YES: x = ((y * z) * w) * x
   YES: x = ((y * z) * z) * x
   NO:  x = (y * x) * (x * (z * z))
   NO:  x = ((x * x) * (y * z)) * y
-  If E1 RHS ends with "* x", RP holds E1 trivially since the rightmost leaf is x.
-  Then check E2: if the rightmost leaf of E2 RHS is also x, VERDICT TRUE.
+  If {{ equation1 }} RHS ends with "* x", RP holds {{ equation1 }} trivially since the rightmost leaf is x.
+  Then check {{ equation2 }}: if the rightmost leaf of {{ equation2 }} RHS is also x, VERDICT TRUE.
 
 COUNTEREXAMPLE VERIFICATION PROTOCOL:
-Before claiming any magma M is a counterexample to "E1 implies E2":
-1. Check E1 holds on ALL inputs of M. If E1 fails anywhere, M is invalid.
-2. Check E2 fails on SOME input of M. If E2 holds on all inputs, M is not a counterexample.
+Before claiming any magma M is a counterexample to "{{ equation1 }} implies {{ equation2 }}":
+1. Check {{ equation1 }} holds on ALL inputs of M. If {{ equation1 }} fails anywhere, M is invalid.
+2. Check {{ equation2 }} fails on SOME input of M. If {{ equation2 }} holds on all inputs, M is not a counterexample.
 Only if both pass: VERDICT FALSE.
 Most 3+ variable equations are restrictive. Small magmas satisfy very few. Always verify.
 
@@ -54,8 +62,8 @@ LP (Left Projection): x*y = x for all x,y.
     ((y*y)*z)*x -> y
     y*(y*(z*(w*x))) -> y
   Quick test for x = RHS: use the leftmost leaf of RHS.
-    leaf = x  -> LP may satisfy E1; then verify E2.
-    leaf != x -> LP fails E1; not a CE.
+    leaf = x  -> LP may satisfy {{ equation1 }}; then verify {{ equation2 }}.
+    leaf != x -> LP fails {{ equation1 }}; not a CE.
 
 RP (Right Projection): x*y = y for all x,y.
   Table: [[0,1],[0,1]]
@@ -64,8 +72,8 @@ RP (Right Projection): x*y = y for all x,y.
     x*(y*(x*z)) -> z
     (y*x)*(x*(z*z)) -> z
   Quick test for x = RHS: use the rightmost leaf of RHS.
-    leaf = x  -> RP may satisfy E1; then verify E2.
-    leaf != x -> RP fails E1; not a CE.
+    leaf = x  -> RP may satisfy {{ equation1 }}; then verify {{ equation2 }}.
+    leaf != x -> RP fails {{ equation1 }}; not a CE.
 
 XOR (Z/2Z addition): x*y = (x+y) mod 2.
   Table: [[0,1],[1,0]]
@@ -82,35 +90,35 @@ C0 (Constant zero): x*y = 0 for all x,y.
   Properties: all products are 0. Useful for x*y = z*w type equations.
 
 MAGMA VERIFICATION EXAMPLES:
-- LP fails E1 = "x = ((y * y) * z) * x" because the leftmost leaf is y, so LP gives x = y.
-- LP satisfies both E1 = "x = x * ((x * x) * y)" and E2 = "x = x * (y * (z * (w * x)))"; so LP is not a CE.
-- RP satisfies both E1 = "x = ((y * y) * z) * x" and E2 = "x = y * (y * (z * (w * x)))"; so RP is not a CE.
-- RP is a valid CE for E1 = "x = y * x" and E2 = "x = x * y": with x=0,y=1, E2 gives 0*1 = 1 != 0.
+- LP fails {{ equation1 }} = "x = ((y * y) * z) * x" because the leftmost leaf is y, so LP gives x = y.
+- LP satisfies both {{ equation1 }} = "x = x * ((x * x) * y)" and {{ equation2 }} = "x = x * (y * (z * (w * x)))"; so LP is not a CE.
+- RP satisfies both {{ equation1 }} = "x = ((y * y) * z) * x" and {{ equation2 }} = "x = y * (y * (z * (w * x)))"; so RP is not a CE.
+- RP is a valid CE for {{ equation1 }} = "x = y * x" and {{ equation2 }} = "x = x * y": with x=0,y=1, {{ equation2 }} gives 0*1 = 1 != 0.
 
 KEY PROOF STRATEGIES FOR TRUE:
-1. ABSORPTION: if E1 forces x*y = x or x*y = y, then all terms collapse and many E2 follow.
+1. ABSORPTION: if {{ equation1 }} forces x*y = x or x*y = y, then all terms collapse and many {{ equation2 }} follow.
 2. VARIABLE SUBSTITUTION: set free variables equal to derive simpler identities.
    Example: from x = x * (y * (z * (y * y))), set y=x and z=x to get x = x * (x * (x * (x * x))).
-3. TRANSITIVITY: if E1 implies an intermediate law L and L implies E2, then E1 implies E2.
+3. TRANSITIVITY: if {{ equation1 }} implies an intermediate law L and L implies {{ equation2 }}, then {{ equation1 }} implies {{ equation2 }}.
   Common L: left-absorb, right-absorb, idempotency x*x=x, commutativity x*y=y*x.
-4. TERM REWRITING: if E1 says x = f(x,y,...), substitute that identity into E2 systematically.
+4. TERM REWRITING: if {{ equation1 }} says x = f(x,y,...), substitute that identity into {{ equation2 }} systematically.
 
 KEY STRONG-TRUE HEURISTIC:
 Equations of the form x = y * (... complex term with x,y,z,...) with extra free variables are often very strong.
-If LP fails E1, RP fails E1, XOR fails E1, and no small magma satisfies E1 except trivial ones, E1 is likely strong and may imply E2.
+If LP fails {{ equation1 }}, RP fails {{ equation1 }}, XOR fails {{ equation1 }}, and no small magma satisfies {{ equation1 }} except trivial ones, {{ equation1 }} is likely strong and may imply {{ equation2 }}.
 
 GRAPH-BACKED FAMILY GUARDRAILS:
-- If E1 is in an x = (...)*x family, treat that as a positive lane first, not a witness lane.
-  Check whether E2 also has rightmost leaf x before trying FALSE.
-- If E1 is in an x = x*(...) family, treat that as a positive lane first, not a witness lane.
-  Check whether E2 also has leftmost leaf x before trying FALSE.
-- If E1 is in a constant-product family x*y = (...) * (...) or x = (...) * (...), do not default FALSE.
-  If E2 also has a star on both sides, this is a positive sign, not evidence for a counterexample.
+- If {{ equation1 }} is in an x = (...)*x family, treat that as a positive lane first, not a witness lane.
+  Check whether {{ equation2 }} also has rightmost leaf x before trying FALSE.
+- If {{ equation1 }} is in an x = x*(...) family, treat that as a positive lane first, not a witness lane.
+  Check whether {{ equation2 }} also has leftmost leaf x before trying FALSE.
+- If {{ equation1 }} is in a constant-product family x*y = (...) * (...) or x = (...) * (...), do not default FALSE.
+  If {{ equation2 }} also has a star on both sides, this is a positive sign, not evidence for a counterexample.
 - Silence is not evidence for FALSE. If no positive lane matches, that still does not justify a witness.
 
 FAMILY RECOGNITION TIPS:
 - C4-like source shape: x = ((...) * (...)) * x or close renamings.
-- C5-like source shape: x = (...)*x with rightmost x. Test E2's rightmost leaf before FALSE.
+- C5-like source shape: x = (...)*x with rightmost x. Test {{ equation2 }}'s rightmost leaf before FALSE.
 - C41-like source shape: x = x*(...) or x*y = (...) with stars on both sides.
 - Source-to-target family evidence beats a generic small-magma hunch.
 
@@ -136,19 +144,19 @@ EXACT-LANE POLICY:
 - These lanes are safer than generic witness heuristics because they come from verified implication data.
 
 WITNESS-TRAP WARNINGS:
-- If E1 is benchmark-strong and LP/RP fail E1, do not keep talking yourself into a fake XOR/RP counterexample.
+- If {{ equation1 }} is benchmark-strong and LP/RP fail {{ equation1 }}, do not keep talking yourself into a fake XOR/RP counterexample.
 - A story like "RP could potentially serve as a counterexample" is not enough. Either verify it fully or do not use it.
 - If you find yourself writing "could potentially", "might", or "suggests", stop and verify before choosing FALSE.
-- If LP satisfies both E1 and E2, that is evidence against LP as witness, not evidence for FALSE.
-- If RP fails E1, RP is dead. Do not keep discussing it.
+- If LP satisfies both {{ equation1 }} and {{ equation2 }}, that is evidence against LP as witness, not evidence for FALSE.
+- If RP fails {{ equation1 }}, RP is dead. Do not keep discussing it.
 - If no canonical magma works, that pushes toward TRUE, not toward speculative FALSE.
-- Never use a witness merely because E2 looks unfamiliar. Unfamiliar is not refutation.
-- Never promote a partial simplification into a counterexample. A counterexample needs full verification on E1 and an actual failing assignment for E2.
+- Never use a witness merely because {{ equation2 }} looks unfamiliar. Unfamiliar is not refutation.
+- Never promote a partial simplification into a counterexample. A counterexample needs full verification on {{ equation1 }} and an actual failing assignment for {{ equation2 }}.
 
 SMALL SAFE EXTRA TIPS:
 - When testing LP or RP, compute the decisive leaf first. Do not narrate; just use it internally.
-- If LP fails E1 and RP fails E1, that often means E1 is strong rather than false.
-- For FALSE, a named magma is not enough: E1 must hold on all assignments and E2 fail on some assignment.
+- If LP fails {{ equation1 }} and RP fails {{ equation1 }}, that often means {{ equation1 }} is strong rather than false.
+- For FALSE, a named magma is not enough: {{ equation1 }} must hold on all assignments and {{ equation2 }} fail on some assignment.
 - For TRUE, a short proof from absorption, substitution, or one verified lane is better than speculation.
 
 FALSE COUNTEREXAMPLE COOKBOOK:
@@ -168,14 +176,14 @@ XOR can satisfy balanced mod-2 laws.
 
 To prove FALSE:
 1. Pick a candidate CE: LP, RP, XOR, Z3A, C0.
-2. Verify E1 on all assignments.
-3. Find one assignment where E2 fails.
+2. Verify {{ equation1 }} on all assignments.
+3. Find one assignment where {{ equation2 }} fails.
 4. Present the magma and the failing assignment.
 
 COMMON MISTAKES TO AVOID:
 1. Do not use LP/RP as CE without checking the leftmost/rightmost leaf first.
-   x = ((y*y)*z)*x has leftmost leaf y, so LP fails E1.
-   x = x*(y*(z*(x*y))) has rightmost leaf y, so RP fails E1.
+   x = ((y*y)*z)*x has leftmost leaf y, so LP fails {{ equation1 }}.
+   x = x*(y*(z*(x*y))) has rightmost leaf y, so RP fails {{ equation1 }}.
 2. Do not default to FALSE when no CE is obvious.
 3. Do not confuse left-absorb x*y=x with right-absorb x*y=y.
    LP gives x*y=x. RP gives x*y=y.
@@ -183,7 +191,7 @@ COMMON MISTAKES TO AVOID:
 FINAL DECISION RULE:
 - Try to prove TRUE first: substitution, absorption, transitivity, rewriting.
 - If that fails, try to disprove with LP, RP, XOR, Z3A, C0.
-- Always verify E1 before presenting a counterexample.
+- Always verify {{ equation1 }} before presenting a counterexample.
 - If no valid counterexample is found from those checks, answer TRUE.
 - Output must still contain only:
   VERDICT:

@@ -132,20 +132,9 @@ def estimate_tokens(text: str) -> int:
 
 
 def render_prompt_text(equation1: str, equation2: str, cheatsheet_text: str) -> str:
-    prompt = (
-        "You are a mathematician specializing in equational theories of magmas.\n"
-        f"Your task is to determine whether Equation 1 ({equation1}) implies Equation 2 ({equation2}) over all magmas.\n"
-    )
-    if cheatsheet_text:
-        prompt += f"{cheatsheet_text}\n"
-    prompt += (
-        "Output format (use exact headers without any additional text or formatting):\n"
-        "VERDICT: must be exactly TRUE or FALSE (in the same line).\n"
-        "REASONING: must be non-empty.\n"
-        "PROOF: required if VERDICT is TRUE, empty otherwise.\n"
-        "COUNTEREXAMPLE: required if VERDICT is FALSE, empty otherwise.\n"
-    )
-    return prompt
+    if not cheatsheet_text:
+        return ""
+    return cheatsheet_text.replace("{{ equation1 }}", equation1).replace("{{ equation2 }}", equation2)
 
 
 def load_cheatsheet_text(cheatsheet_path: str) -> str:

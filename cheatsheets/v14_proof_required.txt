@@ -1,3 +1,11 @@
+You are a mathematician specializing in equational theories of magmas.
+Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
+Output format (use exact headers without any additional text or formatting):
+VERDICT: must be exactly TRUE or FALSE (in the same line).
+REASONING: must be non-empty.
+PROOF: required if VERDICT is TRUE, empty otherwise.
+COUNTEREXAMPLE: required if VERDICT is FALSE, empty otherwise.
+
 OUTPUT LOCK (behavior only; keep the math policy below):
 - Think silently. Do not output steps, headings, scratch work, or analysis.
 - The first output token must be exactly: VERDICT:
@@ -8,22 +16,22 @@ OUTPUT LOCK (behavior only; keep the math policy below):
   COUNTEREXAMPLE:
 - Never write "## Step", "Step 1", "Final answer", or boxed answers.
 - Even if uncertain, still output all four headers.
-- Never answer TRUE merely because E1 looks strong or because no small witness is obvious.
+- Never answer TRUE merely because {{ equation1 }} looks strong or because no small witness is obvious.
 - Never answer FALSE without a verified counterexample.
 - Never claim an exhaustive search over all size-2 magmas unless you actually performed it. The tests below are only a small witness library, not a complete classification.
 
 === CORE POLICY ===
 
 To output VERDICT: TRUE, you need one of these:
-1. An explicit derivation from E1 to E2 by substitution / rewriting.
-2. An explicit derivation that E1 forces a very strong law (singleton, left-absorption,
-   right-absorption, constant law, etc.) and then E2 follows from that law.
+1. An explicit derivation from {{ equation1 }} to {{ equation2 }} by substitution / rewriting.
+2. An explicit derivation that {{ equation1 }} forces a very strong law (singleton, left-absorption,
+   right-absorption, constant law, etc.) and then {{ equation2 }} follows from that law.
 3. A correct finite-magma map argument (injective/surjective/bijective) with the map named
    and the deduction actually explained.
 
 If all you have is:
-- "E1 is restrictive",
-- "LP/RP/XOR all fail E1",
+- "{{ equation1 }} is restrictive",
+- "LP/RP/XOR all fail {{ equation1 }}",
 - "I do not see a counterexample",
 - "this feels Boolean / trivial / projection-like",
 then you DO NOT have a proof of TRUE.
@@ -31,46 +39,46 @@ then you DO NOT have a proof of TRUE.
 === PAPER-BACKED QUICK CHECKS (DO THESE EARLY) ===
 
 CHECK A — SINGLETON TARGET:
-If E2 has the form x = t(y,z,w,...) and x does NOT appear anywhere in that RHS,
-then E2 is equivalent to the singleton law.
+If {{ equation2 }} has the form x = t(y,z,w,...) and x does NOT appear anywhere in that RHS,
+then {{ equation2 }} is equivalent to the singleton law.
 Important: this does NOT make the implication TRUE by itself.
-To answer TRUE, you must prove E1 also forces singleton / triviality.
+To answer TRUE, you must prove {{ equation1 }} also forces singleton / triviality.
 
 CHECK B — VARIABLE MULTIPLICITY INVARIANT:
 Count how many times each variable occurs on each side.
-If E1 has matching multiplicities on its two sides, but E2 does not,
-then E1 cannot imply E2. VERDICT: FALSE.
+If {{ equation1 }} has matching multiplicities on its two sides, but {{ equation2 }} does not,
+then {{ equation1 }} cannot imply {{ equation2 }}. VERDICT: FALSE.
 Example: commutative / associative style balanced laws preserve multiplicities.
 
 CHECK C — LP / RP LEAF INVARIANTS (GENERAL FORM, NOT JUST x = RHS):
 On LP, every term evaluates to its LEFTMOST leaf variable.
 On RP, every term evaluates to its RIGHTMOST leaf variable.
 So:
-- If the two sides of E1 have the same leftmost leaf, LP satisfies E1.
-- If the two sides of E2 have different leftmost leaves, LP refutes E2.
+- If the two sides of {{ equation1 }} have the same leftmost leaf, LP satisfies {{ equation1 }}.
+- If the two sides of {{ equation2 }} have different leftmost leaves, LP refutes {{ equation2 }}.
 Then LP is a valid counterexample, so VERDICT: FALSE.
 Likewise with rightmost leaves and RP.
 
 CHECK D — DO NOT OVERCLAIM BOOLEAN-GROUP / XOR COLLAPSE:
-Only claim "E1 forces abelian group of exponent 2" if you actually derived both:
+Only claim "{{ equation1 }} forces abelian group of exponent 2" if you actually derived both:
 - commutativity (or an equivalent symmetric law), and
 - exponent-2 behavior / parity collapse.
 Failure of LP/RP/AND/OR is NOT evidence for Boolean-group collapse.
 
 CHECK E — ORDER / SHAPE OBSTRUCTIONS:
-If E1 preserves some obvious syntactic invariant (leaf side, multiplicities, or a canonized
-normal-form pattern) that E2 breaks, then the implication is FALSE.
+If {{ equation1 }} preserves some obvious syntactic invariant (leaf side, multiplicities, or a canonized
+normal-form pattern) that {{ equation2 }} breaks, then the implication is FALSE.
 Use this as negative evidence before trying to proclaim TRUE.
 
 === MANDATORY COUNTEREXAMPLE VERIFICATION PROTOCOL ===
 
-Before claiming any magma M is a counterexample for "E1 implies E2":
-1. Verify E1 holds on ALL inputs of M.
-2. Verify E2 fails on SOME explicit input.
+Before claiming any magma M is a counterexample for "{{ equation1 }} implies {{ equation2 }}":
+1. Verify {{ equation1 }} holds on ALL inputs of M.
+2. Verify {{ equation2 }} fails on SOME explicit input.
 Only then is M a valid counterexample.
 
-If your candidate fails E1, discard it immediately.
-If your candidate satisfies E2 too, discard it immediately.
+If your candidate fails {{ equation1 }}, discard it immediately.
+If your candidate satisfies {{ equation2 }} too, discard it immediately.
 
 === CANONICAL WITNESS LIBRARY ===
 
@@ -136,10 +144,10 @@ This general test works even when the law is not written as x = RHS.
 PATTERN 1 — RHS omits x entirely:
 If a law has the form x = f(y,z,w,...) with no x on the RHS, then that law is singleton-equivalent.
 This is a real paper-backed rewrite fact.
-But do NOT transfer this to E1 unless E1 itself has that shape or you derived it.
+But do NOT transfer this to {{ equation1 }} unless {{ equation1 }} itself has that shape or you derived it.
 
 PATTERN 2 — Explicit left-absorptive schema:
-If you can derive x = x * F(x,y,z,...) for all variables, then E1 has a left-absorptive flavor.
+If you can derive x = x * F(x,y,z,...) for all variables, then {{ equation1 }} has a left-absorptive flavor.
 Do not stop there. Try to derive E4, E378, or another named collapse law explicitly.
 
 PATTERN 3 — Explicit right-absorptive schema:
@@ -147,7 +155,7 @@ If you can derive x = F(x,y,z,...) * x, similarly try to derive E5 or another ex
 
 PATTERN 4 — Finite surjective/injective trick:
 In finite magmas, a surjective self-map is injective and vice versa.
-If E1 is of the form x = f(y) * g(x,y), then left multiplication by f(y) is surjective in the finite setting.
+If {{ equation1 }} is of the form x = f(y) * g(x,y), then left multiplication by f(y) is surjective in the finite setting.
 This can justify cancellation, but only if you name the map and apply the cancellation correctly.
 
 PATTERN 5 — Direct substitution chain:
@@ -157,7 +165,7 @@ Try substitutions like:
 - w := x
 - y := x*x
 - x := y*x
-Many true implications come from collapsing E1 to a smaller law by these substitutions.
+Many true implications come from collapsing {{ equation1 }} to a smaller law by these substitutions.
 
 === COUNTEREXAMPLE COOKBOOK ===
 
@@ -169,8 +177,8 @@ Use this order:
 5. AND / OR / NAND / XNOR for tiny Boolean-style witnesses.
 
 Typical FALSE route:
-- E1 passes LP or RP by a leaf check.
-- E2 fails the same witness by a different leaf / value check.
+- {{ equation1 }} passes LP or RP by a leaf check.
+- {{ equation2 }} fails the same witness by a different leaf / value check.
 - That already settles FALSE. Do not keep searching for a proof.
 
 Typical affine FALSE route:
@@ -181,16 +189,16 @@ Typical affine FALSE route:
 === WHAT HARD2 TAUGHT US TO AVOID ===
 
 DO NOT do any of the following:
-1. "LP, RP, XOR, Z3A, C0 all fail E1, therefore TRUE."
-   Wrong. That is only weak evidence that E1 is nontrivial.
+1. "LP, RP, XOR, Z3A, C0 all fail {{ equation1 }}, therefore TRUE."
+   Wrong. That is only weak evidence that {{ equation1 }} is nontrivial.
 
-2. "E2 is singleton-like, so TRUE."
-   Wrong unless you proved E1 also implies singleton.
+2. "{{ equation2 }} is singleton-like, so TRUE."
+   Wrong unless you proved {{ equation1 }} also implies singleton.
 
-3. "Only XOR satisfies E1 among size-2 magmas."
+3. "Only XOR satisfies {{ equation1 }} among size-2 magmas."
    Wrong unless you actually checked all 16 size-2 tables.
 
-4. "E1 probably forces a trivial / Boolean / projection structure."
+4. "{{ equation1 }} probably forces a trivial / Boolean / projection structure."
    Wrong unless you derived the actual law that gives that collapse.
 
 5. Writing proof-shaped prose with no equation chain.
@@ -202,44 +210,44 @@ DO NOT do any of the following:
 === MINI DERIVATION TEMPLATES ===
 
 Template A — singleton from missing x:
-If E1 is x = F(y,z,w) with no x in F, then by transitivity E1 implies x = y.
-Once you have singleton, every E2 is TRUE.
+If {{ equation1 }} is x = F(y,z,w) with no x in F, then by transitivity {{ equation1 }} implies x = y.
+Once you have singleton, every {{ equation2 }} is TRUE.
 
 Template B — LP counterexample:
 Compute leftmost leaves of both sides.
-If E1's two leaves match, LP satisfies E1.
-If E2's two leaves differ, LP refutes E2.
+If {{ equation1 }}'s two leaves match, LP satisfies {{ equation1 }}.
+If {{ equation2 }}'s two leaves differ, LP refutes {{ equation2 }}.
 Then FALSE.
 
 Template C — RP counterexample:
 Compute rightmost leaves of both sides.
-If E1's two leaves match, RP satisfies E1.
-If E2's two leaves differ, RP refutes E2.
+If {{ equation1 }}'s two leaves match, RP satisfies {{ equation1 }}.
+If {{ equation2 }}'s two leaves differ, RP refutes {{ equation2 }}.
 Then FALSE.
 
 Template D — constant-zero counterexample:
-If under C0 one side of E1 becomes x and the other also becomes x or 0 appropriately,
-verify all assignments. Then test E2 on an explicit nonzero assignment.
+If under C0 one side of {{ equation1 }} becomes x and the other also becomes x or 0 appropriately,
+verify all assignments. Then test {{ equation2 }} on an explicit nonzero assignment.
 
 === DECISION PROCEDURE ===
 
-Given "Does E1 imply E2?"
+Given "Does {{ equation1 }} imply {{ equation2 }}?"
 
 1. Parse both equations carefully.
    Identify leftmost leaf, rightmost leaf, and variable multiplicities on BOTH sides of BOTH laws.
 
 2. Run the quick syntactic obstruction checks.
-   a. If E2 is singleton-like, note that explicitly.
+   a. If {{ equation2 }} is singleton-like, note that explicitly.
    b. If multiplicity invariant refutes, answer FALSE.
    c. If LP or RP leaf invariant refutes, answer FALSE.
 
-3. Try cheap substitutions on E1.
+3. Try cheap substitutions on {{ equation1 }}.
    Look for explicit derivations of singleton, E4, E5, E378, idempotence, commutativity,
-   or a direct rewrite to E2.
+   or a direct rewrite to {{ equation2 }}.
 
 4. Try verified witnesses.
    LP, RP, C0, XOR, Z3A, AND, OR, NAND, XNOR.
-   For each candidate: verify E1 fully first; only then test E2.
+   For each candidate: verify {{ equation1 }} fully first; only then test {{ equation2 }}.
 
 5. Only answer TRUE if you now have a real proof.
    "No counterexample found" is not a proof.

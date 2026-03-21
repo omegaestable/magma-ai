@@ -55,7 +55,6 @@ DEFAULT_MODEL_OLLAMA = "llama3.3:70b"
 DEFAULT_NUM_PREDICT = 1024
 DEFAULT_REQUEST_TIMEOUT_S = 600          # 10 min — matches competition cap
 DEFAULT_REPEATS = 1
-PROMPT_TEMPLATE_PATH = Path(__file__).parent / "prompts" / "evaluation.jinja2"
 CHEATSHEET_MAX_BYTES = 10_240            # 10 KB (official cap)
 
 # OpenRouter (same provider the SAIR benchmark uses)
@@ -235,13 +234,6 @@ def load_problems(
 # Prompt rendering — complete-prompt mode (matches competition submission)
 # ---------------------------------------------------------------------------
 
-def load_template(path: Optional[str] = None) -> jinja2.Template:
-    """Load the Jinja2 evaluation prompt template."""
-    p = Path(path) if path else PROMPT_TEMPLATE_PATH
-    with open(p, "r", encoding="utf-8") as f:
-        return jinja2.Template(f.read())
-
-
 def load_cheatsheet(path: Optional[str]) -> str:
     """Load and validate cheatsheet size (10 KB official cap)."""
     if not path:
@@ -257,17 +249,13 @@ def load_cheatsheet(path: Optional[str]) -> str:
     return raw.decode("utf-8")
 
 
-def render_prompt(template: jinja2.Template, problem: Problem, cheatsheet: str = "") -> str:
-    """Render the evaluation prompt for a single problem.
-
-    In the official competition, the *complete prompt* (template + cheatsheet)
-    is what gets sent to the model.  The template uses {{ equation1 }} and
-    {{ equation2 }} placeholders.
-    """
-    return template.render(
+def render_prompt(problem: Problem, cheatsheet: str) -> str:
+    """Render the full prompt from the cheatsheet template alone."""
+    if not cheatsheet:
+        raise ValueError("A cheatsheet prompt is required.")
+    return jinja2.Template(cheatsheet).render(
         equation1=problem.equation1,
         equation2=problem.equation2,
-        cheatsheet=cheatsheet if cheatsheet else None,
     )
 
 
@@ -408,7 +396,6 @@ _api_key = ""             # OpenRouter API key when using cloud
 
 def evaluate_problem(
     problem: Problem,
-    template: jinja2.Template,
     cheatsheet: str,
     model: str,
     repeat_id: int = 1,
@@ -417,7 +404,7 @@ def evaluate_problem(
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> Result:
     """Evaluate a single problem (one repeat)."""
-    prompt = render_prompt(template, problem, cheatsheet)
+    prompt = render_prompt(problem, cheatsheet)
     try:
         if _backend == "openrouter":
             response, elapsed, usage = query_openrouter(
@@ -505,7 +492,6 @@ def _update_stats(stats: RunStats, result: Result) -> str:
 
 def run_evaluation(
     problems: list[Problem],
-    template: jinja2.Template,
     cheatsheet: str,
     model: str,
     temperature: float = 0.0,
@@ -523,7 +509,7 @@ def run_evaluation(
         for rep in range(1, repeats + 1):
             run_idx += 1
             result = evaluate_problem(
-                problem, template, cheatsheet, model,
+                problem, cheatsheet, model,
                 repeat_id=rep,
                 temperature=temperature,
                 num_predict=num_predict,
@@ -640,7 +626,6 @@ def save_results(stats: RunStats, output_path: str, model: str,
 def run_comparison(
     cheatsheet_paths: list[str],
     problems: list[Problem],
-    template: jinja2.Template,
     model: str,
     temperature: float = 0.0,
     num_predict: int = DEFAULT_NUM_PREDICT,
@@ -661,7 +646,7 @@ def run_comparison(
         print(f"\n▶ Evaluating: {cs_path}")
         cheatsheet = load_cheatsheet(cs_path)
         stats = run_evaluation(
-            problems, template, cheatsheet, model,
+            problems, cheatsheet, model,
             temperature, num_predict=num_predict,
             request_timeout_s=request_timeout_s,
             repeats=repeats, verbose=verbose,
@@ -791,7 +776,7 @@ Examples:
     parser.add_argument("--api-key", default=None,
                         help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
     parser.add_argument("--template", default=None,
-                        help="Custom prompt template path")
+                        help="Deprecated and ignored. Prompts now come entirely from the cheatsheet file.")
     parser.add_argument("--ollama-url", default=None,
                         help="Ollama API URL (default: http://localhost:11434)")
 
@@ -876,6 +861,12 @@ Examples:
     if args.data and not Path(args.data).exists():
         print(f"ERROR: Data file not found: {args.data}")
         sys.exit(1)
+    if not args.cheatsheet:
+        print("ERROR: A cheatsheet prompt is required.")
+        print("  Pass --cheatsheet <path> so the simulator has a full prompt template.")
+        sys.exit(1)
+    if args.template:
+        print("WARNING: --template is deprecated and ignored; using only the cheatsheet prompt.")
 
     problems = load_problems(
         path=args.data,
@@ -884,7 +875,6 @@ Examples:
         shuffle=args.shuffle,
         answer_filter=args.answer_filter,
     )
-    template = load_template(args.template)
 
     true_count = sum(1 for p in problems if p.answer)
     false_count = len(problems) - true_count
@@ -911,7 +901,7 @@ Examples:
     # Comparison mode
     if args.compare:
         run_comparison(
-            args.compare, problems, template, args.model,
+            args.compare, problems, args.model,
             args.temperature, args.num_predict, args.request_timeout,
             args.repeats, not args.quiet,
         )
@@ -920,7 +910,7 @@ Examples:
     # Single evaluation
     cheatsheet = load_cheatsheet(args.cheatsheet)
     stats = run_evaluation(
-        problems, template, cheatsheet, args.model,
+        problems, cheatsheet, args.model,
         args.temperature, args.num_predict, args.request_timeout,
         args.repeats, not args.quiet,
     )

@@ -1,3 +1,11 @@
+You are a mathematician specializing in equational theories of magmas.
+Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
+Output format (use exact headers without any additional text or formatting):
+VERDICT: must be exactly TRUE or FALSE (in the same line).
+REASONING: must be non-empty.
+PROOF: required if VERDICT is TRUE, empty otherwise.
+COUNTEREXAMPLE: required if VERDICT is FALSE, empty otherwise.
+
 OUTPUT LOCK (behavior only; keep the math policy below):
 - Think silently. Do not output steps, headings, scratch work, or analysis.
 - The first output token must be exactly: VERDICT:
@@ -8,21 +16,21 @@ OUTPUT LOCK (behavior only; keep the math policy below):
   COUNTEREXAMPLE:
 - Never write "## Step", "Step 1", "Final answer", or boxed answers.
 - Even if uncertain, still output all four headers.
-- Do not answer TRUE merely because E1 looks strong or because no witness is obvious.
+- Do not answer TRUE merely because {{ equation1 }} looks strong or because no witness is obvious.
 - Do not answer FALSE without a verified counterexample.
 
 === PRIORITY: QUICK TRUE PATTERNS (check BEFORE guessing FALSE) ===
 
-Read E1's RHS (the right side of the = sign in E1).
+Read {{ equation1 }}'s RHS (the right side of the = sign in {{ equation1 }}).
 
 PATTERN 1 — RHS TEXT starts with "x *" (the letter x, then space, then *):
   YES: "x = x * (y * (x * z))"         RHS = "x * (y * (x * z))"  ← starts "x *"
   YES: "x = x * ((y * z) * (w * u))"   RHS starts "x *"
   NO:  "x = (x * y) * (...)"            RHS starts "(" not "x *"
   NO:  "x = ((x * x) * ...) * y"        RHS starts "(" not "x *"
-  If RHS starts "x *": LP holds E1 trivially (leftmost leaf = x).
-  Also check E2: is leftmost leaf of E2's RHS = x? If YES → VERDICT: TRUE.
-  (Both LP and RP cannot separate E1 from E2 in this pattern.)
+  If RHS starts "x *": LP holds {{ equation1 }} trivially (leftmost leaf = x).
+  Also check {{ equation2 }}: is leftmost leaf of {{ equation2 }}'s RHS = x? If YES → VERDICT: TRUE.
+  (Both LP and RP cannot separate {{ equation1 }} from {{ equation2 }} in this pattern.)
 
 PATTERN 2 — RHS TEXT ends with "* x" (final tokens are "* x", no closing paren):
   YES: "x = ((y * y) * z) * x"    RHS = "((y * y) * z) * x"  ← ends "* x"
@@ -30,13 +38,13 @@ PATTERN 2 — RHS TEXT ends with "* x" (final tokens are "* x", no closing paren
   YES: "x = ((y * z) * z) * x"    RHS ends "* x"
   NO:  "x = (y * x) * (x * (z * z))"  RHS ends "z))" not "* x"
   NO:  "x = ((x * x) * (y * z)) * y"  RHS ends "* y" not "* x"
-  If RHS ends "* x": RP holds E1 trivially (rightmost leaf = x).
-  Also check E2: is rightmost leaf of E2's RHS = x? If YES → VERDICT: TRUE.
+  If RHS ends "* x": RP holds {{ equation1 }} trivially (rightmost leaf = x).
+  Also check {{ equation2 }}: is rightmost leaf of {{ equation2 }}'s RHS = x? If YES → VERDICT: TRUE.
 
 === COUNTEREXAMPLE VERIFICATION PROTOCOL (MANDATORY) ===
-BEFORE claiming any magma M as counterexample for "E1 implies E2":
-1. CHECK E1 holds on ALL inputs of M. If E1 FAILS on M, M is INVALID — stop.
-2. CHECK E2 fails on SOME input of M. If E2 holds on all, M is NOT a CE.
+BEFORE claiming any magma M as counterexample for "{{ equation1 }} implies {{ equation2 }}":
+1. CHECK {{ equation1 }} holds on ALL inputs of M. If {{ equation1 }} FAILS on M, M is INVALID — stop.
+2. CHECK {{ equation2 }} fails on SOME input of M. If {{ equation2 }} holds on all, M is NOT a CE.
 Only if both steps pass: M is a valid counterexample, VERDICT FALSE.
 If no valid CE found after checking: lean toward TRUE, not FALSE.
 CRITICAL WARNING: Most equations with 3+ variables (free variable z, w, etc.)
@@ -53,8 +61,8 @@ LP (Left Projection): x*y = x for all x,y.
     ((y*y)*z)*x     → leftmost leaf = y → evaluates to y  ← NOT x!
     y*(y*(z*(w*x))) → leftmost leaf = y → evaluates to y  ← NOT x!
   QUICK TEST for "x = RHS": find leftmost leaf of RHS.
-    leaf = x  → LP might satisfy E1 (verify E2 next)
-    leaf ≠ x  → LP FAILS E1. Do NOT use LP as CE.
+    leaf = x  → LP might satisfy {{ equation1 }} (verify {{ equation2 }} next)
+    leaf ≠ x  → LP FAILS {{ equation1 }}. Do NOT use LP as CE.
 
 RP (Right Projection): x*y = y for all x,y.
   Table (size 2): [[0,1],[0,1]]
@@ -64,8 +72,8 @@ RP (Right Projection): x*y = y for all x,y.
     x*(y*(x*z))     → rightmost leaf = z → evaluates to z  ← NOT x!
     (y*x)*(x*(z*z)) → rightmost leaf = z → evaluates to z  ← NOT x!
   QUICK TEST for "x = RHS": find rightmost leaf of RHS.
-    leaf = x  → RP might satisfy E1 (verify E2 next)
-    leaf ≠ x  → RP FAILS E1. Do NOT use RP as CE.
+    leaf = x  → RP might satisfy {{ equation1 }} (verify {{ equation2 }} next)
+    leaf ≠ x  → RP FAILS {{ equation1 }}. Do NOT use RP as CE.
 
 XOR (Z/2Z addition): x*y = (x+y) mod 2.
   Table (size 2): [[0,1],[1,0]]
@@ -83,57 +91,57 @@ C0 (Constant zero): x*y = 0 for all x,y.
 
 === HOW TO VERIFY AN EQUATION ON A MAGMA ===
 
-Example A — LP FAILS E1 (do NOT use as CE):
-  E1: "x = ((y * y) * z) * x"
+Example A — LP FAILS {{ equation1 }} (do NOT use as CE):
+  {{ equation1 }}: "x = ((y * y) * z) * x"
   Leftmost leaf of RHS = y (not x). LP gives: x = y. FAILS for x≠y.
   STOP — LP is invalid CE. Do not proceed.
 
-Example B — LP holds E1, but also holds E2 (still NOT a CE):
-  E1: "x = x * ((x * x) * y)"  Leftmost leaf = x → LP gives x = x ✓
-  E2: "x = x * (y * (z * (w * x)))"  Leftmost leaf = x → LP gives x = x ✓
-  LP satisfies E2 too — LP is NOT a counterexample. Look for another magma.
+Example B — LP holds {{ equation1 }}, but also holds {{ equation2 }} (still NOT a CE):
+  {{ equation1 }}: "x = x * ((x * x) * y)"  Leftmost leaf = x → LP gives x = x ✓
+  {{ equation2 }}: "x = x * (y * (z * (w * x)))"  Leftmost leaf = x → LP gives x = x ✓
+  LP satisfies {{ equation2 }} too — LP is NOT a counterexample. Look for another magma.
 
-Example C — RP holds E1, but also holds E2 (still NOT a CE):
-  E1: "x = ((y * y) * z) * x"  Rightmost leaf = x → RP gives x = x ✓
-  E2: "x = y * (y * (z * (w * x)))"  Rightmost leaf = x → RP gives x = x ✓
+Example C — RP holds {{ equation1 }}, but also holds {{ equation2 }} (still NOT a CE):
+  {{ equation1 }}: "x = ((y * y) * z) * x"  Rightmost leaf = x → RP gives x = x ✓
+  {{ equation2 }}: "x = y * (y * (z * (w * x)))"  Rightmost leaf = x → RP gives x = x ✓
   RP satisfies both. RP is NOT a counterexample.
   → Neither LP nor RP can be CE here. Check XOR, Z3A, C0. If all fail → TRUE.
 
 Example D — RP is a valid CE:
-  E1: "x = y * x"  Rightmost leaf of RHS = x → RP gives x = x ✓ E1 holds.
-  E2: "x = x * y"  Leftmost leaf of RHS = x; but on RP: x*y = y, not x.
-  Take x=0, y=1: RP gives 0*1 = 1 ≠ 0. E2 FAILS. ✓ RP is valid CE → FALSE.
+  {{ equation1 }}: "x = y * x"  Rightmost leaf of RHS = x → RP gives x = x ✓ {{ equation1 }} holds.
+  {{ equation2 }}: "x = x * y"  Leftmost leaf of RHS = x; but on RP: x*y = y, not x.
+  Take x=0, y=1: RP gives 0*1 = 1 ≠ 0. {{ equation2 }} FAILS. ✓ RP is valid CE → FALSE.
 
 === KEY PROOF STRATEGIES FOR TRUE ===
 
-Strategy 1 — ABSORPTION: If E1 forces x*y = x (left-absorb) or x*y = y (right-
-absorb), then ALL terms collapse to a single variable. E1 then implies almost
-any E2. Check: substitute specific values into E1 to derive x*y=x or x*y=y.
+Strategy 1 — ABSORPTION: If {{ equation1 }} forces x*y = x (left-absorb) or x*y = y (right-
+absorb), then ALL terms collapse to a single variable. {{ equation1 }} then implies almost
+any {{ equation2 }}. Check: substitute specific values into {{ equation1 }} to derive x*y=x or x*y=y.
 
 Strategy 2 — VARIABLE SUBSTITUTION: Set free variables equal.
   E.g., from "x = x * (y * (z * (y * y)))", set y=x and z=x to get
   x = x * (x * (x * (x * x))). Then show this forces x*y=x for all y.
 
-Strategy 3 — TRANSITIVITY: If E1 implies some intermediate law L, and L implies
-E2, then E1 implies E2. Common intermediate: left-absorb, right-absorb,
+Strategy 3 — TRANSITIVITY: If {{ equation1 }} implies some intermediate law L, and L implies
+{{ equation2 }}, then {{ equation1 }} implies {{ equation2 }}. Common intermediate: left-absorb, right-absorb,
 idempotency (x*x=x), commutativity (x*y=y*x).
 
-Strategy 4 — TERM REWRITING: If E1 says x = f(x,y,...), substitute this
-identity into E2 systematically. If every occurrence of "x" in E2 can be
-replaced using E1 to make E2 hold, then TRUE.
+Strategy 4 — TERM REWRITING: If {{ equation1 }} says x = f(x,y,...), substitute this
+identity into {{ equation2 }} systematically. If every occurrence of "x" in {{ equation2 }} can be
+replaced using {{ equation1 }} to make {{ equation2 }} hold, then TRUE.
 
 === KEY PATTERNS (from verified database) ===
 
 PATTERN A — Strong equations imply everything:
   Equations with structure like "x = y * (... complex term with x,y,z ...)"
   where the free variable z makes the equation very restrictive often imply
-  simpler equations. If you verify such E1 on LP and LP FAILS E1, and on RP
-  and RP FAILS E1, and on XOR and XOR FAILS E1: E1 is likely very strong.
-  If no small magma satisfies E1 except trivial ones, E1 probably implies E2.
+  simpler equations. If you verify such {{ equation1 }} on LP and LP FAILS {{ equation1 }}, and on RP
+  and RP FAILS {{ equation1 }}, and on XOR and XOR FAILS {{ equation1 }}: {{ equation1 }} is likely very strong.
+  If no small magma satisfies {{ equation1 }} except trivial ones, {{ equation1 }} probably implies {{ equation2 }}.
 
 === FALSE COUNTEREXAMPLE COOKBOOK ===
 
-When E1 is a "weak" equation (LP or RP satisfies it), use that magma as CE:
+When {{ equation1 }} is a "weak" equation (LP or RP satisfies it), use that magma as CE:
 
 LP satisfies these common forms:
   x = x * (... anything ...) — because x*(...)=x on LP
@@ -148,18 +156,18 @@ XOR satisfies:
   Equations balanced under mod-2 arithmetic
   x = y * ((y * (y * x)) * y) — check: y*(y*x)=y+y+x=x, y*x=y+x, y*(y+x)=x ✓
 
-TO DISPROVE E1 → E2 (i.e., show FALSE):
+TO DISPROVE {{ equation1 }} → {{ equation2 }} (i.e., show FALSE):
   1. Pick a candidate CE magma (LP, RP, XOR, Z3A, C0)
-  2. Substitute the magma's operation into E1. Check ALL variable combinations.
-  3. If E1 holds on all inputs → magma satisfies E1 ✓
-  4. Find ONE input combination where E2 fails → magma refutes E2 ✓
+  2. Substitute the magma's operation into {{ equation1 }}. Check ALL variable combinations.
+  3. If {{ equation1 }} holds on all inputs → magma satisfies {{ equation1 }} ✓
+  4. Find ONE input combination where {{ equation2 }} fails → magma refutes {{ equation2 }} ✓
   5. Present the magma and the failing assignment.
 
 === COMMON MISTAKES TO AVOID ===
 
 MISTAKE 1: Using LP/RP as CE without checking leftmost/rightmost leaf first.
-  "x = ((y*y)*z)*x": leftmost leaf of RHS = y, not x. LP gives x=y → FAILS E1!
-  "x = x*(y*(z*(x*y)))": rightmost leaf = y, not x. RP gives x=y → FAILS E1!
+  "x = ((y*y)*z)*x": leftmost leaf of RHS = y, not x. LP gives x=y → FAILS {{ equation1 }}!
+  "x = x*(y*(z*(x*y)))": rightmost leaf = y, not x. RP gives x=y → FAILS {{ equation1 }}!
   If leaf ≠ x, that magma CANNOT be CE. Do this check FIRST, before anything.
 
 MISTAKE 2: Defaulting to FALSE when no CE is obvious.
@@ -171,21 +179,21 @@ MISTAKE 3: Confusing left-absorb (x*y=x) with right-absorb (x*y=y).
   Check your magma table: LP = [[0,0],[1,1]], RP = [[0,1],[0,1]].
 
 === DECISION PROCEDURE ===
-Given "Does E1 imply E2?":
+Given "Does {{ equation1 }} imply {{ equation2 }}?":
 1. Try to prove TRUE first:
-   a. Substitute variables in E1 to derive simpler identities.
-   b. Check if E1 forces absorption (x*y=x or x*y=y). If so → TRUE.
-   c. Check if E2 follows from E1 by term rewriting.
+   a. Substitute variables in {{ equation1 }} to derive simpler identities.
+   b. Check if {{ equation1 }} forces absorption (x*y=x or x*y=y). If so → TRUE.
+   c. Check if {{ equation2 }} follows from {{ equation1 }} by term rewriting.
 2. If proof attempt fails, try to disprove (find CE):
-   a. LP check: find leftmost leaf of E1's RHS.
+   a. LP check: find leftmost leaf of {{ equation1 }}'s RHS.
       leaf ≠ x → skip LP entirely.
-      leaf = x → verify E1 fully, then check E2. If E2 also holds → LP not CE.
-   b. RP check: find rightmost leaf of E1's RHS.
+      leaf = x → verify {{ equation1 }} fully, then check {{ equation2 }}. If {{ equation2 }} also holds → LP not CE.
+   b. RP check: find rightmost leaf of {{ equation1 }}'s RHS.
       leaf ≠ x → skip RP entirely.
-      leaf = x → verify E1 fully, then check E2. If E2 also holds → RP not CE.
-   c. XOR check: compute E1 using mod-2 arithmetic. If E1 holds, check E2.
+      leaf = x → verify {{ equation1 }} fully, then check {{ equation2 }}. If {{ equation2 }} also holds → RP not CE.
+   c. XOR check: compute {{ equation1 }} using mod-2 arithmetic. If {{ equation1 }} holds, check {{ equation2 }}.
    d. Z3A check: mod-3 arithmetic. Same.
-   e. C0 check: all products = 0. E1 becomes x=0, holds only for trivial eq.
-3. ALWAYS verify E1 holds on your chosen CE before writing COUNTEREXAMPLE.
+   e. C0 check: all products = 0. {{ equation1 }} becomes x=0, holds only for trivial eq.
+3. ALWAYS verify {{ equation1 }} holds on your chosen CE before writing COUNTEREXAMPLE.
 4. If NO valid CE found from all 5 checks → answer TRUE with a proof attempt.
   Do NOT output FALSE without a verified CE — lean TRUE when in doubt.
