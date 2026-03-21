@@ -7,10 +7,12 @@ param(
     [switch]$Background
 )
 
-$python = "C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe"
-$scriptPath = "vnext_search.py"
+$repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$python = Join-Path $repoRoot ".venv/Scripts/python.exe"
+$scriptPath = Join-Path $repoRoot "vnext_search.py"
+$configPath = if ([System.IO.Path]::IsPathRooted($Config)) { $Config } else { Join-Path $repoRoot $Config }
 
-$args = @($scriptPath, $Action, "--config", $Config)
+$args = @($scriptPath, $Action, "--config", $configPath)
 if ($Cycles -gt 0) {
     $args += @("--max-cycles", $Cycles)
 }
@@ -20,11 +22,12 @@ if ($BudgetUsd -gt 0) {
 
 if ($Background -and $Action -eq "loop") {
     $job = Start-Job -Name "magma-vnext-search" -ScriptBlock {
-        param($pythonExe, $cliArgs)
+        param($pythonExe, $cliArgs, $workingDir)
+        Set-Location $workingDir
         & $pythonExe @cliArgs
-    } -ArgumentList $python, $args
+    } -ArgumentList $python, $args, $repoRoot
     "Started background job $($job.Id) with action '$Action'."
-    "Check progress with: $python $scriptPath status --config $Config"
+    "Check progress with: $python $scriptPath status --config $configPath"
     return
 }
 
