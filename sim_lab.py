@@ -263,16 +263,33 @@ def render_prompt(problem: Problem, cheatsheet: str) -> str:
 # Verdict parsing
 # ---------------------------------------------------------------------------
 
-_VERDICT_RE = re.compile(r"VERDICT\s*:\s*(TRUE|FALSE)", re.IGNORECASE)
+_VERDICT_RE = re.compile(r"VERDICT\s*[:：]\s*(TRUE|FALSE)(?!\s*OR\b)", re.IGNORECASE)
 _PROOF_RE = re.compile(r"PROOF\s*:(.*?)(?=COUNTEREXAMPLE\s*:|$)", re.IGNORECASE | re.DOTALL)
 _CE_RE = re.compile(r"COUNTEREXAMPLE\s*:(.*?)$", re.IGNORECASE | re.DOTALL)
+_BOXED_VERDICT_RE = re.compile(r"\\+boxed\s*\{\s*(TRUE|FALSE)\s*\}", re.IGNORECASE)
+_LINE_VERDICT_RE = re.compile(r"^\s*\*{0,2}(TRUE|FALSE)\*{0,2}\s*$", re.IGNORECASE | re.MULTILINE)
+
+
+def _clean_response_for_verdict(response: str) -> str:
+    return response.replace("***", "").replace("**", "").replace("__", "").replace("`", "")
 
 
 def parse_verdict(response: str) -> Optional[bool]:
-    """Extract TRUE/FALSE verdict from model response."""
-    m = _VERDICT_RE.search(response)
-    if m:
-        return m.group(1).upper() == "TRUE"
+    """Extract TRUE/FALSE verdict using the playground client's fallback order."""
+    cleaned = _clean_response_for_verdict(response)
+
+    matches = list(_VERDICT_RE.finditer(cleaned))
+    if matches:
+        return matches[-1].group(1).upper() == "TRUE"
+
+    matches = list(_BOXED_VERDICT_RE.finditer(cleaned))
+    if matches:
+        return matches[-1].group(1).upper() == "TRUE"
+
+    matches = list(_LINE_VERDICT_RE.finditer(cleaned))
+    if matches:
+        return matches[-1].group(1).upper() == "TRUE"
+
     return None
 
 
@@ -348,8 +365,8 @@ def query_openrouter(
     prompt: str,
     model: str,
     api_key: str,
-    temperature: float = 0.0,
-    max_tokens: int = DEFAULT_NUM_PREDICT,
+    temperature: Optional[float] = 0.0,
+    max_tokens: Optional[int] = DEFAULT_NUM_PREDICT,
     timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> tuple[str, float, Optional[dict[str, int]]]:
     """Send a prompt to OpenRouter and return (response_text, elapsed_seconds, usage)."""
@@ -361,9 +378,11 @@ def query_openrouter(
     payload = {
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": temperature,
-        "max_tokens": max_tokens,
     }
+    if temperature is not None:
+        payload["temperature"] = temperature
+    if max_tokens is not None:
+        payload["max_tokens"] = max_tokens
     r = requests.post(
         OPENROUTER_URL,
         headers=headers,
@@ -399,8 +418,8 @@ def evaluate_problem(
     cheatsheet: str,
     model: str,
     repeat_id: int = 1,
-    temperature: float = 0.0,
-    num_predict: int = DEFAULT_NUM_PREDICT,
+    temperature: Optional[float] = 0.0,
+    num_predict: Optional[int] = DEFAULT_NUM_PREDICT,
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> Result:
     """Evaluate a single problem (one repeat)."""
@@ -494,8 +513,8 @@ def run_evaluation(
     problems: list[Problem],
     cheatsheet: str,
     model: str,
-    temperature: float = 0.0,
-    num_predict: int = DEFAULT_NUM_PREDICT,
+    temperature: Optional[float] = 0.0,
+    num_predict: Optional[int] = DEFAULT_NUM_PREDICT,
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
     repeats: int = DEFAULT_REPEATS,
     verbose: bool = True,
@@ -627,8 +646,8 @@ def run_comparison(
     cheatsheet_paths: list[str],
     problems: list[Problem],
     model: str,
-    temperature: float = 0.0,
-    num_predict: int = DEFAULT_NUM_PREDICT,
+    temperature: Optional[float] = 0.0,
+    num_predict: Optional[int] = DEFAULT_NUM_PREDICT,
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
     repeats: int = DEFAULT_REPEATS,
     verbose: bool = True,
@@ -751,6 +770,8 @@ Examples:
                         help="Sampling temperature (default: 0.0)")
     parser.add_argument("--num-predict", type=int, default=DEFAULT_NUM_PREDICT,
                         help=f"Max generated tokens per response (default: {DEFAULT_NUM_PREDICT})")
+    parser.add_argument("--playground-parity", action="store_true",
+                        help="Match playground defaults more closely by not forcing temperature or max_tokens and by using the playground verdict parser")
     parser.add_argument("--request-timeout", type=int, default=DEFAULT_REQUEST_TIMEOUT_S,
                         help=f"HTTP timeout (seconds) per request (default: {DEFAULT_REQUEST_TIMEOUT_S})")
     parser.add_argument("--output", default=None,
@@ -848,8 +869,15 @@ Examples:
     # Fast mode
     if args.fast:
         args.n = args.n or 20
-        args.num_predict = min(args.num_predict, 512)
+        if args.playground_parity:
+            args.num_predict = None
+        else:
+            args.num_predict = min(args.num_predict, 512)
         args.request_timeout = min(args.request_timeout, 120)
+
+    if args.playground_parity:
+        args.temperature = None
+        args.num_predict = None
 
     # Default subset if nothing specified
     if not args.subset and not args.data:
@@ -887,9 +915,11 @@ Examples:
     print(f"  Problems:    {len(problems)} (TRUE: {true_count}, FALSE: {false_count})")
     print(f"  Repeats:     {args.repeats}")
     print(f"  Total runs:  {total_runs}")
-    print(f"  Temperature: {args.temperature}")
-    print(f"  Num predict: {args.num_predict}")
+    print(f"  Temperature: {'default (provider)' if args.temperature is None else args.temperature}")
+    print(f"  Num predict: {'default (provider)' if args.num_predict is None else args.num_predict}")
     print(f"  Timeout:     {args.request_timeout}s")
+    if args.playground_parity:
+        print("  Parity mode: playground")
     if args.cheatsheet:
         print(f"  Cheatsheet:  {args.cheatsheet}")
     print(f"{'═' * 60}\n")
