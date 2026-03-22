@@ -7,7 +7,20 @@ import subprocess
 from pathlib import Path
 
 
-def build_prompt(champion_path: str, failure_summary_path: str, mutation_focus: str) -> str:
+def build_prompt(champion_path: str, failure_summary_path: str, mutation_focus: str,
+                 distillation_brief_path: str = "") -> str:
+    distillation_section = ""
+    if distillation_brief_path:
+        try:
+            brief = Path(distillation_brief_path).read_text(encoding="utf-8").strip()
+            distillation_section = f"""
+
+Distillation signal (ranked failure patterns from the last evaluation run):
+{brief}
+"""
+        except OSError:
+            pass  # Brief is optional; skip gracefully if file is missing
+
     return f"""Return ONLY the full revised cheatsheet as plain text.
 Do not use markdown fences.
 Do not add commentary before or after the cheatsheet.
@@ -17,8 +30,7 @@ Use the current workspace files as inputs.
 Task:
 - Read {champion_path}
 - Read {failure_summary_path}
-- Produce one candidate revision focused on: {mutation_focus}
-
+- Produce one candidate revision focused on: {mutation_focus}{distillation_section}
 Hard constraints:
 - Keep {{{{ equation1 }}}} and {{{{ equation2 }}}} templating valid.
 - Preserve strict verdict formatting and the four required headers.
@@ -61,9 +73,16 @@ def main() -> None:
     parser.add_argument("--mutation-focus", required=True)
     parser.add_argument("--copilot-command", default="copilot")
     parser.add_argument("--copilot-model", default="")
+    parser.add_argument("--distillation-brief-path", default="",
+                        help="Optional path to a distillation brief .md file to inject into the prompt")
     args = parser.parse_args()
 
-    prompt = build_prompt(args.champion_path, args.failure_summary_path, args.mutation_focus)
+    prompt = build_prompt(
+        args.champion_path,
+        args.failure_summary_path,
+        args.mutation_focus,
+        distillation_brief_path=args.distillation_brief_path,
+    )
 
     command = [
         resolve_command(args.copilot_command),

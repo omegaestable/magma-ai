@@ -19,6 +19,7 @@
     ]
   },
   "promotion": {
+    "promotion_objective": "class_balance_first",
     "required_seed_wins": 2,
     "mean_metric": "accuracy",
     "parse_rate_tolerance": 0.0,
@@ -28,6 +29,7 @@
   "search": {
     "max_cycles_per_run": 3,
     "max_budget_usd": 1.0,
+    "stability_reruns": 1,
     "mutation_focuses": [
       "quick TRUE lane",
       "FALSE counterexample cookbook",

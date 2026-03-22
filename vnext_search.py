@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean
 
+import distill
 import scoreboard
 import sim_lab
 
@@ -286,8 +287,14 @@ def load_manifest(path: Path) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _class_balance(agg: dict) -> float:
+    """Return min(true_accuracy, false_accuracy) — the class-balance objective."""
+    return min(agg.get("true_accuracy", 0.0), agg.get("false_accuracy", 0.0))
+
+
 def compare_candidate(config: dict, champion_manifest: dict, candidate_manifest: dict) -> tuple[bool, list[str], int]:
     rules = config["promotion"]
+    promotion_objective = rules.get("promotion_objective", "mean_metric")
     champion_by_benchmark = {run["benchmark"]: run for run in champion_manifest["gate_runs"]}
     candidate_by_benchmark = {run["benchmark"]: run for run in candidate_manifest["gate_runs"]}
 
@@ -302,11 +309,19 @@ def compare_candidate(config: dict, champion_manifest: dict, candidate_manifest:
             f"seed wins {wins} < required {rules['required_seed_wins']}"
         )
 
-    mean_metric = rules["mean_metric"]
-    if candidate_manifest["aggregate"][mean_metric] <= champion_manifest["aggregate"][mean_metric]:
-        reasons.append(
-            f"mean {mean_metric} did not improve"
-        )
+    if promotion_objective == "class_balance_first":
+        cand_cb = _class_balance(candidate_manifest["aggregate"])
+        champ_cb = _class_balance(champion_manifest["aggregate"])
+        if cand_cb <= champ_cb:
+            reasons.append(
+                f"class_balance min(true,false) did not improve ({cand_cb:.3f} <= {champ_cb:.3f})"
+            )
+    else:
+        mean_metric = rules["mean_metric"]
+        if candidate_manifest["aggregate"][mean_metric] <= champion_manifest["aggregate"][mean_metric]:
+            reasons.append(
+                f"mean {mean_metric} did not improve"
+            )
 
     if (
         candidate_manifest["aggregate"]["parse_success_rate"]
@@ -407,7 +422,14 @@ def read_ledger(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def run_adapter(config: dict, champion_path: Path, candidate_path: Path, failure_summary_path: Path, mutation_focus: str) -> None:
+def run_adapter(
+    config: dict,
+    champion_path: Path,
+    candidate_path: Path,
+    failure_summary_path: Path,
+    mutation_focus: str,
+    distillation_brief_path: Path | None = None,
+) -> None:
     adapter_path = resolve_path(config["copilot"]["adapter_script"])
     if adapter_path.suffix.lower() == ".py":
         command = [
@@ -424,6 +446,8 @@ def run_adapter(config: dict, champion_path: Path, candidate_path: Path, failure
             "--copilot-command",
             config["copilot"]["command"],
         ]
+        if distillation_brief_path and distillation_brief_path.exists():
+            command.extend(["--distillation-brief-path", str(distillation_brief_path)])
     else:
         command = [
             "powershell",
@@ -472,7 +496,22 @@ def cmd_cycle(config: dict) -> dict:
     failure_summary_path = context_dir / f"failure_summary_cycle{cycle_number:04d}.md"
     failure_summary_path.write_text(render_failure_summary(champion_manifest), encoding="utf-8")
 
-    run_adapter(config, resolve_path(champion_manifest["champion_path"]), candidate_path, failure_summary_path, mutation_focus)
+    # Supply the most recent distillation brief to the candidate generation prompt
+    distill_dir = resolve_path(config["artifacts"]["state_dir"]) / "distilled_signals"
+    latest_brief: Path | None = None
+    if distill_dir.exists():
+        briefs = sorted(distill_dir.glob("*_distillation_brief.md"))
+        if briefs:
+            latest_brief = briefs[-1]
+
+    run_adapter(
+        config,
+        resolve_path(champion_manifest["champion_path"]),
+        candidate_path,
+        failure_summary_path,
+        mutation_focus,
+        distillation_brief_path=latest_brief,
+    )
 
     candidate_bytes = candidate_path.stat().st_size
     if candidate_bytes > CHEATSHEET_MAX_BYTES:
@@ -503,6 +542,14 @@ def cmd_cycle(config: dict) -> dict:
         gate_runs.append(summarize_result(result_path))
     candidate_manifest = build_manifest(candidate_path, config["model"], gate_runs)
 
+    # Distillation: annotate failures and write pattern artifacts
+    distill_dir = resolve_path(config["artifacts"]["state_dir"]) / "distilled_signals"
+    distill_artifacts = distill.run_distillation(
+        manifest=candidate_manifest,
+        cycle_number=cycle_number,
+        out_dir=distill_dir,
+    )
+
     promoted, reasons, wins = compare_candidate(config, champion_manifest, candidate_manifest)
     promoted_path = resolve_path(config["promoted_path"])
     if promoted:
@@ -522,6 +569,7 @@ def cmd_cycle(config: dict) -> dict:
         "reasons": reasons,
         "candidate_aggregate": candidate_manifest["aggregate"],
         "candidate_runs": candidate_manifest["gate_runs"],
+        "distillation": distill_artifacts,
     }
     append_jsonl(ledger_path, entry)
     write_status(config, champion_manifest, entry)
