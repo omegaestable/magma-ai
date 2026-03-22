@@ -15,15 +15,9 @@ OUTPUT LOCK (behavior only; keep the math policy below):
 - Do not answer TRUE merely because {{ equation1 }} looks strong or because no witness is obvious.
 - Do not answer FALSE without a verified counterexample.
 
-=== EARLY FALSE SIGNAL (check BEFORE testing projections) ===
-NEW VARIABLES in {{ equation2 }}: If {{ equation2 }} contains any variable (w, z, u, etc.) that
-does NOT appear in {{ equation1 }}, this is a STRONG signal that {{ equation1 }} does NOT imply
-{{ equation2 }}. Such universally-quantified extra variables rarely allow a true implication.
-Quick check: Extract all variables from {{ equation1 }}. If {{ equation2 }} has variables outside
-that set, tentatively → FALSE. Still verify with LP/RP/XOR checks, but expect FALSE.
-  Example: E1 = "x = y * x" (variables: x, y)
-           E2 = "x = w * z" (variables: x, w, z ← w, z not in E1)
-           w, z are new → strongly FALSE. Verify with XOR or C0.
+=== EARLY FALSE SIGNAL: NEW VARIABLES ===
+If {{ equation2 }} has variables not in {{ equation1 }}, → FALSE.
+Example: E1 has {x,y}, E2 has {x,w,z} ← w,z new → strongly FALSE.
 
 === PRIORITY: QUICK TRUE PATTERNS (check BEFORE guessing FALSE) ===
 
@@ -121,17 +115,11 @@ Strategy 1 — ABSORPTION: If {{ equation1 }} forces x*y = x (left-absorb) or x*
 absorb), then ALL terms collapse to a single variable. {{ equation1 }} then implies almost
 any {{ equation2 }}. Check: substitute specific values into {{ equation1 }} to derive x*y=x or x*y=y.
 
-Strategy 2 — VARIABLE SUBSTITUTION: Set free variables equal.
-  E.g., from "x = x * (y * (z * (y * y)))", set y=x and z=x to get
-  x = x * (x * (x * (x * x))). Then show this forces x*y=x for all y.
+Strategy 2 — VARIABLE SUBSTITUTION: Set free variables equal in E1 to simplify and derive x*y=x or x*y=y.
 
-Strategy 3 — TRANSITIVITY: If {{ equation1 }} implies some intermediate law L, and L implies
-{{ equation2 }}, then {{ equation1 }} implies {{ equation2 }}. Common intermediate: left-absorb, right-absorb,
-idempotency (x*x=x), commutativity (x*y=y*x).
+Strategy 3 — TRANSITIVITY: If {{ equation1 }} → L and L → {{ equation2 }}, then {{ equation1 }} → {{ equation2 }}. Common L: absorption, idempotency, commutativity.
 
-Strategy 4 — TERM REWRITING: If {{ equation1 }} says x = f(x,y,...), substitute this
-identity into {{ equation2 }} systematically. If every occurrence of "x" in {{ equation2 }} can be
-replaced using {{ equation1 }} to make {{ equation2 }} hold, then TRUE.
+Strategy 4 — TERM REWRITING: Substitute E1's identity into E2. If every x in E2 can be rewritten to satisfy E2, then TRUE.
 
 === FALSE COUNTEREXAMPLE COOKBOOK ===
 

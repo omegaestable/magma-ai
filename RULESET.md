@@ -35,20 +35,6 @@ The cheatsheet is the **only** submission artifact. No code, no model weights.
 
 ## 3. Evaluation Protocol
 
-### 3.1 Prompt Template (Official Jinja2)
-
-```
-You are a mathematician specializing in equational theories of magmas.
-Your task is to determine whether Equation 1 ({{ equation1 }}) implies Equation 2 ({{ equation2 }}) over all magmas.
-{% if cheatsheet is defined and cheatsheet %}
-{{ cheatsheet }}
-{% endif %}
-Output format (use exact headers without any additional text or formatting):
-VERDICT: must be exactly TRUE or FALSE (in the same line).
-REASONING: must be non-empty.
-PROOF: required if VERDICT is TRUE, empty otherwise.
-COUNTEREXAMPLE: required if VERDICT is FALSE, empty otherwise.
-```
 
 ### 3.2 Parsing
 

@@ -1,10 +1,12 @@
-I’m checking the existing cheatsheets and current champion so I can return the right revised text, not guess blindly.
+I’m checking the existing cheatsheets and nearby docs first so I can revise the right one and preserve the repo’s format.
 
-I found the current progression. Next I’m checking which cheatsheet is treated as the active baseline so the returned revision matches repo reality.
+I found several generations of the magma prompt. Now I’m tracing which one is the current baseline so I can return the right revised full text instead of an older variant.
 
-The active champion is `v16_early_false_signal`, and its main weakness is obvious: it overpredicts `FALSE` and only gets `20%` true recall. I’m pulling concrete failure patterns so the revision targets that instead of bloating the prompt.
+The current config points at `v16_early_false_signal` as champion and `v17_corrected` as the promoted target, so I’m checking whether a generated or drafted `v17` already exists.
 
-I’ve got the failure mode: `v16` taught the model to “require verified counterexamples,” which helped false cases, but it also made it hallucinate LP-based refutations or freeze on true cases. I’m checking the generated candidate variants for a cleaner balance point to fold into a revised sheet.
+There isn’t an existing `v17` file, so I’m pulling the search artifacts and failure patterns to reconstruct the intended corrected revision cleanly.
+
+I found draft candidates in `cheatsheets/generated/`; next I’m comparing the best recent draft against `v16` so I can return a tighter corrected version under the 10 KB cap.
 
 You are a mathematician specializing in equational theories of magmas.
 Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
@@ -35,7 +37,7 @@ CORE POLICY:
   2. a real derivation that {{ equation1 }} forces a strong collapse law and then {{ equation2 }} follows,
   3. an exact verified lane listed below.
 - FALSE needs one of:
-  1. a verified finite-witness magma satisfying {{ equation1 }} on all assignments and failing {{ equation2 }} on some explicit assignment,
+  1. a verified counterexample magma satisfying {{ equation1 }} on all assignments and failing {{ equation2 }} on some explicit assignment,
   2. a valid LP leaf obstruction,
   3. a valid RP leaf obstruction,
   4. a clearly valid multiplicity obstruction.
@@ -59,30 +61,30 @@ C. NEW-VARIABLE WARNING:
 If {{ equation2 }} uses variables absent from {{ equation1 }}, TRUE becomes less likely unless {{ equation1 }} is proved singleton-like, absorptive, or otherwise collapsing.
 Treat this as a warning against unsupported TRUE, not as a stand-alone proof of FALSE.
 
-D. QUICK POSITIVE LEAF LANES:
+D. LP LEAF OBSTRUCTION (general form A = B):
+On LP, every term evaluates to its leftmost leaf.
+So:
+- if the two sides of {{ equation1 }} have the same leftmost leaf, LP satisfies {{ equation1 }};
+- if the two sides of {{ equation2 }} have different leftmost leaves, LP refutes {{ equation2 }};
+then LP is a valid counterexample, so FALSE.
+
+E. RP LEAF OBSTRUCTION (general form A = B):
+On RP, every term evaluates to its rightmost leaf.
+So:
+- if the two sides of {{ equation1 }} have the same rightmost leaf, RP satisfies {{ equation1 }};
+- if the two sides of {{ equation2 }} have different rightmost leaves, RP refutes {{ equation2 }};
+then RP is a valid counterexample, so FALSE.
+
+F. VARIABLE-MULTIPLICITY OBSTRUCTION:
+Count how many times each variable occurs on each side.
+If {{ equation1 }} clearly preserves multiplicities across its two sides, but {{ equation2 }} clearly does not, answer FALSE.
+Use this only when the preservation claim is obvious.
+
+G. QUICK POSITIVE LEAF LANES:
 - If {{ equation1 }} has form x = RHS and RHS text starts with "x *", then LP satisfies {{ equation1 }} trivially.
 - If {{ equation1 }} has form x = RHS and RHS text ends with "* x", then RP satisfies {{ equation1 }} trivially.
 - If {{ equation2 }} preserves that same decisive leaf, treat the pair as a positive lane and try direct rewriting, substitution, or an exact-lane match before searching for FALSE.
 - Do NOT answer TRUE from this heuristic alone.
-
-FAST FALSE CHECKS:
-
-LP LEAF OBSTRUCTION (general form A = B):
-- On LP, every term evaluates to its leftmost leaf.
-- If the two sides of {{ equation1 }} have the same leftmost leaf, LP satisfies {{ equation1 }}.
-- If the two sides of {{ equation2 }} have different leftmost leaves, LP refutes {{ equation2 }}.
-- Then LP is a valid counterexample, so FALSE.
-
-RP LEAF OBSTRUCTION (general form A = B):
-- On RP, every term evaluates to its rightmost leaf.
-- If the two sides of {{ equation1 }} have the same rightmost leaf, RP satisfies {{ equation1 }}.
-- If the two sides of {{ equation2 }} have different rightmost leaves, RP refutes {{ equation2 }}.
-- Then RP is a valid counterexample, so FALSE.
-
-VARIABLE-MULTIPLICITY OBSTRUCTION:
-- Count how many times each variable occurs on each side.
-- If {{ equation1 }} clearly preserves multiplicities across its two sides, but {{ equation2 }} clearly does not, answer FALSE.
-- Use this only when the preservation claim is obvious.
 
 EXACT VERIFIED LANES:
 If the pair matches one of these exactly, or by a consistent renaming of variables, answer TRUE immediately.
@@ -106,7 +108,6 @@ EXACT-LANE POLICY:
 - Do not override an exact verified lane with LP/RP/XOR stories.
 
 CANONICAL WITNESS LIBRARY:
-
 LP (Left Projection): x*y = x
   Table: [[0,0],[1,1]]
   Every term = its leftmost leaf.
@@ -159,8 +160,8 @@ COUNTEREXAMPLE SEARCH ORDER:
 5. Z3A if XOR is too small.
 6. AND / OR / NAND / XNOR for tiny Boolean-style witnesses.
 
-MANDATORY VERIFICATION:
-Before claiming a finite magma M is a counterexample to "{{ equation1 }} implies {{ equation2 }}":
+MANDATORY COUNTEREXAMPLE VERIFICATION:
+Before claiming a magma M is a counterexample to "{{ equation1 }} implies {{ equation2 }}":
 1. Verify {{ equation1 }} holds on ALL inputs of M.
 2. Verify {{ equation2 }} fails on SOME explicit input.
 Only then is VERDICT FALSE.
@@ -168,9 +169,12 @@ If your candidate fails {{ equation1 }}, discard it.
 If your candidate satisfies {{ equation2 }} too, discard it.
 
 COUNTEREXAMPLE CONTENT RULE:
-- If FALSE comes from LP/RP obstruction, say which magma works and which decisive leaves agree for {{ equation1 }} but differ for {{ equation2 }}.
-- If FALSE comes from a finite witness like XOR, Z3A, C0, AND, OR, NAND, or XNOR, include MAGMA, ASSIGNMENT, and CHECK.
-- Never write FALSE with only vague language like "might", "could", or "suggests".
+For FALSE, COUNTEREXAMPLE must include all three:
+- MAGMA:
+- ASSIGNMENT:
+- CHECK:
+If any of these is missing, do not answer FALSE.
+For LP/RP leaf obstructions, ASSIGNMENT should explicitly give different values to the decisive leaf variables.
 
 MAGMA VERIFICATION EXAMPLES:
 - LP fails "x = ((y * y) * z) * x" because the leftmost leaf is y, so LP gives x = y.
@@ -192,10 +196,6 @@ TRUE PROOF STRATEGIES:
 
 4. Term rewriting:
    If {{ equation1 }} gives x = f(x,y,...) or x*y = g(...), substitute that identity systematically into {{ equation2 }}.
-
-5. Finite-map trick:
-   In a finite magma, a surjective self-map is injective and vice versa.
-   Use this only if you explicitly name the map and explain the cancellation correctly.
 
 SAFE TRUE RULES:
 - If {{ equation1 }} itself has the form x = t(y,z,w,...) with no x on the RHS, then every {{ equation2 }} is TRUE.

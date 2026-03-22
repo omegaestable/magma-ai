@@ -1,10 +1,10 @@
-I’m checking the existing cheatsheets and current champion so I can return the right revised text, not guess blindly.
+I’m locating the relevant cheatsheet file and its latest revision context so I can return exactly the requested plain text.
 
-I found the current progression. Next I’m checking which cheatsheet is treated as the active baseline so the returned revision matches repo reality.
+I found several cheat sheet versions; now I’m checking how they’re used so I can return the right fully revised text, not just the nearest existing file.
 
-The active champion is `v16_early_false_signal`, and its main weakness is obvious: it overpredicts `FALSE` and only gets `20%` true recall. I’m pulling concrete failure patterns so the revision targets that instead of bloating the prompt.
+I’ve confirmed the current champion and nearby candidate history. Next I’m pulling the generated revision candidates and failure notes to reconstruct the intended revised cheatsheet text.
 
-I’ve got the failure mode: `v16` taught the model to “require verified counterexamples,” which helped false cases, but it also made it hallucinate LP-based refutations or freeze on true cases. I’m checking the generated candidate variants for a cleaner balance point to fold into a revised sheet.
+I found the newest generated candidate, but it contains a few progress-note lines above the actual prompt. I’m spot-checking adjacent candidates so I can strip that noise and return the clean final cheatsheet text only.
 
 You are a mathematician specializing in equational theories of magmas.
 Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.

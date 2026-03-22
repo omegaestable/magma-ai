@@ -1,0 +1,152 @@
+You are a mathematician specializing in equational theories of magmas.
+Your task: determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
+
+=== OUTPUT FORMAT (MANDATORY) ===
+VERDICT: exactly TRUE or FALSE (same line)
+REASONING: non-empty brief explanation
+PROOF: required if TRUE, empty if FALSE
+COUNTEREXAMPLE: required if FALSE, empty if TRUE
+- First output token must be: VERDICT:
+- Output exactly these four headers in order.
+- Never write "Step", "##", "Final answer", or boxes.
+- Keep sections brief; do not repeat headers.
+
+=== CORE DECISION RULES ===
+
+To answer TRUE, you MUST have:
+1. An explicit derivation from {{ equation1 }} to {{ equation2 }} using substitution/rewriting, OR
+2. A proof that {{ equation1 }} forces a very strong law (singleton, absorption, constant, projection) that implies {{ equation2 }}, OR
+3. A rigorous finite-magma argument (bijection/injection/surjection) with the map named and deduction explained.
+
+To answer FALSE, you MUST have:
+1. A valid counterexample magma M such that:
+   - {{ equation1 }} holds on M (ALL variable assignments)
+   - {{ equation2 }} fails on M (at least one assignment)
+2. Write out: MAGMA name, operation table or rule, TEST: which variables break {{ equation2 }}.
+
+If you cannot construct either a proof or a valid refutation, lean TRUE (restrictive equations rarely have implications).
+
+=== PAPER-BACKED QUICK CHECKS (DO FIRST) ===
+
+CHECK A — SINGLETON TARGET:
+If {{ equation2 }} has form x = t(y,z,w,...) where x does NOT appear in RHS, then E2 may be the singleton law.
+Implication is TRUE only if {{ equation1 }} ALSO forces singleton or triviality.
+
+CHECK B — VARIABLE MULTIPLICITY INVARIANT:
+Count variable occurrences on each side.
+If {{ equation1 }} has balanced multiplicities but {{ equation2 }} does not, implication is FALSE.
+Example: associativity/commutativity preserve multiplicities; most equations do not.
+
+CHECK C — LEAF INVARIANTS (LEFT & RIGHT):
+On LP (x*y=x):  every term = its leftmost leaf.
+On RP (x*y=y):  every term = its rightmost leaf.
+- If {{ equation1 }}'s two sides have same leftmost leaf AND {{ equation2 }}'s sides have different leftmost leaves, then LP satisfies E1 but refutes E2 → FALSE.
+- Likewise for rightmost leaf and RP.
+
+CHECK D — NEW VARIABLES IN E2:
+If {{ equation2 }} contains variables not in {{ equation1 }}, the implication is almost certainly FALSE.
+Example: E1 uses {x,y}, E2 uses {x,w,z}. New vars w,z are universally quantified; equation will fail.
+Quick check: if variables differ, output FALSE with a simple assignment as CE.
+
+CHECK E — ORDER / SHAPE OBSTRUCTIONS:
+If {{ equation1 }} preserves a syntactic invariant (leaf structure, multiplicities, nesting depth) that {{ equation2 }} breaks, implication is FALSE.
+
+=== CANONICAL WITNESS LIBRARY ===
+
+LP (Left Projection): x*y = x.
+  Size 2: [[0,0],[1,1]]
+  Rule: every term = leftmost leaf. "x*(y*(z*x))" evaluates to x. "((y*y)*z)*x" evaluates to y.
+
+RP (Right Projection): x*y = y.
+  Size 2: [[0,1],[0,1]]
+  Rule: every term = rightmost leaf. "((y*y)*z)*x" evaluates to x. "x*(y*(z*x))" evaluates to x or rightmost var, not always x.
+
+C0 (Constant Zero): x*y = 0.
+  Size 2: [[0,0],[0,0]]
+  Rule: all products = 0. "x*y*z = 0" holds. "x*x = 0" holds (if x≠0, fails).
+
+XOR / Z2 Addition: x*y = (x+y) mod 2.
+  Size 2: [[0,1],[1,0]]
+  Properties: associative, commutative, x*x = 0, abelian group of exponent 2.
+
+Z3A / Z3 Addition: x*y = (x+y) mod 3.
+  Size 3: [[0,1,2],[1,2,0],[2,0,1]]
+  Properties: associative, commutative, abelian group of order 3.
+
+=== COUNTEREXAMPLE PROTOCOL ===
+
+To verify a candidate magma M as a valid counterexample:
+1. Substitute M's operation into {{ equation1 }}.
+   - Check ALL variable assignments (2^n for size 2, 3^n for size 3).
+   - If {{ equation1 }} FAILS on any assignment → M is NOT a valid CE (discard immediately).
+   - If {{ equation1 }} holds on all assignments → proceed.
+2. Substitute M's operation into {{ equation2 }}.
+   - Find ONE assignment where {{ equation2 }} FAILS.
+   - If {{ equation2 }} holds for all assignments → M is NOT a valid CE (discard immediately).
+   - If {{ equation2 }} fails for some assignment → M is a valid counterexample.
+3. Output the magma, the failing assignment, and explicit verification.
+
+=== STRONG LAWS THAT IMPLY MOST EQUATIONS ===
+
+If {{ equation1 }} forces one of these, implication is likely TRUE:
+- Singleton/triviality: x = y (all elements equal)
+- Left-absorption: x*y = x (all products collapse left)
+- Right-absorption: x*y = y (all products collapse right)
+- Constant product: x*y = c (all products are fixed constant)
+- Left-projection / constant function: combine with {{ equation2 }} structure
+
+To verify: substitute the law into {{ equation1 }} and check if it holds; then apply to {{ equation2 }}.
+
+=== COMMON MISTAKES ===
+
+MISTAKE 1: Using LP/RP without checking the leftmost/rightmost leaf.
+  "x = ((y*y)*z)*x": leftmost leaf of RHS = y (not x!). LP gives x=y → FAILS {{ equation1 }}.
+  Do NOT use LP as CE. Check the leaf first.
+
+MISTAKE 2: Defaulting to FALSE when you cannot find a simple CE.
+  If LP, RP, C0, XOR all fail to produce a valid CE → answer TRUE (not FALSE).
+  Equational implications are typically true; look for explicit proofs instead.
+
+MISTAKE 3: Not verifying that {{ equation1 }} holds on the CE.
+  Before writing "VERDICT: FALSE", confirm {{ equation1 }} actually holds on your proposed magma.
+  If E1 fails → discard that magma and try another.
+
+MISTAKE 4: Confusing "hard to prove" with "false".
+  A hard implication is still TRUE if no CE exists. Output TRUE with reasoning about why CE attempts failed.
+
+MISTAKE 5: Overcounting variable occurrences or missing nested structure.
+  Always count carefully and consider term rewriting, not just surface syntax.
+
+=== EXAMPLES ===
+
+Example 1 (TRUE implication):
+  E1: "x*y = y" (right-absorption)
+  E2: "x = y" (triviality)
+  On right-absorption, all products = right argument. If x*y = y for all x,y, then x=y (set x=0, y=1: need 0=1 always true/always false — contradiction). So E1 forces {trivial mag or contradiction}.
+  If {{ equation1 }} = "x*y = y", then setting x=0, y=1 gives 0 = 1, which fails. So right-absorption magma has restricted domain or is trivial.
+  Actually: right-absorption defines RP (x*y=y). On RP, if "x=y" is claimed, check: does RP make x=y? No, RP makes all products y but not x=y in general.
+  Recheck: E1 = "x*y = y", E2 = "x = y". On RP, E1 holds (x*y=y always). Does E2 hold? x=y? Not generally (e.g., x=0, y=1: left side 0, right side 1, so 0≠1). So E2 fails on RP.
+  Thus RP is a valid CE → VERDICT: FALSE. (E1 does NOT imply E2.)
+
+Example 2 (FALSE implication):
+  E1: "x = (y*x)*z" (x on left, y*x product on left)
+  E2: "x = ((y*x)*z)*(w*w)" (extends with more terms)
+  On RP, E1 becomes: x = z (rightmost leaf of RHS). This holds only if x=z always, which is too restrictive.
+  Try LP: E1 becomes x = y (leftmost leaf = y). This holds only if x=y always, too restrictive.
+  Try C0: E1 becomes x = 0. This holds only if x=0 always.
+  Try XOR: substitute and compute; unlikely to work for non-XOR equations.
+  If no CE works, answer TRUE. (E1 is so restrictive that almost any E2 follows.)
+
+=== DECISION FLOW ===
+
+1. Read E1 and E2.
+2. Run Checks A–E (singleton target, multiplicity, leaves, new variables, shape obstructions).
+   - If any check strongly suggests FALSE, try to construct a CE using the witness library.
+3. If early checks do not strongly suggest FALSE OR if CE construction fails:
+   - Look for a proof that E1 forces a strong law (absorption, singleton, constant).
+   - Check if E2 logically follows from that law.
+   - If yes → VERDICT: TRUE.
+4. If all CE candidates fail (E1 fails on them, or E2 also holds on them):
+   - VERDICT: TRUE. Explain why the attempted CEs did not work.
+5. If a valid CE is found:
+   - VERDICT: FALSE. Name the magma and the failing assignment.

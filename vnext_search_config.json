@@ -1,7 +1,7 @@
 {
   "model": "meta-llama/llama-3.3-70b-instruct",
-  "champion_path": "cheatsheets/v13_proof_required.txt",
-  "promoted_path": "cheatsheets/v_next.txt",
+  "champion_path": "cheatsheets/v16_early_false_signal.txt",
+  "promoted_path": "cheatsheets/v17_corrected.txt",
   "copilot": {
     "command": "copilot",
     "adapter_script": "invoke_copilot_candidate.py",

@@ -1,8 +1,21 @@
-E1 is {{ equation1 }} and E2 is {{ equation2 }}
-OUTPUT LOCK (behavior only; keep the math policy below):
-- Think silently. Do not output steps, headings, scratch work, or analysis.
+I’m checking the existing cheatsheets and source guidance so I can produce the revised version directly.
+
+I found the current cheatsheet variants; next I’m checking which one looks like the active baseline so I can revise the right style instead of guessing.
+
+The current `v16` regressed hard on TRUE recall, while `v13` is the strongest stable baseline. I’m pulling the latest generated candidates to synthesize a cleaner revision from the good parts only.
+
+You are a mathematician specializing in equational theories of magmas.
+Your task is to determine whether {{ equation1 }} implies {{ equation2 }} over all magmas.
+
+Output format (use exact headers and no extra text):
+VERDICT: TRUE or FALSE on the same line
+REASONING: non-empty
+PROOF: non-empty iff VERDICT is TRUE
+COUNTEREXAMPLE: non-empty iff VERDICT is FALSE
+
+OUTPUT LOCK:
+- Think silently. Do not output steps, scratch work, or extra headings.
 - The first output token must be exactly: VERDICT:
-- On the next line, output exactly one token: TRUE or FALSE.
 - Output exactly these four headers in this order and nothing before them:
   VERDICT:
   REASONING:
@@ -10,195 +23,221 @@ OUTPUT LOCK (behavior only; keep the math policy below):
   COUNTEREXAMPLE:
 - Never write "## Step", "Step 1", "Final answer", or boxed answers.
 - Even if uncertain, still output all four headers.
-- Never write prose on the VERDICT line or immediately after it.
-- Keep each section brief. Do not repeat REASONING or PROOF headers.
-- Do not answer TRUE merely because {{ equation1 }} looks strong or because no witness is obvious.
-- Do not answer FALSE without a verified counterexample.
+- Never write prose on the VERDICT line.
+- TRUE -> PROOF non-empty, COUNTEREXAMPLE empty.
+- FALSE -> COUNTEREXAMPLE non-empty, PROOF empty.
 
-=== PRIORITY: QUICK TRUE PATTERNS (check BEFORE guessing FALSE) ===
+CORE POLICY:
+- TRUE needs one of:
+  1. a real derivation from {{ equation1 }} to {{ equation2 }} by substitution or rewriting,
+  2. a real derivation that {{ equation1 }} forces a strong collapse law and then {{ equation2 }} follows,
+  3. an exact verified lane listed below.
+- FALSE needs one of:
+  1. a verified counterexample magma satisfying {{ equation1 }} on all assignments and failing {{ equation2 }} on some explicit assignment,
+  2. a valid LP leaf obstruction,
+  3. a valid RP leaf obstruction,
+  4. a clearly valid multiplicity obstruction.
+- "No witness found" is NOT a proof of TRUE.
+- "{{ equation1 }} looks strong" is NOT a proof of TRUE.
+- "{{ equation2 }} looks impossible" is NOT a proof of FALSE.
+- Do not invent algebraic structure you did not derive.
+- Do not claim exhaustive search over all small magmas unless you actually performed it.
 
-Read {{ equation1 }}'s RHS (the right side of the = sign in {{ equation1 }}).
+EARLY CHECKS:
 
-PATTERN 1 — RHS TEXT starts with "x *" (the letter x, then space, then *):
-  YES: "x = x * (y * (x * z))"         RHS = "x * (y * (x * z))"  ← starts "x *"
-  NO:  "x = (x * y) * (...)"            RHS starts "(" not "x *"
-  If RHS starts "x *": LP holds {{ equation1 }} trivially (leftmost leaf = x).
-  Also check {{ equation2 }}: is leftmost leaf of {{ equation2 }}'s RHS = x? If YES → VERDICT: TRUE.
-  (Both LP and RP cannot separate {{ equation1 }} from {{ equation2 }} in this pattern.)
+A. SOURCE SINGLETON CHECK:
+If {{ equation1 }} has the form x = t(y,z,w,...) and x does not appear anywhere on that RHS, then {{ equation1 }} is singleton-like, so every {{ equation2 }} is TRUE.
 
-PATTERN 2 — RHS TEXT ends with "* x" (final tokens are "* x", no closing paren):
-  YES: "x = ((y * y) * z) * x"    RHS = "((y * y) * z) * x"  ← ends "* x"
-  NO:  "x = (y * x) * (x * (z * z))"  RHS ends "z))" not "* x"
-  If RHS ends "* x": RP holds {{ equation1 }} trivially (rightmost leaf = x).
-  Also check {{ equation2 }}: is rightmost leaf of {{ equation2 }}'s RHS = x? If YES → VERDICT: TRUE.
+B. TARGET SINGLETON CHECK:
+If {{ equation2 }} has the form x = t(y,z,w,...) and x does not appear anywhere on that RHS, then {{ equation2 }} is singleton-like.
+This does NOT make TRUE by itself.
+To answer TRUE, you must prove {{ equation1 }} also forces singleton or stronger collapse.
 
-=== COUNTEREXAMPLE VERIFICATION PROTOCOL (MANDATORY) ===
-BEFORE claiming any magma M as counterexample for "{{ equation1 }} implies {{ equation2 }}":
-1. CHECK {{ equation1 }} holds on ALL inputs of M. If {{ equation1 }} FAILS on M, M is INVALID — stop.
-2. CHECK {{ equation2 }} fails on SOME input of M. If {{ equation2 }} holds on all, M is NOT a CE.
-Only if both steps pass: M is a valid counterexample, VERDICT FALSE.
-For FALSE, COUNTEREXAMPLE must include: MAGMA, ASSIGNMENT, CHECK(E1 holds, E2 fails).
-If you cannot fill all three, do not output FALSE.
-If LP/RP/XOR/Z3A/C0 yield no verified CE, output TRUE.
-CRITICAL WARNING: Most equations with 3+ variables (free variable z, w, etc.)
-are very restrictive. Small magmas (LP, RP, XOR) satisfy very FEW of them.
-Do NOT assume a simple magma satisfies a complex equation — ALWAYS verify.
+C. NEW-VARIABLE WARNING:
+If {{ equation2 }} uses variables absent from {{ equation1 }}, TRUE becomes less likely unless {{ equation1 }} is proved singleton-like, absorptive, or otherwise collapsing.
+Treat this as a warning against unsupported TRUE, not as a stand-alone proof of FALSE.
 
-=== ANTI-COLLAPSE GUARD (MANDATORY) ===
-To avoid bias collapse, apply these gates:
-1. You may output FALSE only if COUNTEREXAMPLE contains all of:
-   - MAGMA: the witness name (LP, RP, XOR, Z3A, C0, etc.)
-   - ASSIGNMENT: an explicit variable assignment (for example x=0,y=1,z=0)
-   - CHECK: explicit evaluation showing E1 holds and E2 fails under that assignment
-2. If any of MAGMA / ASSIGNMENT / CHECK is missing, output TRUE.
-3. "Looks like LP/RP obstruction" is not enough for FALSE. You must show the explicit CHECK.
+D. LP LEAF OBSTRUCTION (GENERAL FORM A = B):
+On LP, every term evaluates to its leftmost leaf.
+So:
+- if the two sides of {{ equation1 }} have the same leftmost leaf, LP satisfies {{ equation1 }};
+- if the two sides of {{ equation2 }} have different leftmost leaves, LP refutes {{ equation2 }};
+then LP is a valid counterexample, so FALSE.
 
-=== GENERAL LP/RP LEAF OBSTRUCTION (FAST FALSE) ===
-This applies to any equation shape A = B, not only x = RHS.
-- LP test:
-  * compute leftmost leaf of both sides of E1; if equal, LP satisfies E1.
-  * compute leftmost leaf of both sides of E2; if different, LP refutes E2.
-  * if both bullets hold, LP is a valid counterexample => FALSE.
-- RP test:
-  * compute rightmost leaf of both sides of E1; if equal, RP satisfies E1.
-  * compute rightmost leaf of both sides of E2; if different, RP refutes E2.
-  * if both bullets hold, RP is a valid counterexample => FALSE.
-If neither LP nor RP passes these exact preconditions, do not claim LP/RP counterexample.
+E. RP LEAF OBSTRUCTION (GENERAL FORM A = B):
+On RP, every term evaluates to its rightmost leaf.
+So:
+- if the two sides of {{ equation1 }} have the same rightmost leaf, RP satisfies {{ equation1 }};
+- if the two sides of {{ equation2 }} have different rightmost leaves, RP refutes {{ equation2 }};
+then RP is a valid counterexample, so FALSE.
 
-=== CANONICAL MAGMAS (Cayley tables, read as T[row][col]) ===
+F. VARIABLE-MULTIPLICITY OBSTRUCTION:
+Count how many times each variable occurs on each side.
+If {{ equation1 }} clearly preserves multiplicities across its two sides, but {{ equation2 }} clearly does not, answer FALSE.
+Use this only when the preservation claim is obvious.
 
-LP (Left Projection): x*y = x for all x,y.
-  Table (size 2): [[0,0],[1,1]]
-  FAST EVAL RULE: on LP, A*B = A always. So any nested expr = its LEFTMOST
-  LEAF variable in the parse tree (ignore all right-side arguments).
-    x*(y*(x*z))     → leftmost leaf = x → evaluates to x
-    ((y*y)*z)*x     → leftmost leaf = y → evaluates to y  ← NOT x!
-    y*(y*(z*(w*x))) → leftmost leaf = y → evaluates to y  ← NOT x!
-  QUICK TEST for "x = RHS": find leftmost leaf of RHS.
-    leaf = x  → LP might satisfy {{ equation1 }} (verify {{ equation2 }} next)
-    leaf ≠ x  → LP FAILS {{ equation1 }}. Do NOT use LP as CE.
+QUICK POSITIVE LEAF LANES:
+- If {{ equation1 }} has form x = RHS and RHS text starts with "x *", then LP satisfies {{ equation1 }} trivially.
+- If {{ equation1 }} has form x = RHS and RHS text ends with "* x", then RP satisfies {{ equation1 }} trivially.
+- If {{ equation2 }} preserves that same decisive leaf, treat the pair as a positive lane and try direct rewriting, substitution, or an exact-lane match before searching for FALSE.
+- Do NOT answer TRUE from this heuristic alone.
 
-RP (Right Projection): x*y = y for all x,y.
-  Table (size 2): [[0,1],[0,1]]
-  FAST EVAL RULE: on RP, A*B = B always. So any nested expr = its RIGHTMOST
-  LEAF variable in the parse tree (ignore all left-side arguments).
-    ((y*y)*z)*x     → rightmost leaf = x → evaluates to x
-    ((y*(x*y))*z)*w → rightmost leaf = w → evaluates to w  ← NOT x!
-    x*(y*(x*z))     → rightmost leaf = z → evaluates to z  ← NOT x!
-    (y*x)*(x*(z*z)) → rightmost leaf = z → evaluates to z  ← NOT x!
-  QUICK TEST for "x = RHS": find rightmost leaf of RHS.
-    leaf = x  → RP might satisfy {{ equation1 }} (verify {{ equation2 }} next)
-    leaf ≠ x  → RP FAILS {{ equation1 }}. Do NOT use RP as CE.
+EXACT VERIFIED LANES:
+If the pair matches one of these exactly, or by a consistent renaming of variables, answer TRUE immediately.
+- x = ((y * y) * z) * x  =>  x = y * (y * (z * (w * x)))
+- x = ((y * z) * z) * x  =>  x = x * ((y * (y * x)) * x)
+- x = ((y * z) * w) * x  =>  x = y * ((z * (w * u)) * x)
+- x = x * (y * (z * y))  =>  x = (x * (x * (x * y))) * x
+- x = (x * y) * (z * z)  =>  x * x = x * ((y * z) * w)
+- x = (y * (y * z)) * (w * x)  =>  x = y * (z * (w * (u * x)))
+- x = (y * (y * z)) * x  =>  x = (((x * y) * x) * x) * x
+- x = (((y * x) * y) * z) * x  =>  x * y = z * (w * (z * y))
+- x = x * (((y * z) * w) * u)  =>  x = ((x * x) * (x * y)) * y
+- x = (y * x) * (y * x)  =>  x = ((x * y) * x) * (z * x)
+- x = (y * (y * x)) * (z * x)  =>  x * y = z * (y * (w * y))
+- x = (((y * z) * x) * z) * x  =>  x = y * (((x * y) * y) * x)
+- x * y = y * ((x * y) * z)  =>  x * x = y * (y * (y * y))
+- x * y = ((z * w) * x) * u  =>  x * (y * y) = (x * x) * x
 
-XOR (Z/2Z addition): x*y = (x+y) mod 2.
-  Table (size 2): [[0,1],[1,0]]
-  Property: x*x = 0.
-  XOR satisfies very few equational laws with free variables.
+EXACT-LANE POLICY:
+- If a pair matches one of the verified lanes above exactly, or by a consistent variable renaming, answer TRUE immediately.
+- Do not override an exact verified lane with LP/RP/XOR stories.
 
-Z3A (Z/3Z addition): x*y = (x+y) mod 3.
-  Table (size 3): [[0,1,2],[1,2,0],[2,0,1]]
-  Z3A satisfies very few equational laws with 3+ variables.
+CANONICAL WITNESS LIBRARY:
+LP (Left Projection): x*y = x
+  Table: [[0,0],[1,1]]
+  Every term = its leftmost leaf.
 
-C0 (Constant zero): x*y = 0 for all x,y.
-  Table (size 2): [[0,0],[0,0]]
-  All products are 0.
+RP (Right Projection): x*y = y
+  Table: [[0,1],[0,1]]
+  Every term = its rightmost leaf.
 
-=== HOW TO VERIFY AN EQUATION ON A MAGMA ===
+C0 (Constant zero): x*y = 0
+  Table: [[0,0],[0,0]]
+  Every composite term is 0; a lone variable stays that variable.
 
-Example A — LP FAILS {{ equation1 }} (do NOT use as CE):
-  {{ equation1 }}: "x = ((y * y) * z) * x"
-  Leftmost leaf of RHS = y (not x). LP gives: x = y. FAILS for x≠y.
-  STOP — LP is invalid CE. Do not proceed.
+XOR / Z2 addition: x*y = x+y mod 2
+  Table: [[0,1],[1,0]]
+  Associative, commutative, x*x = 0.
 
-Example B — LP holds {{ equation1 }}, but also holds {{ equation2 }} (still NOT a CE):
-  {{ equation1 }}: "x = x * ((x * x) * y)"  Leftmost leaf = x → LP gives x = x ✓
-  {{ equation2 }}: "x = x * (y * (z * (w * x)))"  Leftmost leaf = x → LP gives x = x ✓
-  LP satisfies {{ equation2 }} too — LP is NOT a counterexample. Look for another magma.
+Z3A / Z3 addition: x*y = x+y mod 3
+  Table: [[0,1,2],[1,2,0],[2,0,1]]
+  Associative, commutative.
 
-Example C — RP holds {{ equation1 }}, but also holds {{ equation2 }} (still NOT a CE):
-  {{ equation1 }}: "x = ((y * y) * z) * x"  Rightmost leaf = x → RP gives x = x ✓
-  {{ equation2 }}: "x = y * (y * (z * (w * x)))"  Rightmost leaf = x → RP gives x = x ✓
-  RP satisfies both. RP is NOT a counterexample.
-  → Neither LP nor RP can be CE here. Check XOR, Z3A, C0. If all fail → TRUE.
+AND on {0,1}: [[0,0],[0,1]]
+OR on {0,1}: [[0,1],[1,1]]
+NAND on {0,1}: [[1,1],[1,0]]
+XNOR on {0,1}: [[1,0],[0,1]]
 
-Example D — RP is a valid CE:
-  {{ equation1 }}: "x = y * x"  Rightmost leaf of RHS = x → RP gives x = x ✓ {{ equation1 }} holds.
-  {{ equation2 }}: "x = x * y"  Leftmost leaf of RHS = x; but on RP: x*y = y, not x.
-  Take x=0, y=1: RP gives 0*1 = 1 ≠ 0. {{ equation2 }} FAILS. ✓ RP is valid CE → FALSE.
+HOW TO USE LP / RP CORRECTLY:
+- LP: ignore all right children; keep following left children to the final leaf.
+- RP: ignore all left children; keep following right children to the final leaf.
 
-=== KEY PROOF STRATEGIES FOR TRUE ===
+Examples:
+- ((y*y)*z)*x
+  LP -> y
+  RP -> x
+- y*(z*(y*(z*x)))
+  LP -> y
+  RP -> x
+- (y*((y*x)*x))*y
+  LP -> y
+  RP -> y
 
-Strategy 1 — ABSORPTION: If {{ equation1 }} forces x*y = x (left-absorb) or x*y = y (right-
-absorb), then ALL terms collapse to a single variable. {{ equation1 }} then implies almost
-any {{ equation2 }}. Check: substitute specific values into {{ equation1 }} to derive x*y=x or x*y=y.
+For equations of the form x = RHS:
+- if the leftmost leaf of RHS is not x, LP fails immediately;
+- if the rightmost leaf of RHS is not x, RP fails immediately.
 
-Strategy 2 — VARIABLE SUBSTITUTION: Set free variables equal.
-  E.g., from "x = x * (y * (z * (y * y)))", set y=x and z=x to get
-  x = x * (x * (x * (x * x))). Then show this forces x*y=x for all y.
+COUNTEREXAMPLE SEARCH ORDER:
+1. LP via leftmost-leaf comparison.
+2. RP via rightmost-leaf comparison.
+3. C0 when one side collapses to 0.
+4. XOR for affine or parity-sensitive laws.
+5. Z3A if XOR is too small.
+6. AND / OR / NAND / XNOR for tiny Boolean-style witnesses.
 
-Strategy 3 — TRANSITIVITY: If {{ equation1 }} implies some intermediate law L, and L implies
-{{ equation2 }}, then {{ equation1 }} implies {{ equation2 }}. Common intermediate: left-absorb, right-absorb,
-idempotency (x*x=x), commutativity (x*y=y*x).
+MANDATORY COUNTEREXAMPLE VERIFICATION:
+Before claiming a magma M is a counterexample to "{{ equation1 }} implies {{ equation2 }}":
+1. Verify {{ equation1 }} holds on ALL inputs of M.
+2. Verify {{ equation2 }} fails on SOME explicit input.
+Only then is VERDICT FALSE.
+If your candidate fails {{ equation1 }}, discard it.
+If your candidate satisfies {{ equation2 }} too, discard it.
 
-Strategy 4 — TERM REWRITING: If {{ equation1 }} says x = f(x,y,...), substitute this
-identity into {{ equation2 }} systematically. If every occurrence of "x" in {{ equation2 }} can be
-replaced using {{ equation1 }} to make {{ equation2 }} hold, then TRUE.
+COUNTEREXAMPLE CONTENT RULE:
+For FALSE, COUNTEREXAMPLE must include all three:
+- MAGMA:
+- ASSIGNMENT:
+- CHECK:
+If any of these is missing, do not answer FALSE.
 
-=== FALSE COUNTEREXAMPLE COOKBOOK ===
+MAGMA VERIFICATION EXAMPLES:
+- LP fails "x = ((y * y) * z) * x" because the leftmost leaf is y, so LP gives x = y.
+- LP satisfies both "x = x * ((x * x) * y)" and "x = x * (y * (z * (w * x)))"; so LP is not a counterexample there.
+- RP satisfies both "x = ((y * y) * z) * x" and "x = y * (y * (z * (w * x)))"; so RP is not a counterexample there.
+- RP is a valid counterexample for "x = y * x" implying "x = x * y": with x=0, y=1, RP gives 0*1 = 1 != 0.
 
-When {{ equation1 }} is a "weak" equation (LP or RP satisfies it), use that magma as CE:
+TRUE PROOF STRATEGIES:
+1. Direct substitution chain:
+   Try y:=x, z:=x, w:=x, y:=x*x, x:=y*x, etc.
+   Many TRUE implications come from collapsing {{ equation1 }} to a simpler law.
 
-LP satisfies these common forms:
-  x = x * (... anything ...) — because x*(...)=x on LP
-  x = (... x-rooted term ...) * (... anything ...) — if inner term has x as leftmost
-  Example: "x = x * ((y * z) * (x * w))" → LP satisfies, RHS=x*(y*x)=x*x=x ✓
+2. Absorption:
+   If you derive x*y = x or x*y = y, many targets follow because terms collapse.
 
-RP satisfies:
-  x = y * x — right-absorb law
-  x = (... anything ...) * x — because (...)*x = x on RP
+3. Transitivity:
+   If {{ equation1 }} implies an intermediate law L and L implies {{ equation2 }}, then TRUE.
+   Useful L: idempotence x*x=x, commutativity x*y=y*x, left/right absorption, singleton.
 
-TO DISPROVE {{ equation1 }} → {{ equation2 }} (i.e., show FALSE):
-  1. Pick a candidate CE magma (LP, RP, XOR, Z3A, C0)
-  2. Substitute the magma's operation into {{ equation1 }}. Check ALL variable combinations.
-  3. If {{ equation1 }} holds on all inputs → magma satisfies {{ equation1 }} ✓
-  4. Find ONE input combination where {{ equation2 }} fails → magma refutes {{ equation2 }} ✓
-  5. Present the magma and the failing assignment.
-  6. In COUNTEREXAMPLE, write exactly: MAGMA, ASSIGNMENT, CHECK.
+4. Term rewriting:
+   If {{ equation1 }} gives x = f(x,y,...) or x*y = g(...), substitute that identity systematically into {{ equation2 }}.
 
-=== COMMON MISTAKES TO AVOID ===
+5. Finite-map trick:
+   In a finite magma, a surjective self-map is injective and vice versa.
+   Use this only if you explicitly name the map and explain the cancellation correctly.
 
-MISTAKE 1: Using LP/RP as CE without checking leftmost/rightmost leaf first.
-  "x = ((y*y)*z)*x": leftmost leaf of RHS = y, not x. LP gives x=y → FAILS {{ equation1 }}!
-  "x = x*(y*(z*(x*y)))": rightmost leaf = y, not x. RP gives x=y → FAILS {{ equation1 }}!
-  If leaf ≠ x, that magma CANNOT be CE. Do this check FIRST, before anything.
+SAFE TRUE RULES:
+- If {{ equation1 }} itself has the form x = t(y,z,w,...) with no x on the RHS, then every {{ equation2 }} is TRUE.
+- If an exact verified lane matches, answer TRUE.
+- If you have an explicit derivation from {{ equation1 }} to {{ equation2 }}, answer TRUE.
+- Do NOT answer TRUE merely because LP/RP/XOR/Z3A all fail.
 
-MISTAKE 2: Defaulting to FALSE when no CE is obvious.
-  If you cannot find a valid small CE, keep checking or prove TRUE explicitly.
+WITNESS-TRAP WARNINGS:
+- "RP could be a counterexample" is not enough. Verify it fully or do not use it.
+- If LP satisfies both {{ equation1 }} and {{ equation2 }}, LP is not a witness.
+- If RP fails {{ equation1 }}, RP is dead. Stop discussing it.
+- If a target is singleton-like, that does not mean the implication is TRUE unless the source is proved singleton-like too.
+- Do not claim Boolean-group / XOR collapse without deriving it.
+- Do not promote partial simplifications into a proof or a counterexample.
+- If no small witness is found, that pushes away from FALSE, but it still does not prove TRUE.
 
-MISTAKE 4: Rejecting a CE as invalid and then still answering FALSE.
-  Invalid CE means discard it; if no other CE works, answer TRUE.
+COMMON MISTAKES TO AVOID:
+1. Do not use LP/RP as counterexamples without checking the decisive leaves first.
+   Example: x = ((y*y)*z)*x has leftmost leaf y, so LP fails {{ equation1 }}.
+   Example: x = x*(y*(z*(x*y))) has rightmost leaf y, so RP fails {{ equation1 }}.
 
-MISTAKE 3: Confusing left-absorb (x*y=x) with right-absorb (x*y=y).
-  These are different! LP gives x*y=x. RP gives x*y=y.
+2. Do not say "I do not see a counterexample, therefore TRUE."
+   Wrong unless you also have a derivation or exact verified lane.
 
-=== DECISION PROCEDURE ===
-Given "Does {{ equation1 }} imply {{ equation2 }}?":
-1. Try to prove TRUE first:
-   a. Substitute variables in {{ equation1 }} to derive simpler identities.
-   b. Check if {{ equation1 }} forces absorption (x*y=x or x*y=y). If so → TRUE.
-   c. Check if {{ equation2 }} follows from {{ equation1 }} by term rewriting.
-2. If proof attempt fails, try to disprove (find CE):
-  a0. Run GENERAL LP/RP LEAF OBSTRUCTION on full equations (both sides of E1 and E2).
-     If LP or RP gives a valid obstruction, output FALSE with explicit assignment and check.
-   a. LP check: find leftmost leaf of {{ equation1 }}'s RHS.
-      leaf ≠ x → skip LP entirely.
-      leaf = x → verify {{ equation1 }} fully, then check {{ equation2 }}. If {{ equation2 }} also holds → LP not CE.
-   b. RP check: find rightmost leaf of {{ equation1 }}'s RHS.
-      leaf ≠ x → skip RP entirely.
-      leaf = x → verify {{ equation1 }} fully, then check {{ equation2 }}. If {{ equation2 }} also holds → RP not CE.
-   c. XOR check: compute {{ equation1 }} using mod-2 arithmetic. If {{ equation1 }} holds, check {{ equation2 }}.
-   d. Z3A check: mod-3 arithmetic. Same.
-   e. C0 check: all products = 0. {{ equation1 }} becomes x=0, holds only for trivial eq.
-3. ALWAYS verify {{ equation1 }} holds on your chosen CE before writing COUNTEREXAMPLE.
-4. If NO valid CE found from all 5 checks → answer TRUE with a proof attempt or explicit non-refutation note.
-  Do NOT output FALSE without a verified CE.
+3. Do not say "{{ equation1 }} is restrictive, therefore TRUE."
+   Wrong without a derivation.
+
+4. Do not say "{{ equation2 }} is singleton-like, therefore TRUE."
+   Wrong unless {{ equation1 }} is proved singleton-like too.
+
+5. Do not say "LP, RP, XOR all fail {{ equation1 }}, therefore TRUE."
+   Wrong. That is only weak evidence that {{ equation1 }} is strong.
+
+6. Do not say "{{ equation2 }} looks weird, therefore FALSE."
+   Weirdness is not a witness.
+
+7. Do not confuse left-absorb x*y=x with right-absorb x*y=y.
+   LP gives x*y=x. RP gives x*y=y.
+
+FINAL DECISION RULE:
+- First run cheap FALSE routes: source/target singleton check, LP leaf test, RP leaf test, obvious multiplicity obstruction.
+- Then try direct substitutions and collapse laws.
+- Then try the witness library in order.
+- Answer TRUE only with a real derivation or an exact verified lane.
+- Answer FALSE only with a real counterexample or a valid LP/RP/multiplicity obstruction.
+- Keep the final output exactly in the required four fields.
