@@ -22,6 +22,7 @@ Usage (programmatic — called from vnext_search_v2.py):
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import re
 from collections import defaultdict
@@ -58,6 +59,126 @@ def split_equation(eq: str) -> tuple[str, str]:
 
 def equation_vars(eq: str) -> set[str]:
     return set(_var_tokens(eq))
+
+
+def _find_matching(expr: str, start: int) -> int:
+    depth = 0
+    for index in range(start, len(expr)):
+        char = expr[index]
+        if char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+            if depth == 0:
+                return index
+    return -1
+
+
+def _parse_expr(expr: str):
+    expr = expr.strip()
+    if expr.startswith('(') and _find_matching(expr, 0) == len(expr) - 1:
+        expr = expr[1:-1].strip()
+    depth = 0
+    last_star = -1
+    for index, char in enumerate(expr):
+        if char == '(':
+            depth += 1
+        elif char == ')':
+            depth -= 1
+        elif char == '*' and depth == 0:
+            last_star = index
+    if last_star >= 0:
+        left = expr[:last_star].strip()
+        right = expr[last_star + 1:].strip()
+        return ('*', _parse_expr(left), _parse_expr(right))
+    return ('var', expr)
+
+
+def parse_equation_tree(eq: str):
+    normalized = eq.replace('\u25c7', '*').strip()
+    lhs, rhs = split_equation(normalized)
+    return _parse_expr(lhs), _parse_expr(rhs)
+
+
+def _collect_tree_vars(tree, variables: set[str]) -> None:
+    if tree[0] == 'var':
+        variables.add(tree[1])
+        return
+    _collect_tree_vars(tree[1], variables)
+    _collect_tree_vars(tree[2], variables)
+
+
+def eval_tree(tree, assignment: dict[str, int], table: list[list[int]]) -> int:
+    if tree[0] == 'var':
+        return assignment[tree[1]]
+    left = eval_tree(tree[1], assignment, table)
+    right = eval_tree(tree[2], assignment, table)
+    return table[left][right]
+
+
+def check_equation(eq: str, table: list[list[int]]) -> bool:
+    lhs, rhs = parse_equation_tree(eq)
+    variables: set[str] = set()
+    _collect_tree_vars(lhs, variables)
+    _collect_tree_vars(rhs, variables)
+    ordered = sorted(variables)
+    for values in itertools.product(range(len(table)), repeat=len(ordered)):
+        assignment = dict(zip(ordered, values))
+        if eval_tree(lhs, assignment, table) != eval_tree(rhs, assignment, table):
+            return False
+    return True
+
+
+def first_failing_assignment(eq: str, table: list[list[int]]) -> Optional[dict]:
+    lhs, rhs = parse_equation_tree(eq)
+    variables: set[str] = set()
+    _collect_tree_vars(lhs, variables)
+    _collect_tree_vars(rhs, variables)
+    ordered = sorted(variables)
+    for values in itertools.product(range(len(table)), repeat=len(ordered)):
+        assignment = dict(zip(ordered, values))
+        lhs_value = eval_tree(lhs, assignment, table)
+        rhs_value = eval_tree(rhs, assignment, table)
+        if lhs_value != rhs_value:
+            return {
+                "assignment": assignment,
+                "lhs_value": lhs_value,
+                "rhs_value": rhs_value,
+            }
+    return None
+
+
+WITNESS_LIBRARY: list[dict] = [
+    {"name": "LP", "rule": "x*y = x", "table": [[0, 0], [1, 1]]},
+    {"name": "RP", "rule": "x*y = y", "table": [[0, 1], [0, 1]]},
+    {"name": "C0", "rule": "x*y = 0", "table": [[0, 0], [0, 0]]},
+    {"name": "XOR", "rule": "x*y = (x+y) mod 2", "table": [[0, 1], [1, 0]]},
+    {"name": "Z3A", "rule": "x*y = (x+y) mod 3", "table": [[0, 1, 2], [1, 2, 0], [2, 0, 1]]},
+    {"name": "AND", "rule": "x*y = x AND y", "table": [[0, 0], [0, 1]]},
+    {"name": "OR", "rule": "x*y = x OR y", "table": [[0, 1], [1, 1]]},
+    {"name": "XNOR", "rule": "x*y = 1 iff x=y else 0", "table": [[1, 0], [0, 1]]},
+]
+
+
+def find_verified_witnesses(eq1: str, eq2: str) -> list[dict]:
+    verified: list[dict] = []
+    for witness in WITNESS_LIBRARY:
+        table = witness["table"]
+        if not check_equation(eq1, table):
+            continue
+        failure = first_failing_assignment(eq2, table)
+        if failure is None:
+            continue
+        verified.append(
+            {
+                "name": witness["name"],
+                "rule": witness["rule"],
+                "assignment": failure["assignment"],
+                "lhs_value": failure["lhs_value"],
+                "rhs_value": failure["rhs_value"],
+            }
+        )
+    return verified
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +313,16 @@ def annotate_failure(failure: dict) -> dict:
     eq2 = failure.get("equation2") or failure.get("eq2") or ""
     features = extract_pair_features(eq1, eq2) if (eq1 and eq2) else {}
     error_class, patterns = classify_failure(failure)
-    return {**failure, "error_class": error_class, "patterns": patterns, "features": features}
+    verified_witnesses = []
+    if eq1 and eq2 and error_class == "false_positive":
+        verified_witnesses = find_verified_witnesses(eq1, eq2)
+    return {
+        **failure,
+        "error_class": error_class,
+        "patterns": patterns,
+        "features": features,
+        "verified_witnesses": verified_witnesses,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -226,6 +356,7 @@ def build_error_taxonomy(annotated_failures: list[dict]) -> dict:
             "equation1": f.get("equation1"),
             "equation2": f.get("equation2"),
             "features": f.get("features", {}),
+            "verified_witnesses": f.get("verified_witnesses", [])[:3],
         }
 
     return {
@@ -266,6 +397,39 @@ def build_pattern_library(taxonomy: dict) -> dict:
     return {"ranked_patterns": ranked}
 
 
+def build_witness_library(annotated_failures: list[dict]) -> dict:
+    ranked_witnesses: dict[str, list[dict]] = defaultdict(list)
+
+    for failure in annotated_failures:
+        if failure.get("error_class") != "false_positive":
+            continue
+        for witness in failure.get("verified_witnesses", []):
+            ranked_witnesses[witness["name"]].append(
+                {
+                    "id": failure.get("id"),
+                    "equation1": failure.get("equation1"),
+                    "equation2": failure.get("equation2"),
+                    "rule": witness["rule"],
+                    "assignment": witness["assignment"],
+                    "lhs_value": witness["lhs_value"],
+                    "rhs_value": witness["rhs_value"],
+                }
+            )
+
+    ranked = []
+    for rank, (name, examples) in enumerate(sorted(ranked_witnesses.items(), key=lambda kv: (-len(kv[1]), kv[0])), start=1):
+        ranked.append(
+            {
+                "rank": rank,
+                "witness": name,
+                "count": len(examples),
+                "rule": examples[0]["rule"],
+                "examples": examples[:3],
+            }
+        )
+    return {"ranked_witnesses": ranked}
+
+
 # ---------------------------------------------------------------------------
 # Distillation brief (compact markdown for prompt injection)
 # ---------------------------------------------------------------------------
@@ -300,6 +464,29 @@ def render_distillation_brief(taxonomy: dict, pattern_library: dict, cycle_numbe
     return "\n".join(lines)
 
 
+def render_witness_brief(witness_library: dict, cycle_number: int) -> str:
+    ranked = witness_library.get("ranked_witnesses", [])[:5]
+    lines = [
+        f"=== VERIFIED WITNESS BRIEF (cycle {cycle_number}) ===",
+        "Use these as external generation cues, not as unconditional rules.",
+        "Prefer witnesses that were actually verified on recent false positives.",
+        "",
+    ]
+    if not ranked:
+        lines.append("No verified witness separations were found in the current failure set.")
+    for item in ranked:
+        lines.append(f"[{item['rank']}] {item['witness']} (n={item['count']}) :: {item['rule']}")
+        for example in item.get("examples", [])[:1]:
+            assignment = ", ".join(f"{key}={value}" for key, value in sorted(example["assignment"].items()))
+            lines.append(f"    E1: {example['equation1']}")
+            lines.append(f"    E2: {example['equation2']}")
+            lines.append(
+                f"    verified fail on {example['id']}: assignment {assignment} gives LHS={example['lhs_value']} RHS={example['rhs_value']}"
+            )
+    lines += ["", "=== END VERIFIED WITNESS BRIEF ==="]
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------------------
 # High-level runner
 # ---------------------------------------------------------------------------
@@ -313,6 +500,75 @@ def collect_all_failures(manifest: dict) -> list[dict]:
     return all_failures
 
 
+def collect_failures_from_result_file(result_payload: dict) -> list[dict]:
+    failures: list[dict] = []
+    for result in result_payload.get("results", []):
+        if result.get("correct"):
+            continue
+        failures.append(
+            {
+                "id": result.get("id"),
+                "ground_truth": result.get("ground_truth"),
+                "predicted": result.get("predicted"),
+                "equation1": result.get("equation1"),
+                "equation2": result.get("equation2"),
+                "benchmark": result_payload.get("benchmark") or result_payload.get("subset"),
+            }
+        )
+    return failures
+
+
+def run_distillation_from_failures(failures: list[dict], cycle_number: int, out_dir: Path) -> dict:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    prefix = f"{cycle_number:04d}"
+
+    annotated = [annotate_failure(f) for f in failures]
+    taxonomy = build_error_taxonomy(annotated)
+    pattern_library = build_pattern_library(taxonomy)
+    witness_library = build_witness_library(annotated)
+    brief = render_distillation_brief(taxonomy, pattern_library, cycle_number)
+    witness_brief = render_witness_brief(witness_library, cycle_number)
+
+    tax_path = out_dir / f"{prefix}_error_taxonomy.json"
+    lib_path = out_dir / f"{prefix}_pattern_library.json"
+    brief_path = out_dir / f"{prefix}_distillation_brief.md"
+    witness_lib_path = out_dir / f"{prefix}_witness_library.json"
+    witness_brief_path = out_dir / f"{prefix}_witness_brief.md"
+
+    tax_path.write_text(json.dumps(taxonomy, indent=2), encoding="utf-8")
+    lib_path.write_text(json.dumps(pattern_library, indent=2), encoding="utf-8")
+    brief_path.write_text(brief, encoding="utf-8")
+    witness_lib_path.write_text(json.dumps(witness_library, indent=2), encoding="utf-8")
+    witness_brief_path.write_text(witness_brief, encoding="utf-8")
+
+    print(f"  distill: {tax_path.name} ({tax_path.stat().st_size} B)")
+    print(f"  distill: {lib_path.name} ({lib_path.stat().st_size} B)")
+    print(f"  distill: {brief_path.name} ({brief_path.stat().st_size} B)")
+    print(f"  distill: {witness_lib_path.name} ({witness_lib_path.stat().st_size} B)")
+    print(f"  distill: {witness_brief_path.name} ({witness_brief_path.stat().st_size} B)")
+
+    top_pattern = (
+        pattern_library["ranked_patterns"][0]["pattern"]
+        if pattern_library["ranked_patterns"] else None
+    )
+    top_witness = (
+        witness_library["ranked_witnesses"][0]["witness"]
+        if witness_library["ranked_witnesses"] else None
+    )
+    return {
+        "error_taxonomy_path": str(tax_path),
+        "pattern_library_path": str(lib_path),
+        "distillation_brief_path": str(brief_path),
+        "witness_library_path": str(witness_lib_path),
+        "witness_brief_path": str(witness_brief_path),
+        "total_failures": taxonomy["total_failures"],
+        "fp_count": taxonomy["by_class"].get("false_positive", {}).get("count", 0),
+        "fn_count": taxonomy["by_class"].get("false_negative", {}).get("count", 0),
+        "top_pattern": top_pattern,
+        "top_witness": top_witness,
+    }
+
+
 def run_distillation(manifest: dict, cycle_number: int, out_dir: Path) -> dict:
     """
     Run the full distillation pipeline on a manifest.
@@ -324,40 +580,8 @@ def run_distillation(manifest: dict, cycle_number: int, out_dir: Path) -> dict:
 
     Returns a dict of paths and summary stats.
     """
-    out_dir.mkdir(parents=True, exist_ok=True)
-    prefix = f"{cycle_number:04d}"
-
     failures = collect_all_failures(manifest)
-    annotated = [annotate_failure(f) for f in failures]
-    taxonomy = build_error_taxonomy(annotated)
-    pattern_library = build_pattern_library(taxonomy)
-    brief = render_distillation_brief(taxonomy, pattern_library, cycle_number)
-
-    tax_path = out_dir / f"{prefix}_error_taxonomy.json"
-    lib_path = out_dir / f"{prefix}_pattern_library.json"
-    brief_path = out_dir / f"{prefix}_distillation_brief.md"
-
-    tax_path.write_text(json.dumps(taxonomy, indent=2), encoding="utf-8")
-    lib_path.write_text(json.dumps(pattern_library, indent=2), encoding="utf-8")
-    brief_path.write_text(brief, encoding="utf-8")
-
-    print(f"  distill: {tax_path.name} ({tax_path.stat().st_size} B)")
-    print(f"  distill: {lib_path.name} ({lib_path.stat().st_size} B)")
-    print(f"  distill: {brief_path.name} ({brief_path.stat().st_size} B)")
-
-    top_pattern = (
-        pattern_library["ranked_patterns"][0]["pattern"]
-        if pattern_library["ranked_patterns"] else None
-    )
-    return {
-        "error_taxonomy_path": str(tax_path),
-        "pattern_library_path": str(lib_path),
-        "distillation_brief_path": str(brief_path),
-        "total_failures": taxonomy["total_failures"],
-        "fp_count": taxonomy["by_class"].get("false_positive", {}).get("count", 0),
-        "fn_count": taxonomy["by_class"].get("false_negative", {}).get("count", 0),
-        "top_pattern": top_pattern,
-    }
+    return run_distillation_from_failures(failures, cycle_number, out_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -369,8 +593,12 @@ def main() -> None:
         description="Distillation engine for cheatsheet mutation feedback."
     )
     parser.add_argument(
-        "--manifest", required=True,
+        "--manifest",
         help="Path to champion or candidate manifest JSON (for vnext_search_v2)"
+    )
+    parser.add_argument(
+        "--result-file",
+        help="Optional raw simulator result JSON to distill directly outside vnext_search_v2"
     )
     parser.add_argument(
         "--out-dir", default="results/vnext_search_v2/distilled_signals",
@@ -382,12 +610,23 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
-    artifacts = run_distillation(
-        manifest=manifest,
-        cycle_number=args.cycle,
-        out_dir=Path(args.out_dir),
-    )
+    if not args.manifest and not args.result_file:
+        parser.error("one of --manifest or --result-file is required")
+
+    if args.result_file:
+        payload = json.loads(Path(args.result_file).read_text(encoding="utf-8"))
+        artifacts = run_distillation_from_failures(
+            failures=collect_failures_from_result_file(payload),
+            cycle_number=args.cycle,
+            out_dir=Path(args.out_dir),
+        )
+    else:
+        manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
+        artifacts = run_distillation(
+            manifest=manifest,
+            cycle_number=args.cycle,
+            out_dir=Path(args.out_dir),
+        )
     print(json.dumps(artifacts, indent=2))
 
 

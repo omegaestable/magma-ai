@@ -1,0 +1,272 @@
+{
+  "champion_path": "cheatsheets/v13_proof_required.txt",
+  "champion_label": "v13_proof_required",
+  "champion_bytes": 10857,
+  "champion_sha256": "f9c855445053598641d2046a95a153ca5b2d13705a86d4862264847e345c2b4f",
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "gate_runs": [
+    {
+      "result_file": "sim_meta-llama_llama-3.3-70b-instruct_normal_balanced20_true10_false10_seed0_v13_proof_required_20260322_165611.json",
+      "benchmark": "normal_balanced20_true10_false10_seed0",
+      "benchmark_file": "normal_balanced20_true10_false10_seed0.jsonl",
+      "accuracy": 0.45,
+      "f1_score": 0.0,
+      "true_accuracy": 0.0,
+      "false_accuracy": 0.9,
+      "parse_success_rate": 1.0,
+      "avg_time_s": 19.62,
+      "estimated_cost_usd": 0.033403633,
+      "failures": [
+        {
+          "id": "normal_0411",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x = ((y * x) * x) * (y * x)",
+          "equation2": "x = (x * y) * (y * (x * y))"
+        },
+        {
+          "id": "normal_0765",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * ((z * y) * w)",
+          "equation2": "x = (((y * z) * w) * x) * w"
+        },
+        {
+          "id": "normal_0430",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * (z * (w * y))",
+          "equation2": "x = ((y * x) * x) * x"
+        },
+        {
+          "id": "normal_0910",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * ((z * x) * x)) * z",
+          "equation2": "x = x * (y * (y * (z * x)))"
+        },
+        {
+          "id": "normal_0327",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * (x * (z * w))) * z",
+          "equation2": "x * x = y * ((y * x) * y)"
+        },
+        {
+          "id": "normal_0317",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * x) * (y * z)) * w",
+          "equation2": "x = (x * x) * ((x * x) * y)"
+        },
+        {
+          "id": "normal_0948",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * (y * ((z * y) * y))",
+          "equation2": "x * x = x * (y * (z * y))"
+        },
+        {
+          "id": "normal_0154",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * (y * z)) * x) * y",
+          "equation2": "x = (y * z) * (w * z)"
+        },
+        {
+          "id": "normal_0221",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = x * (y * (x * (z * w)))",
+          "equation2": "x = (x * y) * ((x * z) * y)"
+        },
+        {
+          "id": "normal_0652",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * (z * ((z * x) * z))",
+          "equation2": "x = x * (y * ((x * x) * x))"
+        },
+        {
+          "id": "normal_0132",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * ((z * (x * z)) * z)",
+          "equation2": "x = (y * (y * z)) * (y * z)"
+        }
+      ]
+    },
+    {
+      "result_file": "sim_meta-llama_llama-3.3-70b-instruct_normal_balanced20_true10_false10_seed1_v13_proof_required_20260322_170244.json",
+      "benchmark": "normal_balanced20_true10_false10_seed1",
+      "benchmark_file": "normal_balanced20_true10_false10_seed1.jsonl",
+      "accuracy": 0.5,
+      "f1_score": 0.0,
+      "true_accuracy": 0.0,
+      "false_accuracy": 1.0,
+      "parse_success_rate": 1.0,
+      "avg_time_s": 21.02,
+      "estimated_cost_usd": 0.033357986000000006,
+      "failures": [
+        {
+          "id": "normal_0868",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * ((z * (z * w)) * y)",
+          "equation2": "x * y = (y * (x * x)) * y"
+        },
+        {
+          "id": "normal_0126",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (((y * x) * x) * z) * z",
+          "equation2": "x * (y * x) = (x * z) * w"
+        },
+        {
+          "id": "normal_0289",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * ((z * w) * z)",
+          "equation2": "x * y = (x * x) * x"
+        },
+        {
+          "id": "normal_0895",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * ((z * z) * y)) * z",
+          "equation2": "x * (y * z) = (w * x) * x"
+        },
+        {
+          "id": "normal_0540",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x * x = (y * (z * z)) * z",
+          "equation2": "x * x = (x * (x * x)) * y"
+        },
+        {
+          "id": "normal_0553",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * ((z * w) * w)) * w",
+          "equation2": "x = x * (((y * z) * x) * w)"
+        },
+        {
+          "id": "normal_0734",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * z) * ((z * z) * z)",
+          "equation2": "x = y * (x * (y * (z * x)))"
+        },
+        {
+          "id": "normal_0507",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x * y = ((z * y) * x) * w",
+          "equation2": "x * y = ((z * w) * x) * x"
+        },
+        {
+          "id": "normal_0638",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * ((z * (x * w)) * u)",
+          "equation2": "x * y = (z * (x * y)) * x"
+        },
+        {
+          "id": "normal_0929",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * z) * (y * (y * w))",
+          "equation2": "x = y * (((x * z) * x) * w)"
+        }
+      ]
+    },
+    {
+      "result_file": "sim_meta-llama_llama-3.3-70b-instruct_normal_balanced20_true10_false10_seed2_v13_proof_required_20260322_170945.json",
+      "benchmark": "normal_balanced20_true10_false10_seed2",
+      "benchmark_file": "normal_balanced20_true10_false10_seed2.jsonl",
+      "accuracy": 0.55,
+      "f1_score": 0.1818,
+      "true_accuracy": 0.1,
+      "false_accuracy": 1.0,
+      "parse_success_rate": 1.0,
+      "avg_time_s": 19.44,
+      "estimated_cost_usd": 0.035266993,
+      "failures": [
+        {
+          "id": "normal_0072",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * (z * y)) * w) * x",
+          "equation2": "x = (x * (y * (z * z))) * x"
+        },
+        {
+          "id": "normal_0737",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * ((x * z) * w)",
+          "equation2": "x = y * ((z * z) * x)"
+        },
+        {
+          "id": "normal_0260",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * z) * ((w * x) * z)",
+          "equation2": "x * x = (y * z) * (x * y)"
+        },
+        {
+          "id": "normal_0396",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * ((y * (y * y)) * y)",
+          "equation2": "x * (y * y) = (y * x) * x"
+        },
+        {
+          "id": "normal_0978",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * z) * w) * (u * v)",
+          "equation2": "x = y * ((x * z) * (w * u))"
+        },
+        {
+          "id": "normal_0470",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * (z * w)) * (y * z)",
+          "equation2": "x = (x * (y * x)) * z"
+        },
+        {
+          "id": "normal_0054",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * y) * y",
+          "equation2": "x * y = (y * y) * (y * x)"
+        },
+        {
+          "id": "normal_0214",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * ((z * x) * x)) * y",
+          "equation2": "x = ((y * y) * (z * x)) * y"
+        },
+        {
+          "id": "normal_0329",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * z) * (w * (x * z))",
+          "equation2": "x = (y * ((z * w) * y)) * u"
+        }
+      ]
+    }
+  ],
+  "aggregate": {
+    "accuracy": 0.5,
+    "f1_score": 0.060599999999999994,
+    "true_accuracy": 0.03333333333333333,
+    "false_accuracy": 0.9666666666666667,
+    "parse_success_rate": 1.0,
+    "avg_time_s": 20.026666666666667,
+    "estimated_cost_usd": 0.10202861200000002
+  },
+  "version_id": "champion_20260322_171614",
+  "updated_at": "2026-03-22T17:16:14.687377+00:00"
+}

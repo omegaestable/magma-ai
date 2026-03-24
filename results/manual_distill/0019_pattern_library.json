@@ -1,0 +1,233 @@
+{
+  "ranked_patterns": [
+    {
+      "rank": 1,
+      "pattern": "generic_fp",
+      "count": 1,
+      "description": "FP: No detected structural pattern",
+      "examples": [
+        {
+          "id": "normal_0467",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x * x = (y * z) * w",
+          "equation2": "x * y = (z * z) * (y * x)",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "z",
+            "rl_lhs1": "x",
+            "rl_rhs1": "w",
+            "rl_lhs2": "y",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "x": 2,
+              "w": 1,
+              "y": 1,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            }
+          },
+          "verified_witnesses": []
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "pattern": "fn_no_projection_handle",
+      "count": 1,
+      "description": "FN: No LP/RP obstruction available; TRUE proof missed",
+      "examples": [
+        {
+          "id": "normal_0317",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * x) * (y * z)) * w",
+          "equation2": "x = (x * x) * ((x * x) * y)",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "w",
+            "rl_lhs2": "x",
+            "rl_rhs2": "y",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "x": 2,
+              "w": 1,
+              "y": 2,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "x": 5,
+              "y": 1
+            }
+          },
+          "verified_witnesses": []
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "pattern": "fp_new_variable_trap",
+      "count": 1,
+      "description": "FP: E2 introduces variables absent from E1 (strong FALSE signal)",
+      "examples": [
+        {
+          "id": "normal_0703",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x * (y * z) = (z * x) * x",
+          "equation2": "x * y = z * ((w * w) * w)",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "z",
+            "ll_lhs2": "x",
+            "ll_rhs2": "z",
+            "rl_lhs1": "z",
+            "rl_rhs1": "x",
+            "rl_lhs2": "y",
+            "rl_rhs2": "w",
+            "vars_e1": [
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [
+              "w"
+            ],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "x": 3,
+              "y": 1,
+              "z": 2
+            },
+            "e2_var_multiplicity": {
+              "x": 1,
+              "w": 3,
+              "y": 1,
+              "z": 1
+            }
+          },
+          "verified_witnesses": []
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "pattern": "fp_rp_obstruction_missed",
+      "count": 1,
+      "description": "FP: RP obstruction was applicable but missed",
+      "examples": [
+        {
+          "id": "normal_0857",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x = ((y * y) * z) * (w * x)",
+          "equation2": "x = x * ((y * y) * (y * y))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "x",
+            "rl_lhs2": "x",
+            "rl_rhs2": "y",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": true,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": true,
+            "e1_var_multiplicity": {
+              "x": 2,
+              "w": 1,
+              "y": 2,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "x": 2,
+              "y": 4
+            }
+          },
+          "verified_witnesses": [
+            {
+              "name": "RP",
+              "rule": "x*y = y",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

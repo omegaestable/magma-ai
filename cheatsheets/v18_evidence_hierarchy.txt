@@ -1,0 +1,124 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+OUTPUT LOCK:
+- Think silently.
+- Output exactly these four headers in this order and nothing before them:
+  VERDICT:
+  REASONING:
+  PROOF:
+  COUNTEREXAMPLE:
+- First line must be exactly VERDICT: TRUE or VERDICT: FALSE.
+- Never write step-by-step analysis.
+- Keep REASONING to one sentence.
+- Keep PROOF brief.
+- Keep COUNTEREXAMPLE brief.
+
+DECISION RULE:
+- FALSE is allowed only from a verified witness.
+- Check FALSE routes first.
+- First pass: LP, RP, C0.
+- Second pass: XOR, XNOR, Z3A, AND, OR.
+- Third pass on hard cases: the extra small witnesses listed below.
+- If no verified FALSE route survives after those passes, answer TRUE.
+- Do not try to invent a long proof for TRUE.
+- Do not use substitutions inside E2.
+
+PRIVATE-DATA RULE:
+- Never memorize benchmark equations.
+- Use only structural lessons, witness rules, and small reusable magma tables.
+
+VERIFIED FALSE ROUTES
+
+1. LP witness: x*y = x.
+- Every term becomes its leftmost leaf.
+- If E1 has the same leftmost leaf on both sides and E2 has different leftmost leaves, answer FALSE.
+
+2. RP witness: x*y = y.
+- Every term becomes its rightmost leaf.
+- If E1 has the same rightmost leaf on both sides and E2 has different rightmost leaves, answer FALSE.
+- For x = T forms, RP is especially easy: E1 holds iff the rightmost leaf of T is literally x.
+- If E2 is also x = T but its rightmost leaf is not x, RP refutes immediately.
+
+3. C0 witness: x*y = 0.
+- Every composite product becomes 0.
+- Use C0 early when E1 becomes 0=0 but E2 has a bare x side that becomes x=0 and can fail.
+- If every side of E1 contains at least one `*`, then C0 automatically satisfies E1.
+- In that situation, if E2 has the form x = T and T is composite, then C0 refutes with x=1 and all other variables 0.
+- This is the main reusable FALSE route when E1 is all-composite and E2 is a bare-x target.
+
+3b. Bare-x target escalation.
+- If E2 has the form x = T, T contains variables absent from E1, and LP does not separate, then test RP next.
+- If RP also fails, test XOR, XNOR, C0, and AND before answering TRUE.
+- This pattern is a high-value FALSE family: E1 often constrains only old variables while E2 forces x to track fresh-variable structure.
+
+4. Finite witness library after LP/RP/C0:
+- XOR on Z/2: x*y = x+y mod 2
+- Z3A on Z/3: x*y = x+y mod 3
+- AND on {0,1}
+- OR on {0,1}
+- XNOR on {0,1}
+
+4b. Affine parity check for XOR/XNOR.
+- In XOR, each side evaluates to the XOR of variables occurring an odd number of times.
+- If E1 has the same odd-parity variable set on both sides but E2 does not, XOR refutes.
+- XNOR often separates the same family with the same assignment pattern; test it right after XOR.
+- This is the main reusable FALSE route when LP/RP/C0 fail but E2 introduces fresh variables or parity drift.
+
+5. Extra small witnesses for hard cases:
+- A2 on {0,1}: x*y = x AND (NOT y), table [[0,0],[1,0]]
+- T3L table [[0,0,0],[0,0,0],[0,1,0]]
+- T3R table [[0,0,0],[0,0,0],[0,0,1]]
+
+These are reusable small noncanonical magmas, not equation-specific rules.
+Use them only when LP/RP/C0/XOR/XNOR/Z3A/AND/OR all failed and there is still strong FALSE suspicion.
+- Try A2 before the 3-element tables.
+
+COUNTEREXAMPLE CHECK:
+- Before writing FALSE, verify E1 holds on all assignments in the witness.
+- Also verify E2 fails on at least one explicit assignment.
+- If either check fails, discard that witness.
+
+ANTI-HALLUCINATION RULES
+- New variables in E2 are only a clue, never an automatic FALSE rule.
+- Do not say FALSE because E2 looks stronger.
+- Do not say FALSE because a witness might work; verify it.
+- Do not say TRUE because a witness failed; TRUE is just the fallback when no verified FALSE route exists.
+- Never claim LP or RP without comparing whole sides.
+- For x = RHS, LP is valid only if the leftmost leaf of RHS is literally x.
+- For x = RHS, RP is valid only if the rightmost leaf of RHS is literally x.
+- If LP makes E1 become x=y or RP makes E1 become x=z/w/y, that projection is invalid.
+- A "potential LP/RP route" is not evidence. Whole-side leaf agreement must actually hold on E1 and fail on E2.
+
+FAKE-PROOF BAN
+- Do not turn a complex substituted equation into x*y=x, x*y=y, or x=x*x by informal simplification.
+- If substitution gives x=x or T=T, that proves nothing.
+- x*x=(x*x)*x is NOT literally x=x*x.
+- x=((x*x)*x)*(x*x) is NOT literally x=x*x.
+- If you do not have a verified FALSE route, simply answer TRUE and say no verified FALSE route was found.
+
+DISTILLED HARD-CASE LESSONS
+- Do not default TRUE too early on hard cases just because LP/RP/C0 failed.
+- Hard FALSE cases often require a second witness pass with affine or asymmetric small magmas.
+- Fresh variables in E2 matter more when E2 also changes the outer leaf pair or changes equation shape from x=T to x*y=T, or vice versa.
+- If E1 uses only one anchor variable heavily and E2 introduces fresh variables into a bare-x target, treat RP, XOR, XNOR, C0, and AND as mandatory checks before TRUE.
+- If E1 is projection-compatible on both LP and RP but E2 breaks one side's boundary leaf, try the broken projection before any TRUE fallback.
+- If E1 is all-composite and E2 is bare-x composite, C0 is mandatory before TRUE.
+- If LP/RP/C0 fail but E1 preserves odd-parity counts and E2 changes them, XOR/XNOR are mandatory before TRUE.
+- Boundary-pair drift matters: compare the pair (leftmost leaf, rightmost leaf) on each whole side of E1 and E2. Large drift is a strong FALSE search signal.
+- Shape drift matters: switching between x=T and x*y=T is a strong FALSE search signal unless E1 gives a literal TRUE law.
+- Anchor drift matters: if a repeated outer variable block in E1 becomes redistributed deeper or to the opposite side in E2, try affine or asymmetric witnesses before answering TRUE.
+- For TRUE, never use LP/RP as a shortcut unless the chosen projection really satisfies E1.
+- If no LP/RP obstruction exists, do not invent one from leaf intuition alone; fall back to witness search or TRUE.
+- If no literal TRUE proof exists, the only safe FALSE path is a verified witness; otherwise answer TRUE.
+
+WHEN TRUE:
+- If no verified FALSE route exists, write:
+  REASONING: No verified FALSE route was found.
+  PROOF: No literal witness survived checking.
+  COUNTEREXAMPLE: None.
+
+WHEN FALSE:
+- Write:
+  MAGMA: witness name and rule
+  ASSIGNMENT: explicit values
+  CHECK: E1 holds, E2 fails

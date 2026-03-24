@@ -1,0 +1,291 @@
+{
+  "ranked_witnesses": [
+    {
+      "rank": 1,
+      "witness": "RP",
+      "count": 6,
+      "rule": "x*y = y",
+      "examples": [
+        {
+          "id": "normal_0283",
+          "equation1": "x * x = x * (x * (x * x))",
+          "equation2": "x = x * ((y * (y * z)) * y)",
+          "rule": "x*y = y",
+          "assignment": {
+            "x": 0,
+            "y": 1,
+            "z": 0
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        },
+        {
+          "id": "normal_0695",
+          "equation1": "x * y = z * (w * y)",
+          "equation2": "x = (y * ((z * w) * w)) * u",
+          "rule": "x*y = y",
+          "assignment": {
+            "u": 0,
+            "w": 0,
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        },
+        {
+          "id": "normal_0878",
+          "equation1": "x = y * ((y * x) * (x * x))",
+          "equation2": "x = ((x * x) * x) * (x * y)",
+          "rule": "x*y = y",
+          "assignment": {
+            "x": 0,
+            "y": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "witness": "XNOR",
+      "count": 6,
+      "rule": "x*y = 1 iff x=y else 0",
+      "examples": [
+        {
+          "id": "normal_0283",
+          "equation1": "x * x = x * (x * (x * x))",
+          "equation2": "x = x * ((y * (y * z)) * y)",
+          "rule": "x*y = 1 iff x=y else 0",
+          "assignment": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        },
+        {
+          "id": "normal_0458",
+          "equation1": "x = ((y * z) * (x * z)) * y",
+          "equation2": "x * y = (z * (w * y)) * z",
+          "rule": "x*y = 1 iff x=y else 0",
+          "assignment": {
+            "w": 0,
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        },
+        {
+          "id": "normal_0197",
+          "equation1": "x = y * (((y * x) * z) * z)",
+          "equation2": "x = y * ((z * y) * (w * u))",
+          "rule": "x*y = 1 iff x=y else 0",
+          "assignment": {
+            "u": 0,
+            "w": 0,
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "witness": "XOR",
+      "count": 6,
+      "rule": "x*y = (x+y) mod 2",
+      "examples": [
+        {
+          "id": "normal_0283",
+          "equation1": "x * x = x * (x * (x * x))",
+          "equation2": "x = x * ((y * (y * z)) * y)",
+          "rule": "x*y = (x+y) mod 2",
+          "assignment": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        },
+        {
+          "id": "normal_0458",
+          "equation1": "x = ((y * z) * (x * z)) * y",
+          "equation2": "x * y = (z * (w * y)) * z",
+          "rule": "x*y = (x+y) mod 2",
+          "assignment": {
+            "w": 0,
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        },
+        {
+          "id": "normal_0197",
+          "equation1": "x = y * (((y * x) * z) * z)",
+          "equation2": "x = y * ((z * y) * (w * u))",
+          "rule": "x*y = (x+y) mod 2",
+          "assignment": {
+            "u": 0,
+            "w": 0,
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "witness": "C0",
+      "count": 4,
+      "rule": "x*y = 0",
+      "examples": [
+        {
+          "id": "normal_0283",
+          "equation1": "x * x = x * (x * (x * x))",
+          "equation2": "x = x * ((y * (y * z)) * y)",
+          "rule": "x*y = 0",
+          "assignment": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        },
+        {
+          "id": "normal_0695",
+          "equation1": "x * y = z * (w * y)",
+          "equation2": "x = (y * ((z * w) * w)) * u",
+          "rule": "x*y = 0",
+          "assignment": {
+            "u": 0,
+            "w": 0,
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        },
+        {
+          "id": "normal_0357",
+          "equation1": "x * y = (y * y) * (y * x)",
+          "equation2": "x = (y * (y * x)) * (z * x)",
+          "rule": "x*y = 0",
+          "assignment": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "witness": "AND",
+      "count": 2,
+      "rule": "x*y = x AND y",
+      "examples": [
+        {
+          "id": "normal_0283",
+          "equation1": "x * x = x * (x * (x * x))",
+          "equation2": "x = x * ((y * (y * z)) * y)",
+          "rule": "x*y = x AND y",
+          "assignment": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        },
+        {
+          "id": "normal_0357",
+          "equation1": "x * y = (y * y) * (y * x)",
+          "equation2": "x = (y * (y * x)) * (z * x)",
+          "rule": "x*y = x AND y",
+          "assignment": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "witness": "OR",
+      "count": 2,
+      "rule": "x*y = x OR y",
+      "examples": [
+        {
+          "id": "normal_0283",
+          "equation1": "x * x = x * (x * (x * x))",
+          "equation2": "x = x * ((y * (y * z)) * y)",
+          "rule": "x*y = x OR y",
+          "assignment": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        },
+        {
+          "id": "normal_0357",
+          "equation1": "x * y = (y * y) * (y * x)",
+          "equation2": "x = (y * (y * x)) * (z * x)",
+          "rule": "x*y = x OR y",
+          "assignment": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        }
+      ]
+    },
+    {
+      "rank": 7,
+      "witness": "LP",
+      "count": 1,
+      "rule": "x*y = x",
+      "examples": [
+        {
+          "id": "normal_0970",
+          "equation1": "x = x * (y * (x * (y * x)))",
+          "equation2": "x = y * ((z * (y * w)) * z)",
+          "rule": "x*y = x",
+          "assignment": {
+            "w": 0,
+            "x": 0,
+            "y": 1,
+            "z": 0
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        }
+      ]
+    }
+  ]
+}

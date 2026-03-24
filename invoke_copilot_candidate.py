@@ -9,7 +9,8 @@ from pathlib import Path
 
 
 def build_prompt(champion_path: str, failure_summary_path: str, mutation_focus: str,
-                 distillation_brief_path: str = "", max_bytes: int = 10240) -> str:
+                 distillation_brief_path: str = "", witness_brief_path: str = "",
+                 max_bytes: int = 10240) -> str:
     distillation_section = ""
     if distillation_brief_path:
         try:
@@ -22,6 +23,18 @@ Distillation signal (ranked failure patterns from the last evaluation run):
         except OSError:
             pass  # Brief is optional; skip gracefully if file is missing
 
+    witness_section = ""
+    if witness_brief_path:
+        try:
+            witness_brief = Path(witness_brief_path).read_text(encoding="utf-8").strip()
+            witness_section = f"""
+
+Verified witness signal (small magmas that recently separated false positives):
+{witness_brief}
+"""
+        except OSError:
+            pass
+
     return f"""Return ONLY the full revised cheatsheet as plain text.
 Do not use markdown fences.
 Do not add commentary before or after the cheatsheet.
@@ -31,7 +44,7 @@ Use the current workspace files as inputs.
 Task:
 - Read {champion_path}
 - Read {failure_summary_path}
-- Produce one candidate revision focused on: {mutation_focus}{distillation_section}
+- Produce one candidate revision focused on: {mutation_focus}{distillation_section}{witness_section}
 Hard constraints:
 - Keep {{{{ equation1 }}}} and {{{{ equation2 }}}} templating valid.
 - Preserve strict verdict formatting and the four required headers.
@@ -80,6 +93,8 @@ def main() -> None:
     parser.add_argument("--max-retries", type=int, default=2)
     parser.add_argument("--distillation-brief-path", default="",
                         help="Optional path to a distillation brief .md file to inject into the prompt")
+    parser.add_argument("--witness-brief-path", default="",
+                        help="Optional path to a verified witness brief .md file to inject into the prompt")
     args = parser.parse_args()
 
     prompt = build_prompt(
@@ -87,6 +102,7 @@ def main() -> None:
         args.failure_summary_path,
         args.mutation_focus,
         distillation_brief_path=args.distillation_brief_path,
+        witness_brief_path=args.witness_brief_path,
         max_bytes=args.max_bytes,
     )
 

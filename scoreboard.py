@@ -33,8 +33,14 @@ CHEATSHEET_LABELS = {
     "graph_v11": "Graph V11",
     "no_cheatsheet_control": "Control",
     "v10_proof_required": "V10",
+    "v14_proof_required": "V14",
+    "v16_early_false_signal": "V16",
+    "v17_corrected": "V17",
+    "v18_evidence_hierarchy": "V18",
+    "v19_noncollapse": "V19",
     "v12_proof_required": "V12",
     "v13_proof_required": "V13",
+    "vcontrol": "VControl",
 }
 
 BENCHMARK_ALIASES = {

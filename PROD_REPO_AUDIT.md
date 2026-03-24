@@ -69,3 +69,24 @@ A new `.gitignore` was added to prevent reintroducing junk:
 3. Keep only summarized, curated result artifacts (for example `results/scoreboard.md`, `results/scoreboard.csv`) when needed.
 4. Use v2 pipeline only; do not reintroduce v1 scripts.
 5. Treat `data/exports/*` as the canonical export location; avoid mirrored copies.
+
+## 2026-03-24 Trim Pass
+
+This follow-up trim removed transient artifacts created during prompt-iteration and diagnosis work while preserving canonical prompts, curated distillation outputs, benchmarks, and scoreboard summaries.
+
+### Removed
+
+- Root-level exploratory helpers: `_leaf_check.py`, `_magma_check.py`, `_magma_search.py`
+- Temporary diagnosis distill outputs under `results/manual_distill/_tmp_v19_diag/`
+- Temporary post-patch distill outputs under `results/manual_distill/_tmp_v19_postpatch/`
+- Scratch candidate prompts under `cheatsheets/generated_v2/`
+- Raw simulator result payloads under `results/sim_*.json`
+
+### Policy Update
+
+- Ignore `results/manual_distill/_tmp_*/` so temporary diagnosis artifacts stay local by default.
+
+### Notes
+
+- Curated manual distill directories and canonical prompt files were intentionally retained.
+- Python cache files remain covered by ignore rules; if any tracked `.pyc` files are still present locally they should be removed outside the text patch path because the patch tool does not handle those binary deletions reliably.

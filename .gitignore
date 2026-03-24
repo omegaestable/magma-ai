@@ -12,6 +12,7 @@ cheatsheets/generated_v2/
 
 # Large run artifacts (raw simulator outputs)
 results/sim_*.json
+results/manual_distill/_tmp_*/
 
 # Legacy and local search artifacts
 results/vnext_search/

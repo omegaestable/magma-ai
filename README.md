@@ -2,6 +2,9 @@
 
 Focused local harness for SAIR Stage 1 magma implication evaluation.
 
+Paid OpenRouter evaluation is the only supported inference path in this repo.
+Local model inference has been retired because it was not trustworthy for submission decisions.
+
 ## Fast Start
 
 Prerequisite for paid-model runs:
@@ -13,7 +16,7 @@ $env:OPENROUTER_API_KEY = "<your_key>"
 Common paid-model run on the exact 5 TRUE / 5 FALSE normal benchmark:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v10_proof_required
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v19_noncollapse
 .\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v13_proof_required
 ```
 
@@ -22,7 +25,7 @@ These commands run:
 - Model: `meta-llama/llama-3.3-70b-instruct`
 - Backend: OpenRouter
 - Benchmark: `data/benchmark/normal_balanced10_true5_false5_seed0.jsonl`
-- Cheatsheets: `cheatsheets/v10_proof_required.txt` or `cheatsheets/v13_proof_required.txt`
+- Cheatsheets: `cheatsheets/v19_noncollapse.txt` or `cheatsheets/v13_proof_required.txt`
 
 ## Canonical Benchmarks
 
@@ -45,17 +48,19 @@ All benchmark files live under `data/benchmark/`.
 If you want the raw simulator command instead of the wrapper:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v10_proof_required.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v19_noncollapse.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
 
 C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v13_proof_required.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
 ```
+
+`sim_lab.py` now requires OpenRouter credentials and always uses the paid backend.
 
 ## Results
 
 Result JSONs are written to `results/` with filenames like:
 
 ```text
-sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v13_proof_required_YYYYMMDD_HHMMSS.json
+sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v19_noncollapse_YYYYMMDD_HHMMSS.json
 ```
 
 The scoreboard summary is in `results/scoreboard.md`.
@@ -69,6 +74,11 @@ Only the V2 rebooted pipeline is supported.
 
 The rebooted pipeline is implemented in `vnext_search_v2.py` with strict
 anti-collapse gating and a single authoritative baseline (`v13_proof_required`).
+
+Current prompt state:
+
+- `v13_proof_required` is still the persisted V2 search baseline/champion.
+- `v19_noncollapse` is the current manually patched non-collapsing prompt used for direct evaluation work.
 
 Policy locks in V2:
 
@@ -104,6 +114,12 @@ Override replay labels:
 .\run_vnext_search_v2.ps1 -Action replay-check -Cheatsheets "v14_proof_required,v16_early_false_signal,v17_corrected"
 ```
 
+Warmup-first anti-collapse behavior:
+
+- Every new candidate is screened on `normal_balanced10_true5_false5_seed0` before any 20/20 evaluation.
+- Full 3-seed `balanced20` evaluation is blocked until the search records the configured non-collapse streak on the 5/5 warmup gate.
+- Warmup currently requires non-zero TRUE recall and non-zero F1 in practice via the configured floors in `vnext_search_v2_config.json`.
+
 Run bounded loop in background:
 
 ```powershell
@@ -114,3 +130,14 @@ V2 decision artifacts are written to:
 
 - `results/vnext_search_v2/decisions/` (one decision JSON per cycle)
 - `results/vnext_search_v2/replay/` (replay-check outputs)
+
+V2 distillation now emits both structural and verified-witness sidecars under `results/vnext_search_v2/distilled_signals/`:
+
+- `*_distillation_brief.md` for ranked failure patterns
+- `*_witness_brief.md` for compact verified small-magma separations on recent false positives
+
+You can also distill a raw paid result JSON directly:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe distill.py --result-file results/sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v18_evidence_hierarchy_YYYYMMDD_HHMMSS.json --out-dir results/manual_distill --cycle 18
+```

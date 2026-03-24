@@ -20,6 +20,10 @@ import sim_lab
 ROOT = Path(__file__).resolve().parent
 CHEATSHEET_MAX_BYTES = sim_lab.CHEATSHEET_MAX_BYTES
 FIXED_MODEL = "meta-llama/llama-3.3-70b-instruct"
+FIXED_WARMUP_BENCHMARK_STEMS = [
+    "normal_balanced10_true5_false5_seed0",
+    "normal_balanced10_true5_false5_seed1",
+]
 FIXED_BENCHMARK_STEMS = [
     "normal_balanced20_true10_false10_seed0",
     "normal_balanced20_true10_false10_seed1",
@@ -106,9 +110,37 @@ def ensure_keys(payload: dict, required: set[str], label: str) -> None:
 def validate_config(config: dict) -> None:
     ensure_keys(config, {"model", "copilot", "gates", "promotion", "search", "state", "artifacts"}, "config")
     ensure_keys(config["copilot"], {"command", "adapter_script", "model"}, "config.copilot")
-    ensure_keys(config["gates"], {"source_subset_path", "shuffle_seed", "items_per_label", "benchmark_stems"}, "config.gates")
-    ensure_keys(config["promotion"], {"required_seed_wins", "per_seed_true_accuracy_floor", "per_seed_false_accuracy_floor"}, "config.promotion")
-    ensure_keys(config["search"], {"shadow_mode", "max_cycles_per_run", "max_budget_usd", "max_oversize_streak", "copilot_timeout_s", "copilot_max_retries"}, "config.search")
+    ensure_keys(
+        config["gates"],
+        {"source_subset_path", "shuffle_seed", "items_per_label", "benchmark_stems", "warmup_items_per_label", "warmup_benchmark_stems"},
+        "config.gates",
+    )
+    ensure_keys(
+        config["promotion"],
+        {
+            "required_seed_wins",
+            "per_seed_true_accuracy_floor",
+            "per_seed_false_accuracy_floor",
+            "warmup_true_accuracy_floor",
+            "warmup_false_accuracy_floor",
+            "warmup_min_f1_score",
+            "warmup_min_parse_success_rate",
+        },
+        "config.promotion",
+    )
+    ensure_keys(
+        config["search"],
+        {
+            "shadow_mode",
+            "max_cycles_per_run",
+            "max_budget_usd",
+            "max_oversize_streak",
+            "copilot_timeout_s",
+            "copilot_max_retries",
+            "warmup_pass_streak_required",
+        },
+        "config.search",
+    )
     ensure_keys(config["state"], {"authoritative_champion_path", "promotion_target_path", "state_dir", "legacy_state_dir", "legacy_archive_root"}, "config.state")
     ensure_keys(config["artifacts"], {"candidate_dir"}, "config.artifacts")
 
@@ -151,6 +183,7 @@ def ensure_policy_lock(config: dict) -> dict:
     config["model"] = FIXED_MODEL
     gates = config.setdefault("gates", {})
     gates["benchmark_stems"] = FIXED_BENCHMARK_STEMS[:]
+    gates["warmup_benchmark_stems"] = FIXED_WARMUP_BENCHMARK_STEMS[:]
     config.setdefault("promotion", {})["required_seed_wins"] = 2
     validate_config(config)
     return config
@@ -196,6 +229,7 @@ def build_gate_benchmarks(config: dict) -> list[Path]:
     false_rows = [row for row in rows if row["answer"] is False]
 
     items_per_label = int(config["gates"]["items_per_label"])
+    warmup_items_per_label = int(config["gates"]["warmup_items_per_label"])
     shuffle_seed = int(config["gates"]["shuffle_seed"])
 
     rng_true = random.Random(shuffle_seed)
@@ -203,14 +237,31 @@ def build_gate_benchmarks(config: dict) -> list[Path]:
     rng_true.shuffle(true_rows)
     rng_false.shuffle(false_rows)
 
-    required = len(FIXED_BENCHMARK_STEMS) * items_per_label
+    warmup_required = len(FIXED_WARMUP_BENCHMARK_STEMS) * warmup_items_per_label
+    full_required = len(FIXED_BENCHMARK_STEMS) * items_per_label
+    required = warmup_required + full_required
     if len(true_rows) < required or len(false_rows) < required:
         raise ValueError("Not enough TRUE/FALSE rows to build fixed gates.")
 
     out_paths: list[Path] = []
+    for i, stem in enumerate(FIXED_WARMUP_BENCHMARK_STEMS):
+        chunk = true_rows[i * warmup_items_per_label:(i + 1) * warmup_items_per_label] + false_rows[
+            i * warmup_items_per_label:(i + 1) * warmup_items_per_label
+        ]
+        random.Random(100 + i).shuffle(chunk)
+        out = ROOT / "data" / "benchmark" / f"{stem}.jsonl"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with out.open("w", encoding="utf-8", newline="\n") as handle:
+            for row in chunk:
+                handle.write(json.dumps(row) + "\n")
+        out_paths.append(out)
+
+    full_offset = warmup_required
     for i, stem in enumerate(FIXED_BENCHMARK_STEMS):
-        chunk = true_rows[i * items_per_label:(i + 1) * items_per_label] + false_rows[
-            i * items_per_label:(i + 1) * items_per_label
+        start = full_offset + (i * items_per_label)
+        end = full_offset + ((i + 1) * items_per_label)
+        chunk = true_rows[start:end] + false_rows[
+            start:end
         ]
         random.Random(i).shuffle(chunk)
         out = ROOT / "data" / "benchmark" / f"{stem}.jsonl"
@@ -225,7 +276,7 @@ def build_gate_benchmarks(config: dict) -> list[Path]:
 def ensure_gates(config: dict) -> None:
     missing = [
         stem
-        for stem in FIXED_BENCHMARK_STEMS
+        for stem in FIXED_WARMUP_BENCHMARK_STEMS + FIXED_BENCHMARK_STEMS
         if not (ROOT / "data" / "benchmark" / f"{stem}.jsonl").exists()
     ]
     if missing:
@@ -374,6 +425,40 @@ def baseline_from_champion(config: dict, paths: dict) -> dict:
     return manifest
 
 
+def evaluate_runs(model: str, benchmark_stems: list[str], cheatsheet_path: Path) -> list[dict]:
+    return [summarize_result(run_eval(model, stem, cheatsheet_path)) for stem in benchmark_stems]
+
+
+def warmup_decide(config: dict, warmup_runs: list[dict]) -> tuple[bool, list[str]]:
+    reasons: list[str] = []
+    true_floor = float(config["promotion"]["warmup_true_accuracy_floor"])
+    false_floor = float(config["promotion"]["warmup_false_accuracy_floor"])
+    min_f1 = float(config["promotion"]["warmup_min_f1_score"])
+    min_parse = float(config["promotion"]["warmup_min_parse_success_rate"])
+
+    for run in warmup_runs:
+        seed = run["benchmark"]
+        if run["true_accuracy"] < true_floor:
+            reasons.append(f"{seed}: warmup true_accuracy {run['true_accuracy']:.3f} < floor {true_floor:.3f}")
+        if run["false_accuracy"] < false_floor:
+            reasons.append(f"{seed}: warmup false_accuracy {run['false_accuracy']:.3f} < floor {false_floor:.3f}")
+        if run["f1_score"] < min_f1:
+            reasons.append(f"{seed}: warmup f1_score {run['f1_score']:.3f} < floor {min_f1:.3f}")
+        if run["parse_success_rate"] < min_parse:
+            reasons.append(f"{seed}: warmup parse_success_rate {run['parse_success_rate']:.3f} < floor {min_parse:.3f}")
+
+    return (not reasons, reasons)
+
+
+def compute_warmup_streak(cycles: list[dict]) -> int:
+    streak = 0
+    for entry in reversed(cycles):
+        if not entry.get("warmup_passed"):
+            break
+        streak += 1
+    return streak
+
+
 def select_mutation_focus(paths: dict, cycle_number: int) -> str:
     cycles = read_jsonl(paths["cycles"])
     if not cycles:
@@ -392,7 +477,15 @@ def write_decision_artifact(paths: dict, cycle_number: int, payload: dict) -> Pa
     return out
 
 
-def run_adapter(config: dict, champion_path: Path, candidate_path: Path, failure_summary_path: Path, mutation_focus: str, brief_path: Path | None) -> None:
+def run_adapter(
+    config: dict,
+    champion_path: Path,
+    candidate_path: Path,
+    failure_summary_path: Path,
+    mutation_focus: str,
+    brief_path: Path | None,
+    witness_brief_path: Path | None,
+) -> None:
     adapter = ROOT / config["copilot"]["adapter_script"]
     cmd = [
         sys.executable,
@@ -419,6 +512,8 @@ def run_adapter(config: dict, champion_path: Path, candidate_path: Path, failure
         cmd.extend(["--copilot-model", copilot_model])
     if brief_path and brief_path.exists():
         cmd.extend(["--distillation-brief-path", str(brief_path)])
+    if witness_brief_path and witness_brief_path.exists():
+        cmd.extend(["--witness-brief-path", str(witness_brief_path)])
     subprocess.run(cmd, cwd=ROOT, check=True)
 
 
@@ -481,21 +576,25 @@ def write_status(paths: dict, manifest: dict | None, latest: dict | None) -> Non
             ]
         )
     if latest:
+        aggregate = latest.get("candidate_aggregate") or latest.get("warmup_aggregate")
         lines.extend(
             [
                 f"- Latest cycle: {latest['cycle_number']}",
                 f"- Candidate: {latest['candidate_label']}",
                 f"- Mutation focus: {latest['mutation_focus']}",
+                f"- Evaluation stage: {latest.get('evaluation_stage', 'full')}",
+                f"- Warmup passed: {latest.get('warmup_passed', False)}",
+                f"- Warmup streak: {latest.get('warmup_streak', 0)}",
                 f"- Promoted: {latest['promoted']}",
                 f"- Wins: {latest.get('wins', 0)}",
                 f"- Reasons: {', '.join(latest.get('reasons', [])) if latest.get('reasons') else 'passed'}",
                 (
                     "- Candidate aggregate: "
-                    f"acc={latest['candidate_aggregate']['accuracy']:.3f}, "
-                    f"f1={latest['candidate_aggregate']['f1_score']:.3f}, "
-                    f"true={latest['candidate_aggregate']['true_accuracy']:.3f}, "
-                    f"false={latest['candidate_aggregate']['false_accuracy']:.3f}, "
-                    f"parse={latest['candidate_aggregate']['parse_success_rate']:.3f}"
+                    f"acc={aggregate['accuracy']:.3f}, "
+                    f"f1={aggregate['f1_score']:.3f}, "
+                    f"true={aggregate['true_accuracy']:.3f}, "
+                    f"false={aggregate['false_accuracy']:.3f}, "
+                    f"parse={aggregate['parse_success_rate']:.3f}"
                 ),
             ]
         )
@@ -539,10 +638,14 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
     failure_summary.write_text(render_failure_summary(current), encoding="utf-8")
 
     latest_brief: Path | None = None
+    latest_witness_brief: Path | None = None
     if paths["distill_dir"].exists():
         briefs = sorted(paths["distill_dir"].glob("*_distillation_brief.md"))
         if briefs:
             latest_brief = briefs[-1]
+        witness_briefs = sorted(paths["distill_dir"].glob("*_witness_brief.md"))
+        if witness_briefs:
+            latest_witness_brief = witness_briefs[-1]
 
     run_adapter(
         config,
@@ -551,6 +654,7 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
         failure_summary,
         mutation_focus,
         latest_brief,
+        latest_witness_brief,
     )
 
     candidate_bytes = candidate_path.stat().st_size
@@ -566,6 +670,9 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
             "wins": 0,
             "reasons": [f"oversize candidate: {candidate_bytes} > {CHEATSHEET_MAX_BYTES}"],
             "rejection_kind": "oversize",
+            "evaluation_stage": "none",
+            "warmup_passed": False,
+            "warmup_streak": 0,
             "candidate_aggregate": {
                 "accuracy": 0.0,
                 "f1_score": 0.0,
@@ -599,7 +706,109 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
         write_status(paths, current, entry)
         return entry
 
-    gate_runs = [summarize_result(run_eval(config["model"], stem, candidate_path)) for stem in FIXED_BENCHMARK_STEMS]
+    prior_warmup_streak = compute_warmup_streak(cycles)
+    warmup_runs = evaluate_runs(config["model"], FIXED_WARMUP_BENCHMARK_STEMS, candidate_path)
+    warmup_aggregate = aggregate_metrics(warmup_runs)
+    warmup_passed, warmup_reasons = warmup_decide(config, warmup_runs)
+    warmup_streak = prior_warmup_streak + 1 if warmup_passed else 0
+    required_warmup_streak = int(config["search"].get("warmup_pass_streak_required", 1))
+
+    if not warmup_passed:
+        entry = {
+            "cycle_number": cycle_number,
+            "mode": "shadow" if config["search"].get("shadow_mode", True) else "promote",
+            "candidate_label": candidate_label,
+            "candidate_path": rel(candidate_path),
+            "candidate_bytes": candidate_bytes,
+            "mutation_focus": mutation_focus,
+            "promoted": False,
+            "wins": 0,
+            "reasons": warmup_reasons,
+            "rejection_kind": "warmup_collapse",
+            "evaluation_stage": "warmup_only",
+            "warmup_passed": False,
+            "warmup_streak": 0,
+            "warmup_runs": warmup_runs,
+            "warmup_aggregate": warmup_aggregate,
+            "candidate_aggregate": warmup_aggregate,
+            "timestamp": utc_now(),
+        }
+        validate_cycle_entry(entry)
+        decision_path = write_decision_artifact(
+            paths,
+            cycle_number,
+            {
+                "cycle_number": cycle_number,
+                "decision": "reject",
+                "decision_kind": "warmup_collapse",
+                "candidate_label": candidate_label,
+                "candidate_path": rel(candidate_path),
+                "candidate_bytes": candidate_bytes,
+                "warmup_runs": warmup_runs,
+                "warmup_aggregate": warmup_aggregate,
+                "warmup_passed": False,
+                "warmup_streak": 0,
+                "reasons": warmup_reasons,
+                "timestamp": utc_now(),
+            },
+        )
+        entry["decision_artifact"] = rel(decision_path)
+        append_jsonl(paths["cycles"], entry)
+        write_status(paths, current, entry)
+        return entry
+
+    if warmup_streak < required_warmup_streak:
+        reasons = [
+            (
+                f"warmup passed; holding full eval until non-collapse streak "
+                f"{warmup_streak}/{required_warmup_streak}"
+            )
+        ]
+        entry = {
+            "cycle_number": cycle_number,
+            "mode": "shadow" if config["search"].get("shadow_mode", True) else "promote",
+            "candidate_label": candidate_label,
+            "candidate_path": rel(candidate_path),
+            "candidate_bytes": candidate_bytes,
+            "mutation_focus": mutation_focus,
+            "promoted": False,
+            "wins": 0,
+            "reasons": reasons,
+            "rejection_kind": "warmup_only",
+            "evaluation_stage": "warmup_only",
+            "warmup_passed": True,
+            "warmup_streak": warmup_streak,
+            "warmup_runs": warmup_runs,
+            "warmup_aggregate": warmup_aggregate,
+            "candidate_aggregate": warmup_aggregate,
+            "timestamp": utc_now(),
+        }
+        validate_cycle_entry(entry)
+        decision_path = write_decision_artifact(
+            paths,
+            cycle_number,
+            {
+                "cycle_number": cycle_number,
+                "decision": "hold",
+                "decision_kind": "warmup_only",
+                "candidate_label": candidate_label,
+                "candidate_path": rel(candidate_path),
+                "candidate_bytes": candidate_bytes,
+                "warmup_runs": warmup_runs,
+                "warmup_aggregate": warmup_aggregate,
+                "warmup_passed": True,
+                "warmup_streak": warmup_streak,
+                "required_warmup_streak": required_warmup_streak,
+                "reasons": reasons,
+                "timestamp": utc_now(),
+            },
+        )
+        entry["decision_artifact"] = rel(decision_path)
+        append_jsonl(paths["cycles"], entry)
+        write_status(paths, current, entry)
+        return entry
+
+    gate_runs = evaluate_runs(config["model"], FIXED_BENCHMARK_STEMS, candidate_path)
     candidate_manifest = champion_manifest_from_runs(config, candidate_path, gate_runs)
 
     distill_artifacts = distill.run_distillation(
@@ -631,6 +840,11 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
         "wins": decision.wins,
         "reasons": decision.reasons,
         "rejection_kind": None if decision.promoted else "gate_failure",
+        "evaluation_stage": "full",
+        "warmup_passed": True,
+        "warmup_streak": warmup_streak,
+        "warmup_runs": warmup_runs,
+        "warmup_aggregate": warmup_aggregate,
         "candidate_aggregate": candidate_manifest["aggregate"],
         "candidate_runs": candidate_manifest["gate_runs"],
         "distillation": distill_artifacts,
@@ -649,6 +863,10 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
             "candidate_bytes": candidate_bytes,
             "wins": decision.wins,
             "required_seed_wins": int(config["promotion"]["required_seed_wins"]),
+            "warmup_runs": warmup_runs,
+            "warmup_aggregate": warmup_aggregate,
+            "warmup_streak": warmup_streak,
+            "required_warmup_streak": required_warmup_streak,
             "reasons": decision.reasons,
             "candidate_aggregate": candidate_manifest["aggregate"],
             "timestamp": utc_now(),

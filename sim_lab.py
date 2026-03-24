@@ -3,7 +3,7 @@
 SAIR Equational Theories — Stage 1 Simulation Lab
 
 Evaluation harness that mirrors the official SAIR playground and competition
-pipeline.  Supports both Ollama (local) and OpenRouter (cloud) inference.
+pipeline. Uses OpenRouter paid inference only.
 
 Matches the official format:
   - Official HF problem subsets: normal, hard, hard1, hard2
@@ -22,9 +22,6 @@ Usage:
     # Run with a cheatsheet
     python sim_lab.py --subset normal --n 100 --cheatsheet cheatsheets/v10_proof_required.txt --openrouter
 
-    # Ollama (local, offline)
-    python sim_lab.py --subset hard2
-
     # Compare two cheatsheets
     python sim_lab.py --compare cs1.txt cs2.txt --subset hard2 --n 50 --openrouter
 
@@ -38,6 +35,7 @@ import os
 import re
 import sys
 import time
+import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -45,13 +43,13 @@ from typing import Optional
 import jinja2
 import requests
 
+from distill import check_equation, first_failing_assignment
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct"
-DEFAULT_MODEL_OLLAMA = "llama3.3:70b"
 DEFAULT_NUM_PREDICT = 1024
 DEFAULT_REQUEST_TIMEOUT_S = 600          # 10 min — matches competition cap
 DEFAULT_REPEATS = 1
@@ -306,58 +304,6 @@ def parse_proof_quality(response: str, verdict: Optional[bool]) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Ollama inference
-# ---------------------------------------------------------------------------
-
-def check_ollama() -> bool:
-    """Check if Ollama is running."""
-    try:
-        r = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
-        return r.status_code == 200
-    except requests.ConnectionError:
-        return False
-
-
-def list_models() -> list[str]:
-    """List available Ollama models."""
-    try:
-        r = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
-        r.raise_for_status()
-        data = r.json()
-        return [m["name"] for m in data.get("models", [])]
-    except Exception:
-        return []
-
-
-def query_ollama(
-    prompt: str,
-    model: str,
-    temperature: float = 0.0,
-    num_predict: int = DEFAULT_NUM_PREDICT,
-    timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
-) -> tuple[str, float, Optional[dict[str, int]]]:
-    """Send a prompt to Ollama and return (response_text, elapsed_seconds)."""
-    t0 = time.time()
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": temperature,
-            "num_predict": num_predict,
-        },
-    }
-    r = requests.post(
-        f"{OLLAMA_URL}/api/generate",
-        json=payload,
-        timeout=timeout_s,
-    )
-    r.raise_for_status()
-    elapsed = time.time() - t0
-    return r.json().get("response", ""), elapsed, None
-
-
-# ---------------------------------------------------------------------------
 # OpenRouter inference (cloud — same provider as SAIR benchmark)
 # ---------------------------------------------------------------------------
 
@@ -409,8 +355,59 @@ def query_openrouter(
 # ---------------------------------------------------------------------------
 
 # Module-level backend state (set from CLI)
-_backend = "ollama"       # "ollama" or "openrouter"
-_api_key = ""             # OpenRouter API key when using cloud
+_api_key = ""             # OpenRouter API key
+_auto_solve_witnesses = False
+
+
+EXTENDED_WITNESS_LIBRARY: list[dict] = [
+    {"name": "LP", "rule": "x*y = x", "table": [[0, 0], [1, 1]]},
+    {"name": "RP", "rule": "x*y = y", "table": [[0, 1], [0, 1]]},
+    {"name": "C0", "rule": "x*y = 0", "table": [[0, 0], [0, 0]]},
+    {"name": "XOR", "rule": "x*y = (x+y) mod 2", "table": [[0, 1], [1, 0]]},
+    {"name": "Z3A", "rule": "x*y = (x+y) mod 3", "table": [[0, 1, 2], [1, 2, 0], [2, 0, 1]]},
+    {"name": "AND", "rule": "x*y = x AND y", "table": [[0, 0], [0, 1]]},
+    {"name": "OR", "rule": "x*y = x OR y", "table": [[0, 1], [1, 1]]},
+    {"name": "XNOR", "rule": "x*y = 1 iff x=y else 0", "table": [[1, 0], [0, 1]]},
+    {"name": "A2", "rule": "x*y = x AND (NOT y)", "table": [[0, 0], [1, 0]]},
+    {"name": "T3L", "rule": "custom ternary table [[0,0,0],[0,0,0],[0,1,0]]", "table": [[0, 0, 0], [0, 0, 0], [0, 1, 0]]},
+    {"name": "T3R", "rule": "custom ternary table [[0,0,0],[0,0,0],[0,0,1]]", "table": [[0, 0, 0], [0, 0, 0], [0, 0, 1]]},
+]
+
+
+def find_extended_verified_witness(eq1: str, eq2: str) -> Optional[dict]:
+    for witness in EXTENDED_WITNESS_LIBRARY:
+        table = witness["table"]
+        if not check_equation(eq1, table):
+            continue
+        failure = first_failing_assignment(eq2, table)
+        if failure is None:
+            continue
+        return {
+            "name": witness["name"],
+            "rule": witness["rule"],
+            "table": table,
+            "assignment": failure["assignment"],
+            "lhs_value": failure["lhs_value"],
+            "rhs_value": failure["rhs_value"],
+        }
+    return None
+
+
+def _format_assignment(assignment: dict[str, int]) -> str:
+    return ", ".join(f"{key}={value}" for key, value in sorted(assignment.items()))
+
+
+def _build_false_response_from_witness(witness: dict) -> str:
+    assignment_text = _format_assignment(witness["assignment"])
+    return (
+        "VERDICT: FALSE\n"
+        f"REASONING: Verified witness {witness['name']} separates E1 from E2.\n"
+        "PROOF: A deterministic small-magma check confirms E1 holds on all assignments and E2 fails on the assignment below.\n"
+        "COUNTEREXAMPLE:\n"
+        f"MAGMA: {witness['name']} ({witness['rule']})\n"
+        f"ASSIGNMENT: {assignment_text}\n"
+        f"CHECK: E1 holds; E2 fails with lhs={witness['lhs_value']} and rhs={witness['rhs_value']}."
+    )
 
 
 def evaluate_problem(
@@ -423,21 +420,28 @@ def evaluate_problem(
     request_timeout_s: int = DEFAULT_REQUEST_TIMEOUT_S,
 ) -> Result:
     """Evaluate a single problem (one repeat)."""
+    if _auto_solve_witnesses:
+        witness = find_extended_verified_witness(problem.equation1, problem.equation2)
+        if witness is not None:
+            response = _build_false_response_from_witness(witness)
+            return Result(
+                problem=problem,
+                repeat_id=repeat_id,
+                verdict=False,
+                raw_response=response,
+                elapsed_s=0.0,
+                parsed_ok=True,
+                usage=None,
+            )
+
     prompt = render_prompt(problem, cheatsheet)
     try:
-        if _backend == "openrouter":
-            response, elapsed, usage = query_openrouter(
-                prompt, model, _api_key,
-                temperature=temperature,
-                max_tokens=num_predict,
-                timeout_s=request_timeout_s,
-            )
-        else:
-            response, elapsed, usage = query_ollama(
-                prompt, model, temperature,
-                num_predict=num_predict,
-                timeout_s=request_timeout_s,
-            )
+        response, elapsed, usage = query_openrouter(
+            prompt, model, _api_key,
+            temperature=temperature,
+            max_tokens=num_predict,
+            timeout_s=request_timeout_s,
+        )
     except Exception as e:
         return Result(
             problem=problem,
@@ -745,9 +749,8 @@ Examples:
   python sim_lab.py --subset normal --n 100 --openrouter       # 100 normal problems (cloud)
   python sim_lab.py --subset hard2 --cheatsheet cs/v10.txt --openrouter  # with cheatsheet
   python sim_lab.py --subset hard2 --repeats 3 --openrouter    # 3 repeats per problem
-  python sim_lab.py --data data/benchmark/control_hard20_seed17.jsonl   # local file (Ollama)
+    python sim_lab.py --data data/benchmark/control_hard20_seed17.jsonl --openrouter
   python sim_lab.py --compare cs1.txt cs2.txt --subset hard2 --n 50 --openrouter
-  python sim_lab.py --list-models                              # show available Ollama models
   python sim_lab.py --list-subsets                             # show official HF subsets
         """,
     )
@@ -757,7 +760,7 @@ Examples:
     parser.add_argument("--data", default=None,
                         help="Path to local JSONL benchmark file")
     parser.add_argument("--model", default=DEFAULT_MODEL,
-                        help=f"Ollama model name (default: {DEFAULT_MODEL})")
+                        help=f"Evaluation model name (default: {DEFAULT_MODEL})")
     parser.add_argument("--cheatsheet", default=None,
                         help="Path to cheatsheet text file (complete prompt content)")
     parser.add_argument("--n", type=int, default=None,
@@ -788,22 +791,16 @@ Examples:
                         help="Shuffle problems before selecting")
     parser.add_argument("--quiet", action="store_true",
                         help="Suppress per-problem output")
-    parser.add_argument("--list-models", action="store_true",
-                        help="List available Ollama models and exit")
     parser.add_argument("--list-subsets", action="store_true",
                         help="List official HF problem subsets and exit")
     parser.add_argument("--openrouter", action="store_true",
-                        help="Use OpenRouter API instead of Ollama (requires --api-key or OPENROUTER_API_KEY env)")
+                        help="Retained for compatibility; OpenRouter paid inference is always used")
     parser.add_argument("--api-key", default=None,
                         help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
-    parser.add_argument("--ollama-url", default=None,
-                        help="Ollama API URL (default: http://localhost:11434)")
+    parser.add_argument("--auto-solve-witnesses", action="store_true",
+                        help="Deterministically answer FALSE when a verified witness exists in the built-in small witness library")
 
     args = parser.parse_args()
-
-    if args.ollama_url:
-        global OLLAMA_URL
-        OLLAMA_URL = args.ollama_url
 
     # List subsets mode
     if args.list_subsets:
@@ -815,50 +812,16 @@ Examples:
         print(f"\nDataset: https://huggingface.co/datasets/{HF_DATASET}")
         sys.exit(0)
 
-    # List models mode
-    if args.list_models:
-        if not check_ollama():
-            print("ERROR: Ollama is not running. Start it with: ollama serve")
-            sys.exit(1)
-        models = list_models()
-        print(f"Available Ollama models ({len(models)}):")
-        for m in models:
-            print(f"  • {m}")
-        sys.exit(0)
-
-    # Resolve backend
-    global _backend, _api_key
-    if args.openrouter:
-        _backend = "openrouter"
-        _api_key = args.api_key or OPENROUTER_API_KEY
-        if not _api_key:
-            print("ERROR: OpenRouter requires an API key.")
-            print("  Pass --api-key <key> or set OPENROUTER_API_KEY env var.")
-            sys.exit(1)
-        # Default model for OpenRouter
-        if args.model == DEFAULT_MODEL_OLLAMA:
-            args.model = DEFAULT_MODEL
-        print(f"Backend: OpenRouter (model: {args.model})")
-    else:
-        _backend = "ollama"
-        # Default model for Ollama
-        if args.model == DEFAULT_MODEL:
-            args.model = DEFAULT_MODEL_OLLAMA
-        # Check Ollama
-        if not check_ollama():
-            print("ERROR: Ollama is not running at", OLLAMA_URL)
-            print("Start Ollama with: ollama serve")
-            print("Or use --openrouter for cloud inference.")
-            sys.exit(1)
-        # Check model availability
-        available = list_models()
-        if available and args.model not in available:
-            print(f"WARNING: Model '{args.model}' not found locally.")
-            print(f"Available models: {', '.join(available)}")
-            print(f"Pull it with: ollama pull {args.model}")
-            resp = input("Continue anyway (Ollama will try to pull)? [y/N] ")
-            if resp.lower() != "y":
-                sys.exit(1)
+    # Resolve backend: paid OpenRouter only
+    global _api_key
+    _api_key = args.api_key or OPENROUTER_API_KEY
+    global _auto_solve_witnesses
+    _auto_solve_witnesses = args.auto_solve_witnesses
+    if not _api_key:
+        print("ERROR: OpenRouter requires an API key.")
+        print("  Set OPENROUTER_API_KEY in the environment or pass --api-key <key>.")
+        sys.exit(1)
+    print(f"Backend: OpenRouter (model: {args.model})")
 
     # Quick mode — uses hard2 by default
     if args.quick:
@@ -907,7 +870,7 @@ Examples:
     print(f"\n{'═' * 60}")
     print(f"  SAIR Equational Theories — Stage 1 Simulation Lab")
     print(f"{'═' * 60}")
-    print(f"  Backend:     {'OpenRouter' if _backend == 'openrouter' else 'Ollama'}")
+    print(f"  Backend:     OpenRouter")
     print(f"  Model:       {args.model}")
     print(f"  Source:      {source}")
     if args.answer_filter != "all":
@@ -920,6 +883,8 @@ Examples:
     print(f"  Timeout:     {args.request_timeout}s")
     if args.playground_parity:
         print("  Parity mode: playground")
+    if args.auto_solve_witnesses:
+        print("  Witness solve: deterministic FALSE auto-solver enabled")
     if args.cheatsheet:
         print(f"  Cheatsheet:  {args.cheatsheet}")
     print(f"{'═' * 60}\n")
@@ -951,6 +916,8 @@ Examples:
     else:
         ts = time.strftime("%Y%m%d_%H%M%S")
         cs_label = Path(args.cheatsheet).stem if args.cheatsheet else "no_cheatsheet"
+        if args.auto_solve_witnesses:
+            cs_label = f"{cs_label}_autowit"
         sub_label = args.subset or Path(args.data).stem if args.data else "local"
         output_path = f"results/sim_{args.model.replace(':', '_').replace('/', '_')}_{sub_label}_{cs_label}_{ts}.json"
 

@@ -8,7 +8,12 @@
   "gates": {
     "source_subset_path": "data/hf_cache/normal.jsonl",
     "shuffle_seed": 20260320,
+    "warmup_items_per_label": 5,
     "items_per_label": 10,
+    "warmup_benchmark_stems": [
+      "normal_balanced10_true5_false5_seed0",
+      "normal_balanced10_true5_false5_seed1"
+    ],
     "benchmark_stems": [
       "normal_balanced20_true10_false10_seed0",
       "normal_balanced20_true10_false10_seed1",
@@ -17,6 +22,10 @@
   },
   "promotion": {
     "required_seed_wins": 2,
+    "warmup_true_accuracy_floor": 0.4,
+    "warmup_false_accuracy_floor": 0.4,
+    "warmup_min_f1_score": 0.2,
+    "warmup_min_parse_success_rate": 1.0,
     "per_seed_true_accuracy_floor": 0.2,
     "per_seed_false_accuracy_floor": 0.5
   },
@@ -25,6 +34,7 @@
     "max_cycles_per_run": 3,
     "max_budget_usd": 0.5,
     "max_oversize_streak": 2,
+    "warmup_pass_streak_required": 2,
     "copilot_timeout_s": 300,
     "copilot_max_retries": 2
   },
