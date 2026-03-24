@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local logs and temp artifacts
+*.log
+
+# Generated cheatsheet candidates
+cheatsheets/generated/
+cheatsheets/generated_v2/
+
+# Large run artifacts (raw simulator outputs)
+results/sim_*.json
+
+# Legacy and local search artifacts
+results/vnext_search/
+results/vnext_search_legacy/
+results/vnext_search_v2/replay/
+results/vnext_search_v2/decisions/
+results/vnext_search_v2/context/
+results/vnext_search_v2/distilled_signals/
+results/vnext_search_v2/champions/history/
+results/vnext_search_v2/cycles.jsonl
+results/vnext_search_v2/status.md
+
+# Notebook / editor outputs
+.ipynb_checkpoints/

@@ -60,42 +60,57 @@ sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v13_p
 
 The scoreboard summary is in `results/scoreboard.md`.
 
-## Background VNext Search
+## Legacy Note
 
-This repo now includes an iterative search controller that only promotes `v_next`
-when a candidate beats the current champion consistently on the fixed balanced20
-normal gate suite using `meta-llama/llama-3.3-70b-instruct` in playground-parity
-mode.
+V1 search pipeline files and artifacts were retired during production cleanup.
+Only the V2 rebooted pipeline is supported.
 
-Build the fixed balanced20 gates:
+## VNext Search V2 (Reboot)
 
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py build-gates
-```
+The rebooted pipeline is implemented in `vnext_search_v2.py` with strict
+anti-collapse gating and a single authoritative baseline (`v13_proof_required`).
 
-Baseline the current champion across the 3-seed gate suite:
+Policy locks in V2:
 
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py baseline
-```
+- Fixed evaluation model: `meta-llama/llama-3.3-70b-instruct`
+- Fixed gate suite: `normal_balanced20_true10_false10_seed0/1/2`
+- Promotion gate: `2/3` seed wins + per-seed class floors
+- Default mode is `shadow` (evaluate candidates without auto-promotion)
 
-Run one candidate cycle:
+Bootstrap the reboot flow:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py cycle
+.\run_vnext_search_v2.ps1 -Action build-gates
+.\run_vnext_search_v2.ps1 -Action freeze-legacy
+.\run_vnext_search_v2.ps1 -Action init
+.\run_vnext_search_v2.ps1 -Action status
 ```
 
-Run a bounded unattended search loop:
+Run one strict cycle:
 
 ```powershell
-.\run_vnext_search.ps1 -Action loop -Cycles 3 -BudgetUsd 1.0 -Background
+.\run_vnext_search_v2.ps1 -Action cycle
 ```
 
-Check status:
+Run strict historical replay checks (defaults to v14/v16/v17 vs v13 baseline):
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe vnext_search.py status
+.\run_vnext_search_v2.ps1 -Action replay-check
 ```
 
-Workflow artifacts are written under `results/vnext_search/` and staged
-candidates are written under `cheatsheets/generated/`.
+Override replay labels:
+
+```powershell
+.\run_vnext_search_v2.ps1 -Action replay-check -Cheatsheets "v14_proof_required,v16_early_false_signal,v17_corrected"
+```
+
+Run bounded loop in background:
+
+```powershell
+.\run_vnext_search_v2.ps1 -Action loop -Cycles 3 -BudgetUsd 0.5 -Background
+```
+
+V2 decision artifacts are written to:
+
+- `results/vnext_search_v2/decisions/` (one decision JSON per cycle)
+- `results/vnext_search_v2/replay/` (replay-check outputs)

@@ -10,14 +10,14 @@ taxonomy and ranked pattern library.  Produces three artifacts per cycle:
     {out_dir}/{cycle:04d}_distillation_brief.md  — compact markdown brief for prompt injection
 
 Usage (standalone):
-    python distill.py --manifest results/vnext_search/champion_manifest.json
-                      --out-dir results/vnext_search/distilled_signals
+    python distill.py --manifest results/vnext_search_v2/champions/current.json
+                      --out-dir results/vnext_search_v2/distilled_signals
                       --cycle 6
 
-Usage (programmatic — called from vnext_search.py):
+Usage (programmatic — called from vnext_search_v2.py):
     import distill
     artifacts = distill.run_distillation(manifest=manifest, cycle_number=6,
-                                         out_dir=Path("results/vnext_search/distilled_signals"))
+                                         out_dir=Path("results/vnext_search_v2/distilled_signals"))
 """
 from __future__ import annotations
 
@@ -370,10 +370,10 @@ def main() -> None:
     )
     parser.add_argument(
         "--manifest", required=True,
-        help="Path to champion or candidate manifest JSON (from vnext_search champion_manifest.json)"
+        help="Path to champion or candidate manifest JSON (for vnext_search_v2)"
     )
     parser.add_argument(
-        "--out-dir", default="results/vnext_search/distilled_signals",
+        "--out-dir", default="results/vnext_search_v2/distilled_signals",
         help="Output directory for artifacts"
     )
     parser.add_argument(

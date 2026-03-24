@@ -1,0 +1,41 @@
+{
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "copilot": {
+    "command": "copilot",
+    "adapter_script": "invoke_copilot_candidate.py",
+    "model": ""
+  },
+  "gates": {
+    "source_subset_path": "data/hf_cache/normal.jsonl",
+    "shuffle_seed": 20260320,
+    "items_per_label": 10,
+    "benchmark_stems": [
+      "normal_balanced20_true10_false10_seed0",
+      "normal_balanced20_true10_false10_seed1",
+      "normal_balanced20_true10_false10_seed2"
+    ]
+  },
+  "promotion": {
+    "required_seed_wins": 2,
+    "per_seed_true_accuracy_floor": 0.2,
+    "per_seed_false_accuracy_floor": 0.5
+  },
+  "search": {
+    "shadow_mode": true,
+    "max_cycles_per_run": 3,
+    "max_budget_usd": 0.5,
+    "max_oversize_streak": 2,
+    "copilot_timeout_s": 300,
+    "copilot_max_retries": 2
+  },
+  "state": {
+    "authoritative_champion_path": "cheatsheets/v13_proof_required.txt",
+    "promotion_target_path": "cheatsheets/vnext_candidate_promoted.txt",
+    "state_dir": "results/vnext_search_v2",
+    "legacy_state_dir": "results/vnext_search",
+    "legacy_archive_root": "results/vnext_search_legacy"
+  },
+  "artifacts": {
+    "candidate_dir": "cheatsheets/generated_v2"
+  }
+}
