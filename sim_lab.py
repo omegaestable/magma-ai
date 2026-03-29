@@ -6,7 +6,7 @@ Evaluation harness that mirrors the official SAIR playground and competition
 pipeline. Uses OpenRouter paid inference only.
 
 Matches the official format:
-  - Official HF problem subsets: normal, hard, hard1, hard2
+    - Official HF problem subsets: normal, hard, hard1, hard2, hard3
   - Complete-prompt mode (cheatsheet IS the full prompt template)
   - 3 repeats per problem (configurable)
   - Strict F1 scoring (unparsed TRUE→FN, unparsed FALSE→FP)
@@ -18,6 +18,9 @@ Usage:
 
     # Run official hard2 subset via OpenRouter
     python sim_lab.py --subset hard2 --openrouter
+
+    # Run official hard3 subset via OpenRouter
+    python sim_lab.py --subset hard3 --openrouter
 
     # Run with a cheatsheet
     python sim_lab.py --subset normal --n 100 --cheatsheet cheatsheets/v10_proof_required.txt --openrouter
@@ -61,7 +64,7 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 # Official HuggingFace dataset info
 HF_DATASET = "SAIRfoundation/equational-theories-selected-problems"
-HF_SUBSETS = ("normal", "hard", "hard1", "hard2")
+HF_SUBSETS = ("normal", "hard", "hard1", "hard2", "hard3")
 HF_CACHE_DIR = Path(__file__).parent / "data" / "hf_cache"
 
 
@@ -748,6 +751,7 @@ Examples:
   python sim_lab.py --quick --openrouter                       # 5-problem smoke test (cloud)
   python sim_lab.py --subset normal --n 100 --openrouter       # 100 normal problems (cloud)
   python sim_lab.py --subset hard2 --cheatsheet cs/v10.txt --openrouter  # with cheatsheet
+    python sim_lab.py --subset hard3 --cheatsheet cs/v19.txt --openrouter  # official hard3 subset
   python sim_lab.py --subset hard2 --repeats 3 --openrouter    # 3 repeats per problem
     python sim_lab.py --data data/benchmark/control_hard20_seed17.jsonl --openrouter
   python sim_lab.py --compare cs1.txt cs2.txt --subset hard2 --n 50 --openrouter
@@ -809,6 +813,7 @@ Examples:
         print("  hard    — 200 problems (74 TRUE, 126 FALSE) human+AI co-curated")
         print("  hard1   — 69 problems (24 TRUE, 45 FALSE) deduped hard subset")
         print("  hard2   — 200 problems (100 TRUE, 100 FALSE) human+AI co-curated")
+        print("  hard3   — 400 problems (195 TRUE, 205 FALSE) official expanded hard subset")
         print(f"\nDataset: https://huggingface.co/datasets/{HF_DATASET}")
         sys.exit(0)
 

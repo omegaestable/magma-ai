@@ -1,0 +1,27 @@
+{
+  "benchmark_alignment": {
+    "patterns": {
+      "fp_rp_obstruction_missed": 14,
+      "generic_fp": 9,
+      "fn_no_projection_handle": 24,
+      "fp_new_variable_trap": 16,
+      "fp_lp_obstruction_missed": 4,
+      "fp_both_projections_missed": 1
+    },
+    "witnesses": {
+      "RP": 15,
+      "C0": 12,
+      "XNOR": 12,
+      "XOR": 12,
+      "AND": 5,
+      "LP": 5,
+      "OR": 5
+    },
+    "current_cheatsheet_sizes": {
+      "v19_noncollapse": 7171,
+      "v13_proof_required": 10857
+    },
+    "manifest_failure_count": 30
+  },
+  "closure_sample_size": 12
+}

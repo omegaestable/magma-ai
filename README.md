@@ -53,6 +53,14 @@ C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --d
 C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v13_proof_required.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
 ```
 
+Official HF subsets supported directly by `sim_lab.py` are `normal`, `hard`, `hard1`, `hard2`, and `hard3`.
+
+Example:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --subset hard3 --cheatsheet cheatsheets/v19_noncollapse.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
+```
+
 `sim_lab.py` now requires OpenRouter credentials and always uses the paid backend.
 
 ## Results
@@ -141,3 +149,39 @@ You can also distill a raw paid result JSON directly:
 ```powershell
 C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe distill.py --result-file results/sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v18_evidence_hierarchy_YYYYMMDD_HHMMSS.json --out-dir results/manual_distill --cycle 18
 ```
+
+## Proof Atlas
+
+Build the research-first proof atlas and render the first competition cheatsheet candidate:
+
+```powershell
+python proof_atlas.py
+```
+
+Artifacts are written to:
+
+- `results/proof_atlas/proof_atlas.jsonl`
+- `results/proof_atlas/proof_atlas.md`
+- `results/proof_atlas/validation_report.json`
+- `cheatsheets/generated_v2/cheatsheet_competition_v1.txt`
+
+Build the atlas-guided public-corpus development artifacts and generated prompt variants:
+
+```powershell
+python atlas_public_dev.py
+```
+
+This uses:
+
+- full `data/hf_cache/normal.jsonl`
+- full `data/hf_cache/hard1.jsonl`
+- held-out `data/hf_cache/hard2.jsonl`
+- held-out `data/hf_cache/hard3.jsonl`
+
+Artifacts are written to:
+
+- `results/proof_atlas_public/dataset_split.json`
+- `results/proof_atlas_public/public_corpus_alignment.jsonl`
+- `results/proof_atlas_public/public_corpus_family_report.json`
+- `results/proof_atlas_public/variant_decisions.json`
+- `cheatsheets/generated_v2/atlas_public/`

@@ -1,0 +1,30 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+OUTPUT LOCK
+- First line: VERDICT: TRUE or VERDICT: FALSE
+- Then brief REASONING, PROOF, COUNTEREXAMPLE.
+- FALSE requires a named witness with assignment/check.
+- TRUE requires a concrete rewrite, singleton-strength reason, or exact closure argument.
+
+FAST ELIMINATORS
+[S01 fresh_var] If E2 introduces fresh variables not in E1, treat that as a FALSE-search trigger: test LP/RP first and do not drift into a TRUE guess from shape alone.
+[F01 singleton_rewrite] If E1 is literally x = T and x is absent from T, use that singleton-strength collapse explicitly and answer TRUE.
+
+REFUTATION FAMILIES
+[F10 projection_family] If E1 preserves the left or right boundary variable and E2 breaks it, test LP/RP immediately; if one separates, answer FALSE with that named witness.
+[S02 projection_first] When left/right boundary variables differ, test LP then RP before any broader finite witness search.
+[S09 projection_witness] If LP or RP satisfies E1 but falsifies E2, stop there and output FALSE with that named witness and assignment.
+[F11 small_finite_magma] After LP/RP, try compact witnesses in a fixed ladder (C0, XOR, XNOR, AND, OR); FALSE needs one named magma and assignment showing E1 true, E2 false.
+[S10 finite_ladder] If projection fails, try C0, XOR, XNOR, AND, OR in that order and keep the first explicit separating witness.
+[F30 canonizer_confluence] Use this FALSE lane only when you can name the invariant or normal-form feature that E1 preserves and E2 breaks.
+[S12 canonizer_guard] Use canonizer/confluence only with a named invariant or normal-form mismatch that E1 preserves and E2 breaks.
+
+TRUE FAMILIES
+[F20 rewrite_metatheorem] Answer TRUE only from an explicit substitution or short rewrite chain from E1 to E2; variable-count similarity or failed witness search is not enough.
+[S08 rewrite_chain] For TRUE, write a short concrete substitution/rewrite chain, not broad algebraic commentary.
+[S07 closure_exact] Closure language is only safe when you can name the exact backbone step or chain carrying E1 to E2; otherwise fall back to a direct rewrite.
+
+BLOCKERS
+[S04 anti_fake_false] FALSE requires one explicit witness, with a named operation or table and an assignment/check showing E1 holds and E2 fails.
+[S06 finite_scope] Never promote a finite-only counterexample family into a general implication claim.
+[S05 anti_fake_true] TRUE requires an exact rewrite chain, singleton-strength collapse, or exact closure chain; 'no witness found' is never enough.
