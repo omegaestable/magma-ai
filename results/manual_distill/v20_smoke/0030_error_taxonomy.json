@@ -1,0 +1,575 @@
+{
+  "total_failures": 5,
+  "by_class": {
+    "false_negative": {
+      "count": 3,
+      "examples": [
+        {
+          "id": "normal_0154",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * (y * z)) * x) * y",
+          "equation2": "x = (y * z) * (w * z)",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "y",
+            "rl_lhs1": "x",
+            "rl_rhs1": "y",
+            "rl_lhs2": "x",
+            "rl_rhs2": "z",
+            "vars_e1": [
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [
+              "w"
+            ],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "y": 3,
+              "x": 2,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "y": 1,
+              "w": 1,
+              "x": 1,
+              "z": 2
+            }
+          },
+          "verified_witnesses": []
+        },
+        {
+          "id": "normal_0910",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * ((z * x) * x)) * z",
+          "equation2": "x = x * (y * (y * (z * x)))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "z",
+            "rl_lhs2": "x",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": true,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "y": 1,
+              "x": 3,
+              "z": 2
+            },
+            "e2_var_multiplicity": {
+              "y": 2,
+              "x": 3,
+              "z": 1
+            }
+          },
+          "verified_witnesses": []
+        },
+        {
+          "id": "normal_0430",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * (z * (w * y))",
+          "equation2": "x = ((y * x) * x) * x",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "y",
+            "rl_lhs1": "x",
+            "rl_rhs1": "y",
+            "rl_lhs2": "x",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": true,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "y": 2,
+              "w": 1,
+              "x": 2,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "y": 1,
+              "x": 4
+            }
+          },
+          "verified_witnesses": []
+        }
+      ]
+    },
+    "false_positive": {
+      "count": 2,
+      "examples": [
+        {
+          "id": "normal_0411",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x = ((y * x) * x) * (y * x)",
+          "equation2": "x = (x * y) * (y * (x * y))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "x",
+            "rl_lhs2": "x",
+            "rl_rhs2": "y",
+            "vars_e1": [
+              "x",
+              "y"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": true,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": true,
+            "e1_var_multiplicity": {
+              "y": 2,
+              "x": 4
+            },
+            "e2_var_multiplicity": {
+              "y": 3,
+              "x": 3
+            }
+          },
+          "verified_witnesses": [
+            {
+              "name": "RP",
+              "rule": "x*y = y",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            },
+            {
+              "name": "XOR",
+              "rule": "x*y = (x+y) mod 2",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            },
+            {
+              "name": "XNOR",
+              "rule": "x*y = 1 iff x=y else 0",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            }
+          ]
+        },
+        {
+          "id": "normal_0129",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x = y * (((z * z) * w) * x)",
+          "equation2": "x = (y * z) * (w * (x * w))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "y",
+            "rl_lhs1": "x",
+            "rl_rhs1": "x",
+            "rl_lhs2": "x",
+            "rl_rhs2": "w",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": true,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": true,
+            "e1_var_multiplicity": {
+              "y": 1,
+              "w": 1,
+              "x": 2,
+              "z": 2
+            },
+            "e2_var_multiplicity": {
+              "y": 1,
+              "w": 2,
+              "x": 2,
+              "z": 1
+            }
+          },
+          "verified_witnesses": [
+            {
+              "name": "RP",
+              "rule": "x*y = y",
+              "assignment": {
+                "w": 0,
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "lhs_value": 1,
+              "rhs_value": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "by_pattern": {
+    "fn_no_projection_handle": {
+      "count": 3,
+      "description": "FN: No LP/RP obstruction available; TRUE proof missed",
+      "examples": [
+        {
+          "id": "normal_0154",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = ((y * (y * z)) * x) * y",
+          "equation2": "x = (y * z) * (w * z)",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "y",
+            "rl_lhs1": "x",
+            "rl_rhs1": "y",
+            "rl_lhs2": "x",
+            "rl_rhs2": "z",
+            "vars_e1": [
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [
+              "w"
+            ],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "y": 3,
+              "x": 2,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "y": 1,
+              "w": 1,
+              "x": 1,
+              "z": 2
+            }
+          },
+          "verified_witnesses": []
+        },
+        {
+          "id": "normal_0910",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * ((z * x) * x)) * z",
+          "equation2": "x = x * (y * (y * (z * x)))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "z",
+            "rl_lhs2": "x",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": true,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "y": 1,
+              "x": 3,
+              "z": 2
+            },
+            "e2_var_multiplicity": {
+              "y": 2,
+              "x": 3,
+              "z": 1
+            }
+          },
+          "verified_witnesses": []
+        },
+        {
+          "id": "normal_0430",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * (z * (w * y))",
+          "equation2": "x = ((y * x) * x) * x",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "y",
+            "rl_lhs1": "x",
+            "rl_rhs1": "y",
+            "rl_lhs2": "x",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": true,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "y": 2,
+              "w": 1,
+              "x": 2,
+              "z": 1
+            },
+            "e2_var_multiplicity": {
+              "y": 1,
+              "x": 4
+            }
+          },
+          "verified_witnesses": []
+        }
+      ]
+    },
+    "fp_rp_obstruction_missed": {
+      "count": 2,
+      "description": "FP: RP obstruction was applicable but missed",
+      "examples": [
+        {
+          "id": "normal_0411",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x = ((y * x) * x) * (y * x)",
+          "equation2": "x = (x * y) * (y * (x * y))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "x",
+            "rl_lhs2": "x",
+            "rl_rhs2": "y",
+            "vars_e1": [
+              "x",
+              "y"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": true,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": true,
+            "e1_var_multiplicity": {
+              "y": 2,
+              "x": 4
+            },
+            "e2_var_multiplicity": {
+              "y": 3,
+              "x": 3
+            }
+          },
+          "verified_witnesses": [
+            {
+              "name": "RP",
+              "rule": "x*y = y",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            },
+            {
+              "name": "XOR",
+              "rule": "x*y = (x+y) mod 2",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            },
+            {
+              "name": "XNOR",
+              "rule": "x*y = 1 iff x=y else 0",
+              "assignment": {
+                "x": 0,
+                "y": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            }
+          ]
+        },
+        {
+          "id": "normal_0129",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x = y * (((z * z) * w) * x)",
+          "equation2": "x = (y * z) * (w * (x * w))",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "y",
+            "rl_lhs1": "x",
+            "rl_rhs1": "x",
+            "rl_lhs2": "x",
+            "rl_rhs2": "w",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": true,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": true,
+            "e1_var_multiplicity": {
+              "y": 1,
+              "w": 1,
+              "x": 2,
+              "z": 2
+            },
+            "e2_var_multiplicity": {
+              "y": 1,
+              "w": 2,
+              "x": 2,
+              "z": 1
+            }
+          },
+          "verified_witnesses": [
+            {
+              "name": "RP",
+              "rule": "x*y = y",
+              "assignment": {
+                "w": 0,
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "lhs_value": 1,
+              "rhs_value": 0
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -119,6 +119,8 @@ def validate_config(config: dict) -> None:
         config["promotion"],
         {
             "required_seed_wins",
+            "min_average_accuracy",
+            "min_seed_accuracy",
             "per_seed_true_accuracy_floor",
             "per_seed_false_accuracy_floor",
             "warmup_true_accuracy_floor",
@@ -389,6 +391,13 @@ def load_current_manifest(paths: dict) -> dict | None:
     return manifest
 
 
+def authoritative_manifest_drifted(config: dict, manifest: dict | None) -> bool:
+    if manifest is None:
+        return True
+    configured_path = config["state"]["authoritative_champion_path"].replace("\\", "/")
+    return manifest.get("champion_path") != configured_path
+
+
 def save_champion_manifest(paths: dict, manifest: dict) -> None:
     validate_manifest(manifest)
     validate_champion_file(manifest)
@@ -528,17 +537,27 @@ def strict_decide(config: dict, champion_manifest: dict, candidate_manifest: dic
     reasons: list[str] = []
     wins = 0
     req_wins = int(config["promotion"]["required_seed_wins"])
+    min_average_accuracy = float(config["promotion"]["min_average_accuracy"])
+    min_seed_accuracy = float(config["promotion"]["min_seed_accuracy"])
     true_floor = float(config["promotion"]["per_seed_true_accuracy_floor"])
     false_floor = float(config["promotion"]["per_seed_false_accuracy_floor"])
 
     champ_by_seed = {r["benchmark"]: r for r in champion_manifest["gate_runs"]}
     cand_by_seed = {r["benchmark"]: r for r in candidate_manifest["gate_runs"]}
 
+    if candidate_manifest["aggregate"]["accuracy"] < min_average_accuracy:
+        reasons.append(
+            "aggregate accuracy "
+            f"{candidate_manifest['aggregate']['accuracy']:.3f} < target {min_average_accuracy:.3f}"
+        )
+
     for seed in FIXED_BENCHMARK_STEMS:
         c = cand_by_seed[seed]
         h = champ_by_seed[seed]
         if c["accuracy"] > h["accuracy"]:
             wins += 1
+        if c["accuracy"] < min_seed_accuracy:
+            reasons.append(f"{seed}: accuracy {c['accuracy']:.3f} < floor {min_seed_accuracy:.3f}")
         if c["true_accuracy"] < true_floor:
             reasons.append(f"{seed}: true_accuracy {c['true_accuracy']:.3f} < floor {true_floor:.3f}")
         if c["false_accuracy"] < false_floor:
@@ -622,7 +641,7 @@ def cmd_init(config: dict, paths: dict) -> None:
 def cmd_cycle(config: dict, paths: dict) -> dict:
     ensure_gates(config)
     current = load_current_manifest(paths)
-    if current is None:
+    if authoritative_manifest_drifted(config, current):
         current = baseline_from_champion(config, paths)
 
     cycles = read_jsonl(paths["cycles"])
@@ -863,6 +882,8 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
             "candidate_bytes": candidate_bytes,
             "wins": decision.wins,
             "required_seed_wins": int(config["promotion"]["required_seed_wins"]),
+            "required_average_accuracy": float(config["promotion"]["min_average_accuracy"]),
+            "required_min_seed_accuracy": float(config["promotion"]["min_seed_accuracy"]),
             "warmup_runs": warmup_runs,
             "warmup_aggregate": warmup_aggregate,
             "warmup_streak": warmup_streak,
@@ -904,7 +925,10 @@ def cmd_loop(config: dict, paths: dict, max_cycles: int, max_budget_usd: float) 
 
 
 def cmd_status(paths: dict) -> None:
+    config = ensure_policy_lock(load_json(ROOT / "vnext_search_v2_config.json"))
     manifest = load_current_manifest(paths)
+    if authoritative_manifest_drifted(config, manifest):
+        manifest = baseline_from_champion(config, paths)
     cycles = read_jsonl(paths["cycles"])
     latest = cycles[-1] if cycles else None
     write_status(paths, manifest, latest)
@@ -974,6 +998,8 @@ def cmd_replay_check(config: dict, paths: dict, cheatsheet_labels: list[str]) ->
         "baseline": baseline_label,
         "model": config["model"],
         "benchmarks": FIXED_BENCHMARK_STEMS,
+        "required_average_accuracy": float(config["promotion"]["min_average_accuracy"]),
+        "required_min_seed_accuracy": float(config["promotion"]["min_seed_accuracy"]),
         "results": results,
     }
     paths["replay_dir"].mkdir(parents=True, exist_ok=True)

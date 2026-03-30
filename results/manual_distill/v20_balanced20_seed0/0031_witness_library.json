@@ -1,0 +1,46 @@
+{
+  "ranked_witnesses": [
+    {
+      "rank": 1,
+      "witness": "C0",
+      "count": 1,
+      "rule": "x*y = 0",
+      "examples": [
+        {
+          "id": "normal_0790",
+          "equation1": "x * (x * y) = (x * z) * y",
+          "equation2": "x = ((x * x) * x) * (y * z)",
+          "rule": "x*y = 0",
+          "assignment": {
+            "x": 1,
+            "y": 0,
+            "z": 0
+          },
+          "lhs_value": 1,
+          "rhs_value": 0
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "witness": "RP",
+      "count": 1,
+      "rule": "x*y = y",
+      "examples": [
+        {
+          "id": "normal_0790",
+          "equation1": "x * (x * y) = (x * z) * y",
+          "equation2": "x = ((x * x) * x) * (y * z)",
+          "rule": "x*y = y",
+          "assignment": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "lhs_value": 0,
+          "rhs_value": 1
+        }
+      ]
+    }
+  ]
+}

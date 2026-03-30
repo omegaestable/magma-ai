@@ -1,0 +1,182 @@
+{
+  "ranked_patterns": [
+    {
+      "rank": 1,
+      "pattern": "fn_no_projection_handle",
+      "count": 8,
+      "description": "FN: No LP/RP obstruction available; TRUE proof missed",
+      "examples": [
+        {
+          "id": "normal_0289",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = (y * x) * ((z * w) * z)",
+          "equation2": "x * y = (x * x) * x",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "x",
+            "rl_rhs1": "z",
+            "rl_lhs2": "y",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "w": 1,
+              "x": 2,
+              "z": 2,
+              "y": 1
+            },
+            "e2_var_multiplicity": {
+              "x": 4,
+              "y": 1
+            }
+          },
+          "verified_witnesses": []
+        },
+        {
+          "id": "normal_0638",
+          "ground_truth": true,
+          "predicted": false,
+          "equation1": "x = y * ((z * (x * w)) * u)",
+          "equation2": "x * y = (z * (x * y)) * x",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "y",
+            "ll_lhs2": "x",
+            "ll_rhs2": "z",
+            "rl_lhs1": "x",
+            "rl_rhs1": "u",
+            "rl_lhs2": "y",
+            "rl_rhs2": "x",
+            "vars_e1": [
+              "u",
+              "w",
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": false,
+            "lp_satisfies_e2": false,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": false,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": false,
+            "e1_var_multiplicity": {
+              "z": 1,
+              "u": 1,
+              "w": 1,
+              "y": 1,
+              "x": 2
+            },
+            "e2_var_multiplicity": {
+              "x": 3,
+              "z": 1,
+              "y": 2
+            }
+          },
+          "verified_witnesses": []
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "pattern": "fp_rp_obstruction_missed",
+      "count": 1,
+      "description": "FP: RP obstruction was applicable but missed",
+      "examples": [
+        {
+          "id": "normal_0790",
+          "ground_truth": false,
+          "predicted": true,
+          "equation1": "x * (x * y) = (x * z) * y",
+          "equation2": "x = ((x * x) * x) * (y * z)",
+          "features": {
+            "ll_lhs1": "x",
+            "ll_rhs1": "x",
+            "ll_lhs2": "x",
+            "ll_rhs2": "x",
+            "rl_lhs1": "y",
+            "rl_rhs1": "y",
+            "rl_lhs2": "x",
+            "rl_rhs2": "z",
+            "vars_e1": [
+              "x",
+              "y",
+              "z"
+            ],
+            "vars_e2": [
+              "x",
+              "y",
+              "z"
+            ],
+            "new_vars_in_e2": [],
+            "lp_satisfies_e1": true,
+            "lp_satisfies_e2": true,
+            "lp_obstruction": false,
+            "rp_satisfies_e1": true,
+            "rp_satisfies_e2": false,
+            "rp_obstruction": true,
+            "e1_var_multiplicity": {
+              "x": 3,
+              "z": 1,
+              "y": 2
+            },
+            "e2_var_multiplicity": {
+              "x": 4,
+              "z": 1,
+              "y": 1
+            }
+          },
+          "verified_witnesses": [
+            {
+              "name": "RP",
+              "rule": "x*y = y",
+              "assignment": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "lhs_value": 0,
+              "rhs_value": 1
+            },
+            {
+              "name": "C0",
+              "rule": "x*y = 0",
+              "assignment": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              },
+              "lhs_value": 1,
+              "rhs_value": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

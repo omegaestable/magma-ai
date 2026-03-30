@@ -22,6 +22,8 @@
   },
   "promotion": {
     "required_seed_wins": 2,
+    "min_average_accuracy": 0.7,
+    "min_seed_accuracy": 0.6,
     "warmup_true_accuracy_floor": 0.4,
     "warmup_false_accuracy_floor": 0.4,
     "warmup_min_f1_score": 0.2,
@@ -39,8 +41,8 @@
     "copilot_max_retries": 2
   },
   "state": {
-    "authoritative_champion_path": "cheatsheets/v13_proof_required.txt",
-    "promotion_target_path": "cheatsheets/vnext_candidate_promoted.txt",
+    "authoritative_champion_path": "cheatsheets/v19_noncollapse.txt",
+    "promotion_target_path": "cheatsheets/v20_candidate_promoted.txt",
     "state_dir": "results/vnext_search_v2",
     "legacy_state_dir": "results/vnext_search",
     "legacy_archive_root": "results/vnext_search_legacy"

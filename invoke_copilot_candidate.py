@@ -53,7 +53,21 @@ Hard constraints:
 - Prefer a minimal targeted diff, not a rewrite.
 - No unconditional TRUE or FALSE fallback.
 - Do not invent counterexamples.
-- Optimize for balanced normal gates, not skewed samples.
+- Optimize for the three fixed balanced20 gates with a target of at least 0.70 average accuracy, no seed below 0.60 accuracy, and no class collapse.
+
+Approved v20-safe directions:
+- strengthen exact singleton and exact rewrite TRUE proofs
+- keep fresh variables as FALSE-search triggers, not automatic FALSE blockers
+- keep projection-first FALSE routing and compact finite-witness routing
+- keep canonizer/invariant FALSE language only when the invariant is concrete and named
+- preserve strict witness-validity wording from the champion
+
+Unsafe directions to avoid:
+- graph-backed automatic TRUE lanes such as C4, C5, or C41
+- generic closure-transitive or family-name TRUE claims without an explicit chain
+- benchmark-specific examples or hardcoded equations
+- long C0 or self-correction prose that encourages rambling fake proofs
+- stacking extra FALSE blockers unless paired with a tested precise TRUE escape hatch
 
 Output only the revised cheatsheet text.
 """
