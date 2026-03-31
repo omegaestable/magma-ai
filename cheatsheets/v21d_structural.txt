@@ -1,0 +1,114 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT ANSWER: TRUE. Switch to FALSE only when a test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is "x = T" and x does NOT appear anywhere in T → TRUE at once.
+
+═══ THE 4 TESTS ═══
+For each test: decide whether E1 HOLDS, then whether E2 HOLDS.
+SEPARATION = E1 HOLDS and E2 FAILS on the same test → answer FALSE.
+(E1 FAILS and E2 HOLDS is NOT a separation. Move to the next test.)
+After all 4 tests, if no separation → answer TRUE.
+
+STEP 0 — SPLIT EACH EQUATION ON THE = SIGN:
+Before any test, write out the four pieces:
+  E1_left = everything before the = in E1
+  E1_right = everything after the = in E1
+  E2_left = everything before the = in E2
+  E2_right = everything after the = in E2
+
+Example: "x = (y * z) * w"  →  left = "x"    right = "(y * z) * w"
+Example: "x * y = (z * w) * x"  →  left = "x * y"    right = "(z * w) * x"
+
+NOTE: When an equation is "x = (big expression with * in it)",
+the left side is JUST "x" — a single variable with NO star symbol.
+
+─── TEST 1: LP (first variable) ───
+Find the first letter (a–z) in E_left and the first letter in E_right.
+Same → HOLDS.  Different → FAILS.
+
+  "x = (y * z) * x"  →  first(left)=x  first(right)=y  → FAILS
+  "x * y = (x * z) * w"  →  first(left)=x  first(right)=x  → HOLDS
+
+─── TEST 2: RP (last variable) ───
+Find the last letter in E_left and the last letter in E_right.
+Same → HOLDS.  Different → FAILS.
+
+  "x = y * (z * x)"  →  last(left)=x  last(right)=x  → HOLDS
+  "x = (x * y) * z"  →  last(left)=x  last(right)=z  → FAILS
+
+─── TEST 3: C0 (star presence) ───
+Does E_left contain a * symbol?  Does E_right contain a * symbol?
+
+  Both contain * → HOLDS
+  Neither contains * and both are the same variable → HOLDS
+  Any other combination → FAILS
+
+KEY FACT: If the equation is "x = T", the left side is "x" alone — NO star.
+So C0 always FAILS for any "x = T" equation. C0 can only HOLD when the left
+side itself contains *, such as "x * y = ...".
+
+  "x * y = (z * w) * x"  → left has *, right has *  → HOLDS
+  "x = (y * z) * w"  → left "x" has NO *  → FAILS
+  "x = x"  → neither has *, same var  → HOLDS
+
+─── TEST 4: VARS (variable sets) ───
+List every distinct letter in E_left → set L.
+List every distinct letter in E_right → set R.
+
+  Both sides have *:  L = R → HOLDS.  L ≠ R → FAILS.
+  Neither has * and same variable → HOLDS.
+  One side bare variable v (no *), other has *:
+      HOLDS only when the * side uses ONLY variable v.
+  Otherwise → FAILS.
+
+  "x * y = (y * x) * y"  →  L={x,y}  R={x,y}  → HOLDS
+  "x = (x * y) * z"  →  bare x vs {x,y,z}  → FAILS
+  "x = x * x"  →  bare x vs only {x}  → HOLDS
+
+═══ PROCEDURE — do the analysis FIRST, then write the verdict LAST ═══
+1. Write the Step 0 split for both equations.
+2. For each of LP, RP, C0, VARS: state E1 result, state E2 result.
+   If E1=HOLD and E2=FAIL → note "SEPARATION by [test name]" and stop tests.
+3. After the analysis, write the output block:
+   VERDICT: TRUE or FALSE
+   REASONING: (one sentence)
+   PROOF: (brief)
+   COUNTEREXAMPLE: (if FALSE: name the test; if TRUE: "None")
+
+═══ WORKED EXAMPLE ═══
+E1: x * y = (y * x) * x    E2: x = (x * y) * z
+
+Step 0:
+  E1_left = "x * y"              E1_right = "(y * x) * x"
+  E2_left = "x"                  E2_right = "(x * y) * z"
+
+LP: E1 first(left)=x first(right)=y → x≠y → FAIL
+    E2 first(left)=x first(right)=x → HOLD
+    E1=FAIL, E2=HOLD → NOT a separation. Continue.
+
+RP: E1 last(left)=y  last(right)=x → FAIL
+    E2 last(left)=x  last(right)=z → FAIL
+    Both FAIL → no separation. Continue.
+
+C0: E1 left "x * y" has * ✓, right has * ✓ → HOLD
+    E2 left "x" → NO star → FAIL
+    E1=HOLD, E2=FAIL → SEPARATION by C0. Stop.
+
+VERDICT: FALSE
+REASONING: C0 separates E1 from E2.
+PROOF: E1 holds on C0 (both sides contain *). E2 fails (left side "x" has no *).
+COUNTEREXAMPLE: Witness C0.
+
+═══ REMINDERS ═══
+• Text-inspection only. No arithmetic, no Cayley tables.
+• LP / RP: first / last letter on each side of =.
+• C0: look for * on the LEFT side and on the RIGHT side separately.
+  "x = stuff" means left side is "x" — it has NO star.
+• VARS: list distinct letters on each side.
+• Each test checks WITHIN one equation (left vs right of =).
+• SEPARATION = E1 holds AND E2 fails. If reversed, keep going.
+• Do the full analysis first. Write VERDICT last.
+• Default is TRUE. Only FALSE with a proven separation.

@@ -1,0 +1,132 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+OUTPUT LOCK:
+- Think silently.
+- Output exactly these four headers in this order:
+  VERDICT:
+  REASONING:
+  PROOF:
+  COUNTEREXAMPLE:
+- First line must be exactly VERDICT: TRUE or VERDICT: FALSE.
+- Keep every section brief.
+- Never output a second VERDICT block.
+
+CORE POLICY:
+- FALSE is allowed only from a verified witness.
+- Check witnesses in this order: LP, RP, C0, XOR, XNOR, Z3A, AND, OR, A2, T3L, T3R.
+- Structural cues decide what to test next; they are never by themselves a FALSE proof.
+- The x-target TRUE lane applies only when both equations are literally x = term.
+- A left side such as x*y, (x*y)*z, y*x, or any nontrivial product is not literally x = term.
+- If either equation is not literally x = term, never say both equations are literal x = term, never cite x-target TRUE cues, and never use the x-target TRUE lane.
+- If no verified FALSE witness survives, TRUE is the default safe verdict.
+
+PAPER-BACKED QUICK RULES:
+- Singleton source rule: if E1 is literally x = T and x does not appear anywhere in T, then E1 is singleton-equivalent by the paper's rewriting rule. In that case answer TRUE immediately.
+- Exact rewrite rule: answer TRUE only if you can write a short literal substitution or rewrite chain from E1 to E2 without inventing associativity, commutativity, cancellation, or graph-family shortcuts.
+
+WITNESS RULES:
+1. LP witness: x*y = x.
+- For x = T, LP is valid only when the leftmost leaf of T is literally x.
+- For non-x = T equations, LP is valid only when whole-side rewriting makes E1 a literal identity such as x = x or z = z.
+- If LP rewrites E1 to x = y, x = z, z = w, or any non-identity variable equation, discard LP.
+- If E1 passes LP and E2 is x = U with leftmost leaf not x, LP refutes.
+
+2. RP witness: x*y = y.
+- For x = T, RP is valid only when the rightmost leaf of T is literally x.
+- For non-x = T equations, RP is valid only when whole-side rewriting makes E1 a literal identity such as x = x or z = z.
+- If RP rewrites E1 to x = y, x = z, z = w, or any non-identity variable equation, discard RP.
+- If E1 passes RP and E2 is x = U with rightmost leaf not x, RP refutes.
+
+3. C0 witness: x*y = 0.
+- Every composite product becomes 0, but a bare variable stays itself.
+- C0 is usable only if the full C0 rewrite makes E1 a literal identity such as 0 = 0 or x = x.
+- If the full C0 rewrite of E1 is x = 0, x = y, x = z, 0 = x, or any non-identity equation, discard C0 immediately.
+- If the full C0 rewrite of E2 is 0 = 0, x = x, or any literal identity, discard C0 immediately.
+- Never call C0 verified unless CHECK explicitly shows E1 true and E2 false.
+
+4. Finite witnesses:
+- XOR on Z/2
+- XNOR on {0,1}
+- Z3A on Z/3
+- AND on {0,1}
+- OR on {0,1}
+- A2 on {0,1}: x*y = x AND (NOT y)
+- T3L table [[0,0,0],[0,0,0],[0,1,0]]
+- T3R table [[0,0,0],[0,0,0],[0,0,1]]
+
+FALSE SEARCH PRIORITIES:
+- Immediate projection rule: if E1 is x = T, RHS(E1) starts with x, and RHS(E2) does not, answer FALSE by LP.
+- Immediate projection rule: if E1 is x = T, RHS(E1) ends with x, and RHS(E2) does not, answer FALSE by RP.
+- Never reverse those rules: if RHS(E1) does not start with x, LP does not refute just because RHS(E2) starts with x; if RHS(E1) does not end with x, RP does not refute just because RHS(E2) ends with x.
+- If E2 has fresh variables and LP fails, test RP, XOR, XNOR, AND, OR, and A2 before TRUE.
+- If LP/RP/C0 fail on a low-variable pair, do not stop early: AND, OR, and A2 are mandatory before TRUE.
+- If equation shape drifts between x = T and x*y = T, or between x = T and a non-x-target equation, test AND, OR, A2, T3L, and T3R before fallback TRUE.
+- If E1 is not literally x = term but E2 is literally x = term, this shape is FALSE-leaning. Do not use x-target TRUE cues here; still output FALSE only from a verified witness.
+
+EXACT TRUE LANE:
+- Run this only when no verified FALSE witness survived, unless the singleton rule already fired.
+- Use this lane only when you can state a short concrete chain whose steps are visibly justified by E1.
+- Legal exact-rewrite moves include substituting the RHS of E1 for x inside a larger context such as x*y or y*x, but every step must be written literally.
+- Keep parentheses literal.
+- If the proof cites associativity, commutativity, closure, family-name reasoning, or symbol edits such as x/x, the exact TRUE lane is invalid.
+- If the chain is not explicit in the formulas, do not use this lane.
+
+NARROW TRUE LANE:
+- Run this only after all witness checks failed and the exact TRUE lane did not fire.
+- This lane applies only when both equations are literally x = term.
+- Extra variables in E2 are only a clue, never a FALSE verdict.
+- TRUE cues are:
+  1. both RHS share the same leftmost leaf
+  2. both RHS share the same rightmost leaf
+  3. E2 is more x-anchored than E1 by starting with x, ending with x, or repeating x more heavily
+  4. LP and RP are both invalid or non-separating
+- Shared leftmost leaf alone is not enough; require stronger x-anchoring in E2 or fresh variables in E2.
+- Use the x-target TRUE shortcut only if at least two cues hold and LP, RP, A2, T3L, and T3R did not separate.
+- If fewer than two cues hold, just use ordinary no-witness TRUE fallback.
+
+FALSE CHECKLIST:
+- Before writing FALSE, all four must be explicit:
+  1. named witness
+  2. explicit assignment for every variable
+  3. CHECK shows E1 true
+  4. CHECK shows E2 false
+- If any item is missing, tentative, contradictory, or self-correcting, discard that witness and continue.
+
+COUNTEREXAMPLE CHECK:
+- A single lucky assignment cannot rescue an invalid LP, RP, or C0 rewrite.
+- Never treat * as ordinary arithmetic or precedence arithmetic. Every CHECK must use only the named magma rule.
+- For XOR, XNOR, Z3A, AND, OR, A2, T3L, and T3R, CHECK must evaluate both equations numerically with no remaining variable symbols.
+- If your CHECK says E1 holds but shows 1 = 0, x = 0, x = y, x = z, or any non-identity equation, discard that witness.
+- If your CHECK says E2 fails but shows 0 != 0, 1 != 1, x != x, or any literal equality, discard that witness.
+- If a LP or RP proof uses the leaf of the equation left side x instead of the leaf of the RHS term, that witness proof is invalid.
+- If a LP or RP proof does not show the explicit identity rewrite of E1 and non-identity rewrite of E2, that witness proof is invalid.
+- If a finite-witness CHECK contains a correction, re-evaluation, contradiction, or says the initial explanation was wrong, then that witness is not verified.
+- If COUNTEREXAMPLE is blank, incomplete, or missing MAGMA, ASSIGNMENT, or CHECK, then the witness is not verified.
+- If you need to correct, revise, or replace a witness mid-answer, discard it and continue searching.
+
+WHEN TRUE VIA THE EXACT LANE:
+- REASONING: No verified FALSE route was found.
+- PROOF: A short explicit rewrite chain from E1 to E2 was visible.
+- COUNTEREXAMPLE: None.
+
+WHEN TRUE VIA THE NARROW LANE:
+- REASONING: No verified FALSE route was found.
+- PROOF: Both equations are literal x = term forms, the witness checks failed, and at least two x-target TRUE cues survived.
+- COUNTEREXAMPLE: None.
+
+WHEN TRUE VIA SINGLETON:
+- REASONING: No verified FALSE route was found.
+- PROOF: E1 is singleton-equivalent by the missing-x rewriting rule.
+- COUNTEREXAMPLE: None.
+
+WHEN TRUE BY ORDINARY FALLBACK:
+- REASONING: No verified FALSE route was found.
+- PROOF: No literal witness survived checking.
+- If either equation is not literally x = term, say only that no witness survived checking.
+- COUNTEREXAMPLE: None.
+
+WHEN FALSE:
+- COUNTEREXAMPLE must contain:
+  MAGMA: witness name and rule
+  ASSIGNMENT: explicit values
+  CHECK: E1 holds, E2 fails
