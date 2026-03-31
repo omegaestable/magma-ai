@@ -1,0 +1,106 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT ANSWER: TRUE. Switch to FALSE only when a test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is "x = T" and x does NOT appear anywhere in T → TRUE at once.
+
+═══ HOW THE TESTS WORK ═══
+There are 4 tests. For each test, check E1 and E2, then COMPARE:
+  If E1=HOLD and E2=FAIL → that test SEPARATES → answer FALSE immediately.
+  Any other combination → no separation → go to the next test.
+After all 4 tests, if no separation → answer TRUE.
+
+═══ STEP 0: SPLIT ON = ═══
+Write out:
+  E1_L = part before = in E1    E1_R = part after = in E1
+  E2_L = part before = in E2    E2_R = part after = in E2
+
+Note: "x = (big * expr)" → left side is just "x", a bare variable with NO *.
+
+═══ THE 4 TESTS ═══
+
+TEST 1 — LP: Compare the FIRST letter (a–z) on each side.
+  Same → HOLD.  Different → FAIL.
+
+TEST 2 — RP: Compare the LAST letter (a–z) on each side.
+  Same → HOLD.  Different → FAIL.
+  Tip: for "(w * (x * w))", scan right-to-left past ) and find w → last letter = w.
+
+TEST 3 — C0: Does the left side contain *? Does the right side contain *?
+  Both have * → HOLD.  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+  Key: "x = T" → left side "x" has no * → always FAILS C0.
+  C0 can only HOLD when the left side itself has *, like "x * y = ...".
+
+TEST 4 — VARS: Set of distinct letters on each side.
+  Both sides have *: same set → HOLD, different → FAIL.
+  One side bare v, other has *: HOLD only if * side uses just v.
+  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+
+═══ PROCEDURE — analysis first, verdict last ═══
+For each test, write ONE line in this format:
+  [TEST]: E1=[HOLD/FAIL] E2=[HOLD/FAIL] → [separation/continue]
+
+Stop at the first separation. After all tests, write the verdict.
+
+═══ WORKED EXAMPLE 1 (FALSE case) ═══
+E1: x * y = (y * x) * x     E2: x = (x * y) * z
+
+E1_L="x * y"  E1_R="(y * x) * x"  |  E2_L="x"  E2_R="(x * y) * z"
+
+LP:   E1 first(L)=x first(R)=y → FAIL  |  E2 first(L)=x first(R)=x → HOLD
+      E1=FAIL E2=HOLD → not separation, continue
+RP:   E1 last(L)=y last(R)=x → FAIL  |  E2 last(L)=x last(R)=z → FAIL
+      E1=FAIL E2=FAIL → continue
+C0:   E1 L has * R has * → HOLD  |  E2 L="x" no * → FAIL
+      E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+REASONING: C0 separates. E1 holds C0, E2 fails.
+PROOF: E1 left "x * y" has *, right has *. E2 left "x" has no *.
+COUNTEREXAMPLE: Witness C0.
+
+═══ WORKED EXAMPLE 2 (FALSE case, LP catches it) ═══
+E1: x = x * (y * z)     E2: (x * x) * y = (y * x) * z
+
+E1_L="x"  E1_R="x * (y * z)"  |  E2_L="(x * x) * y"  E2_R="(y * x) * z"
+
+LP:   E1 first(L)=x first(R)=x → HOLD  |  E2 first(L)=x first(R)=y → FAIL
+      E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+REASONING: LP separates. E1 holds LP, E2 fails.
+PROOF: E1 first letter matches (x=x). E2 first letters differ (x≠y).
+COUNTEREXAMPLE: Witness LP.
+
+═══ WORKED EXAMPLE 3 (TRUE case) ═══
+E1: x = (y * x) * (z * (w * y))     E2: x = ((y * x) * x) * x
+
+E1_L="x"  E1_R="(y * x) * (z * (w * y))"  |  E2_L="x"  E2_R="((y * x) * x) * x"
+
+LP:   E1 first(L)=x first(R)=y → FAIL  |  E2 first(L)=x first(R)=y → FAIL
+      both FAIL → continue
+RP:   E1 last(L)=x last(R)=y → FAIL  |  E2 last(L)=x last(R)=x → HOLD
+      E1=FAIL E2=HOLD → not separation, continue
+C0:   E1 L="x" no * → FAIL  |  E2 L="x" no * → FAIL
+      both FAIL → continue
+VARS: E1 L={x} R={x,y,z,w} → FAIL  |  E2 L={x} R={x,y} → FAIL
+      both FAIL → continue
+No separation found.
+
+VERDICT: TRUE
+REASONING: No test separates E1 from E2.
+PROOF: All 4 tests checked, none showed E1=HOLD with E2=FAIL.
+COUNTEREXAMPLE: None
+
+═══ REMINDERS ═══
+• Text-inspection only. No arithmetic. No Cayley tables.
+• LP/RP: scan for first/last letter on each side of =.
+• C0: check for * on the LEFT side and RIGHT side separately.
+  "x = stuff" → left is "x" with NO star.
+• VARS: list distinct letters on each side, compare sets.
+• Each test is WITHIN one equation (left side vs right side of =).
+• SEPARATION = E1 holds AND E2 fails on the SAME test.
+• Write each test result explicitly, then check for separation.
+• Default is TRUE. Only answer FALSE with a clear, identified separation.
