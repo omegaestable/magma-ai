@@ -272,7 +272,6 @@ _VERDICT_RE = re.compile(r"VERDICT\s*[:：]\s*(TRUE|FALSE)(?!\s*OR\b)", re.IGNOR
 _PROOF_RE = re.compile(r"PROOF\s*:(.*?)(?=COUNTEREXAMPLE\s*:|$)", re.IGNORECASE | re.DOTALL)
 _CE_RE = re.compile(r"COUNTEREXAMPLE\s*:(.*?)$", re.IGNORECASE | re.DOTALL)
 _BOXED_VERDICT_RE = re.compile(r"\\+boxed\s*\{\s*(TRUE|FALSE)\s*\}", re.IGNORECASE)
-_LINE_VERDICT_RE = re.compile(r"^\s*\*{0,2}(TRUE|FALSE)\*{0,2}\s*$", re.IGNORECASE | re.MULTILINE)
 _REASONING_RE = re.compile(r"REASONING\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
 _SOURCE_RE = re.compile(r"SOURCE\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
 _PROOF_LINE_RE = re.compile(r"PROOF\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
@@ -295,10 +294,6 @@ def parse_verdict(response: str) -> Optional[bool]:
     if matches:
         return matches[-1].group(1).upper() == "TRUE"
 
-    matches = list(_LINE_VERDICT_RE.finditer(cleaned))
-    if matches:
-        return matches[-1].group(1).upper() == "TRUE"
-
     return None
 
 
@@ -315,18 +310,15 @@ def parse_proof_quality(response: str, verdict: Optional[bool]) -> bool:
 
 
 def parse_output_contract(response: str) -> bool:
-    """Require exactly one non-empty line for each output field."""
+    """Require the four official output headers: VERDICT, REASONING, PROOF, COUNTEREXAMPLE."""
     verdict_matches = list(_VERDICT_RE.finditer(response))
     reasoning_matches = list(_REASONING_RE.finditer(response))
-    source_matches = list(_SOURCE_RE.finditer(response))
     proof_matches = list(_PROOF_LINE_RE.finditer(response))
     ce_matches = list(_CE_LINE_RE.finditer(response))
 
     if len(verdict_matches) < 1:
         return False
     if len(reasoning_matches) < 1 or not reasoning_matches[0].group(1).strip():
-        return False
-    if len(source_matches) < 1 or not source_matches[0].group(1).strip():
         return False
     if len(proof_matches) < 1 or not proof_matches[0].group(1).strip():
         return False
