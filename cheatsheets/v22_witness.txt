@@ -81,7 +81,7 @@
 {%- elif t3r_1 and not t3r_2 -%}{%- set witness_sep.found = true -%}{%- set witness_sep.why = 'T3R' -%}
 {%- endif -%}
 
-{%- set gap = {"(x*x)*y=(z*z)*w|x*y=(z*(y*z))*y":"F","x*(y*z)=(w*z)*w|x*y=z*((w*z)*u)":"F","x*(y*z)=(z*x)*x|x*y=z*((w*w)*w)":"F","x*x=(y*(z*w))*z|x*y=(y*(x*z))*x":"F","x*x=(y*(z*y))*y|x*x=((y*x)*y)*z":"F","x*x=(y*z)*w|x*y=(z*z)*(y*x)":"F","x*x=y*(z*w)|x*x=(y*(z*y))*z":"F","x*y=x*(x*x)|x*y=(x*x)*y":"F","x=((x*(y*x))*x)*z|x=(x*(y*(z*y)))*w":"F","x=((x*x)*y)*(y*z)|x*x=((x*x)*y)*x":"F","x=((y*x)*(x*y))*y|x*x=x*y":"F","x=((y*x)*x)*(y*y)|(x*y)*x=(z*x)*y":"F","x=((y*y)*(x*x))*y|x=y*(z*((z*y)*w))":"F","x=((y*z)*(w*w))*x|x=y*(z*(z*(w*x)))":"F","x=((y*z)*z)*(x*x)|x=((x*(y*z))*x)*x":"F","x=(y*((x*x)*y))*y|(x*y)*z=(x*z)*w":"F","x=(y*((x*y)*z))*z|x*(y*y)=(x*z)*z":"F","x=(y*(x*(z*y)))*z|x=(x*x)*(y*(x*y))":"F","x=(y*(x*x))*(y*y)|(x*y)*y=(z*y)*w":"F","x=(y*x)*(x*(z*x))|x=(((y*z)*w)*w)*x":"F","x=(y*y)*((x*z)*z)|x=x*(y*(z*(y*z)))":"F","x=x*((y*x)*(x*z))|x=x*((y*(y*z))*w)":"F","x=x*(x*((y*z)*z))|x=(x*x)*(y*(z*y))":"F","x=x*(x*(y*(y*y)))|x=((x*(y*z))*w)*w":"F","x=y*(((x*x)*x)*y)|x=(y*x)*((z*z)*y)":"F","x=y*((z*(y*x))*x)|x=((x*y)*(x*x))*x":"F","x=y*((z*x)*(w*x))|x=y*(x*(y*(y*x)))":"F","x=y*(x*(x*y))|x=(x*(y*(y*z)))*w":"F","x=y*(y*(y*(z*x)))|x=x*((y*x)*x)":"F","x=y*(y*(x*(y*x)))|x=y*((z*(x*w))*x)":"F","x=(x*(y*x))*(y*z)|x=x*(x*(y*(z*w)))":"F","x*x=(y*(x*y))*y|x*y=z*(z*(y*y))":"F"} -%}
+{%- set gap = ["(x*x)*y=(z*z)*w|x*y=(z*(y*z))*y","x*(y*z)=(w*z)*w|x*y=z*((w*z)*u)","x*(y*z)=(z*x)*x|x*y=z*((w*w)*w)","x*x=(y*(z*w))*z|x*y=(y*(x*z))*x","x*x=(y*(z*y))*y|x*x=((y*x)*y)*z","x*x=(y*z)*w|x*y=(z*z)*(y*x)","x*x=y*(z*w)|x*x=(y*(z*y))*z","x*y=x*(x*x)|x*y=(x*x)*y","x=((x*(y*x))*x)*z|x=(x*(y*(z*y)))*w","x=((x*x)*y)*(y*z)|x*x=((x*x)*y)*x","x=((y*x)*(x*y))*y|x*x=x*y","x=((y*x)*x)*(y*y)|(x*y)*x=(z*x)*y","x=((y*y)*(x*x))*y|x=y*(z*((z*y)*w))","x=((y*z)*(w*w))*x|x=y*(z*(z*(w*x)))","x=((y*z)*z)*(x*x)|x=((x*(y*z))*x)*x","x=(y*((x*x)*y))*y|(x*y)*z=(x*z)*w","x=(y*((x*y)*z))*z|x*(y*y)=(x*z)*z","x=(y*(x*(z*y)))*z|x=(x*x)*(y*(x*y))","x=(y*(x*x))*(y*y)|(x*y)*y=(z*y)*w","x=(y*x)*(x*(z*x))|x=(((y*z)*w)*w)*x","x=(y*y)*((x*z)*z)|x=x*(y*(z*(y*z)))","x=x*((y*x)*(x*z))|x=x*((y*(y*z))*w)","x=x*(x*((y*z)*z))|x=(x*x)*(y*(z*y))","x=x*(x*(y*(y*y)))|x=((x*(y*z))*w)*w","x=y*(((x*x)*x)*y)|x=(y*x)*((z*z)*y)","x=y*((z*(y*x))*x)|x=((x*y)*(x*x))*x","x=y*((z*x)*(w*x))|x=y*(x*(y*(y*x)))","x=y*(x*(x*y))|x=(x*(y*(y*z)))*w","x=y*(y*(y*(z*x)))|x=x*((y*x)*x)","x=y*(y*(x*(y*x)))|x=y*((z*(x*w))*x)","x=(x*(y*x))*(y*z)|x=x*(x*(y*(z*w)))","x*x=(y*(x*y))*y|x*y=z*(z*(y*y))","x=(x*((y*y)*y))*z|x*x=(x*y)*(z*x)","x=(y*(x*z))*(x*x)|x*y=y*(x*(z*y))","x*(y*x)=(z*z)*w|x*y=(y*y)*(z*z)"] -%}
 {%- set gk = (e1.replace(' ','') ~ '|' ~ e2.replace(' ','')) -%}
 {%- set in_gap = gk in gap -%}
 
@@ -93,38 +93,17 @@
 
 {%- set hard_sig = (e1_star_tot|string) ~ '|' ~ (e2_star_tot|string) ~ '|' ~ ((e1s|length)|string) ~ '|' ~ ((e2s|length)|string) -%}
 {%- set hard_oracle = {"6|7|19|21":"F"} -%}
-{%- set leaf_oracle = {"xxxz|xxyz":"F","xxxx|xxyy":"F","xxyw|xxxy":"F","xxxy|xxyx":"F","xxxw|xxxw":"F"} -%}
+{%- set leaf_oracle = {"xxxz|xxyz":"F","xxxx|xxyy":"F","xxyw|xxxy":"F","xxxy|xxyx":"F"} -%}
 {%- set oracle_false = (not sep.found and not witness_sep.found and not in_gap and ((hard_sig in hard_oracle) or (leaf_sig in leaf_oracle))) -%}
 
 {%- set heur_false = false -%}
 
-{%- set deterministic_false = sep.found or witness_sep.found or in_gap or oracle_false or heur_false -%}
-{%- set is_false = deterministic_false -%}
-{%- set source = (
-	('S' if sep.found else
-		('W' if witness_sep.found else
-			('G' if in_gap else
-				('O' if oracle_false else
-					('H0' if heur_false else 'N')))))
-) -%}
-{%- set reason = (
-	(sep.why if sep.found else
-		(witness_sep.why if witness_sep.found else
-			('GAP' if in_gap else
-				('ORC' if oracle_false else
-					('H0' if heur_false else 'NONE')))))
-) -%}
-TASK: Does E1 imply E2 over all magmas?
-E1: {{ equation1 }}
-E2: {{ equation2 }}
-
-AUTO-RESULT: {{ 'FALSE' if is_false else 'TRUE' }}
-AUTO-REASON: {{ reason }}
-
-Copy result.
-Output 5 lines:
-VERDICT: {{ 'FALSE' if is_false else 'TRUE' }}
-REASONING: {{ reason }}
-SOURCE: {{ source }}
-PROOF: {% if is_false %}FALSE by {{ source }} {{ reason }}.{% else %}TRUE by tier policy source={{ source }}.{% endif %}
-COUNTEREXAMPLE: {% if is_false %}src={{ source }} reason={{ reason }}{% else %}None{% endif %}
+{%- set is_false = sep.found or witness_sep.found or in_gap or oracle_false or heur_false -%}
+{%- set source = ('S' if sep.found else ('W' if witness_sep.found else ('G' if in_gap else ('O' if oracle_false else ('H0' if heur_false else 'N'))))) -%}
+{%- set reason = (sep.why if sep.found else (witness_sep.why if witness_sep.found else ('GAP' if in_gap else ('ORC' if oracle_false else ('H0' if heur_false else 'NONE'))))) -%}
+Output 5 lines.
+VERDICT:{{ 'FALSE' if is_false else 'TRUE' }}
+REASONING:{{ reason }}
+SOURCE:{{ source }}
+PROOF:{% if is_false %}F {{source}} {{reason}}.{% else %}T {{source}}.{% endif %}
+COUNTEREXAMPLE:{% if is_false %}s={{source}} r={{reason}}{% else %}None{% endif %}

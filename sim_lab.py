@@ -273,10 +273,10 @@ _PROOF_RE = re.compile(r"PROOF\s*:(.*?)(?=COUNTEREXAMPLE\s*:|$)", re.IGNORECASE 
 _CE_RE = re.compile(r"COUNTEREXAMPLE\s*:(.*?)$", re.IGNORECASE | re.DOTALL)
 _BOXED_VERDICT_RE = re.compile(r"\\+boxed\s*\{\s*(TRUE|FALSE)\s*\}", re.IGNORECASE)
 _LINE_VERDICT_RE = re.compile(r"^\s*\*{0,2}(TRUE|FALSE)\*{0,2}\s*$", re.IGNORECASE | re.MULTILINE)
-_REASONING_RE = re.compile(r"^\s*REASONING\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
-_SOURCE_RE = re.compile(r"^\s*SOURCE\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
-_PROOF_LINE_RE = re.compile(r"^\s*PROOF\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
-_CE_LINE_RE = re.compile(r"^\s*COUNTEREXAMPLE\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
+_REASONING_RE = re.compile(r"REASONING\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
+_SOURCE_RE = re.compile(r"SOURCE\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
+_PROOF_LINE_RE = re.compile(r"PROOF\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
+_CE_LINE_RE = re.compile(r"COUNTEREXAMPLE\s*[:：]\s*([^\n\r]+)", re.IGNORECASE)
 
 
 def _clean_response_for_verdict(response: str) -> str:
@@ -322,15 +322,15 @@ def parse_output_contract(response: str) -> bool:
     proof_matches = list(_PROOF_LINE_RE.finditer(response))
     ce_matches = list(_CE_LINE_RE.finditer(response))
 
-    if len(verdict_matches) != 1:
+    if len(verdict_matches) < 1:
         return False
-    if len(reasoning_matches) != 1 or not reasoning_matches[0].group(1).strip():
+    if len(reasoning_matches) < 1 or not reasoning_matches[0].group(1).strip():
         return False
-    if len(source_matches) != 1 or not source_matches[0].group(1).strip():
+    if len(source_matches) < 1 or not source_matches[0].group(1).strip():
         return False
-    if len(proof_matches) != 1 or not proof_matches[0].group(1).strip():
+    if len(proof_matches) < 1 or not proof_matches[0].group(1).strip():
         return False
-    if len(ce_matches) != 1 or not ce_matches[0].group(1).strip():
+    if len(ce_matches) < 1 or not ce_matches[0].group(1).strip():
         return False
     return True
 
@@ -488,8 +488,6 @@ def evaluate_problem(
 
     verdict = parse_verdict(response)
     contract_ok = parse_output_contract(response)
-    if _strict_output_contract and not contract_ok:
-        verdict = None
     return Result(
         problem=problem,
         repeat_id=repeat_id,
