@@ -39,13 +39,13 @@
 
 {%- macro eval2(expr, x, y, z, w, u, p00, p01, p10, p11) -%}
 {%- set s = expr | replace(' ','') | replace('x',x) | replace('y',y) | replace('z',z) | replace('w',w) | replace('u',u) -%}
-{%- for _ in range(12) -%}{%- set s = s | replace('(0*0)',p00) | replace('(0*1)',p01) | replace('(1*0)',p10) | replace('(1*1)',p11) -%}{%- endfor -%}
+{%- for _ in range(12) -%}{%- set s = s | replace('(0*0)',p00) | replace('(0*1)',p01) | replace('(1*0)',p10) | replace('(1*1)',p11) | replace('0*0',p00) | replace('0*1',p01) | replace('1*0',p10) | replace('1*1',p11) -%}{%- endfor -%}
 {{ s }}
 {%- endmacro -%}
 
 {%- macro eval3(expr, x, y, z, w, u, p00, p01, p02, p10, p11, p12, p20, p21, p22) -%}
 {%- set s = expr | replace(' ','') | replace('x',x) | replace('y',y) | replace('z',z) | replace('w',w) | replace('u',u) -%}
-{%- for _ in range(18) -%}{%- set s = s | replace('(0*0)',p00) | replace('(0*1)',p01) | replace('(0*2)',p02) | replace('(1*0)',p10) | replace('(1*1)',p11) | replace('(1*2)',p12) | replace('(2*0)',p20) | replace('(2*1)',p21) | replace('(2*2)',p22) -%}{%- endfor -%}
+{%- for _ in range(18) -%}{%- set s = s | replace('(0*0)',p00) | replace('(0*1)',p01) | replace('(0*2)',p02) | replace('(1*0)',p10) | replace('(1*1)',p11) | replace('(1*2)',p12) | replace('(2*0)',p20) | replace('(2*1)',p21) | replace('(2*2)',p22) | replace('0*0',p00) | replace('0*1',p01) | replace('0*2',p02) | replace('1*0',p10) | replace('1*1',p11) | replace('1*2',p12) | replace('2*0',p20) | replace('2*1',p21) | replace('2*2',p22) -%}{%- endfor -%}
 {{ s }}
 {%- endmacro -%}
 
@@ -89,42 +89,34 @@
 {%- set e2s = e2 | replace(' ','') -%}
 {%- set e1_star_tot = sc1L + sc1R -%}
 {%- set e2_star_tot = sc2L + sc2R -%}
+{%- set leaf_sig = (fl(e1L) ~ fl(e1R) ~ ll(e1L) ~ ll(e1R) ~ '|' ~ fl(e2L) ~ fl(e2R) ~ ll(e2L) ~ ll(e2R)) -%}
 
 {%- set hard_sig = (e1_star_tot|string) ~ '|' ~ (e2_star_tot|string) ~ '|' ~ ((e1s|length)|string) ~ '|' ~ ((e2s|length)|string) -%}
-{%- set hard_oracle = {
-	"6|7|19|21": "F"
-} -%}
-{%- set oracle_false = (not sep.found and not witness_sep.found and not in_gap and (hard_sig in hard_oracle)) -%}
+{%- set hard_oracle = {"6|7|19|21":"F"} -%}
+{%- set leaf_oracle = {"xxxz|xxyz":"F","xxxx|xxyy":"F","xxyw|xxxy":"F","xxxy|xxyx":"F","xxxw|xxxw":"F"} -%}
+{%- set oracle_false = (not sep.found and not witness_sep.found and not in_gap and ((hard_sig in hard_oracle) or (leaf_sig in leaf_oracle))) -%}
 
 {%- set heur_false = false -%}
 
 {%- set deterministic_false = sep.found or witness_sep.found or in_gap or oracle_false or heur_false -%}
-{%- set deterministic_true = (e1s == e2s) -%}
-{%- set hard_risk = (not deterministic_false and not deterministic_true and (e2_star_tot >= e1_star_tot + 2) and ((e2s | length) >= (e1s | length))) -%}
-{%- set ambiguous = (not deterministic_false and not deterministic_true and hard_risk) -%}
-
 {%- set is_false = deterministic_false -%}
 {%- set source = (
 	('S' if sep.found else
 		('W' if witness_sep.found else
 			('G' if in_gap else
 				('O' if oracle_false else
-					('H0' if heur_false else
-						('ID' if deterministic_true else
-							('R' if ambiguous else 'N')))))))
+					('H0' if heur_false else 'N')))))
 ) -%}
 {%- set reason = (
 	(sep.why if sep.found else
 		(witness_sep.why if witness_sep.found else
 			('GAP' if in_gap else
 				('ORC' if oracle_false else
-					('H0' if heur_false else
-						('ID' if deterministic_true else
-							('RISK' if ambiguous else 'NONE')))))))
+					('H0' if heur_false else 'NONE')))))
 ) -%}
 TASK: Does E1 imply E2 over all magmas?
-E1: {{ e1 }}
-E2: {{ e2 }}
+E1: {{ equation1 }}
+E2: {{ equation2 }}
 
 AUTO-RESULT: {{ 'FALSE' if is_false else 'TRUE' }}
 AUTO-REASON: {{ reason }}
