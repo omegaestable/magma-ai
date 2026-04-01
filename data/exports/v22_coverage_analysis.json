@@ -1,0 +1,426 @@
+{
+  "unique_normal_equations": 652,
+  "unique_false_pairs": 173,
+  "structural_covered": 144,
+  "structural_coverage_pct": 83.24,
+  "structural_uncovered": 29,
+  "v21f_covered": 132,
+  "new_tests_only": 12,
+  "witness_covered": 150,
+  "witness_only": 6,
+  "deep_gap": 23,
+  "unique_fingerprints": 30,
+  "fingerprint_collisions": 21,
+  "equiv_classes_in_benchmark": 268,
+  "uncovered_pairs": [
+    {
+      "id": "normal_0276",
+      "eq1_id": 2835,
+      "eq2_id": 582,
+      "eq1": "x = ((y * z) * (w * w)) * x",
+      "eq2": "x = y * (z * (z * (w * x)))",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0628",
+      "eq1_id": 2733,
+      "eq2_id": 780,
+      "eq1": "x = ((y * y) * (x * x)) * y",
+      "eq2": "x = y * (z * ((z * y) * w))",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0244",
+      "eq1_id": 833,
+      "eq2_id": 1053,
+      "eq1": "x = x * ((y * x) * (x * z))",
+      "eq2": "x = x * ((y * (y * z)) * w)",
+      "witness_seps": [
+        "A2"
+      ]
+    },
+    {
+      "id": "normal_0053",
+      "eq1_id": 1483,
+      "eq2_id": 3241,
+      "eq1": "x = (y * x) * (x * (z * x))",
+      "eq2": "x = (((y * z) * w) * w) * x",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0440",
+      "eq1_id": 320,
+      "eq2_id": 3902,
+      "eq1": "x * x = y * (z * w)",
+      "eq2": "x * x = (y * (z * y)) * z",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0305",
+      "eq1_id": 1725,
+      "eq2_id": 451,
+      "eq1": "x = (y * y) * ((x * z) * z)",
+      "eq2": "x = x * (y * (z * (y * z)))",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0987",
+      "eq1_id": 4569,
+      "eq2_id": 3646,
+      "eq1": "x * (y * z) = (w * z) * w",
+      "eq2": "x * y = z * ((w * z) * u)",
+      "witness_seps": [
+        "T3R"
+      ]
+    },
+    {
+      "id": "normal_0832",
+      "eq1_id": 2044,
+      "eq2_id": 4066,
+      "eq1": "x = ((x * x) * y) * (y * z)",
+      "eq2": "x * x = ((x * x) * y) * x",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0586",
+      "eq1_id": 3910,
+      "eq2_id": 3956,
+      "eq1": "x * x = (y * (z * w)) * z",
+      "eq2": "x * y = (y * (x * z)) * x",
+      "witness_seps": [
+        "T3L"
+      ]
+    },
+    {
+      "id": "normal_0251",
+      "eq1_id": 2699,
+      "eq2_id": 37,
+      "eq1": "x = ((y * x) * (x * y)) * y",
+      "eq2": "x * x = x * y",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0045",
+      "eq1_id": 321,
+      "eq2_id": 374,
+      "eq1": "x * y = x * (x * x)",
+      "eq2": "x * y = (x * x) * y",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0335",
+      "eq1_id": 62,
+      "eq2_id": 2271,
+      "eq1": "x = y * (x * (x * y))",
+      "eq2": "x = (x * (y * (y * z))) * w",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0209",
+      "eq1_id": 4622,
+      "eq2_id": 4013,
+      "eq1": "(x * x) * y = (z * z) * w",
+      "eq2": "x * y = (z * (y * z)) * y",
+      "witness_seps": [
+        "A2",
+        "T3L",
+        "T3R"
+      ]
+    },
+    {
+      "id": "normal_0467",
+      "eq1_id": 372,
+      "eq2_id": 3822,
+      "eq1": "x * x = (y * z) * w",
+      "eq2": "x * y = (z * z) * (y * x)",
+      "witness_seps": [
+        "T3L"
+      ]
+    },
+    {
+      "id": "normal_0703",
+      "eq1_id": 4539,
+      "eq2_id": 3650,
+      "eq1": "x * (y * z) = (z * x) * x",
+      "eq2": "x * y = z * ((w * w) * w)",
+      "witness_seps": [
+        "T3R"
+      ]
+    },
+    {
+      "id": "normal_0523",
+      "eq1_id": 1162,
+      "eq2_id": 2658,
+      "eq1": "x = y * ((z * (y * x)) * x)",
+      "eq2": "x = ((x * y) * (x * x)) * x",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0176",
+      "eq1_id": 2090,
+      "eq2_id": 4642,
+      "eq1": "x = ((y * x) * x) * (y * y)",
+      "eq2": "(x * y) * x = (z * x) * y",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0272",
+      "eq1_id": 2496,
+      "eq2_id": 4673,
+      "eq1": "x = (y * ((x * x) * y)) * y",
+      "eq2": "(x * y) * z = (x * z) * w",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0907",
+      "eq1_id": 2863,
+      "eq2_id": 2279,
+      "eq1": "x = ((x * (y * x)) * x) * z",
+      "eq2": "x = (x * (y * (z * y))) * w",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0700",
+      "eq1_id": 2510,
+      "eq2_id": 4476,
+      "eq1": "x = (y * ((x * y) * z)) * z",
+      "eq2": "x * (y * y) = (x * z) * z",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0493",
+      "eq1_id": 954,
+      "eq2_id": 475,
+      "eq1": "x = y * ((z * x) * (w * x))",
+      "eq2": "x = y * (x * (y * (y * x)))",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0575",
+      "eq1_id": 419,
+      "eq2_id": 2896,
+      "eq1": "x = x * (x * (y * (y * y)))",
+      "eq2": "x = ((x * (y * z)) * w) * w",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0758",
+      "eq1_id": 2315,
+      "eq2_id": 1431,
+      "eq1": "x = (y * (x * (z * y))) * z",
+      "eq2": "x = (x * x) * (y * (x * y))",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0830",
+      "eq1_id": 1275,
+      "eq2_id": 1709,
+      "eq1": "x = y * (((x * x) * x) * y)",
+      "eq2": "x = (y * x) * ((z * z) * y)",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0200",
+      "eq1_id": 2194,
+      "eq2_id": 2881,
+      "eq1": "x = ((y * z) * z) * (x * x)",
+      "eq2": "x = ((x * (y * z)) * x) * x",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0882",
+      "eq1_id": 3901,
+      "eq2_id": 4084,
+      "eq1": "x * x = (y * (z * y)) * y",
+      "eq2": "x * x = ((y * x) * y) * z",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0029",
+      "eq1_id": 626,
+      "eq2_id": 1437,
+      "eq1": "x = x * (x * ((y * z) * z))",
+      "eq2": "x = (x * x) * (y * (z * y))",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0307",
+      "eq1_id": 1887,
+      "eq2_id": 4666,
+      "eq1": "x = (y * (x * x)) * (y * y)",
+      "eq2": "(x * y) * y = (z * y) * w",
+      "witness_seps": []
+    },
+    {
+      "id": "normal_0889",
+      "eq1_id": 515,
+      "eq2_id": 103,
+      "eq1": "x = y * (y * (y * (z * x)))",
+      "eq2": "x = x * ((y * x) * x)",
+      "witness_seps": []
+    }
+  ],
+  "deep_gap_pairs": [
+    {
+      "id": "normal_0276",
+      "eq1_id": 2835,
+      "eq2_id": 582,
+      "eq1": "x = ((y * z) * (w * w)) * x",
+      "eq2": "x = y * (z * (z * (w * x)))"
+    },
+    {
+      "id": "normal_0628",
+      "eq1_id": 2733,
+      "eq2_id": 780,
+      "eq1": "x = ((y * y) * (x * x)) * y",
+      "eq2": "x = y * (z * ((z * y) * w))"
+    },
+    {
+      "id": "normal_0053",
+      "eq1_id": 1483,
+      "eq2_id": 3241,
+      "eq1": "x = (y * x) * (x * (z * x))",
+      "eq2": "x = (((y * z) * w) * w) * x"
+    },
+    {
+      "id": "normal_0440",
+      "eq1_id": 320,
+      "eq2_id": 3902,
+      "eq1": "x * x = y * (z * w)",
+      "eq2": "x * x = (y * (z * y)) * z"
+    },
+    {
+      "id": "normal_0305",
+      "eq1_id": 1725,
+      "eq2_id": 451,
+      "eq1": "x = (y * y) * ((x * z) * z)",
+      "eq2": "x = x * (y * (z * (y * z)))"
+    },
+    {
+      "id": "normal_0832",
+      "eq1_id": 2044,
+      "eq2_id": 4066,
+      "eq1": "x = ((x * x) * y) * (y * z)",
+      "eq2": "x * x = ((x * x) * y) * x"
+    },
+    {
+      "id": "normal_0251",
+      "eq1_id": 2699,
+      "eq2_id": 37,
+      "eq1": "x = ((y * x) * (x * y)) * y",
+      "eq2": "x * x = x * y"
+    },
+    {
+      "id": "normal_0045",
+      "eq1_id": 321,
+      "eq2_id": 374,
+      "eq1": "x * y = x * (x * x)",
+      "eq2": "x * y = (x * x) * y"
+    },
+    {
+      "id": "normal_0335",
+      "eq1_id": 62,
+      "eq2_id": 2271,
+      "eq1": "x = y * (x * (x * y))",
+      "eq2": "x = (x * (y * (y * z))) * w"
+    },
+    {
+      "id": "normal_0523",
+      "eq1_id": 1162,
+      "eq2_id": 2658,
+      "eq1": "x = y * ((z * (y * x)) * x)",
+      "eq2": "x = ((x * y) * (x * x)) * x"
+    },
+    {
+      "id": "normal_0176",
+      "eq1_id": 2090,
+      "eq2_id": 4642,
+      "eq1": "x = ((y * x) * x) * (y * y)",
+      "eq2": "(x * y) * x = (z * x) * y"
+    },
+    {
+      "id": "normal_0272",
+      "eq1_id": 2496,
+      "eq2_id": 4673,
+      "eq1": "x = (y * ((x * x) * y)) * y",
+      "eq2": "(x * y) * z = (x * z) * w"
+    },
+    {
+      "id": "normal_0907",
+      "eq1_id": 2863,
+      "eq2_id": 2279,
+      "eq1": "x = ((x * (y * x)) * x) * z",
+      "eq2": "x = (x * (y * (z * y))) * w"
+    },
+    {
+      "id": "normal_0700",
+      "eq1_id": 2510,
+      "eq2_id": 4476,
+      "eq1": "x = (y * ((x * y) * z)) * z",
+      "eq2": "x * (y * y) = (x * z) * z"
+    },
+    {
+      "id": "normal_0493",
+      "eq1_id": 954,
+      "eq2_id": 475,
+      "eq1": "x = y * ((z * x) * (w * x))",
+      "eq2": "x = y * (x * (y * (y * x)))"
+    },
+    {
+      "id": "normal_0575",
+      "eq1_id": 419,
+      "eq2_id": 2896,
+      "eq1": "x = x * (x * (y * (y * y)))",
+      "eq2": "x = ((x * (y * z)) * w) * w"
+    },
+    {
+      "id": "normal_0758",
+      "eq1_id": 2315,
+      "eq2_id": 1431,
+      "eq1": "x = (y * (x * (z * y))) * z",
+      "eq2": "x = (x * x) * (y * (x * y))"
+    },
+    {
+      "id": "normal_0830",
+      "eq1_id": 1275,
+      "eq2_id": 1709,
+      "eq1": "x = y * (((x * x) * x) * y)",
+      "eq2": "x = (y * x) * ((z * z) * y)"
+    },
+    {
+      "id": "normal_0200",
+      "eq1_id": 2194,
+      "eq2_id": 2881,
+      "eq1": "x = ((y * z) * z) * (x * x)",
+      "eq2": "x = ((x * (y * z)) * x) * x"
+    },
+    {
+      "id": "normal_0882",
+      "eq1_id": 3901,
+      "eq2_id": 4084,
+      "eq1": "x * x = (y * (z * y)) * y",
+      "eq2": "x * x = ((y * x) * y) * z"
+    },
+    {
+      "id": "normal_0029",
+      "eq1_id": 626,
+      "eq2_id": 1437,
+      "eq1": "x = x * (x * ((y * z) * z))",
+      "eq2": "x = (x * x) * (y * (z * y))"
+    },
+    {
+      "id": "normal_0307",
+      "eq1_id": 1887,
+      "eq2_id": 4666,
+      "eq1": "x = (y * (x * x)) * (y * y)",
+      "eq2": "(x * y) * y = (z * y) * w"
+    },
+    {
+      "id": "normal_0889",
+      "eq1_id": 515,
+      "eq2_id": 103,
+      "eq1": "x = y * (y * (y * (z * x)))",
+      "eq2": "x = x * ((y * x) * x)"
+    }
+  ]
+}

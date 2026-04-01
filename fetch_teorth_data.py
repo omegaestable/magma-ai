@@ -25,21 +25,28 @@ import requests
 TEORTH_RAW = (
     "https://raw.githubusercontent.com/teorth/equational_theories/main"
 )
+TEORTH_PAGES = "https://teorth.github.io/equational_theories"
 
 # Candidate URL paths — the repo layout may vary; first match wins per asset.
 # Each entry is a list of fallback paths tried in order.
 ASSET_FALLBACKS: dict[str, list[str]] = {
     "equations.txt": [
+        f"{TEORTH_RAW}/data/equations.txt",
         f"{TEORTH_RAW}/equational_theories/data/equations.txt",
-        f"{TEORTH_RAW}/equations.txt",
     ],
     "duals.json": [
+        f"{TEORTH_RAW}/data/duals.json",
         f"{TEORTH_RAW}/equational_theories/data/duals.json",
-        f"{TEORTH_RAW}/duals.json",
     ],
     "smallest_magma.txt": [
+        f"{TEORTH_RAW}/data/smallest_magma.txt",
         f"{TEORTH_RAW}/equational_theories/data/smallest_magma.txt",
-        f"{TEORTH_RAW}/smallest_magma.txt",
+    ],
+    "graph.json": [
+        f"{TEORTH_PAGES}/implications/graph.json",
+    ],
+    "full_entries.json": [
+        f"{TEORTH_RAW}/full_entries.json",
     ],
 }
 
@@ -122,6 +129,66 @@ def load_smallest_magma(cache_dir: Path | None = None) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
+# graph.json decoder — RLE-encoded 4694×4694 implications matrix
+# ---------------------------------------------------------------------------
+
+# RLE cell value → semantic code mapping (from Teorth site source)
+_GRAPH_VALUE_MAP = {
+    0: -2,  # explicit_conjecture_false
+    1:  2,  # explicit_conjecture_true
+    2: -4,  # explicit_proof_false
+    3:  4,  # explicit_proof_true
+    4: -1,  # implicit_conjecture_false
+    5:  1,  # implicit_conjecture_true
+    6: -3,  # implicit_proof_false
+    7:  3,  # implicit_proof_true
+    8:  0,  # unknown
+}
+
+
+def decode_graph_json(cache_dir: Path | None = None) -> dict:
+    """
+    Decode graph.json → {matrix: list[list[int]], equivalence_classes: list}.
+
+    Matrix values use the Teorth semantic codes:
+      positive → TRUE (implication holds),  negative → FALSE,  0 → unknown.
+    """
+    path = (cache_dir or CACHE_DIR) / "graph.json"
+    if not path.exists():
+        raise FileNotFoundError(f"graph.json not found in {path.parent}")
+
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    rle = raw["rle_encoded_array"]
+    equiv = raw.get("equivalence_classes", [])
+
+    # Decode RLE: [value, count, value, count, ...]
+    flat: list[int] = []
+    for i in range(0, len(rle), 2):
+        val = _GRAPH_VALUE_MAP[rle[i]]
+        count = rle[i + 1]
+        flat.extend([val] * count)
+
+    n = 4694
+    expected = n * n
+    if len(flat) != expected:
+        raise ValueError(
+            f"graph.json RLE decoded to {len(flat)} cells, expected {expected}"
+        )
+
+    # Reshape to 4694×4694
+    matrix = [flat[i * n : (i + 1) * n] for i in range(n)]
+    return {"matrix": matrix, "equivalence_classes": equiv}
+
+
+def load_full_entries(cache_dir: Path | None = None) -> list[dict]:
+    """Load full_entries.json → list of entry dicts."""
+    path = (cache_dir or CACHE_DIR) / "full_entries.json"
+    if not path.exists():
+        return []
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -150,6 +217,22 @@ def main() -> None:
     eqs = load_equations()
     if eqs:
         print(f"  equations loaded: {len(eqs):,} entries (IDs 0–{max(eqs):,})")
+
+    # Sanity-check: decode graph.json if present
+    graph_path = CACHE_DIR / "graph.json"
+    if graph_path.exists():
+        try:
+            data = decode_graph_json()
+            m = data["matrix"]
+            ec = data["equivalence_classes"]
+            print(f"  graph.json decoded: {len(m)}×{len(m[0])} matrix, {len(ec)} equivalence classes")
+        except Exception as exc:
+            print(f"  graph.json decode ERROR: {exc}")
+
+    # Sanity-check: full_entries.json
+    entries = load_full_entries()
+    if entries:
+        print(f"  full_entries.json: {len(entries):,} entries")
 
     failed = [n for n, p in results.items() if p is None]
     if failed:

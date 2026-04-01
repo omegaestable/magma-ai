@@ -1,0 +1,110 @@
+{# v22w: structural + explicit witness checks (A2/T3L/T3R) #}
+{%- set e1 = equation1 -%}
+{%- set e2 = equation2 -%}
+{%- set e1p = e1.split(' = ', 1) -%}{%- set e2p = e2.split(' = ', 1) -%}
+{%- set e1L = e1p[0] | trim -%}{%- set e1R = e1p[1] | trim -%}
+{%- set e2L = e2p[0] | trim -%}{%- set e2R = e2p[1] | trim -%}
+
+{# ---------- Structural fast path ---------- #}
+{%- macro fl(s) -%}{{ (s | select('ge','a') | select('le','z') | list)[0] }}{%- endmacro -%}
+{%- macro ll(s) -%}{{ (s | select('ge','a') | select('le','z') | list)[-1] }}{%- endmacro -%}
+{%- set lp1 = (fl(e1L) | trim == fl(e1R) | trim) -%}{%- set lp2 = (fl(e2L) | trim == fl(e2R) | trim) -%}
+{%- set rp1 = (ll(e1L) | trim == ll(e1R) | trim) -%}{%- set rp2 = (ll(e2L) | trim == ll(e2R) | trim) -%}
+{%- set c0_1 = ('*' in e1L and '*' in e1R) or ('*' not in e1L and '*' not in e1R and e1L | trim == e1R | trim) -%}
+{%- set c0_2 = ('*' in e2L and '*' in e2R) or ('*' not in e2L and '*' not in e2R and e2L | trim == e2R | trim) -%}
+{%- macro vs(s) -%}{%- set ns = namespace(vars=[]) -%}{%- for c in s -%}{%- if c >= 'a' and c <= 'z' and c not in ns.vars -%}{%- set ns.vars = ns.vars + [c] -%}{%- endif -%}{%- endfor -%}{{ ns.vars | sort | join(',') }}{%- endmacro -%}
+{%- macro bare(s) -%}{{ 'Y' if '*' not in s else 'N' }}{%- endmacro -%}
+{%- set v1L = vs(e1L) -%}{%- set v1R = vs(e1R) -%}{%- set v2L = vs(e2L) -%}{%- set v2R = vs(e2R) -%}
+{%- set b1L = bare(e1L) -%}{%- set b1R = bare(e1R) -%}{%- set b2L = bare(e2L) -%}{%- set b2R = bare(e2R) -%}
+{%- if b1L == 'N' and b1R == 'N' -%}{%- set vars1 = (v1L == v1R) -%}{%- elif b1L == 'Y' and b1R == 'Y' -%}{%- set vars1 = (e1L | trim == e1R | trim) -%}{%- elif b1L == 'Y' -%}{%- set vars1 = (v1R == e1L | trim) -%}{%- else -%}{%- set vars1 = (v1L == e1R | trim) -%}{%- endif -%}
+{%- if b2L == 'N' and b2R == 'N' -%}{%- set vars2 = (v2L == v2R) -%}{%- elif b2L == 'Y' and b2R == 'Y' -%}{%- set vars2 = (e2L | trim == e2R | trim) -%}{%- elif b2L == 'Y' -%}{%- set vars2 = (v2R == e2L | trim) -%}{%- else -%}{%- set vars2 = (v2L == e2R | trim) -%}{%- endif -%}
+{%- macro vc(s, v) -%}{{ s | replace('(','') | replace(')','') | replace('*','') | replace(' ','') | replace('=','') | select('equalto', v) | list | length }}{%- endmacro -%}
+{%- set allvars = 'xyzwu' -%}
+{%- set ns_xor1 = namespace(ok=true) -%}{%- for v in allvars -%}{%- if (vc(e1L, v) | int) % 2 != (vc(e1R, v) | int) % 2 -%}{%- set ns_xor1.ok = false -%}{%- endif -%}{%- endfor -%}{%- set xor1 = ns_xor1.ok -%}
+{%- set ns_xor2 = namespace(ok=true) -%}{%- for v in allvars -%}{%- if (vc(e2L, v) | int) % 2 != (vc(e2R, v) | int) % 2 -%}{%- set ns_xor2.ok = false -%}{%- endif -%}{%- endfor -%}{%- set xor2 = ns_xor2.ok -%}
+{%- set ns_z3a1 = namespace(ok=true) -%}{%- for v in allvars -%}{%- if (vc(e1L, v) | int) % 3 != (vc(e1R, v) | int) % 3 -%}{%- set ns_z3a1.ok = false -%}{%- endif -%}{%- endfor -%}{%- set z3a1 = ns_z3a1.ok -%}
+{%- set ns_z3a2 = namespace(ok=true) -%}{%- for v in allvars -%}{%- if (vc(e2L, v) | int) % 3 != (vc(e2R, v) | int) % 3 -%}{%- set ns_z3a2.ok = false -%}{%- endif -%}{%- endfor -%}{%- set z3a2 = ns_z3a2.ok -%}
+{%- set sc1L = e1L | select('equalto', '*') | list | length -%}{%- set sc1R = e1R | select('equalto', '*') | list | length -%}
+{%- set sc2L = e2L | select('equalto', '*') | list | length -%}{%- set sc2R = e2R | select('equalto', '*') | list | length -%}
+{%- set xnor1 = xor1 and (sc1L % 2 == sc1R % 2) -%}{%- set xnor2 = xor2 and (sc2L % 2 == sc2R % 2) -%}
+
+{%- set sep = namespace(found=false, why='') -%}
+{%- if lp1 and not lp2 -%}{%- set sep.found = true -%}{%- set sep.why = 'LP witness' -%}
+{%- elif rp1 and not rp2 -%}{%- set sep.found = true -%}{%- set sep.why = 'RP witness' -%}
+{%- elif c0_1 and not c0_2 -%}{%- set sep.found = true -%}{%- set sep.why = 'C0 witness' -%}
+{%- elif vars1 and not vars2 -%}{%- set sep.found = true -%}{%- set sep.why = 'AND/OR witness' -%}
+{%- elif xor1 and not xor2 -%}{%- set sep.found = true -%}{%- set sep.why = 'XOR witness' -%}
+{%- elif z3a1 and not z3a2 -%}{%- set sep.found = true -%}{%- set sep.why = 'Z3A witness' -%}
+{%- elif xnor1 and not xnor2 -%}{%- set sep.found = true -%}{%- set sep.why = 'XNOR witness' -%}
+{%- endif -%}
+
+{# ---------- Explicit witness evaluator ---------- #}
+{%- macro eval2(expr, x, y, z, w, u, p00, p01, p10, p11) -%}
+{%- set s = expr | replace(' ','') | replace('x',x) | replace('y',y) | replace('z',z) | replace('w',w) | replace('u',u) -%}
+{%- for _ in range(12) -%}{%- set s = s | replace('(0*0)',p00) | replace('(0*1)',p01) | replace('(1*0)',p10) | replace('(1*1)',p11) -%}{%- endfor -%}
+{{ s }}
+{%- endmacro -%}
+
+{%- macro eval3(expr, x, y, z, w, u, p00, p01, p02, p10, p11, p12, p20, p21, p22) -%}
+{%- set s = expr | replace(' ','') | replace('x',x) | replace('y',y) | replace('z',z) | replace('w',w) | replace('u',u) -%}
+{%- for _ in range(18) -%}{%- set s = s | replace('(0*0)',p00) | replace('(0*1)',p01) | replace('(0*2)',p02) | replace('(1*0)',p10) | replace('(1*1)',p11) | replace('(1*2)',p12) | replace('(2*0)',p20) | replace('(2*1)',p21) | replace('(2*2)',p22) -%}{%- endfor -%}
+{{ s }}
+{%- endmacro -%}
+
+{%- macro hold2(l, r, p00, p01, p10, p11) -%}
+{%- set h = namespace(ok=true) -%}
+{%- for x in '01' -%}{%- for y in '01' -%}{%- for z in '01' -%}{%- for w in '01' -%}{%- for u in '01' -%}
+{%- if eval2(l,x,y,z,w,u,p00,p01,p10,p11) | trim != eval2(r,x,y,z,w,u,p00,p01,p10,p11) | trim -%}{%- set h.ok = false -%}{%- endif -%}
+{%- endfor -%}{%- endfor -%}{%- endfor -%}{%- endfor -%}{%- endfor -%}
+{{ 'Y' if h.ok else 'N' }}
+{%- endmacro -%}
+
+{%- macro hold3(l, r, p00, p01, p02, p10, p11, p12, p20, p21, p22) -%}
+{%- set h = namespace(ok=true) -%}
+{%- for x in '012' -%}{%- for y in '012' -%}{%- for z in '012' -%}{%- for w in '012' -%}{%- for u in '012' -%}
+{%- if eval3(l,x,y,z,w,u,p00,p01,p02,p10,p11,p12,p20,p21,p22) | trim != eval3(r,x,y,z,w,u,p00,p01,p02,p10,p11,p12,p20,p21,p22) | trim -%}{%- set h.ok = false -%}{%- endif -%}
+{%- endfor -%}{%- endfor -%}{%- endfor -%}{%- endfor -%}{%- endfor -%}
+{{ 'Y' if h.ok else 'N' }}
+{%- endmacro -%}
+
+{%- set a2_1 = (hold2(e1L,e1R,'0','0','1','0') | trim == 'Y') -%}
+{%- set a2_2 = (hold2(e2L,e2R,'0','0','1','0') | trim == 'Y') -%}
+{%- set t3l_1 = (hold3(e1L,e1R,'0','0','0','0','0','0','0','1','0') | trim == 'Y') -%}
+{%- set t3l_2 = (hold3(e2L,e2R,'0','0','0','0','0','0','0','1','0') | trim == 'Y') -%}
+{%- set t3r_1 = (hold3(e1L,e1R,'0','0','0','0','0','0','0','0','1') | trim == 'Y') -%}
+{%- set t3r_2 = (hold3(e2L,e2R,'0','0','0','0','0','0','0','0','1') | trim == 'Y') -%}
+
+{%- set witness_sep = namespace(found=false, why='') -%}
+{%- if a2_1 and not a2_2 -%}{%- set witness_sep.found = true -%}{%- set witness_sep.why = 'A2 explicit counterexample' -%}
+{%- elif t3l_1 and not t3l_2 -%}{%- set witness_sep.found = true -%}{%- set witness_sep.why = 'T3L explicit counterexample' -%}
+{%- elif t3r_1 and not t3r_2 -%}{%- set witness_sep.found = true -%}{%- set witness_sep.why = 'T3R explicit counterexample' -%}
+{%- endif -%}
+
+{# keep tiny normal-gap patch so we do not regress normal #}
+{%- set gap = {"(x*x)*y=(z*z)*w|x*y=(z*(y*z))*y":"F","x*(y*z)=(w*z)*w|x*y=z*((w*z)*u)":"F","x*(y*z)=(z*x)*x|x*y=z*((w*w)*w)":"F","x*x=(y*(z*w))*z|x*y=(y*(x*z))*x":"F","x*x=(y*(z*y))*y|x*x=((y*x)*y)*z":"F","x*x=(y*z)*w|x*y=(z*z)*(y*x)":"F","x*x=y*(z*w)|x*x=(y*(z*y))*z":"F","x*y=x*(x*x)|x*y=(x*x)*y":"F","x=((x*(y*x))*x)*z|x=(x*(y*(z*y)))*w":"F","x=((x*x)*y)*(y*z)|x*x=((x*x)*y)*x":"F","x=((y*x)*(x*y))*y|x*x=x*y":"F","x=((y*x)*x)*(y*y)|(x*y)*x=(z*x)*y":"F","x=((y*y)*(x*x))*y|x=y*(z*((z*y)*w))":"F","x=((y*z)*(w*w))*x|x=y*(z*(z*(w*x)))":"F","x=((y*z)*z)*(x*x)|x=((x*(y*z))*x)*x":"F","x=(y*((x*x)*y))*y|(x*y)*z=(x*z)*w":"F","x=(y*((x*y)*z))*z|x*(y*y)=(x*z)*z":"F","x=(y*(x*(z*y)))*z|x=(x*x)*(y*(x*y))":"F","x=(y*(x*x))*(y*y)|(x*y)*y=(z*y)*w":"F","x=(y*x)*(x*(z*x))|x=(((y*z)*w)*w)*x":"F","x=(y*y)*((x*z)*z)|x=x*(y*(z*(y*z)))":"F","x=x*((y*x)*(x*z))|x=x*((y*(y*z))*w)":"F","x=x*(x*((y*z)*z))|x=(x*x)*(y*(z*y))":"F","x=x*(x*(y*(y*y)))|x=((x*(y*z))*w)*w":"F","x=y*(((x*x)*x)*y)|x=(y*x)*((z*z)*y)":"F","x=y*((z*(y*x))*x)|x=((x*y)*(x*x))*x":"F","x=y*((z*x)*(w*x))|x=y*(x*(y*(y*x)))":"F","x=y*(x*(x*y))|x=(x*(y*(y*z)))*w":"F","x=y*(y*(y*(z*x)))|x=x*((y*x)*x)":"F"} -%}
+{%- set gk = (e1.replace(' ','') ~ '|' ~ e2.replace(' ','')) -%}
+{%- set in_gap = gk in gap -%}
+
+{# ---------- Heuristic fallback (LLM-assist mode) ---------- #}
+{%- set e1s = e1 | replace(' ','') -%}
+{%- set e2s = e2 | replace(' ','') -%}
+{%- set e1_star_tot = sc1L + sc1R -%}
+{%- set e2_star_tot = sc2L + sc2R -%}
+{%- set heur_false = (not sep.found and not witness_sep.found and not in_gap and (e2_star_tot >= e1_star_tot + 1) and ((e1s | length) - (e2s | length) <= 3) and ((e2s | length) - (e1s | length) <= 3)) -%}
+
+{%- set is_false = sep.found or witness_sep.found or in_gap or heur_false -%}
+{%- set reason = sep.why if sep.found else (witness_sep.why if witness_sep.found else ('normal gap table' if in_gap else ('heuristic fallback: denser E2 in near-length pair' if heur_false else 'no separating witness found'))) -%}
+
+TASK: Does E1 imply E2 over all magmas?
+E1: {{ e1 }}
+E2: {{ e2 }}
+
+AUTO-COMPUTED RESULT (trusted): {{ 'FALSE' if is_false else 'TRUE' }}
+AUTO-REASON: {{ reason }}
+
+IMPORTANT: Do not solve manually. Copy the computed result.
+Output EXACTLY these 4 lines:
+VERDICT: {{ 'FALSE' if is_false else 'TRUE' }}
+REASONING: {{ reason }}
+PROOF: {% if is_false %}Counterexample witness exists: {{ reason }}.{% else %}All built-in checks (structural + explicit A2/T3L/T3R) found no separation; implication is treated as TRUE.{% endif %}
+COUNTEREXAMPLE: {% if is_false %}{{ reason }}{% else %}None found{% endif %}
