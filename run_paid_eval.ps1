@@ -24,4 +24,4 @@ if (-not (Test-Path Env:OPENROUTER_API_KEY)) {
     throw "OPENROUTER_API_KEY is not set in the environment."
 }
 
-& $python sim_lab.py --data $benchmarkPath --cheatsheet $cheatsheetPath --openrouter --model $Model
+& $python sim_lab.py --data $benchmarkPath --cheatsheet $cheatsheetPath --openrouter --model $Model --playground-parity

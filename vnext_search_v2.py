@@ -112,7 +112,7 @@ def validate_config(config: dict) -> None:
     ensure_keys(config["copilot"], {"command", "adapter_script", "model"}, "config.copilot")
     ensure_keys(
         config["gates"],
-        {"source_subset_path", "shuffle_seed", "items_per_label", "benchmark_stems", "warmup_items_per_label", "warmup_benchmark_stems"},
+        {"source_subset_path", "shuffle_seed", "items_per_label", "benchmark_stems", "warmup_items_per_label", "warmup_benchmark_stems", "hard3_benchmark_stems"},
         "config.gates",
     )
     ensure_keys(
@@ -127,6 +127,8 @@ def validate_config(config: dict) -> None:
             "warmup_false_accuracy_floor",
             "warmup_min_f1_score",
             "warmup_min_parse_success_rate",
+            "min_hard3_average_accuracy",
+            "min_hard3_seed_accuracy",
         },
         "config.promotion",
     )
@@ -276,13 +278,29 @@ def build_gate_benchmarks(config: dict) -> list[Path]:
 
 
 def ensure_gates(config: dict) -> None:
-    missing = [
+    hard3_stems = list(config["gates"].get("hard3_benchmark_stems", []))
+    missing_before = [
         stem
-        for stem in FIXED_WARMUP_BENCHMARK_STEMS + FIXED_BENCHMARK_STEMS
+        for stem in FIXED_WARMUP_BENCHMARK_STEMS + FIXED_BENCHMARK_STEMS + hard3_stems
         if not (ROOT / "data" / "benchmark" / f"{stem}.jsonl").exists()
     ]
-    if missing:
+    if missing_before:
         build_gate_benchmarks(config)
+    missing_after = [
+        stem
+        for stem in FIXED_WARMUP_BENCHMARK_STEMS + FIXED_BENCHMARK_STEMS + hard3_stems
+        if not (ROOT / "data" / "benchmark" / f"{stem}.jsonl").exists()
+    ]
+    if missing_after:
+        raise FileNotFoundError(f"Missing required benchmark files: {missing_after}")
+
+
+def hard3_aggregate_metrics(hard3_runs: list[dict]) -> dict:
+    if not hard3_runs:
+        return {"accuracy": 0.0}
+    return {
+        "accuracy": mean(run["accuracy"] for run in hard3_runs),
+    }
 
 
 def make_output_path(model: str, benchmark_stem: str, cheatsheet_path: Path) -> Path:
@@ -533,7 +551,7 @@ class Decision:
     reasons: list[str]
 
 
-def strict_decide(config: dict, champion_manifest: dict, candidate_manifest: dict) -> Decision:
+def strict_decide(config: dict, champion_manifest: dict, candidate_manifest: dict, hard3_runs: list[dict]) -> Decision:
     reasons: list[str] = []
     wins = 0
     req_wins = int(config["promotion"]["required_seed_wins"])
@@ -541,6 +559,8 @@ def strict_decide(config: dict, champion_manifest: dict, candidate_manifest: dic
     min_seed_accuracy = float(config["promotion"]["min_seed_accuracy"])
     true_floor = float(config["promotion"]["per_seed_true_accuracy_floor"])
     false_floor = float(config["promotion"]["per_seed_false_accuracy_floor"])
+    min_hard3_avg = float(config["promotion"]["min_hard3_average_accuracy"])
+    min_hard3_seed = float(config["promotion"]["min_hard3_seed_accuracy"])
 
     champ_by_seed = {r["benchmark"]: r for r in champion_manifest["gate_runs"]}
     cand_by_seed = {r["benchmark"]: r for r in candidate_manifest["gate_runs"]}
@@ -566,6 +586,18 @@ def strict_decide(config: dict, champion_manifest: dict, candidate_manifest: dic
             reasons.append(f"{seed}: collapse detected (f1 dropped to 0)")
         if c["parse_success_rate"] < h["parse_success_rate"]:
             reasons.append(f"{seed}: parse rate regressed")
+
+    if not hard3_runs:
+        reasons.append("hard3: no hard3 runs available for strict gate")
+    else:
+        hard3_avg = mean(run["accuracy"] for run in hard3_runs)
+        if hard3_avg < min_hard3_avg:
+            reasons.append(f"hard3: average accuracy {hard3_avg:.3f} < floor {min_hard3_avg:.3f}")
+        for run in hard3_runs:
+            if run["accuracy"] < min_hard3_seed:
+                reasons.append(
+                    f"{run['benchmark']}: hard3 accuracy {run['accuracy']:.3f} < floor {min_hard3_seed:.3f}"
+                )
 
     if wins < req_wins:
         reasons.append(f"seed wins {wins} < required {req_wins}")
@@ -828,6 +860,8 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
         return entry
 
     gate_runs = evaluate_runs(config["model"], FIXED_BENCHMARK_STEMS, candidate_path)
+    hard3_stems = list(config["gates"].get("hard3_benchmark_stems", []))
+    hard3_runs = evaluate_runs(config["model"], hard3_stems, candidate_path) if hard3_stems else []
     candidate_manifest = champion_manifest_from_runs(config, candidate_path, gate_runs)
 
     distill_artifacts = distill.run_distillation(
@@ -836,7 +870,7 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
         out_dir=paths["distill_dir"],
     )
 
-    decision = strict_decide(config, current, candidate_manifest)
+    decision = strict_decide(config, current, candidate_manifest, hard3_runs)
 
     promoted = False
     if decision.promoted and not config["search"].get("shadow_mode", True):
@@ -866,6 +900,8 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
         "warmup_aggregate": warmup_aggregate,
         "candidate_aggregate": candidate_manifest["aggregate"],
         "candidate_runs": candidate_manifest["gate_runs"],
+        "hard3_runs": hard3_runs,
+        "hard3_aggregate": hard3_aggregate_metrics(hard3_runs),
         "distillation": distill_artifacts,
         "timestamp": utc_now(),
     }
@@ -890,6 +926,10 @@ def cmd_cycle(config: dict, paths: dict) -> dict:
             "required_warmup_streak": required_warmup_streak,
             "reasons": decision.reasons,
             "candidate_aggregate": candidate_manifest["aggregate"],
+            "hard3_runs": hard3_runs,
+            "hard3_aggregate": hard3_aggregate_metrics(hard3_runs),
+            "required_hard3_average_accuracy": float(config["promotion"]["min_hard3_average_accuracy"]),
+            "required_hard3_seed_accuracy": float(config["promotion"]["min_hard3_seed_accuracy"]),
             "timestamp": utc_now(),
         },
     )

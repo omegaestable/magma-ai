@@ -47,6 +47,7 @@ import jinja2
 import requests
 
 from distill import check_equation, first_failing_assignment
+from v21_data_infrastructure import normalize_eq
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -254,9 +255,12 @@ def render_prompt(problem: Problem, cheatsheet: str) -> str:
     """Render the full prompt from the cheatsheet template alone."""
     if not cheatsheet:
         raise ValueError("A cheatsheet prompt is required.")
+    # Normalize equations before rendering so template keys match build-time normalization.
+    eq1 = normalize_eq(problem.equation1)
+    eq2 = normalize_eq(problem.equation2)
     return jinja2.Template(cheatsheet).render(
-        equation1=problem.equation1,
-        equation2=problem.equation2,
+        equation1=eq1,
+        equation2=eq2,
     )
 
 
@@ -269,6 +273,10 @@ _PROOF_RE = re.compile(r"PROOF\s*:(.*?)(?=COUNTEREXAMPLE\s*:|$)", re.IGNORECASE 
 _CE_RE = re.compile(r"COUNTEREXAMPLE\s*:(.*?)$", re.IGNORECASE | re.DOTALL)
 _BOXED_VERDICT_RE = re.compile(r"\\+boxed\s*\{\s*(TRUE|FALSE)\s*\}", re.IGNORECASE)
 _LINE_VERDICT_RE = re.compile(r"^\s*\*{0,2}(TRUE|FALSE)\*{0,2}\s*$", re.IGNORECASE | re.MULTILINE)
+_REASONING_RE = re.compile(r"^\s*REASONING\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
+_SOURCE_RE = re.compile(r"^\s*SOURCE\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
+_PROOF_LINE_RE = re.compile(r"^\s*PROOF\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
+_CE_LINE_RE = re.compile(r"^\s*COUNTEREXAMPLE\s*[:：]\s*(.*?)\s*$", re.IGNORECASE | re.MULTILINE)
 
 
 def _clean_response_for_verdict(response: str) -> str:
@@ -304,6 +312,27 @@ def parse_proof_quality(response: str, verdict: Optional[bool]) -> bool:
     else:  # FALSE → COUNTEREXAMPLE must be non-empty
         m = _CE_RE.search(response)
         return bool(m and m.group(1).strip())
+
+
+def parse_output_contract(response: str) -> bool:
+    """Require exactly one non-empty line for each output field."""
+    verdict_matches = list(_VERDICT_RE.finditer(response))
+    reasoning_matches = list(_REASONING_RE.finditer(response))
+    source_matches = list(_SOURCE_RE.finditer(response))
+    proof_matches = list(_PROOF_LINE_RE.finditer(response))
+    ce_matches = list(_CE_LINE_RE.finditer(response))
+
+    if len(verdict_matches) != 1:
+        return False
+    if len(reasoning_matches) != 1 or not reasoning_matches[0].group(1).strip():
+        return False
+    if len(source_matches) != 1 or not source_matches[0].group(1).strip():
+        return False
+    if len(proof_matches) != 1 or not proof_matches[0].group(1).strip():
+        return False
+    if len(ce_matches) != 1 or not ce_matches[0].group(1).strip():
+        return False
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +389,7 @@ def query_openrouter(
 # Module-level backend state (set from CLI)
 _api_key = ""             # OpenRouter API key
 _auto_solve_witnesses = False
+_strict_output_contract = False
 
 
 EXTENDED_WITNESS_LIBRARY: list[dict] = [
@@ -457,13 +487,16 @@ def evaluate_problem(
         )
 
     verdict = parse_verdict(response)
+    contract_ok = parse_output_contract(response)
+    if _strict_output_contract and not contract_ok:
+        verdict = None
     return Result(
         problem=problem,
         repeat_id=repeat_id,
         verdict=verdict,
         raw_response=response,
         elapsed_s=elapsed,
-        parsed_ok=verdict is not None,
+        parsed_ok=(verdict is not None and (contract_ok if _strict_output_contract else True)),
         usage=usage,
     )
 
@@ -590,13 +623,16 @@ def print_report(stats: RunStats, label: str = ""):
 
 def save_results(stats: RunStats, output_path: str, model: str,
                  cheatsheet_path: Optional[str], subset: Optional[str] = None,
-                 repeats: int = 1):
+                 repeats: int = 1, playground_parity: bool = False,
+                 strict_output_contract: bool = False):
     """Save detailed results to JSON (mirrors SAIR benchmark schema)."""
     data = {
         "model": model,
         "cheatsheet": cheatsheet_path or "(none)",
         "subset": subset or "(local)",
         "repeats": repeats,
+        "playground_parity": playground_parity,
+        "strict_output_contract": strict_output_contract,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "summary": {
             "total": stats.total,
@@ -802,7 +838,7 @@ Examples:
     parser.add_argument("--api-key", default=None,
                         help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
     parser.add_argument("--auto-solve-witnesses", action="store_true",
-                        help="Deterministically answer FALSE when a verified witness exists in the built-in small witness library")
+                        help="Deprecated and disabled: deterministic witness auto-solve is banned")
 
     args = parser.parse_args()
 
@@ -822,6 +858,11 @@ Examples:
     _api_key = args.api_key or OPENROUTER_API_KEY
     global _auto_solve_witnesses
     _auto_solve_witnesses = args.auto_solve_witnesses
+    if _auto_solve_witnesses:
+        print("ERROR: deterministic checks are banned; --auto-solve-witnesses is disabled.")
+        sys.exit(2)
+    global _strict_output_contract
+    _strict_output_contract = bool(args.playground_parity)
     if not _api_key:
         print("ERROR: OpenRouter requires an API key.")
         print("  Set OPENROUTER_API_KEY in the environment or pass --api-key <key>.")
@@ -927,7 +968,9 @@ Examples:
         output_path = f"results/sim_{args.model.replace(':', '_').replace('/', '_')}_{sub_label}_{cs_label}_{ts}.json"
 
     save_results(stats, output_path, args.model, args.cheatsheet,
-                 subset=args.subset, repeats=args.repeats)
+                 subset=args.subset, repeats=args.repeats,
+                 playground_parity=bool(args.playground_parity),
+                 strict_output_contract=bool(_strict_output_contract))
 
 
 if __name__ == "__main__":

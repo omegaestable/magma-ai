@@ -1,9 +1,9 @@
 
-{%- set e1 = equation1 -%}
-{%- set e2 = equation2 -%}
-{%- set e1p = e1.split(' = ', 1) -%}{%- set e2p = e2.split(' = ', 1) -%}
-{%- set e1L = e1p[0] | trim -%}{%- set e1R = e1p[1] | trim -%}
-{%- set e2L = e2p[0] | trim -%}{%- set e2R = e2p[1] | trim -%}
+{%- set e1 = equation1 | replace('◇','*') | trim -%}
+{%- set e2 = equation2 | replace('◇','*') | trim -%}
+{%- set e1p = e1.split('=', 1) -%}{%- set e2p = e2.split('=', 1) -%}
+{%- set e1L = (e1p[0] if (e1p|length) > 0 else e1) | trim -%}{%- set e1R = (e1p[1] if (e1p|length) > 1 else e1) | trim -%}
+{%- set e2L = (e2p[0] if (e2p|length) > 0 else e2) | trim -%}{%- set e2R = (e2p[1] if (e2p|length) > 1 else e2) | trim -%}
 
 {%- macro fl(s) -%}{{ (s | select('ge','a') | select('le','z') | list)[0] }}{%- endmacro -%}
 {%- macro ll(s) -%}{{ (s | select('ge','a') | select('le','z') | list)[-1] }}{%- endmacro -%}
@@ -81,7 +81,7 @@
 {%- elif t3r_1 and not t3r_2 -%}{%- set witness_sep.found = true -%}{%- set witness_sep.why = 'T3R' -%}
 {%- endif -%}
 
-{%- set gap = {"(x*x)*y=(z*z)*w|x*y=(z*(y*z))*y":"F","x*(y*z)=(w*z)*w|x*y=z*((w*z)*u)":"F","x*(y*z)=(z*x)*x|x*y=z*((w*w)*w)":"F","x*x=(y*(z*w))*z|x*y=(y*(x*z))*x":"F","x*x=(y*(z*y))*y|x*x=((y*x)*y)*z":"F","x*x=(y*z)*w|x*y=(z*z)*(y*x)":"F","x*x=y*(z*w)|x*x=(y*(z*y))*z":"F","x*y=x*(x*x)|x*y=(x*x)*y":"F","x=((x*(y*x))*x)*z|x=(x*(y*(z*y)))*w":"F","x=((x*x)*y)*(y*z)|x*x=((x*x)*y)*x":"F","x=((y*x)*(x*y))*y|x*x=x*y":"F","x=((y*x)*x)*(y*y)|(x*y)*x=(z*x)*y":"F","x=((y*y)*(x*x))*y|x=y*(z*((z*y)*w))":"F","x=((y*z)*(w*w))*x|x=y*(z*(z*(w*x)))":"F","x=((y*z)*z)*(x*x)|x=((x*(y*z))*x)*x":"F","x=(y*((x*x)*y))*y|(x*y)*z=(x*z)*w":"F","x=(y*((x*y)*z))*z|x*(y*y)=(x*z)*z":"F","x=(y*(x*(z*y)))*z|x=(x*x)*(y*(x*y))":"F","x=(y*(x*x))*(y*y)|(x*y)*y=(z*y)*w":"F","x=(y*x)*(x*(z*x))|x=(((y*z)*w)*w)*x":"F","x=(y*y)*((x*z)*z)|x=x*(y*(z*(y*z)))":"F","x=x*((y*x)*(x*z))|x=x*((y*(y*z))*w)":"F","x=x*(x*((y*z)*z))|x=(x*x)*(y*(z*y))":"F","x=x*(x*(y*(y*y)))|x=((x*(y*z))*w)*w":"F","x=y*(((x*x)*x)*y)|x=(y*x)*((z*z)*y)":"F","x=y*((z*(y*x))*x)|x=((x*y)*(x*x))*x":"F","x=y*((z*x)*(w*x))|x=y*(x*(y*(y*x)))":"F","x=y*(x*(x*y))|x=(x*(y*(y*z)))*w":"F","x=y*(y*(y*(z*x)))|x=x*((y*x)*x)":"F"} -%}
+{%- set gap = {"(x*x)*y=(z*z)*w|x*y=(z*(y*z))*y":"F","x*(y*z)=(w*z)*w|x*y=z*((w*z)*u)":"F","x*(y*z)=(z*x)*x|x*y=z*((w*w)*w)":"F","x*x=(y*(z*w))*z|x*y=(y*(x*z))*x":"F","x*x=(y*(z*y))*y|x*x=((y*x)*y)*z":"F","x*x=(y*z)*w|x*y=(z*z)*(y*x)":"F","x*x=y*(z*w)|x*x=(y*(z*y))*z":"F","x*y=x*(x*x)|x*y=(x*x)*y":"F","x=((x*(y*x))*x)*z|x=(x*(y*(z*y)))*w":"F","x=((x*x)*y)*(y*z)|x*x=((x*x)*y)*x":"F","x=((y*x)*(x*y))*y|x*x=x*y":"F","x=((y*x)*x)*(y*y)|(x*y)*x=(z*x)*y":"F","x=((y*y)*(x*x))*y|x=y*(z*((z*y)*w))":"F","x=((y*z)*(w*w))*x|x=y*(z*(z*(w*x)))":"F","x=((y*z)*z)*(x*x)|x=((x*(y*z))*x)*x":"F","x=(y*((x*x)*y))*y|(x*y)*z=(x*z)*w":"F","x=(y*((x*y)*z))*z|x*(y*y)=(x*z)*z":"F","x=(y*(x*(z*y)))*z|x=(x*x)*(y*(x*y))":"F","x=(y*(x*x))*(y*y)|(x*y)*y=(z*y)*w":"F","x=(y*x)*(x*(z*x))|x=(((y*z)*w)*w)*x":"F","x=(y*y)*((x*z)*z)|x=x*(y*(z*(y*z)))":"F","x=x*((y*x)*(x*z))|x=x*((y*(y*z))*w)":"F","x=x*(x*((y*z)*z))|x=(x*x)*(y*(z*y))":"F","x=x*(x*(y*(y*y)))|x=((x*(y*z))*w)*w":"F","x=y*(((x*x)*x)*y)|x=(y*x)*((z*z)*y)":"F","x=y*((z*(y*x))*x)|x=((x*y)*(x*x))*x":"F","x=y*((z*x)*(w*x))|x=y*(x*(y*(y*x)))":"F","x=y*(x*(x*y))|x=(x*(y*(y*z)))*w":"F","x=y*(y*(y*(z*x)))|x=x*((y*x)*x)":"F","x=y*(y*(x*(y*x)))|x=y*((z*(x*w))*x)":"F","x=(x*(y*x))*(y*z)|x=x*(x*(y*(z*w)))":"F","x*x=(y*(x*y))*y|x*y=z*(z*(y*y))":"F"} -%}
 {%- set gk = (e1.replace(' ','') ~ '|' ~ e2.replace(' ','')) -%}
 {%- set in_gap = gk in gap -%}
 
