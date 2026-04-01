@@ -1,187 +1,165 @@
 # magma-ai
 
-Focused local harness for SAIR Stage 1 magma implication evaluation.
+Cheatsheet-first tooling for SAIR Equational Theories Stage 1.
+
+Main objective: produce a compact (<10KB), source-grounded cheatsheet that maximizes hard-set performance while preserving normal-set safety.
 
 Paid OpenRouter evaluation is the only supported inference path in this repo.
-Local model inference has been retired because it was not trustworthy for submission decisions.
 
-## Fast Start
+## Main Goal
 
-Prerequisite for paid-model runs:
+Build and promote a single cheatsheet in `cheatsheets/` that passes your gate policy:
+
+1. Strong hard performance (for current phase target, hard3 uplift).
+2. Zero normal-safety regressions before promotion.
+3. Reproducible evidence: score summaries, failure ledger, and certificate provenance.
+
+## Quick Start
+
+Set OpenRouter key in your shell:
 
 ```powershell
 $env:OPENROUTER_API_KEY = "<your_key>"
 ```
 
-Common paid-model run on the exact 5 TRUE / 5 FALSE normal benchmark:
+Run one paid eval quickly:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v19_noncollapse
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v13_proof_required
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v22_witness
 ```
 
-These commands run:
-
-- Model: `meta-llama/llama-3.3-70b-instruct`
-- Backend: OpenRouter
-- Benchmark: `data/benchmark/normal_balanced10_true5_false5_seed0.jsonl`
-- Cheatsheets: `cheatsheets/v19_noncollapse.txt` or `cheatsheets/v13_proof_required.txt`
-
-## Canonical Benchmarks
-
-- `normal_balanced10_true5_false5_seed0`
-- `normal_balanced12_true6_false6_seed0`
-- `normal_balanced20_true10_false10_seed0`
-- `normal_balanced20_true10_false10_seed1`
-- `normal_balanced20_true10_false10_seed2`
-- `hard1_balanced6_true3_false3_seed0`
-- `hard1_balanced14_true7_false7_seed0`
-- `hard2_balanced14_true7_false7_seed0`
-- `control_hard20_seed17`
-- `control_balanced_normal100_hard20_seed17`
-- `control_balanced100_25x4_seed17`
-
-All benchmark files live under `data/benchmark/`.
-
-## Direct Python Commands
-
-If you want the raw simulator command instead of the wrapper:
+Raw simulator form:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v19_noncollapse.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
-
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v13_proof_required.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
 ```
 
-Official HF subsets supported directly by `sim_lab.py` are `normal`, `hard`, `hard1`, `hard2`, and `hard3`.
+## Tutorials
 
-Example:
+- Full cheatsheet playbook: `TUTORIAL_CHEATSHEET_PLAYBOOK.md`
+- Script and skill index: `TUTORIAL_SCRIPT_SKILLS.md`
+- Competition constraints and scoring: `RULESET.md`
 
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --subset hard3 --cheatsheet cheatsheets/v19_noncollapse.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
-```
+## Script and Skill Map
 
-`sim_lab.py` now requires OpenRouter credentials and always uses the paid backend.
+This repo has three practical skill groups that drive cheatsheet work.
 
-## Results
+### 1) Evaluate and Gate (truth source for promotion)
 
-Result JSONs are written to `results/` with filenames like:
+- `sim_lab.py`: paid-model evaluator (OpenRouter), strict parsing/scoring, JSON result payloads.
+- `run_paid_eval.ps1`: convenience wrapper for common paid benchmark runs.
+- `scoreboard.py`: aggregates run outputs to leaderboard-style summaries.
 
-```text
-sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v19_noncollapse_YYYYMMDD_HHMMSS.json
-```
+Use when: you need pass/fail evidence for a candidate cheatsheet.
 
-The scoreboard summary is in `results/scoreboard.md`.
+### 2) Distill and Forensics (convert failures into actionable rules)
 
-## Legacy Note
+- `distill.py`: failure taxonomy and pattern library from run artifacts.
+- `analyze_seed_failures.py`: per-case fail ledger with corrected certificates.
+- `v22_coverage_analysis.py`: coverage audits for structural/witness/oracle lanes.
+- `v22_mine_sound_rules.py`: globally sound invariant mining against matrix truth.
 
-V1 search pipeline files and artifacts were retired during production cleanup.
-Only the V2 rebooted pipeline is supported.
+Use when: hard misses or regressions must be explained and translated into candidate rule changes.
 
-## VNext Search V2 (Reboot)
+### 3) Teorth/Proof Data Skills (source-backed certificates)
 
-The rebooted pipeline is implemented in `vnext_search_v2.py` with strict
-anti-collapse gating and a single authoritative baseline (`v13_proof_required`).
+- `fetch_teorth_data.py`: fetches and caches Teorth data (`graph.json`, `full_entries.json`, equations).
+- `teorth_true_proof_agent.py`: attaches Teorth graph/full_entries provenance to benchmark pairs.
+- `proof_scraping_lab.py`: bulk scrape lab for many `show_proof.html?pair=a,b` pages.
+- `v21_data_infrastructure.py`: equation mapping, witness masks, matrix-grounded implication lookup.
 
-Current prompt state:
+Use when: you need auditable theorem/counterexample source trails and proof-page mining at scale.
 
-- `v13_proof_required` is still the persisted V2 search baseline/champion.
-- `v19_noncollapse` is the current manually patched non-collapsing prompt used for direct evaluation work.
+## Complete Script Index
 
-Policy locks in V2:
+### Core Pipeline
 
-- Fixed evaluation model: `meta-llama/llama-3.3-70b-instruct`
-- Fixed gate suite: `normal_balanced20_true10_false10_seed0/1/2`
-- Promotion gate: `2/3` seed wins + per-seed class floors
-- Default mode is `shadow` (evaluate candidates without auto-promotion)
+- `sim_lab.py`: canonical evaluator.
+- `run_paid_eval.ps1`: fast paid runs.
+- `run_vnext_search_v2.ps1`: orchestration wrapper for V2 search actions.
+- `vnext_search_v2.py`: candidate search, gate checks, decision artifacts.
+- `vnext_search_v2_config.json`: search and gate configuration.
 
-Bootstrap the reboot flow:
+### Cheatsheet Construction and Validation
 
-```powershell
-.\run_vnext_search_v2.ps1 -Action build-gates
-.\run_vnext_search_v2.ps1 -Action freeze-legacy
-.\run_vnext_search_v2.ps1 -Action init
-.\run_vnext_search_v2.ps1 -Action status
-```
+- `v22_build_cheatsheet.py`: build/assemble v22 cheatsheet variants.
+- `v22_test_jinja2.py`: template rendering + benchmark correctness checks + size checks.
+- `_test_v22_render.py`: ad-hoc rendering tests.
 
-Run one strict cycle:
+### Distillation and Rule Mining
 
-```powershell
-.\run_vnext_search_v2.ps1 -Action cycle
-```
+- `distill.py`: pattern extraction from failures.
+- `v22_coverage_analysis.py`: lane-level coverage accounting.
+- `v22_mine_sound_rules.py`: sound rule mining from full matrix.
+- `analyze_seed_failures.py`: fail-ledger generation.
 
-Run strict historical replay checks (defaults to v14/v16/v17 vs v13 baseline):
+### Data and Proof Utilities
 
-```powershell
-.\run_vnext_search_v2.ps1 -Action replay-check
-```
+- `fetch_teorth_data.py`: fetch/cache Teorth assets.
+- `teorth_true_proof_agent.py`: add graph/full_entries source metadata.
+- `proof_scraping_lab.py`: bulk scrape proof pages by pair IDs.
+- `make_unseen_30_30_sets.py`: generate unseen balanced seed sets.
+- `v21_data_infrastructure.py`: matrix/equation/witness infrastructure.
+- `v21_verify_structural_rules.py`: structural rule verification utilities.
 
-Override replay labels:
+### Atlas / Research Helpers
 
-```powershell
-.\run_vnext_search_v2.ps1 -Action replay-check -Cheatsheets "v14_proof_required,v16_early_false_signal,v17_corrected"
-```
+- `proof_atlas.py`: build proof atlas artifacts.
+- `atlas_public_dev.py`: build public-corpus atlas and candidate variants.
+- `test_proof_atlas.py`, `test_atlas_public_dev.py`: tests.
 
-Warmup-first anti-collapse behavior:
+### Misc
 
-- Every new candidate is screened on `normal_balanced10_true5_false5_seed0` before any 20/20 evaluation.
-- Full 3-seed `balanced20` evaluation is blocked until the search records the configured non-collapse streak on the 5/5 warmup gate.
-- Warmup currently requires non-zero TRUE recall and non-zero F1 in practice via the configured floors in `vnext_search_v2_config.json`.
+- `invoke_copilot_candidate.py`: candidate invocation helper.
 
-Run bounded loop in background:
+## Canonical Workflows (Cheatsheet-Centric)
 
-```powershell
-.\run_vnext_search_v2.ps1 -Action loop -Cycles 3 -BudgetUsd 0.5 -Background
-```
+### Workflow A: Evaluate Current Cheatsheet
 
-V2 decision artifacts are written to:
+1. Run paid eval on normal/hard seeds with `sim_lab.py`.
+2. Inspect `results/sim_*.json` and `results/scoreboard.md`.
+3. Gate decision: keep, patch, or revert.
 
-- `results/vnext_search_v2/decisions/` (one decision JSON per cycle)
-- `results/vnext_search_v2/replay/` (replay-check outputs)
+### Workflow B: Distill Failures into Safe Changes
 
-V2 distillation now emits both structural and verified-witness sidecars under `results/vnext_search_v2/distilled_signals/`:
+1. Build ledger: `analyze_seed_failures.py`.
+2. Build pattern summary: `distill.py`.
+3. Add proof provenance: `teorth_true_proof_agent.py`.
+4. Propose compact deterministic changes (witness/oracle/structural), not benchmark memorization.
 
-- `*_distillation_brief.md` for ranked failure patterns
-- `*_witness_brief.md` for compact verified small-magma separations on recent false positives
+### Workflow C: Mine Proof Chains in Bulk
 
-You can also distill a raw paid result JSON directly:
+1. Choose pair source (`--pairs`, `--pairs-file`, `--from-jsonl`, `--from-results`).
+2. Scrape: `proof_scraping_lab.py`.
+3. Use JSONL/MD outputs to identify reusable theorem/fact families.
 
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe distill.py --result-file results/sim_meta-llama_llama-3.3-70b-instruct_normal_balanced10_true5_false5_seed0_v18_evidence_hierarchy_YYYYMMDD_HHMMSS.json --out-dir results/manual_distill --cycle 18
-```
+### Workflow D: Build and Validate a New Candidate
 
-## Proof Atlas
+1. Edit candidate in `cheatsheets/`.
+2. Validate template and budget with `v22_test_jinja2.py`.
+3. Re-run paid normal safety gates first.
+4. Run hard campaigns and ledger.
+5. Promote only when safety and uplift criteria pass.
 
-Build the research-first proof atlas and render the first competition cheatsheet candidate:
+## Benchmark and Data Notes
 
-```powershell
-python proof_atlas.py
-```
+- Benchmarks: `data/benchmark/`.
+- HF caches: `data/hf_cache/`.
+- Teorth caches: `data/teorth_cache/`.
+- Dense implications matrix: `data/exports/export_raw_implications_14_3_2026.csv`.
+- Equation catalog: `data/exports/equations.txt`.
 
-Artifacts are written to:
+## Results and Artifacts
 
-- `results/proof_atlas/proof_atlas.jsonl`
-- `results/proof_atlas/proof_atlas.md`
-- `results/proof_atlas/validation_report.json`
-- `cheatsheets/generated_v2/cheatsheet_competition_v1.txt`
+- Run payloads: `results/sim_*.json`.
+- Scoreboard: `results/scoreboard.md`, `results/scoreboard.csv`.
+- Gate summaries/ledgers/plans: `results/phase5_*.md`.
+- Proof scrape outputs: `results/proof_lab/*.jsonl`, `results/proof_lab/*.md`.
 
-Build the atlas-guided public-corpus development artifacts and generated prompt variants:
+## Practical Guardrails
 
-```powershell
-python atlas_public_dev.py
-```
-
-This uses:
-
-- full `data/hf_cache/normal.jsonl`
-- full `data/hf_cache/hard1.jsonl`
-- held-out `data/hf_cache/hard2.jsonl`
-- held-out `data/hf_cache/hard3.jsonl`
-
-Artifacts are written to:
-
-- `results/proof_atlas_public/dataset_split.json`
-- `results/proof_atlas_public/public_corpus_alignment.jsonl`
-- `results/proof_atlas_public/public_corpus_family_report.json`
-- `results/proof_atlas_public/variant_decisions.json`
-- `cheatsheets/generated_v2/atlas_public/`
+1. Keep cheatsheets under 10,240 bytes on disk.
+2. Prefer deterministic witnesses and graph-backed certificates.
+3. Do not hardcode exact benchmark pairs as oracle policy.
+4. Do not promote with normal regression.
+5. Treat paid seeds and fail ledgers as source-of-truth for decisions.
