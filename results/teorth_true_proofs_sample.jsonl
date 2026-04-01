@@ -1,0 +1,20 @@
+{"eq1_id": 0, "eq2_id": 0, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 0, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 1, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 2, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation3", "filename": "././././equational_theories/Subgraph.lean", "line": 24, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 3, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation4", "filename": "././././equational_theories/Subgraph.lean", "line": 28, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 4, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation5", "filename": "././././equational_theories/Subgraph.lean", "line": 32, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 5, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation6", "filename": "././././equational_theories/Subgraph.lean", "line": 36, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 6, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation7", "filename": "././././equational_theories/Subgraph.lean", "line": 40, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 7, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation8", "filename": "././././equational_theories/Subgraph.lean", "line": 44, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 8, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 9, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 10, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 11, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 12, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 13, "status": "explicit_proof_true", "source_type": "proof", "sources": [{"name": "Subgraph.Equation2_implies_Equation14", "filename": "././././equational_theories/Subgraph.lean", "line": 450, "proven": true, "finite": false}]}
+{"eq1_id": 1, "eq2_id": 14, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 15, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 16, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 17, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
+{"eq1_id": 1, "eq2_id": 18, "status": "implicit_proof_true", "source_type": "proof", "sources": []}
