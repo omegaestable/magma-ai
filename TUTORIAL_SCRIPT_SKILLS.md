@@ -68,14 +68,7 @@ This document explains what each script does and which practical skill it suppor
 
 ## Candidate Build Skill
 
-- `v22_build_cheatsheet.py`
-  - Purpose: generate/assemble candidate cheatsheet variants.
-
-- `v22_test_jinja2.py`
-  - Purpose: validate rendering, correctness behavior, and byte budget.
-
-- `_test_v22_render.py`
-  - Purpose: quick rendering smoke checks.
+Cheatsheets use only `{{equation1}}` and `{{equation2}}` substitution. No Jinja2 logic allowed.
 
 ## Search and Promotion Skill
 

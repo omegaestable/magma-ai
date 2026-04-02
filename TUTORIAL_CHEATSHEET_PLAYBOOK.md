@@ -84,11 +84,7 @@ Hard constraints:
 
 ## 7. Candidate Validation
 
-Run template correctness and budget checks:
-
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe v22_test_jinja2.py
-```
+Verify the cheatsheet is under 10,240 bytes and uses only `{{equation1}}`/`{{equation2}}` substitution (NO Jinja2 logic).
 
 Then rerun paid gates (normal first, then hard):
 

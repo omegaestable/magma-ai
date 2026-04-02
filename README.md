@@ -25,13 +25,13 @@ $env:OPENROUTER_API_KEY = "<your_key>"
 Run one paid eval quickly:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v22_witness
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v21f_structural
 ```
 
 Raw simulator form:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v21f_structural.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
 ```
 
 ## Tutorials
@@ -79,12 +79,6 @@ Use when: you need auditable theorem/counterexample source trails and proof-page
 - `run_vnext_search_v2.ps1`: orchestration wrapper for V2 search actions.
 - `vnext_search_v2.py`: candidate search, gate checks, decision artifacts.
 - `vnext_search_v2_config.json`: search and gate configuration.
-
-### Cheatsheet Construction and Validation
-
-- `v22_build_cheatsheet.py`: build/assemble v22 cheatsheet variants.
-- `v22_test_jinja2.py`: template rendering + benchmark correctness checks + size checks.
-- `_test_v22_render.py`: ad-hoc rendering tests.
 
 ### Distillation and Rule Mining
 
@@ -135,8 +129,8 @@ Use when: you need auditable theorem/counterexample source trails and proof-page
 
 ### Workflow D: Build and Validate a New Candidate
 
-1. Edit candidate in `cheatsheets/`.
-2. Validate template and budget with `v22_test_jinja2.py`.
+1. Edit candidate in `cheatsheets/`. Only `{{equation1}}` and `{{equation2}}` substitution allowed — NO Jinja2 logic.
+2. Verify file is under 10,240 bytes.
 3. Re-run paid normal safety gates first.
 4. Run hard campaigns and ledger.
 5. Promote only when safety and uplift criteria pass.
