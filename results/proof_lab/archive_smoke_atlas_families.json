@@ -1,0 +1,34 @@
+[
+  {
+    "family": "subgraph_seed",
+    "title": "Subgraph Seed Implications",
+    "family_group": "rewrite/metatheorem families",
+    "description": "Seed implications anchor the closure graph and often act as short canonical witnesses for broad regions of the graph.",
+    "pair_count": 2,
+    "ok_count": 2,
+    "paper_refs": [
+      "paper/foundations.tex",
+      "paper/data.tex"
+    ],
+    "known_blockers": [
+      "many downstream truths are closure facts, not standalone seed theorems"
+    ],
+    "sample_pairs": [
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ]
+    ],
+    "sample_titles": [
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}"
+    ],
+    "supporting_files": [
+      "././././equational_theories/Subgraph.lean"
+    ]
+  }
+]

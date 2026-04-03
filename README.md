@@ -126,7 +126,8 @@ If you are not inside that loop, you are probably in a research or historical pa
 
 - `fetch_teorth_data.py`: fetches and refreshes Teorth assets
 - `teorth_true_proof_agent.py`: attaches source-backed proof metadata
-- `proof_scraping_lab.py`: bulk proof-page scraper
+- `proof_scraping_lab.py`: bulk proof-page scraper and cached archival crawler
+- `proof_construction_atlas.py`: second-pass family extractor for cached proof crawls
 - `v21_data_infrastructure.py`: matrix, equation, and witness utilities
 - `v21_verify_structural_rules.py`: authoritative rule verification helpers
 

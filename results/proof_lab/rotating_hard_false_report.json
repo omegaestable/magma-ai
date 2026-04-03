@@ -1,0 +1,1367 @@
+[
+  {
+    "result_file": "results/sim_meta-llama_llama-3.3-70b-instruct_hard_balanced40_true20_false20_rotation0001_20260403_163406_v23_20260403_105851.json",
+    "benchmark_file": "C:/Users/nacho/Documents/GitHub/magma-ai/data/benchmark/hard_balanced40_true20_false20_rotation0001_20260403_163406.jsonl",
+    "false_positive_count": 18,
+    "primary_family_counts": {
+      "all4x4_table_counterexamples": 13,
+      "small_finite_magma": 3,
+      "canonizer_confluence": 1,
+      "projection_family_counterexamples": 1
+    },
+    "rows": [
+      {
+        "id": "hard_0175",
+        "eq1_id": 3926,
+        "eq2_id": 3920,
+        "equation1": "x * y = (x * (y * x)) * z",
+        "equation2": "x * y = (x * (x * z)) * x",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0128",
+        "eq1_id": 706,
+        "eq2_id": 860,
+        "equation1": "x = y * (y * ((x * y) * x))",
+        "equation2": "x = x * ((y * z) * (z * x))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 9
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 8
+          },
+          {
+            "family": "projection_family_counterexamples",
+            "score": 5
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 37
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 16
+          },
+          {
+            "family": "hard_case",
+            "score": 5
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [
+            "z"
+          ],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:3+2",
+          "shared_eq_support:small_finite_magma:3+1",
+          "structural_projection_trigger"
+        ]
+      },
+      {
+        "id": "hard_0125",
+        "eq1_id": 907,
+        "eq2_id": 221,
+        "equation1": "x = y * ((y * x) * (x * y))",
+        "equation2": "x = (y * (x * y)) * x",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 10
+          },
+          {
+            "family": "hard_case",
+            "score": 10
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 10
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 48
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 17
+          },
+          {
+            "family": "hard_case",
+            "score": 4
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 34
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 19
+          },
+          {
+            "family": "hard_case",
+            "score": 4
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:hard_case:3+3",
+          "shared_eq_support:all4x4_table_counterexamples:3+3",
+          "shared_eq_support:small_finite_magma:3+3"
+        ]
+      },
+      {
+        "id": "hard_0058",
+        "eq1_id": 4574,
+        "eq2_id": 4438,
+        "equation1": "x * (y * z) = (w * w) * z",
+        "equation2": "x * (y * x) = (x * z) * x",
+        "primary_family": "canonizer_confluence",
+        "family_group": "canonizers/free-magma arguments",
+        "family_scores": [
+          {
+            "family": "canonizer_confluence",
+            "score": 2
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "no_small_witness_fallback"
+        ]
+      },
+      {
+        "id": "hard_0099",
+        "eq1_id": 1486,
+        "eq2_id": 913,
+        "equation1": "x = (y * x) * (x * (z * z))",
+        "equation2": "x = y * ((y * x) * (z * y))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0188",
+        "eq1_id": 2089,
+        "eq2_id": 404,
+        "equation1": "x = ((y * x) * x) * (x * z)",
+        "equation2": "x * y = (z * z) * z",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0088",
+        "eq1_id": 3290,
+        "eq2_id": 3264,
+        "equation1": "x * x = y * (z * (x * z))",
+        "equation2": "x * x = x * (y * (z * x))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0149",
+        "eq1_id": 1480,
+        "eq2_id": 1882,
+        "equation1": "x = (y * x) * (x * (x * z))",
+        "equation2": "x = (x * (y * z)) * (w * w)",
+        "primary_family": "projection_family_counterexamples",
+        "family_group": "projection/absorption families",
+        "family_scores": [
+          {
+            "family": "projection_family_counterexamples",
+            "score": 5
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [
+            "w"
+          ],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "structural_projection_trigger"
+        ]
+      },
+      {
+        "id": "hard_0189",
+        "eq1_id": 2994,
+        "eq2_id": 2623,
+        "equation1": "x = ((y * (z * y)) * y) * x",
+        "equation2": "x = (y * ((z * w) * y)) * x",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 7
+          },
+          {
+            "family": "projection_family_counterexamples",
+            "score": 5
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [
+            "w"
+          ],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:2+1",
+          "structural_projection_trigger"
+        ]
+      },
+      {
+        "id": "hard_0038",
+        "eq1_id": 3919,
+        "eq2_id": 3330,
+        "equation1": "x * y = (x * (x * y)) * z",
+        "equation2": "x * y = x * (z * (y * y))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 4
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0194",
+        "eq1_id": 3919,
+        "eq2_id": 3330,
+        "equation1": "x * y = (x * (x * y)) * z",
+        "equation2": "x * y = x * (z * (y * y))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 4
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0071",
+        "eq1_id": 3926,
+        "eq2_id": 3920,
+        "equation1": "x * y = (x * (y * x)) * z",
+        "equation2": "x * y = (x * (x * z)) * x",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0136",
+        "eq1_id": 2089,
+        "eq2_id": 404,
+        "equation1": "x = ((y * x) * x) * (x * z)",
+        "equation2": "x * y = (z * z) * z",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0076",
+        "eq1_id": 706,
+        "eq2_id": 860,
+        "equation1": "x = y * (y * ((x * y) * x))",
+        "equation2": "x = x * ((y * z) * (z * x))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 9
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 8
+          },
+          {
+            "family": "projection_family_counterexamples",
+            "score": 5
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 37
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 16
+          },
+          {
+            "family": "hard_case",
+            "score": 5
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [
+            "z"
+          ],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:3+2",
+          "shared_eq_support:small_finite_magma:3+1",
+          "structural_projection_trigger"
+        ]
+      },
+      {
+        "id": "hard_0166",
+        "eq1_id": 2116,
+        "eq2_id": 2327,
+        "equation1": "x = ((y * x) * z) * (z * y)",
+        "equation2": "x = (y * (y * (x * x))) * x",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "small_finite_magma",
+            "score": 9
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "hard_case",
+            "score": 2
+          },
+          {
+            "family": "linear_translation",
+            "score": 2
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 2
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 37
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 19
+          },
+          {
+            "family": "hard_case",
+            "score": 2
+          },
+          {
+            "family": "linear_translation",
+            "score": 2
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:small_finite_magma:2+3"
+        ]
+      },
+      {
+        "id": "hard_0182",
+        "eq1_id": 2890,
+        "eq2_id": 3261,
+        "equation1": "x = ((x * (y * z)) * z) * x",
+        "equation2": "x * x = x * (y * (y * x))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 10
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 3
+          },
+          {
+            "family": "hard_case",
+            "score": 2
+          },
+          {
+            "family": "linear_translation",
+            "score": 2
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 4
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 69
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 52
+          },
+          {
+            "family": "hard_case",
+            "score": 2
+          },
+          {
+            "family": "linear_translation",
+            "score": 2
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:3+3"
+        ]
+      },
+      {
+        "id": "hard_0091",
+        "eq1_id": 830,
+        "eq2_id": 1229,
+        "equation1": "x = x * ((x * y) * (z * z))",
+        "equation2": "x = x * (((x * y) * x) * y)",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 3
+          },
+          {
+            "family": "hard_case",
+            "score": 2
+          },
+          {
+            "family": "linear_translation",
+            "score": 2
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 42
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 35
+          },
+          {
+            "family": "hard_case",
+            "score": 2
+          },
+          {
+            "family": "linear_translation",
+            "score": 2
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard_0120",
+        "eq1_id": 3478,
+        "eq2_id": 4316,
+        "equation1": "x * x = y * ((x * z) * y)",
+        "equation2": "x * (y * x) = x * (z * x)",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 8
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 5
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:1+3"
+        ]
+      }
+    ]
+  },
+  {
+    "result_file": "results/sim_meta-llama_llama-3.3-70b-instruct_hard3_balanced20_true10_false10_rotation0001_20260403_163406_v23_20260403_110425.json",
+    "benchmark_file": "C:/Users/nacho/Documents/GitHub/magma-ai/data/benchmark/hard3_balanced20_true10_false10_rotation0001_20260403_163406.jsonl",
+    "false_positive_count": 10,
+    "primary_family_counts": {
+      "small_finite_magma": 5,
+      "all4x4_table_counterexamples": 3,
+      "projection_family_counterexamples": 2
+    },
+    "rows": [
+      {
+        "id": "hard3_0305",
+        "eq1_id": 2864,
+        "eq2_id": 624,
+        "equation1": "x = ((x * (y * x)) * x) * z",
+        "equation2": "x = x * (x * ((y * y) * z))",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard3_0110",
+        "eq1_id": 885,
+        "eq2_id": 2939,
+        "equation1": "x = y * ((x * y) * (z * x))",
+        "equation2": "x = ((y * (y * x)) * y) * x",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 3
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 36
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 25
+          },
+          {
+            "family": "hard_case",
+            "score": 5
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard3_0237",
+        "eq1_id": 2126,
+        "eq2_id": 3734,
+        "equation1": "x = ((y * y) * x) * (x * z)",
+        "equation2": "x * y = (x * z) * (x * w)",
+        "primary_family": "projection_family_counterexamples",
+        "family_group": "projection/absorption families",
+        "family_scores": [
+          {
+            "family": "projection_family_counterexamples",
+            "score": 5
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [
+            "w"
+          ],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "structural_projection_trigger"
+        ]
+      },
+      {
+        "id": "hard3_0360",
+        "eq1_id": 3490,
+        "eq2_id": 355,
+        "equation1": "x * x = y * ((y * z) * w)",
+        "equation2": "x * y = z * (w * y)",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard3_0141",
+        "eq1_id": 1085,
+        "eq2_id": 4093,
+        "equation1": "x = y * ((x * (y * y)) * x)",
+        "equation2": "x * x = ((y * y) * y) * x",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 10
+          },
+          {
+            "family": "hard_case",
+            "score": 10
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 10
+          },
+          {
+            "family": "exceptional_hard",
+            "score": 1
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 53
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 22
+          },
+          {
+            "family": "hard_case",
+            "score": 4
+          },
+          {
+            "family": "exceptional_hard",
+            "score": 1
+          },
+          {
+            "family": "linear_translation",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 74
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 39
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:hard_case:3+3",
+          "shared_eq_support:all4x4_table_counterexamples:3+3",
+          "shared_eq_support:small_finite_magma:3+3"
+        ]
+      },
+      {
+        "id": "hard3_0103",
+        "eq1_id": 827,
+        "eq2_id": 3332,
+        "equation1": "x = x * ((x * y) * (y * z))",
+        "equation2": "x * y = x * (z * (y * w))",
+        "primary_family": "projection_family_counterexamples",
+        "family_group": "projection/absorption families",
+        "family_scores": [
+          {
+            "family": "projection_family_counterexamples",
+            "score": 5
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [
+            "w"
+          ],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "structural_projection_trigger"
+        ]
+      },
+      {
+        "id": "hard3_0130",
+        "eq1_id": 1037,
+        "eq2_id": 3533,
+        "equation1": "x = x * ((y * (x * x)) * z)",
+        "equation2": "x * y = x * ((z * y) * y)",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 7
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 2
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:2+1"
+        ]
+      },
+      {
+        "id": "hard3_0186",
+        "eq1_id": 1663,
+        "eq2_id": 214,
+        "equation1": "x = (x * y) * ((y * z) * w)",
+        "equation2": "x = (x * (y * z)) * x",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "small_finite_magma",
+            "score": 2
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 2
+          }
+        ],
+        "eq2_family_votes": [],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard3_0075",
+        "eq1_id": 545,
+        "eq2_id": 2043,
+        "equation1": "x = y * (z * (x * (z * x)))",
+        "equation2": "x = ((x * x) * y) * (y * x)",
+        "primary_family": "small_finite_magma",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 3
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 3
+          }
+        ],
+        "eq1_family_votes": [],
+        "eq2_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 42
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 32
+          },
+          {
+            "family": "hard_case",
+            "score": 4
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": []
+      },
+      {
+        "id": "hard3_0234",
+        "eq1_id": 2126,
+        "eq2_id": 124,
+        "equation1": "x = ((y * y) * x) * (x * z)",
+        "equation2": "x = y * ((y * x) * x)",
+        "primary_family": "all4x4_table_counterexamples",
+        "family_group": "small finite magma families",
+        "family_scores": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 8
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          },
+          {
+            "family": "small_finite_magma",
+            "score": 3
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "exceptional_hard",
+            "score": 1
+          }
+        ],
+        "eq1_family_votes": [
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 1
+          },
+          {
+            "family": "canonizer_confluence",
+            "score": 1
+          },
+          {
+            "family": "central_groupoid_counterexamples",
+            "score": 1
+          }
+        ],
+        "eq2_family_votes": [
+          {
+            "family": "small_finite_magma",
+            "score": 34
+          },
+          {
+            "family": "all4x4_table_counterexamples",
+            "score": 14
+          },
+          {
+            "family": "hard_case",
+            "score": 3
+          },
+          {
+            "family": "exceptional_hard",
+            "score": 1
+          }
+        ],
+        "feature_flags": {
+          "new_vars_in_e2": [],
+          "lp_obstruction": false,
+          "rp_obstruction": false
+        },
+        "verified_witnesses": [],
+        "ranking_reasons": [
+          "shared_eq_support:all4x4_table_counterexamples:1+3"
+        ]
+      }
+    ]
+  }
+]

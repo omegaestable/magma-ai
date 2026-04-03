@@ -1,0 +1,32 @@
+{
+  "pair": [
+    2,
+    43
+  ],
+  "url": "https://teorth.github.io/equational_theories/implications/show_proof.html?pair=2,43",
+  "title": "Proof of ${eq1} \u21d2 ${eq2}",
+  "equation_nodes": [],
+  "theorem_links": [],
+  "fact_links": [],
+  "pair_links": [],
+  "code_blocks": [],
+  "pre_blocks": [],
+  "table_blocks": [],
+  "all_links": [
+    {
+      "text": "${equations[eq - 1]}",
+      "href": "https://teorth.github.io/equational_theories/implications/${url}"
+    },
+    {
+      "text": "${name}${extra_text}",
+      "href": "https://teorth.github.io/equational_theories/implications/${url}"
+    },
+    {
+      "text": "${name}${extra_text}",
+      "href": "https://teorth.github.io/equational_theories/implications/${url}"
+    }
+  ],
+  "ok": true,
+  "status_code": 200,
+  "fetched_from": "network"
+}

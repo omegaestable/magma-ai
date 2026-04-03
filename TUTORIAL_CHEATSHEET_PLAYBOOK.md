@@ -102,6 +102,18 @@ Bulk proof scraping is optional and should be used only when provenance mining i
 python proof_scraping_lab.py --from-results results/<your_run>.json --failed-only --limit 100 --out-prefix results/proof_lab/failures
 ```
 
+For archival construction mining, seed a cached recursive crawl from the Teorth metadata:
+
+```powershell
+python proof_scraping_lab.py --from-full-entries --recursive --limit 500 --out-prefix results/proof_lab/archive_seed
+```
+
+Then convert that crawl into a construction-family atlas for downstream hard-false distillation:
+
+```powershell
+python proof_construction_atlas.py --crawl-jsonl results/proof_lab/archive_seed.jsonl --out-prefix results/proof_lab/archive_seed_atlas
+```
+
 ## 8. Patch The Cheatsheet
 
 Patch only after you understand the error type.

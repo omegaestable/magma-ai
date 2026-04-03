@@ -41,12 +41,21 @@ Use after normal is stable:
 
 - regenerate the rotating official-like bundle with `make_unseen_30_30_sets.py`
 - evaluate the `normal`, `hard`, and `hard3` files listed in `data/benchmark/rotating_official_latest.json`
+- for hard FALSE rescue, run the failure-conditioned family analyzer on the resulting hard and hard3 payloads before editing the cheatsheet
 
 Recommended refresh command:
 
 ```powershell
 C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
 ```
+
+Failure-conditioned hard-false report:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe analyze_hard_false_families.py --result-files results/<hard_run>.json,results/<hard3_run>.json --out-prefix results/proof_lab/rotating_hard_false_report
+```
+
+This report ranks likely witness families for the actual false positives using equation-level facts provenance plus verified canned witnesses, so the next conservative v23 edit can target projection, compact finite witnesses, 4x4 tables, or a rarer hard lane with evidence.
 
 ## Canonical Commands
 

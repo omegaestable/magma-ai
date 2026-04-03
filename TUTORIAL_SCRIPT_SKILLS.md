@@ -64,6 +64,11 @@ Use this role when you need provenance, theorem backing, or proof-page mining.
 
 - `proof_scraping_lab.py`
   - Bulk proof-page scraping for deeper provenance work
+  - Supports cached archival crawling from `full_entries.json` with recursive proof-link discovery
+
+- `proof_construction_atlas.py`
+  - Converts cached crawl rows into machine-readable construction-family summaries
+  - Joins page-level signals with `full_entries.json` provenance
 
 - `v21_data_infrastructure.py`
   - Equation IDs, matrix lookups, witness masks
@@ -72,6 +77,18 @@ Use this role when you need provenance, theorem backing, or proof-page mining.
   - Soundness verification helper for structural rules
 
 Start here if your question is: "Can we justify this TRUE or FALSE with source-backed evidence?"
+
+Hard-false rescue entrypoint:
+
+```powershell
+python proof_scraping_lab.py --from-full-entries --recursive --limit 500 --out-prefix results/proof_lab/archive_seed
+```
+
+Then normalize the cached crawl into a construction atlas:
+
+```powershell
+python proof_construction_atlas.py --crawl-jsonl results/proof_lab/archive_seed.jsonl --out-prefix results/proof_lab/archive_seed_atlas
+```
 
 ### 4. Patch The Candidate
 
