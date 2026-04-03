@@ -34,15 +34,15 @@ Current v23 status:
 - Warmup seed1: 90%
 - Full normal seed0: 95%
 - Full normal seed1: 85%
-- Full normal seed2: not yet run
-- Unseen and hard stress: blocked until full normal seed set is complete
+- Full normal seed2: 90% (10/10 TRUE, 8/10 FALSE, parse 100%)
+- Unseen and hard stress: still blocked because the full normal gate set contains a regression
 
 ## Current Read
 
-- v23 is promising but not promoted.
-- v21f remains the safe champion until v23 clears the full normal gate set without regression.
-- The main live risks are execution variance and restart drift, not missing infrastructure.
-- Promotion is blocked until v23 completes full normal seed2 and the full normal set is stable.
+- v23 has completed the full normal seed set but is not promoted.
+- v21f remains the safe champion because v23 regressed on full normal seed1 and only tied the champion on seed2.
+- The main live risks are false-positive coverage gaps on normal FALSE pairs, execution variance, and restart drift.
+- Promotion is blocked; the next move is the distill-patch loop rather than stress runs.
 
 ## Operational Promotion Rule
 
@@ -55,10 +55,11 @@ For v23 to replace v21f:
 ## Open Risks
 
 1. v23 still has run-to-run variance.
-2. Full normal seed2 still needs confirmation.
-3. Old planning and historical docs can still distract fresh agents if they ignore this file.
-4. Research-only scripts remain visible at the repo root and can pull work off the canonical path.
+2. Full normal seed1 is still below the champion and blocks promotion.
+3. Full normal seed2 missed `normal_0628` and `normal_0907`, both false positives with clean parsing.
+4. Old planning and historical docs can still distract fresh agents if they ignore this file.
+5. Research-only scripts remain visible at the repo root and can pull work off the canonical path.
 
 ## Next Decision Point
 
-Decide whether v23 becomes the new champion after the full normal seed set and stress runs are complete.
+Distill the full normal regressions, patch v23 conservatively, and re-run the failing normal seeds before any unseen or hard stress work.

@@ -41,18 +41,24 @@ Useful for variance and robustness checks:
 - `normal_balanced20_true10_false10_seed61760.jsonl`
 - `normal_balanced20_true10_false10_seed694.jsonl`
 - `normal_balanced20_true10_false10_seed92229.jsonl`
-- `normal_balanced10_true5_false5_randmix_seed0_unseen_20260324.jsonl`
-- `normal_balanced10_true5_false5_randmix_seed1_unseen_20260324.jsonl`
-- `normal_balanced10_true5_false5_randmix_seed2_unseen_20260324.jsonl`
 
-### Unseen Normal Sets
+### Rotating Official-Like Bundles
 
-Use only after the normal gate is stable:
+Use only after the normal gate is stable.
 
-- `normal_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl`
-- `normal_balanced60_true30_false30_seed20260402_unseen_20260401.jsonl`
-- `normal_balanced60_true30_false30_seed20260403_unseen_20260401.jsonl`
-- `normal_balanced60_true30_false30_unseen_20260324.jsonl`
+These are not fixed benchmark files anymore. Regenerate them from the official Hugging Face pools each time:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
+```
+
+The generator writes:
+
+- `normal` 30 TRUE / 30 FALSE
+- `hard` 20 TRUE / 20 FALSE
+- `hard3` 10 TRUE / 10 FALSE
+
+Use `data/benchmark/rotating_official_latest.json` as the canonical pointer to the current bundle.
 
 ### Hard Sets
 
@@ -62,11 +68,6 @@ Use for stress after normal safety:
 - `hard1_balanced14_true7_false7_seed0.jsonl`
 - `hard2_balanced14_true7_false7_seed0.jsonl`
 - `hard3_balanced26_true13_false13_seed0.jsonl`
-- `hard3_balanced40_true20_false20_seed41_unseen_20260401.jsonl`
-- `hard3_balanced40_true20_false20_seed99_unseen_20260401.jsonl`
-- `hard3_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl`
-- `hard3_balanced60_true30_false30_seed20260402_unseen_20260401.jsonl`
-- `hard3_balanced60_true30_false30_seed20260403_unseen_20260401.jsonl`
 
 ### Control Sets
 
@@ -80,7 +81,7 @@ Use only when explicitly testing control behavior:
 
 1. warmup normal seed0 and seed1
 2. full normal seed0, seed1, seed2
-3. unseen normal sets
-4. hard3 stress sets
+3. regenerate the rotating official-like bundle from Hugging Face
+4. evaluate the current `normal`, `hard`, and `hard3` rotation files listed in `data/benchmark/rotating_official_latest.json`
 
 If a candidate fails early in that sequence, stop and distill before running more benchmarks.

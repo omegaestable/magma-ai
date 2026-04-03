@@ -177,12 +177,12 @@ def download_hf_subset(subset: str) -> Path:
         f"https://huggingface.co/datasets/{HF_DATASET}"
         f"/resolve/main/data/{subset}.jsonl"
     )
-    print(f"Downloading {subset} dataset from HuggingFace …")
+    print(f"Downloading {subset} dataset from HuggingFace ...")
     HF_CACHE_DIR.mkdir(parents=True, exist_ok=True)
     r = requests.get(url, timeout=60)
     r.raise_for_status()
     cache_path.write_bytes(r.content)
-    print(f"  Cached → {cache_path}  ({len(r.content):,} bytes)")
+    print(f"  Cached -> {cache_path}  ({len(r.content):,} bytes)")
     return cache_path
 
 

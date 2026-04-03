@@ -1,0 +1,238 @@
+{
+  "generated_at": "2026-04-03T16:34:06+00:00",
+  "stamp": "20260403_163406",
+  "rotation_index": 1,
+  "source": {
+    "dataset": "SAIRfoundation/equational-theories-selected-problems",
+    "subsets": [
+      "normal",
+      "hard",
+      "hard3"
+    ],
+    "refresh_cache": false
+  },
+  "legacy_unseen_removed": [
+    "data/benchmark/hard3_balanced40_true20_false20_seed41_unseen_20260401.jsonl",
+    "data/benchmark/hard3_balanced40_true20_false20_seed99_unseen_20260401.jsonl",
+    "data/benchmark/hard3_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl",
+    "data/benchmark/hard3_balanced60_true30_false30_seed20260402_unseen_20260401.jsonl",
+    "data/benchmark/hard3_balanced60_true30_false30_seed20260403_unseen_20260401.jsonl",
+    "data/benchmark/normal_balanced10_true5_false5_randmix_seed0_unseen_20260324.jsonl",
+    "data/benchmark/normal_balanced10_true5_false5_randmix_seed1_unseen_20260324.jsonl",
+    "data/benchmark/normal_balanced10_true5_false5_randmix_seed2_unseen_20260324.jsonl",
+    "data/benchmark/normal_balanced20_true10_false10_randmix_seed20260324_unseen_20260324.jsonl",
+    "data/benchmark/normal_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl",
+    "data/benchmark/normal_balanced60_true30_false30_seed20260402_unseen_20260401.jsonl",
+    "data/benchmark/normal_balanced60_true30_false30_seed20260403_unseen_20260401.jsonl",
+    "data/benchmark/normal_balanced60_true30_false30_unseen_20260324.jsonl"
+  ],
+  "files": [
+    {
+      "subset": "normal",
+      "requested": {
+        "true": 30,
+        "false": 30
+      },
+      "selected": {
+        "true": 30,
+        "false": 30,
+        "total": 60
+      },
+      "true_bucket": {
+        "cycle": 0,
+        "offset_start": 0,
+        "offset_end": 30,
+        "pool_size": 500,
+        "wrapped": false
+      },
+      "false_bucket": {
+        "cycle": 0,
+        "offset_start": 0,
+        "offset_end": 30,
+        "pool_size": 500,
+        "wrapped": false
+      },
+      "ids": [
+        "normal_0926",
+        "normal_0059",
+        "normal_0249",
+        "normal_0791",
+        "normal_0817",
+        "normal_0596",
+        "normal_0395",
+        "normal_0730",
+        "normal_0028",
+        "normal_0924",
+        "normal_0127",
+        "normal_0914",
+        "normal_0947",
+        "normal_0387",
+        "normal_0039",
+        "normal_0469",
+        "normal_0368",
+        "normal_0872",
+        "normal_0501",
+        "normal_0967",
+        "normal_0483",
+        "normal_0948",
+        "normal_0229",
+        "normal_0077",
+        "normal_0893",
+        "normal_0095",
+        "normal_0001",
+        "normal_0407",
+        "normal_0563",
+        "normal_0833",
+        "normal_0798",
+        "normal_0658",
+        "normal_0758",
+        "normal_0715",
+        "normal_0247",
+        "normal_0746",
+        "normal_0881",
+        "normal_0532",
+        "normal_0866",
+        "normal_0721",
+        "normal_0558",
+        "normal_0931",
+        "normal_0172",
+        "normal_0064",
+        "normal_0252",
+        "normal_0334",
+        "normal_0799",
+        "normal_0394",
+        "normal_0348",
+        "normal_0895",
+        "normal_0316",
+        "normal_0664",
+        "normal_0830",
+        "normal_0092",
+        "normal_0333",
+        "normal_0560",
+        "normal_0880",
+        "normal_0194",
+        "normal_0067",
+        "normal_0562"
+      ],
+      "path": "data/benchmark/normal_balanced60_true30_false30_rotation0001_20260403_163406.jsonl"
+    },
+    {
+      "subset": "hard",
+      "requested": {
+        "true": 20,
+        "false": 20
+      },
+      "selected": {
+        "true": 20,
+        "false": 20,
+        "total": 40
+      },
+      "true_bucket": {
+        "cycle": 0,
+        "offset_start": 0,
+        "offset_end": 20,
+        "pool_size": 74,
+        "wrapped": false
+      },
+      "false_bucket": {
+        "cycle": 0,
+        "offset_start": 0,
+        "offset_end": 20,
+        "pool_size": 126,
+        "wrapped": false
+      },
+      "ids": [
+        "hard_0191",
+        "hard_0175",
+        "hard_0111",
+        "hard_0041",
+        "hard_0128",
+        "hard_0125",
+        "hard_0164",
+        "hard_0075",
+        "hard_0058",
+        "hard_0179",
+        "hard_0113",
+        "hard_0099",
+        "hard_0087",
+        "hard_0197",
+        "hard_0154",
+        "hard_0168",
+        "hard_0188",
+        "hard_0072",
+        "hard_0158",
+        "hard_0173",
+        "hard_0052",
+        "hard_0088",
+        "hard_0149",
+        "hard_0189",
+        "hard_0038",
+        "hard_0194",
+        "hard_0155",
+        "hard_0171",
+        "hard_0061",
+        "hard_0071",
+        "hard_0063",
+        "hard_0060",
+        "hard_0136",
+        "hard_0076",
+        "hard_0166",
+        "hard_0182",
+        "hard_0091",
+        "hard_0120",
+        "hard_0144",
+        "hard_0003"
+      ],
+      "path": "data/benchmark/hard_balanced40_true20_false20_rotation0001_20260403_163406.jsonl"
+    },
+    {
+      "subset": "hard3",
+      "requested": {
+        "true": 10,
+        "false": 10
+      },
+      "selected": {
+        "true": 10,
+        "false": 10,
+        "total": 20
+      },
+      "true_bucket": {
+        "cycle": 0,
+        "offset_start": 0,
+        "offset_end": 10,
+        "pool_size": 195,
+        "wrapped": false
+      },
+      "false_bucket": {
+        "cycle": 0,
+        "offset_start": 0,
+        "offset_end": 10,
+        "pool_size": 205,
+        "wrapped": false
+      },
+      "ids": [
+        "hard3_0305",
+        "hard3_0319",
+        "hard3_0048",
+        "hard3_0321",
+        "hard3_0398",
+        "hard3_0387",
+        "hard3_0110",
+        "hard3_0237",
+        "hard3_0360",
+        "hard3_0003",
+        "hard3_0141",
+        "hard3_0103",
+        "hard3_0130",
+        "hard3_0186",
+        "hard3_0259",
+        "hard3_0243",
+        "hard3_0075",
+        "hard3_0234",
+        "hard3_0176",
+        "hard3_0400"
+      ],
+      "path": "data/benchmark/hard3_balanced20_true10_false10_rotation0001_20260403_163406.jsonl"
+    }
+  ]
+}

@@ -86,6 +86,14 @@ Check cheatsheet size on disk:
 (Get-Item "cheatsheets\v23.txt").Length
 ```
 
+Refresh the rotating official-like evaluation bundle:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
+```
+
+That command regenerates fresh balanced slices from the official Hugging Face `normal`, `hard`, and `hard3` subsets and records the latest file paths in `data/benchmark/rotating_official_latest.json`.
+
 ## Canonical Workflow
 
 The repo should be approached through one loop only:
@@ -142,6 +150,7 @@ If you are not inside that loop, you are probably in a research or historical pa
 ## Benchmarks and Data
 
 - Benchmarks: `data/benchmark/`
+- Rotating benchmark manifest: `data/benchmark/rotating_official_latest.json`
 - Teorth cache: `data/teorth_cache/`
 - Dense implications matrix: `data/exports/export_raw_implications_14_3_2026.csv`
 - Equation catalog: `data/exports/equations.txt`
@@ -161,6 +170,7 @@ Retention rule:
 1. Keep `results/scoreboard.md` and `results/scoreboard.csv` as the human-readable summary layer.
 2. Keep raw `results/sim_*.json` only while you are actively diagnosing a run.
 3. Delete raw ignored artifacts after summarizing or distilling them.
+4. Treat frozen `*_unseen_*.jsonl` benchmark files as deprecated local artifacts; regenerate rotating bundles from the official Hugging Face subsets instead.
 
 ## Promotion Rules
 

@@ -20,9 +20,9 @@ Pair input sources:
 Examples:
   python proof_scraping_lab.py --pairs "310,118;118,310" --out-prefix results/proof_lab/smoke
 
-  python proof_scraping_lab.py \
-    --from-jsonl data/benchmark/hard3_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl \
-    --only-false --limit 40 --out-prefix results/proof_lab/hard3_seed20260401
+    python proof_scraping_lab.py \
+        --from-jsonl data/benchmark/<current_hard3_rotation>.jsonl \
+        --only-false --limit 40 --out-prefix results/proof_lab/hard3_rotation
 
   python proof_scraping_lab.py \
     --from-results results/sim_paid_hard3_seed20260401_v22_witness.json \

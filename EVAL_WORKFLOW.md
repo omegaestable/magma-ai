@@ -39,8 +39,14 @@ Operational rule: the candidate should meet or beat the current champion across 
 
 Use after normal is stable:
 
-- unseen balanced sets under `data/benchmark/`
-- hard3 sets under `data/benchmark/`
+- regenerate the rotating official-like bundle with `make_unseen_30_30_sets.py`
+- evaluate the `normal`, `hard`, and `hard3` files listed in `data/benchmark/rotating_official_latest.json`
+
+Recommended refresh command:
+
+```powershell
+C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
+```
 
 ## Canonical Commands
 
