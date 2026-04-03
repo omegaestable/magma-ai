@@ -1,8 +1,42 @@
-# v23 Plan — Pure Natural Language Cheatsheet
+# v23 Plan — Historical Planning Document
 
-Status note: this file is the original planning document for v23. It is no longer the operational source of truth.
+This file preserves the original v23 planning document.
 
-Use `CURRENT_STATE.md` for the current baseline, active candidate, latest gate results, and open risks.
+It is not the operational source of truth anymore.
+
+Use `CURRENT_STATE.md` for the live baseline, candidate, latest gate results, and next decision point.
+
+## How To Read This File
+
+1. Read this file as planning history, not live status.
+2. Treat the sections below as the original design intent for v23.
+3. When this file and `CURRENT_STATE.md` disagree, `CURRENT_STATE.md` wins.
+
+## Status Snapshot (As Of 2026-04-03)
+
+- Baseline champion remains `cheatsheets/v21f_structural.txt`
+- Active candidate remains `cheatsheets/v23.txt`
+- v23 has not been promoted
+- Current working v23 direction is a 4-structural-test natural-language variant with stronger output discipline
+- Full normal seed2 still needs confirmation before promotion can even be considered
+
+## Outcome Versus Original Plan
+
+The original v23 plan below aimed for a richer natural-language cheatsheet with XOR/Z3A counting tests and optional soft heuristics.
+
+What actually happened:
+
+1. The counting-heavy direction proved execution-risky on the target model.
+2. XOR/Z3A style additions created miscounting regressions and prompt brittleness.
+3. The safer live direction returned to the proven 4-test structural lane with clearer decision-table and output-contract wording.
+4. The repo now treats v23 as an iterative candidate built on the simpler structural core, not as a commitment to the original 6-test plan.
+
+What remains useful from this document:
+
+1. The diagnosis of why v21f caps near 90%
+2. The byte-budget reasoning
+3. The discussion of deep coverage gaps and structural ceilings
+4. The risk register for overly clever prompt additions
 
 **Created:** 2026-04-02  
 **Deadline:** 2026-04-20 (18 days)  

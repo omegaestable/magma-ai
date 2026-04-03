@@ -10,8 +10,9 @@ Promote a candidate only when it is normal-safe and backed by reproducible evide
 
 1. Run warmup normal benchmarks.
 2. Run full normal gates.
-3. If any full normal seed regresses, distill failures and patch the cheatsheet.
-4. Re-run full normal gates.
+3. If any full normal seed regresses, stop and distill that failing seed first.
+4. Patch the cheatsheet only after the failure type is clear.
+5. Re-run the failing normal seed, then return to the full normal gate set.
 5. Safety holds only when all full normal seeds meet or beat the champion with no regression.
 6. Run unseen and hard stress only after safety holds.
 
@@ -62,6 +63,12 @@ Primary outputs:
 - `results/sim_*.json`
 - `results/scoreboard.md`
 - `results/scoreboard.csv`
+
+Retention guidance:
+
+1. `results/sim_*.json` are working payloads for immediate analysis and are ignored by git.
+2. After you have distilled or summarized a run, prefer keeping the scoreboard outputs instead of a pile of raw payloads.
+3. If you need durable evidence for a decision, capture it in the scoreboard, current-state notes, or a reviewed ledger rather than relying on many local raw files.
 
 From each run, inspect:
 

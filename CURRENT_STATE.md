@@ -44,6 +44,14 @@ Current v23 status:
 - The main live risks are execution variance and restart drift, not missing infrastructure.
 - Promotion is blocked until v23 completes full normal seed2 and the full normal set is stable.
 
+## Operational Promotion Rule
+
+For v23 to replace v21f:
+
+1. all three full normal seeds must meet or beat the current champion
+2. no full normal seed may regress below the champion
+3. if any full normal seed regresses, return to the distill-patch loop instead of promoting
+
 ## Open Risks
 
 1. v23 still has run-to-run variance.

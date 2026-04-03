@@ -38,13 +38,14 @@ Paid OpenRouter evaluation is the supported inference path in this repo.
 Follow this order exactly:
 
 1. `README.md`
-2. `AGENTS.md`
-3. `CURRENT_STATE.md`
-4. `RESTART_CHECKLIST.md`
-5. `EVAL_WORKFLOW.md`
-6. `BENCHMARK_MANIFEST.md`
-7. `TUTORIAL_CHEATSHEET_PLAYBOOK.md`
-8. `TUTORIAL_SCRIPT_SKILLS.md`
+2. `CURRENT_STATE.md`
+3. `AGENTS.md`
+4. `.github/copilot-instructions.md`
+5. `RESTART_CHECKLIST.md`
+6. `EVAL_WORKFLOW.md`
+7. `BENCHMARK_MANIFEST.md`
+8. `TUTORIAL_CHEATSHEET_PLAYBOOK.md`
+9. `TUTORIAL_SCRIPT_SKILLS.md`
 
 For humans:
 
@@ -56,11 +57,8 @@ For humans:
 
 For agents:
 
-1. Read `AGENTS.md`.
-2. Read `CURRENT_STATE.md`.
-3. Read `.github/copilot-instructions.md`.
-4. Read `RESTART_CHECKLIST.md`.
-5. Then use `EVAL_WORKFLOW.md`.
+1. Follow the canonical cold-start read order above.
+2. Use `AGENTS.md` and `.github/copilot-instructions.md` as the repo-specific operating contract.
 
 ## Quick Start
 
@@ -149,6 +147,20 @@ If you are not inside that loop, you are probably in a research or historical pa
 - Equation catalog: `data/exports/equations.txt`
 - Results: `results/sim_*.json`
 - Scoreboards: `results/scoreboard.md`, `results/scoreboard.csv`
+
+## Local Artifact Hygiene
+
+Treat these as local, disposable artifacts unless a task explicitly needs them:
+
+1. `results/sim_*.json` raw simulator payloads
+2. `tmp*/` transient root temp directories
+3. intermediate distill temp folders under `results/manual_distill/`
+
+Retention rule:
+
+1. Keep `results/scoreboard.md` and `results/scoreboard.csv` as the human-readable summary layer.
+2. Keep raw `results/sim_*.json` only while you are actively diagnosing a run.
+3. Delete raw ignored artifacts after summarizing or distilling them.
 
 ## Promotion Rules
 

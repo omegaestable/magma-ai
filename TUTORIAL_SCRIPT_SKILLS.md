@@ -27,6 +27,11 @@ Use this role when you need benchmark evidence or a promotion decision.
   - Summarizes run payloads and costs
   - Outputs: `results/scoreboard.md`, `results/scoreboard.csv`
 
+Artifact note:
+
+- `results/sim_*.json` are local working payloads and should be treated as disposable once distilled or summarized.
+- `results/scoreboard.md` and `results/scoreboard.csv` are the preferred retained summaries.
+
 Start here if your question is: "How is the current cheatsheet performing?"
 
 ### 2. Distill And Forensics
