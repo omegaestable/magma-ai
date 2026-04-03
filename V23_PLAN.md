@@ -1,5 +1,9 @@
 # v23 Plan — Pure Natural Language Cheatsheet
 
+Status note: this file is the original planning document for v23. It is no longer the operational source of truth.
+
+Use `CURRENT_STATE.md` for the current baseline, active candidate, latest gate results, and open risks.
+
 **Created:** 2026-04-02  
 **Deadline:** 2026-04-20 (18 days)  
 **Constraint:** Only `{{equation1}}` and `{{equation2}}` substitution. NO Jinja2 logic.  

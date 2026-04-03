@@ -2,158 +2,165 @@
 
 Cheatsheet-first tooling for SAIR Equational Theories Stage 1.
 
-Main objective: produce a compact (<10KB), source-grounded cheatsheet that maximizes hard-set performance while preserving normal-set safety.
+This repo exists to produce one competition-ready text cheatsheet under 10,240 bytes that answers:
 
-Paid OpenRouter evaluation is the only supported inference path in this repo.
+"Does equation1 imply equation2 over all magmas?"
 
-## Main Goal
+The operating priority is:
 
-Build and promote a single cheatsheet in `cheatsheets/` that passes your gate policy:
+1. Math and rule soundness first.
+2. Normal-set safety before any hard-set uplift.
+3. Reproducible paid-model evidence before promotion.
 
-1. Strong hard performance (for current phase target, hard3 uplift).
-2. Zero normal-safety regressions before promotion.
-3. Reproducible evidence: score summaries, failure ledger, and certificate provenance.
+Paid OpenRouter evaluation is the supported inference path in this repo.
+
+## Current State
+
+- Baseline champion: `cheatsheets/v21f_structural.txt`
+- Active candidate: `cheatsheets/v23.txt`
+- Canonical evaluator: `sim_lab.py`
+- Canonical quick-run wrapper: `run_paid_eval.ps1`
+- Current strategy: pure natural-language cheatsheet, no dynamic template logic
+
+## Hard Constraints
+
+1. Submission artifact is one file in `cheatsheets/`.
+2. Cheatsheet must stay at or below 10,240 bytes on disk.
+3. Only `{{equation1}}` and `{{equation2}}` substitution is allowed.
+4. Jinja2 logic is banned. No `set`, `if`, `for`, macros, gap tables, or computed lookup logic in the cheatsheet.
+5. Do not hardcode benchmark pairs as policy.
+6. Do not promote a candidate with normal-set regression.
+
+## Start Here
+
+## Canonical Cold-Start Read Order
+
+Follow this order exactly:
+
+1. `README.md`
+2. `AGENTS.md`
+3. `CURRENT_STATE.md`
+4. `RESTART_CHECKLIST.md`
+5. `EVAL_WORKFLOW.md`
+6. `BENCHMARK_MANIFEST.md`
+7. `TUTORIAL_CHEATSHEET_PLAYBOOK.md`
+8. `TUTORIAL_SCRIPT_SKILLS.md`
+
+For humans:
+
+1. Read this file.
+2. Read `CURRENT_STATE.md`.
+3. Read `RULESET.md`.
+4. Read `EVAL_WORKFLOW.md`.
+5. Read `TUTORIAL_CHEATSHEET_PLAYBOOK.md`.
+
+For agents:
+
+1. Read `AGENTS.md`.
+2. Read `CURRENT_STATE.md`.
+3. Read `.github/copilot-instructions.md`.
+4. Read `RESTART_CHECKLIST.md`.
+5. Then use `EVAL_WORKFLOW.md`.
 
 ## Quick Start
 
-Set OpenRouter key in your shell:
+Activate the repo venv and set your OpenRouter key:
 
 ```powershell
 $env:OPENROUTER_API_KEY = "<your_key>"
 ```
 
-Run one paid eval quickly:
+Run a quick baseline check:
 
 ```powershell
 .\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v21f_structural
 ```
 
-Raw simulator form:
+Run the active candidate directly:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v21f_structural.txt --openrouter --model meta-llama/llama-3.3-70b-instruct
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
-## Tutorials
+Check cheatsheet size on disk:
 
-- Full cheatsheet playbook: `TUTORIAL_CHEATSHEET_PLAYBOOK.md`
-- Script and skill index: `TUTORIAL_SCRIPT_SKILLS.md`
-- Competition constraints and scoring: `RULESET.md`
+```powershell
+(Get-Item "cheatsheets\v23.txt").Length
+```
 
-## Script and Skill Map
+## Canonical Workflow
 
-This repo has three practical skill groups that drive cheatsheet work.
+The repo should be approached through one loop only:
 
-### 1) Evaluate and Gate (truth source for promotion)
+1. Evaluate candidate on normal safety gates.
+2. Distill failures into a ledger and pattern summary.
+3. Patch cheatsheet conservatively.
+4. Re-run normal gates.
+5. Run full and stress benchmarks only after normal safety holds.
+6. Promote only with explicit evidence.
 
-- `sim_lab.py`: paid-model evaluator (OpenRouter), strict parsing/scoring, JSON result payloads.
-- `run_paid_eval.ps1`: convenience wrapper for common paid benchmark runs.
-- `scoreboard.py`: aggregates run outputs to leaderboard-style summaries.
+If you are not inside that loop, you are probably in a research or historical path.
 
-Use when: you need pass/fail evidence for a candidate cheatsheet.
+## Core Files
 
-### 2) Distill and Forensics (convert failures into actionable rules)
+### Evaluate and Gate
 
-- `distill.py`: failure taxonomy and pattern library from run artifacts.
-- `analyze_seed_failures.py`: per-case fail ledger with corrected certificates.
-- `v22_coverage_analysis.py`: coverage audits for structural/witness/oracle lanes.
-- `v22_mine_sound_rules.py`: globally sound invariant mining against matrix truth.
+- `sim_lab.py`: canonical paid evaluator, strict parsing, result JSON output
+- `run_paid_eval.ps1`: convenience wrapper for standard paid runs
+- `scoreboard.py`: summarizes run payloads into leaderboard-style outputs
 
-Use when: hard misses or regressions must be explained and translated into candidate rule changes.
+### Distill and Forensics
 
-### 3) Teorth/Proof Data Skills (source-backed certificates)
+- `distill.py`: converts failures into patterns and candidate edits
+- `analyze_seed_failures.py`: builds fail ledgers with corrected certificates
+- `v22_coverage_analysis.py`: measures which lanes cover false cases
+- `v22_mine_sound_rules.py`: mines globally sound structural rules
 
-- `fetch_teorth_data.py`: fetches and caches Teorth data (`graph.json`, `full_entries.json`, equations).
-- `teorth_true_proof_agent.py`: attaches Teorth graph/full_entries provenance to benchmark pairs.
-- `proof_scraping_lab.py`: bulk scrape lab for many `show_proof.html?pair=a,b` pages.
-- `v21_data_infrastructure.py`: equation mapping, witness masks, matrix-grounded implication lookup.
+### Data and Proof Grounding
 
-Use when: you need auditable theorem/counterexample source trails and proof-page mining at scale.
+- `fetch_teorth_data.py`: fetches and refreshes Teorth assets
+- `teorth_true_proof_agent.py`: attaches source-backed proof metadata
+- `proof_scraping_lab.py`: bulk proof-page scraper
+- `v21_data_infrastructure.py`: matrix, equation, and witness utilities
+- `v21_verify_structural_rules.py`: authoritative rule verification helpers
 
-## Complete Script Index
+### Research and Optional Paths
 
-### Core Pipeline
+- `vnext_search_v2.py`: search/orchestration path, not the canonical starting point
+- `proof_atlas.py`, `atlas_public_dev.py`: research helpers, not required for the standard cheatsheet loop
+- `invoke_copilot_candidate.py`: helper script, not a primary entrypoint
 
-- `sim_lab.py`: canonical evaluator.
-- `run_paid_eval.ps1`: fast paid runs.
-- `run_vnext_search_v2.ps1`: orchestration wrapper for V2 search actions.
-- `vnext_search_v2.py`: candidate search, gate checks, decision artifacts.
-- `vnext_search_v2_config.json`: search and gate configuration.
+## Documentation Map
 
-### Distillation and Rule Mining
+- `CURRENT_STATE.md`: short-lived operational truth for the current phase
+- `EVAL_WORKFLOW.md`: canonical benchmark and promotion flow
+- `RESTART_CHECKLIST.md`: cold-start checklist for humans and agents
+- `BENCHMARK_MANIFEST.md`: benchmark naming legend and dataset roles
+- `TUTORIAL_CHEATSHEET_PLAYBOOK.md`: end-to-end operator tutorial
+- `TUTORIAL_SCRIPT_SKILLS.md`: role-based script map
+- `RULESET.md`: competition constraints and scoring
+- `V23_PLAN.md`: historical planning context for the active candidate
 
-- `distill.py`: pattern extraction from failures.
-- `v22_coverage_analysis.py`: lane-level coverage accounting.
-- `v22_mine_sound_rules.py`: sound rule mining from full matrix.
-- `analyze_seed_failures.py`: fail-ledger generation.
+## Benchmarks and Data
 
-### Data and Proof Utilities
+- Benchmarks: `data/benchmark/`
+- Teorth cache: `data/teorth_cache/`
+- Dense implications matrix: `data/exports/export_raw_implications_14_3_2026.csv`
+- Equation catalog: `data/exports/equations.txt`
+- Results: `results/sim_*.json`
+- Scoreboards: `results/scoreboard.md`, `results/scoreboard.csv`
 
-- `fetch_teorth_data.py`: fetch/cache Teorth assets.
-- `teorth_true_proof_agent.py`: add graph/full_entries source metadata.
-- `proof_scraping_lab.py`: bulk scrape proof pages by pair IDs.
-- `make_unseen_30_30_sets.py`: generate unseen balanced seed sets.
-- `v21_data_infrastructure.py`: matrix/equation/witness infrastructure.
-- `v21_verify_structural_rules.py`: structural rule verification utilities.
+## Promotion Rules
 
-### Atlas / Research Helpers
+1. Normal safety gates must pass before hard-set runs matter.
+2. Every FALSE decision path should remain mathematically defensible.
+3. Results, ledgers, and provenance must agree before promotion.
+4. If a candidate is better on hard but weaker on normal, keep the old champion.
 
-- `proof_atlas.py`: build proof atlas artifacts.
-- `atlas_public_dev.py`: build public-corpus atlas and candidate variants.
-- `test_proof_atlas.py`, `test_atlas_public_dev.py`: tests.
+## Anti-Regression Guardrails
 
-### Misc
-
-- `invoke_copilot_candidate.py`: candidate invocation helper.
-
-## Canonical Workflows (Cheatsheet-Centric)
-
-### Workflow A: Evaluate Current Cheatsheet
-
-1. Run paid eval on normal/hard seeds with `sim_lab.py`.
-2. Inspect `results/sim_*.json` and `results/scoreboard.md`.
-3. Gate decision: keep, patch, or revert.
-
-### Workflow B: Distill Failures into Safe Changes
-
-1. Build ledger: `analyze_seed_failures.py`.
-2. Build pattern summary: `distill.py`.
-3. Add proof provenance: `teorth_true_proof_agent.py`.
-4. Propose compact deterministic changes (witness/oracle/structural), not benchmark memorization.
-
-### Workflow C: Mine Proof Chains in Bulk
-
-1. Choose pair source (`--pairs`, `--pairs-file`, `--from-jsonl`, `--from-results`).
-2. Scrape: `proof_scraping_lab.py`.
-3. Use JSONL/MD outputs to identify reusable theorem/fact families.
-
-### Workflow D: Build and Validate a New Candidate
-
-1. Edit candidate in `cheatsheets/`. Only `{{equation1}}` and `{{equation2}}` substitution allowed — NO Jinja2 logic.
-2. Verify file is under 10,240 bytes.
-3. Re-run paid normal safety gates first.
-4. Run hard campaigns and ledger.
-5. Promote only when safety and uplift criteria pass.
-
-## Benchmark and Data Notes
-
-- Benchmarks: `data/benchmark/`.
-- HF caches: `data/hf_cache/`.
-- Teorth caches: `data/teorth_cache/`.
-- Dense implications matrix: `data/exports/export_raw_implications_14_3_2026.csv`.
-- Equation catalog: `data/exports/equations.txt`.
-
-## Results and Artifacts
-
-- Run payloads: `results/sim_*.json`.
-- Scoreboard: `results/scoreboard.md`, `results/scoreboard.csv`.
-- Gate summaries/ledgers/plans: `results/phase5_*.md`.
-- Proof scrape outputs: `results/proof_lab/*.jsonl`, `results/proof_lab/*.md`.
-
-## Practical Guardrails
-
-1. Keep cheatsheets under 10,240 bytes on disk.
-2. Prefer deterministic witnesses and graph-backed certificates.
-3. Do not hardcode exact benchmark pairs as oracle policy.
-4. Do not promote with normal regression.
-5. Treat paid seeds and fail ledgers as source-of-truth for decisions.
+1. Do not reintroduce Jinja2 logic into cheatsheets.
+2. Do not optimize against one benchmark file at the expense of general rules.
+3. Prefer compact, sound structural reasoning over brittle heuristics.
+4. Treat run artifacts and failure ledgers as the source of truth.
+5. When in doubt, revert to the simpler, safer cheatsheet.

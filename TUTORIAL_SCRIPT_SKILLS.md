@@ -1,102 +1,108 @@
 # Script and Skills Tutorial
 
-This document explains what each script does and which practical skill it supports for cheatsheet development.
+This document maps the repo by role so humans and agents can find the right path quickly.
 
-## Skill Families
+## Read This After
 
-1. Evaluation skill: run reliable paid-model benchmarks and compare candidates.
-2. Distillation skill: convert failures into compact, reusable decision rules.
-3. Proof skill: attach theorem/facts provenance and finite certificates.
-4. Promotion skill: enforce safety gates and decide champion status.
+1. `README.md`
+2. `EVAL_WORKFLOW.md`
+3. `RESTART_CHECKLIST.md`
 
-## Script-by-Script Guide
+## Canonical Roles
 
-## Evaluation Skill
+### 1. Evaluate And Gate
+
+Use this role when you need benchmark evidence or a promotion decision.
 
 - `sim_lab.py`
-  - Purpose: canonical paid evaluator and report writer.
-  - Input: benchmark JSONL or HF subset, cheatsheet template.
-  - Output: `results/sim_*.json`.
+  - Canonical paid evaluator
+  - Inputs: benchmark JSONL, cheatsheet template
+  - Outputs: `results/sim_*.json`
 
 - `run_paid_eval.ps1`
-  - Purpose: convenience wrapper around simulator calls.
-  - Input: benchmark stem and cheatsheet label.
-  - Output: standard run payloads under `results/`.
+  - Quick wrapper for standard benchmark runs
+  - Best starting command for routine evaluation
 
 - `scoreboard.py`
-  - Purpose: summarize run payloads and costs.
-  - Output: `results/scoreboard.md`, `results/scoreboard.csv`.
+  - Summarizes run payloads and costs
+  - Outputs: `results/scoreboard.md`, `results/scoreboard.csv`
 
-## Distillation Skill
+Start here if your question is: "How is the current cheatsheet performing?"
 
-- `distill.py`
-  - Purpose: classify errors and build pattern library for prompt iteration.
-  - Output: taxonomy, pattern library, and markdown brief.
+### 2. Distill And Forensics
+
+Use this role when a run failed and you need a mathematically grounded explanation.
 
 - `analyze_seed_failures.py`
-  - Purpose: build a fail ledger with corrected certificates.
-  - Output: markdown ledger for postmortem and promotion review.
+  - Builds a fail ledger with corrected certificates
+
+- `distill.py`
+  - Groups failures into reusable patterns
 
 - `v22_coverage_analysis.py`
-  - Purpose: quantify which lanes (structural/witness/oracle) catch false cases.
-  - Output: coverage report for deciding what to patch.
+  - Measures which rule lanes cover false cases
 
 - `v22_mine_sound_rules.py`
-  - Purpose: mine globally sound invariant separators from matrix truth.
-  - Output: candidate rule stats and dataset coverage diagnostics.
+  - Mines globally sound separators from matrix truth
 
-## Proof Skill
+Start here if your question is: "Why did this benchmark fail, and what safe edit follows from it?"
+
+### 3. Proof And Source Grounding
+
+Use this role when you need provenance, theorem backing, or proof-page mining.
 
 - `fetch_teorth_data.py`
-  - Purpose: fetch/cache Teorth assets (`graph.json`, `full_entries.json`, equations, duals).
+  - Refreshes Teorth assets and caches
 
 - `teorth_true_proof_agent.py`
-  - Purpose: attach graph/full_entries source metadata to benchmark rows.
-  - Typical use: certify-benchmark mode for provenance artifacts.
+  - Attaches graph/full_entries source metadata to benchmark rows
 
 - `proof_scraping_lab.py`
-  - Purpose: bulk scrape many proof pages (`show_proof.html?pair=a,b`).
-  - Pair sources: inline pairs, pair file, benchmark jsonl, sim results.
-  - Output: JSONL + markdown report.
+  - Bulk proof-page scraping for deeper provenance work
 
 - `v21_data_infrastructure.py`
-  - Purpose: equation-ID mapping, witness masks, matrix lookups.
-  - Often used by distillation and forensic scripts.
+  - Equation IDs, matrix lookups, witness masks
 
 - `v21_verify_structural_rules.py`
-  - Purpose: authoritative checks for LP/RP/C0/VARS/XOR/Z3A/XNOR soundness.
+  - Soundness verification helper for structural rules
 
-## Candidate Build Skill
+Start here if your question is: "Can we justify this TRUE or FALSE with source-backed evidence?"
 
-Cheatsheets use only `{{equation1}}` and `{{equation2}}` substitution. No Jinja2 logic allowed.
+### 4. Patch The Candidate
 
-## Search and Promotion Skill
+This repo patches cheatsheets directly.
+
+Rules:
+
+1. Cheatsheets live in `cheatsheets/`
+2. Only `{{equation1}}` and `{{equation2}}` substitution is allowed
+3. No Jinja2 logic is allowed
+4. Simpler, sounder prompts beat larger brittle prompts
+
+Main files:
+
+- `cheatsheets/v21f_structural.txt`
+- `cheatsheets/v23.txt`
+
+### 5. Optional And Research Paths
+
+These are not the canonical starting points for most tasks:
 
 - `vnext_search_v2.py`
-  - Purpose: evaluate candidate mutations under strict anti-collapse policy.
-
 - `run_vnext_search_v2.ps1`
-  - Purpose: run workflow actions (`init`, `cycle`, `loop`, `replay-check`).
-
 - `vnext_search_v2_config.json`
-  - Purpose: policy and gate configuration.
-
-## Atlas/Research Skill
-
 - `proof_atlas.py`
-  - Purpose: research atlas artifacts and candidate generation.
-
 - `atlas_public_dev.py`
-  - Purpose: public-corpus development datasets/reports/variants.
+- `invoke_copilot_candidate.py`
 
-- `test_proof_atlas.py`, `test_atlas_public_dev.py`
-  - Purpose: regression checks for atlas tooling.
+Use them only when the task explicitly calls for search orchestration, atlas work, or broader research tooling.
 
 ## Recommended Usage Pattern
 
-1. Evaluate baseline (`sim_lab.py`).
-2. Distill failures (`analyze_seed_failures.py`, `distill.py`).
-3. Attach proof sources (`teorth_true_proof_agent.py`, optional `proof_scraping_lab.py`).
-4. Patch candidate (`cheatsheets/*.txt`).
-5. Validate template and rerun normal safety gates before hard gates.
-6. Promote only with explicit no-regression evidence.
+1. Evaluate current baseline or candidate.
+2. Distill failures.
+3. Add proof grounding if needed.
+4. Patch the cheatsheet.
+5. Re-run normal safety gates.
+6. Only then run hard or unseen stress.
+7. Promote only with explicit no-regression evidence.

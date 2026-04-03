@@ -1,107 +1,137 @@
 # Cheatsheet Playbook
 
-This playbook is the end-to-end path from raw data to a promoted cheatsheet.
+This is the end-to-end operator tutorial for the current natural-language-only cheatsheet workflow.
 
-## 1. Goal and Promotion Standard
+## 1. Goal
 
-Target artifact: one prompt template in `cheatsheets/`.
+Produce one text cheatsheet in `cheatsheets/` that stays under 10,240 bytes, remains mathematically defensible, and improves performance without normal-set regression.
 
-Promotion standard:
-1. Normal safety gate passes (no regressions on required unseen suites).
-2. Hard performance improves measurably.
-3. Every reported FALSE has source-backed certificate metadata.
-4. Template remains under 10KB (`10,240` bytes on disk).
+Current operating artifacts:
 
-## 2. Environment Setup
+- Baseline champion: `cheatsheets/v21f_structural.txt`
+- Active candidate: `cheatsheets/v23.txt`
 
-1. Activate venv.
-2. Set OpenRouter key:
+## 2. Hard Rules
+
+1. Cheatsheets are plain text only.
+2. Only `{{equation1}}` and `{{equation2}}` substitution is allowed.
+3. No Jinja2 logic of any kind.
+4. No benchmark-pair hardcoding as policy.
+5. Normal safety comes before hard-set uplift.
+
+## 3. Environment Setup
+
+1. Activate the repo venv.
+2. Set your OpenRouter key.
+3. Optionally refresh Teorth data if you are doing provenance work.
 
 ```powershell
 $env:OPENROUTER_API_KEY = "<your_key>"
+python fetch_teorth_data.py --check
 ```
 
-3. Optional refresh of Teorth assets:
+## 4. Evaluate The Baseline Or Candidate
+
+Fast wrapper form:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe fetch_teorth_data.py --check
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe fetch_teorth_data.py --force
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v21f_structural
 ```
 
-## 3. Baseline Evaluation
-
-Run paid baseline for current candidate:
+Direct evaluator form:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --output results/sim_paid_normal_seed20260401_v22_witness.json
-
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/hard3_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --output results/sim_paid_hard3_seed20260401_v22_witness.json
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
-## 4. Failure Forensics
+For current promotion work, use this order:
 
-Generate fail ledger:
+1. warmup normal seeds 0 and 1
+2. full normal seeds 0, 1, and 2
+3. unseen and hard benchmarks only after normal is stable
+
+## 5. Inspect The Outputs
+
+Primary outputs:
+
+- `results/sim_*.json`
+- `results/scoreboard.md`
+- `results/scoreboard.csv`
+
+Look at:
+
+1. overall accuracy
+2. true accuracy
+3. false accuracy
+4. parse rate
+5. quality score
+6. specific failures
+
+## 6. Distill Failures
+
+Build the fail ledger:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe analyze_seed_failures.py --cheatsheet cheatsheets/v22_witness.txt --result-files results/sim_paid_normal_seed20260401_v22_witness.json,results/sim_paid_hard3_seed20260401_v22_witness.json --out results/seed_failure_report.md
+python analyze_seed_failures.py
 ```
 
-Generate broader pattern distillation:
+Build a broader pattern summary from a result file:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe distill.py --result-file results/sim_paid_hard3_seed20260401_v22_witness.json --out-dir results/manual_distill --cycle 1
+python distill.py --result-file results/<your_run>.json --out-dir results/manual_distill --cycle 1
 ```
+
+Use this stage to decide whether misses are:
+
+1. execution bugs
+2. formatting collapse
+3. coverage gaps
+4. provenance issues
+
+## 7. Add Proof Or Source Grounding When Needed
 
 Attach Teorth provenance:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe teorth_true_proof_agent.py certify-benchmark --input data/benchmark/hard3_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl --output results/teorth_cert_hard3_seed20260401.jsonl
+python teorth_true_proof_agent.py certify-benchmark --input data/benchmark/normal_balanced20_true10_false10_seed0.jsonl --output results/teorth_cert_seed0.jsonl
 ```
 
-## 5. Bulk Proof Mining (Optional but Recommended)
-
-Scrape many proof pages by pair:
+Bulk proof scraping is optional and should be used only when provenance mining is the real bottleneck:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe proof_scraping_lab.py --from-results results/sim_paid_hard3_seed20260401_v22_witness.json --failed-only --limit 200 --out-prefix results/proof_lab/hard3_failures_seed20260401
+python proof_scraping_lab.py --from-results results/<your_run>.json --failed-only --limit 100 --out-prefix results/proof_lab/failures
 ```
 
-Use output artifacts:
-- JSONL for machine processing.
-- Markdown for fast human review.
+## 8. Patch The Cheatsheet
 
-## 6. Candidate Update Strategy
+Patch only after you understand the error type.
 
-Preferred order for safe uplift:
-1. Fix deterministic witness lane gaps.
-2. Add compact oracle signatures only after normal TRUE collision checks.
-3. Keep heuristic FALSE lane disabled unless proven normal-safe.
+Preferred order for safe improvement:
 
-Hard constraints:
-1. No benchmark pair hardcoding as policy.
-2. Preserve source labels for FALSE decisions.
-3. Keep template concise and deterministic.
+1. fix execution and formatting failures
+2. tighten sound structural instructions
+3. add compact clarifying examples only when they reduce error without increasing brittleness
 
-## 7. Candidate Validation
+Avoid:
 
-Verify the cheatsheet is under 10,240 bytes and uses only `{{equation1}}`/`{{equation2}}` substitution (NO Jinja2 logic).
+1. making the prompt longer just to feel safer
+2. adding counting-heavy logic unless you have strong evidence it helps this model
+3. optimizing around one benchmark file
 
-Then rerun paid gates (normal first, then hard):
+## 9. Validate Before Promotion
+
+Always check size:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --output results/sim_paid_normal_seed20260401_v22_witness.json
-
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/normal_balanced60_true30_false30_seed20260402_unseen_20260401.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --output results/sim_paid_normal_seed20260402_v22_witness.json
-
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/hard3_balanced60_true30_false30_seed20260401_unseen_20260401.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --output results/sim_paid_hard3_seed20260401_v22_witness.json
-
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe sim_lab.py --data data/benchmark/hard3_balanced60_true30_false30_seed20260402_unseen_20260401.jsonl --cheatsheet cheatsheets/v22_witness.txt --openrouter --output results/sim_paid_hard3_seed20260402_v22_witness.json
+(Get-Item "cheatsheets\v23.txt").Length
 ```
 
-## 8. Promotion Checklist
+Then re-run normal gates before any hard campaign.
 
-1. Normal suites: no new regressions.
-2. Hard suites: measurable lift versus previous champion.
-3. Ledger produced and reviewed.
-4. Teorth provenance attached for contentious cases.
-5. Final verdict recorded (`promoted`, `unchanged`, or `blocked`).
+## 10. Promotion Checklist
+
+1. Normal gates do not regress against the champion.
+2. Hard or unseen performance is not worse.
+3. Parse and quality behavior remain acceptable.
+4. The change is mathematically explainable.
+5. Results and ledger agree with the promotion decision.
