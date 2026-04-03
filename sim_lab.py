@@ -480,13 +480,20 @@ def evaluate_problem(
 
     verdict = parse_verdict(response)
     contract_ok = parse_output_contract(response)
+    proof_ok = parse_proof_quality(response, verdict) if verdict is not None else False
+
+    # In strict mode, null out verdict when contract or proof quality fails
+    if _strict_output_contract and verdict is not None:
+        if not contract_ok or not proof_ok:
+            verdict = None
+
     return Result(
         problem=problem,
         repeat_id=repeat_id,
         verdict=verdict,
         raw_response=response,
         elapsed_s=elapsed,
-        parsed_ok=(verdict is not None and (contract_ok if _strict_output_contract else True)),
+        parsed_ok=(verdict is not None),
         usage=usage,
     )
 
