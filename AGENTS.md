@@ -24,7 +24,8 @@ Follow this order exactly:
 ## Current Operating Model
 
 - Baseline champion: `cheatsheets/v21f_structural.txt`
-- Active candidate: `cheatsheets/v23.txt`
+- Active candidate: `cheatsheets/v23c.txt` (6,036 bytes, 58.9% of cap)
+- V24 design document: `V24_MASTER_PROMPT.md`
 - Canonical evaluator: `sim_lab.py`
 - Canonical quick wrapper: `run_paid_eval.ps1`
 - Canonical failure loop: `analyze_seed_failures.py` then `distill.py`

@@ -1,9 +1,10 @@
 # v24 Master Prompt — Design Document
 
 **Date:** 2026-04-03
-**Status:** DRAFT — pending v23c massive run results
+**Status:** READY — v23c massive runs complete, evidence base established
 **Goal:** Break the 90% normal ceiling established by v21f/v23c
 **Constraint:** Only `{{equation1}}` and `{{equation2}}` substitution. NO Jinja2 logic. Max 10,240 bytes.
+**v23c evidence:** Normal 60 = 93.3% (4 FP: 2 coverage gaps + 2 RP execution errors), 100% parse, 0% FN
 
 ## 1. WHY v23 CAPS AT ~90%
 

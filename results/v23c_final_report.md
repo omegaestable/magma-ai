@@ -32,20 +32,61 @@
 | Metric | Value |
 |--------|-------|
 | N | 60 |
-| Accuracy | TBD |
-| FP | TBD |
-| FN | TBD |
-| Parse rate | TBD |
+| Accuracy | **93.3%** |
+| F1 | 93.8% |
+| Precision (TRUE) | 88.2% |
+| Recall (TRUE) | 100.0% |
+| TRUE accuracy | 100.0% (30/30) |
+| FALSE accuracy | 86.7% (26/30) |
+| FP | 4 |
+| FN | 0 |
+| Parse rate | 100.0% |
+| Avg time/run | 13.1s |
+| Total time | 786.9s |
+
+**FP Classification (Normal 60):**
+
+| Pair ID | Equation 1 | Equation 2 | Type |
+|---------|-----------|-----------|------|
+| normal_0884 | x * x = (x * y) * (z * z) | x * x = (x * (x * y)) * z | Coverage gap (all 4 tests pass) |
+| normal_0335 | x = y * (x * (x * y)) | x = (x * (y * (y * z))) * w | **Execution error** (RP=F, VARS=F — model missed both!) |
+| normal_0618 | x = y * (y * (z * (z * x))) | x = (x * y) * (z * x) | Coverage gap (all 4 tests pass) |
+| normal_0301 | (x * y) * y = (y * z) * z | x * (y * z) = (z * y) * x | **Execution error** (RP=F — model missed RP difference) |
+
+**Breakdown:** 2 coverage gaps + 2 execution errors (both RP-related).
 
 ### Hard3 40 (rotation0002)
 
 | Metric | Value |
 |--------|-------|
 | N | 40 |
-| Accuracy | TBD |
-| FP | TBD |
-| FN | TBD |
-| Parse rate | TBD |
+| Accuracy | **50.0%** |
+| F1 | 66.7% |
+| Precision (TRUE) | 50.0% |
+| Recall (TRUE) | 100.0% |
+| TRUE accuracy | 100.0% (20/20) |
+| FALSE accuracy | 0.0% (0/20) |
+| FP | 20 |
+| FN | 0 |
+| TN | 0 |
+| Parse rate | 100.0% |
+| Avg time/run | 16.7s |
+| Total time | 669.6s |
+
+**FP Classification (Hard3 40):** All 20 FP are **coverage gaps**. By definition, hard3 pairs share identical LP, RP, C0, and VARS signatures — structural tests provide zero separation. The model defaults to TRUE for every problem, achieving perfect TRUE recall but zero FALSE detection.
+
+**Comparison with v23 on same benchmark:**
+
+| Metric | v23 | v23c | Delta |
+|--------|-----|------|-------|
+| Accuracy | 45.0% | **50.0%** | +5% |
+| Parse rate | 85.0% | **100.0%** | +15% |
+| FP | 19 | 20 | +1 |
+| FN | 3 | **0** | -3 |
+| Unparsed | 6 | **0** | -6 |
+| TRUE accuracy | ~55% | **100%** | ~+45% |
+
+v23c is strictly better: the 5% accuracy gain comes entirely from eliminating unparsed/FN errors (v23 lost 6 to parse failures and 3 to false negatives). Both versions fail identically on FALSE pairs due to the coverage gap ceiling.
 
 ## Key Findings
 

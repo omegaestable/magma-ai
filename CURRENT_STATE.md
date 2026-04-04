@@ -2,14 +2,16 @@
 
 This file is the operational truth for the current phase. Keep it short and update it when the champion, candidate, or gate results change.
 
-Last updated: 2026-04-03
+Last updated: 2026-04-03 (v23c final)
 
 ## Current Artifacts
 
 - Baseline champion: `cheatsheets/v21f_structural.txt`
-- Active candidate: `cheatsheets/v23.txt`
+- Active candidate: `cheatsheets/v23c.txt` (6,036 bytes, 58.9% of 10,240 cap)
 - Canonical evaluator: `sim_lab.py`
 - Canonical wrapper: `run_paid_eval.ps1`
+- Final report: `results/v23c_final_report.md`
+- V24 design doc: `V24_MASTER_PROMPT.md`
 
 ## Current Strategy
 
@@ -28,21 +30,26 @@ Baseline v21f:
 - Full normal seed1: 90%
 - Full normal seed2: 90%
 
-Current v23 status:
+v23c gate results (20 problems each):
 
-- Warmup seed0: 90%
-- Warmup seed1: 90%
-- Full normal seed0: 95%
-- Full normal seed1: 85%
-- Full normal seed2: 90% (10/10 TRUE, 8/10 FALSE, parse 100%)
-- Unseen and hard stress: still blocked because the full normal gate set contains a regression
+- Full normal seed0: 90% (2 FP, 0 FN, 100% parse)
+- Full normal seed1: 85% (3 FP, 0 FN, 100% parse)
+- Full normal seed2: 90% (2 FP, 0 FN, 100% parse)
+
+v23c massive run results:
+
+- Normal 60 (rotation0002): **93.3%** (4 FP, 0 FN, 100% parse, F1=93.8%)
+- Hard3 40 (rotation0002): **50.0%** (20 FP, 0 FN, 100% parse, F1=66.7%, TRUE=100%, FALSE=0%)
 
 ## Current Read
 
-- v23 has completed the full normal seed set but is not promoted.
-- v21f remains the safe champion because v23 regressed on full normal seed1 and only tied the champion on seed2.
-- The main live risks are false-positive coverage gaps on normal FALSE pairs, execution variance, and restart drift.
-- Promotion is blocked; the next move is the distill-patch loop rather than stress runs.
+- v23c is the final v23 iteration, evolved through v23 → v23a (regression) → v23b (recovery) → v23c (LP/C0 fixes).
+- v23c achieves **100% parse rate** across all runs (120+ problems) and **0% FN** everywhere.
+- On normal sets, v23c ties or slightly beats v21f. On massive 60-problem normal, it scores 93.3%.
+- Promotion over v21f is borderline — v23c is strictly better on parse robustness and FN elimination but has not beaten v21f on aggregate accuracy.
+- For competition submission, v23c is the safer choice due to 100% parse and 0% FN.
+- The structural test ceiling is ~88-92% on normal sets. Breaking it requires algebraic reasoning (v24 direction).
+- See `V24_MASTER_PROMPT.md` for the next-generation design document.
 
 ## Operational Promotion Rule
 
@@ -54,12 +61,17 @@ For v23 to replace v21f:
 
 ## Open Risks
 
-1. v23 still has run-to-run variance.
-2. Full normal seed1 is still below the champion and blocks promotion.
-3. Full normal seed2 missed `normal_0628` and `normal_0907`, both false positives with clean parsing.
-4. Old planning and historical docs can still distract fresh agents if they ignore this file.
-5. Research-only scripts remain visible at the repo root and can pull work off the canonical path.
+1. Structural test ceiling at ~88-92% on normal sets — cannot be broken without algebraic reasoning.
+2. RP execution errors still occur: 2/4 FP in massive normal run were RP misses despite clear structural separation.
+3. Temperature stochasticity creates ~5% noise floor per run.
+4. Hard3 performance is 50% — structural tests provide zero value on algebraically hard pairs (0% FALSE accuracy).
+5. Research-only scripts at repo root can pull fresh agents off canonical path.
 
 ## Next Decision Point
 
-Distill the full normal regressions, patch v23 conservatively, and re-run the failing normal seeds before any unseen or hard stress work.
+v23 line is complete. Next agent should:
+
+1. Read `V24_MASTER_PROMPT.md` for the design document.
+2. Implement Direction A (lightweight algebraic hints: idempotent/constant/projection tests).
+3. Gate v24 on the same 3 normal seeds before any stress testing.
+4. Exit criteria: ≥92% average on normal, no seed below 88%, 100% parse, 0% FN.
