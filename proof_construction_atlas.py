@@ -45,6 +45,21 @@ def load_crawl_rows(path: Path) -> list[dict]:
     return rows
 
 
+def load_packed_pairs(path: Path) -> list[dict]:
+    """Load rows from a packed JSONL index (skipping the _meta header line)."""
+    rows: list[dict] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            obj = json.loads(line)
+            if obj.get("_meta"):
+                continue
+            rows.append(obj)
+    return rows
+
+
 def build_entry_index(entries: list[dict]) -> dict[tuple[int, int], list[dict]]:
     index: dict[tuple[int, int], list[dict]] = defaultdict(list)
     for entry in entries:
@@ -208,8 +223,11 @@ def write_markdown(path: Path, family_summary: list[dict]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def build_atlas(crawl_jsonl: Path, out_prefix: Path) -> dict:
-    crawl_rows = load_crawl_rows(crawl_jsonl)
+def build_atlas(crawl_jsonl: Path, out_prefix: Path, packed_pairs: Path | None = None) -> dict:
+    if packed_pairs is not None:
+        crawl_rows = load_packed_pairs(packed_pairs)
+    else:
+        crawl_rows = load_crawl_rows(crawl_jsonl)
     entry_index = build_entry_index(load_full_entries())
     annotated_rows = [annotate_row(row, entry_index) for row in crawl_rows]
     family_summary = build_family_summary(annotated_rows)
@@ -232,11 +250,17 @@ def build_atlas(crawl_jsonl: Path, out_prefix: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a machine-readable construction atlas from cached proof crawl artifacts")
-    parser.add_argument("--crawl-jsonl", required=True, help="JSONL output from proof_scraping_lab.py")
+    parser.add_argument("--crawl-jsonl", default="", help="JSONL output from proof_scraping_lab.py")
+    parser.add_argument("--packed-pairs", default="", help="Packed JSONL index from proof_scraping_lab.py --pack-cache")
     parser.add_argument("--out-prefix", default="results/proof_lab/construction_atlas")
     args = parser.parse_args()
 
-    result = build_atlas(Path(args.crawl_jsonl), Path(args.out_prefix))
+    packed = Path(args.packed_pairs) if args.packed_pairs else None
+    crawl = Path(args.crawl_jsonl) if args.crawl_jsonl else None
+    if not packed and not crawl:
+        parser.error("Provide --crawl-jsonl or --packed-pairs")
+
+    result = build_atlas(crawl or Path(""), Path(args.out_prefix), packed_pairs=packed)
     print("=" * 80)
     print(f"WROTE {result['pair_jsonl'].as_posix()} rows={result['pair_count']}")
     print(f"WROTE {result['family_json'].as_posix()} families={result['family_count']}")

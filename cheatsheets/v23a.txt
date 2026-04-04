@@ -1,0 +1,153 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT: TRUE. Say FALSE only when a test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is literally identical to E2 (after whitespace) → answer TRUE immediately.
+
+═══ STEP 0: SPLIT ON = ═══
+Write out the four pieces first:
+  E1_L = (before = in E1)    E1_R = (after = in E1)
+  E2_L = (before = in E2)    E2_R = (after = in E2)
+"x = (big * expr)" → left side is just "x", a bare variable with NO *.
+
+═══ 5 TESTS — for each, find E1 result and E2 result, then use the decision table ═══
+
+TEST 1 — LP: first letter (a–z) on left side vs first letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: skip all leading ( to find the first letter. "(y * x)" → first letter is y.
+
+TEST 2 — RP: last letter on left side vs last letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: skip all trailing ) to find the last letter. "(x * y)" → last letter is y.
+
+TEST 3 — C0: does left side contain *? Does right side contain *?
+  Both have * → HOLD.  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+  Caution: "x = T" → left side is just "x" with NO *. "x * y = T" → left DOES have *.
+  Both sides must be checked independently for each equation.
+
+TEST 4 — VARS: set of distinct letters on left vs set on right.
+  Both have *: same set → HOLD, different set → FAIL.
+  One side is bare variable v, other has *: HOLD only if * side uses only v.
+  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+
+TEST 5 — XOR: count each variable's occurrences on left and on right.
+  For every variable v in the equation:
+    count(v on left side) mod 2  vs  count(v on right side) mod 2
+  If ALL variables have matching parity → HOLD.
+  If ANY variable has mismatched parity → FAIL.
+
+═══ DECISION TABLE (use this EVERY time after each test) ═══
+  E1=HOLD  E2=HOLD  →  no separation, next test
+  E1=HOLD  E2=FAIL  →  ★ SEPARATION FOUND → answer FALSE ★
+  E1=FAIL  E2=HOLD  →  no separation, next test
+  E1=FAIL  E2=FAIL  →  no separation, next test
+
+Only the second row (E1=HOLD + E2=FAIL) is a separation.
+After all 5 tests with no separation → answer TRUE.
+
+═══ MANDATORY OUTPUT FORMAT ═══
+After your step-by-step analysis of all 5 tests, write EXACTLY these four lines:
+  VERDICT: TRUE
+  REASONING: (one sentence)
+  PROOF: (brief)
+  COUNTEREXAMPLE: (if FALSE: name the test; if TRUE: "None")
+or:
+  VERDICT: FALSE
+  REASONING: (one sentence)
+  PROOF: (brief)
+  COUNTEREXAMPLE: (name the separating test and why)
+
+HARD RULE: Your VERDICT must match your analysis.
+If you found E1=HOLD and E2=FAIL on any test → VERDICT: FALSE.
+If no such pair on any test → VERDICT: TRUE.
+Do not override your own analysis. Do not second-guess.
+
+FORMAT RULES:
+• Write VERDICT: on its own line with no extra decoration.
+• Do NOT use ## headers, step numbering, bullet points, or $\boxed{}$ for verdict.
+• Do NOT invent tests or techniques beyond the 5 listed above.
+• Do NOT try to evaluate algebras, compute tables, or reason about specific magmas.
+• Use ONLY the 5 text-inspection tests and the decision table.
+
+═══ EXAMPLE A — FALSE via C0 ═══
+E1: x * y = (y * x) * x     E2: x = (x * y) * z
+E1_L="x * y"  E1_R="(y * x) * x"  |  E2_L="x"  E2_R="(x * y) * z"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     Table: E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=y last(R)=x → FAIL | E2 last(L)=x last(R)=z → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+C0:  E1 L has *, R has * → HOLD | E2 L="x" no * → FAIL
+     Table: E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: C0 separates. E1 holds, E2 fails.
+PROOF: E1 left "x * y" has *, right has *. E2 left "x" has no *.
+COUNTEREXAMPLE: Witness C0.
+
+═══ EXAMPLE B — FALSE via LP ═══
+E1: x = x * (y * z)     E2: (x * x) * y = (y * x) * z
+E1_L="x"  E1_R="x * (y * z)"  |  E2_L="(x * x) * y"  E2_R="(y * x) * z"
+
+LP:  E1 first(L)=x first(R)=x → HOLD | E2 first(L)=x first(R)=y → FAIL
+     Table: E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: LP separates. E1 first letters match, E2's differ.
+PROOF: E1: x=x. E2: x≠y.
+COUNTEREXAMPLE: Witness LP.
+
+═══ EXAMPLE C — TRUE ═══
+E1: x = (y * x) * (z * (w * y))     E2: x = ((y * x) * x) * x
+E1_L="x"  E1_R="(y * x) * (z * (w * y))"  |  E2_L="x"  E2_R="((y * x) * x) * x"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=y → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+RP:  E1 last(L)=x last(R)=y → FAIL | E2 last(L)=x last(R)=x → HOLD
+     Table: E1=FAIL E2=HOLD → no separation
+C0:  E1 L="x" no * → FAIL | E2 L="x" no * → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+VARS: E1 L={x} R={x,y,z,w} → FAIL | E2 L={x} R={x,y} → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+XOR:  E1 L: x=1 | R: y=1,x=1,z=1,w=1,y=1→ x(1v1) y(0v2) z(0v1) w(0v1) → parity: x✓ y✓ z✗ → FAIL
+      E2 L: x=1 | R: y=1,x=1,x=1,x=1→ x(1v3) y(0v1) → parity: x✗ → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+No separation on any test.
+
+VERDICT: TRUE
+REASONING: No test separates E1 from E2.
+PROOF: All 5 tests checked; none had E1=HOLD with E2=FAIL.
+COUNTEREXAMPLE: None
+
+═══ EXAMPLE D — FALSE via XOR ═══
+E1: x = y * (y * (z * (z * x)))     E2: x = (x * y) * (z * x)
+E1_L="x"  E1_R="y * (y * (z * (z * x)))"  |  E2_L="x"  E2_R="(x * y) * (z * x)"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     Table: E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=x last(R)=x → HOLD | E2 last(L)=x last(R)=x → HOLD
+     Table: E1=HOLD E2=HOLD → no separation
+C0:  E1 L="x" no * → FAIL | E2 L="x" no * → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+VARS: E1 L={x} R={x,y,z} → FAIL | E2 L={x} R={x,y,z} → FAIL
+     Table: E1=FAIL E2=FAIL → no separation
+XOR:  E1 L: x=1 | R: y=2,z=2,x=1 → parity: x(1v1)✓ y(0v0)✓ z(0v0)✓ → HOLD
+      E2 L: x=1 | R: x=2,y=1,z=1 → parity: x(1v0)✗ → FAIL
+     Table: E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: XOR separates. E1 variable parities all match, E2 has x-parity mismatch.
+PROOF: E1: x(1≡1), y(0≡0), z(0≡0) mod 2. E2: x(1≢0) mod 2.
+COUNTEREXAMPLE: Witness XOR.
+
+═══ REMINDERS ═══
+• Text-inspection ONLY. Do not compute magma tables or evaluate algebras.
+• Split each equation at = first. "x = stuff" → left is "x" (no *).
+• Use the DECISION TABLE after every test. Do not reason from scratch.
+• Only E1=HOLD + E2=FAIL means separation. Everything else → continue.
+• Default is TRUE. Only answer FALSE with a clear separation from the table.
+• For XOR: count each variable carefully on each side, then compare mod 2.
+• Write VERDICT: LAST. It MUST match your analysis exactly.
+• Use EXACTLY the four headers: VERDICT, REASONING, PROOF, COUNTEREXAMPLE.

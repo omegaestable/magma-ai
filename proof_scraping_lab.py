@@ -442,6 +442,36 @@ def write_manifest(path: Path, manifest: dict) -> None:
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
+def pack_pair_cache(cache_dir: Path, out_path: Path | None = None) -> Path:
+    """Pack all pair_*.json files into a single derived JSONL index.
+
+    The packed file is deterministic (sorted by pair) and can be deleted
+    and regenerated losslessly from the raw cache at any time.
+    """
+    if out_path is None:
+        out_path = cache_dir.parent / "pair_cache_packed.jsonl"
+    pair_files = sorted(cache_dir.glob("pair_*.json"))
+    rows: list[dict] = []
+    for pf in pair_files:
+        row = json.loads(pf.read_text(encoding="utf-8"))
+        rows.append(row)
+    rows.sort(key=lambda r: (r["pair"][0], r["pair"][1]))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    header = {
+        "_meta": True,
+        "pack_version": 1,
+        "cache_dir": cache_dir.as_posix(),
+        "file_count": len(pair_files),
+        "pair_count": len(rows),
+        "ok_count": sum(1 for r in rows if r.get("ok")),
+    }
+    with out_path.open("w", encoding="utf-8") as handle:
+        handle.write(json.dumps(header, ensure_ascii=False) + "\n")
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+    return out_path
+
+
 def collect_pairs(args: argparse.Namespace) -> list[tuple[int, int]]:
     pairs: list[tuple[int, int]] = []
     if args.pairs.strip():
@@ -474,7 +504,15 @@ def main() -> None:
     parser.add_argument("--cache-dir", default=str(DEFAULT_CACHE_DIR), help="Directory for cached proof-page JSON")
     parser.add_argument("--refresh-cache", action="store_true", help="Re-fetch pages even if cached")
     parser.add_argument("--out-prefix", default="results/proof_lab/proofs")
+    parser.add_argument("--pack-cache", action="store_true",
+                        help="Pack all pair_*.json in --cache-dir into a derived JSONL index and exit")
     args = parser.parse_args()
+
+    if args.pack_cache:
+        out = pack_pair_cache(Path(args.cache_dir))
+        line_count = sum(1 for _ in out.open(encoding="utf-8")) - 1  # exclude header
+        print(f"PACKED {out.as_posix()} pairs={line_count}")
+        raise SystemExit(0)
 
     pairs = collect_pairs(args)
     if args.limit > 0 and not args.recursive:

@@ -1,0 +1,223 @@
+[
+  {
+    "family": "rewrite_metatheorem",
+    "title": "Rewrite / Metatheorem",
+    "family_group": "rewrite/metatheorem families",
+    "description": "Direct substitution and trivial rewrite schemas cover a large fraction of explicit positive implications.",
+    "pair_count": 156,
+    "ok_count": 156,
+    "paper_refs": [
+      "paper/intro.tex",
+      "paper/metatheorems.tex"
+    ],
+    "known_blockers": [
+      "do not call a rewrite valid unless the concrete chain is visible",
+      "structural resemblance alone is not a proof"
+    ],
+    "sample_pairs": [
+      [
+        14,
+        8
+      ],
+      [
+        41,
+        39
+      ],
+      [
+        41,
+        40
+      ],
+      [
+        42,
+        38
+      ],
+      [
+        45,
+        39
+      ],
+      [
+        46,
+        41
+      ],
+      [
+        150,
+        149
+      ],
+      [
+        254,
+        253
+      ],
+      [
+        536,
+        535
+      ],
+      [
+        553,
+        552
+      ]
+    ],
+    "sample_titles": [
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}"
+    ],
+    "supporting_files": [
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_uw.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_uy.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_wx.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_wz.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_wz_yx_zy.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_yx.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_yx_zy.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_zx.lean",
+      "././././equational_theories/Generated/SimpleRewrites/theorems/Rewrite_zy.lean",
+      "././././equational_theories/Subgraph.lean"
+    ]
+  },
+  {
+    "family": "subgraph_seed",
+    "title": "Subgraph Seed Implications",
+    "family_group": "rewrite/metatheorem families",
+    "description": "Seed implications anchor the closure graph and often act as short canonical witnesses for broad regions of the graph.",
+    "pair_count": 88,
+    "ok_count": 88,
+    "paper_refs": [
+      "paper/foundations.tex",
+      "paper/data.tex"
+    ],
+    "known_blockers": [
+      "many downstream truths are closure facts, not standalone seed theorems"
+    ],
+    "sample_pairs": [
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        2,
+        14
+      ],
+      [
+        2,
+        23
+      ],
+      [
+        2,
+        38
+      ],
+      [
+        2,
+        39
+      ]
+    ],
+    "sample_titles": [
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}"
+    ],
+    "supporting_files": [
+      "././././equational_theories/Subgraph.lean"
+    ]
+  },
+  {
+    "family": "exceptional_hard",
+    "title": "Exceptional / Hard Cases",
+    "family_group": "exceptional hard cases",
+    "description": "Named constructions and residual hard files capture the pairs that resist easy rewrite and tiny finite-witness compression.",
+    "pair_count": 5,
+    "ok_count": 5,
+    "paper_refs": [
+      "paper/intro.tex",
+      "paper/conclusions.tex",
+      "paper/project.tex"
+    ],
+    "known_blockers": [
+      "do not overgeneralize from one named hard construction",
+      "prefer conservative fallback when the family trigger is unclear"
+    ],
+    "sample_pairs": [
+      [
+        206,
+        1648
+      ],
+      [
+        3994,
+        3588
+      ],
+      [
+        5093,
+        2
+      ],
+      [
+        28770,
+        2
+      ],
+      [
+        374794,
+        2
+      ]
+    ],
+    "sample_titles": [
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}",
+      "Proof of ${eq1} \u21d2 ${eq2}"
+    ],
+    "supporting_files": [
+      "././././equational_theories/InfModel.lean"
+    ]
+  },
+  {
+    "family": "automated_reasoner",
+    "title": "Automated Equational Reasoner",
+    "family_group": "rewrite/metatheorem families",
+    "description": "ATP and e-graph generated proofs contribute a sizable explicit theorem backbone even when the human summary should stay compact.",
+    "pair_count": 1,
+    "ok_count": 1,
+    "paper_refs": [
+      "paper/automated.tex",
+      "paper/intro.tex"
+    ],
+    "known_blockers": [
+      "the cheatsheet should compress these into reusable patterns, not cite solver names as proof"
+    ],
+    "sample_pairs": [
+      [
+        953,
+        2
+      ]
+    ],
+    "sample_titles": [
+      "Proof of ${eq1} \u21d2 ${eq2}"
+    ],
+    "supporting_files": [
+      "././././equational_theories/Generated/MagmaEgg/small/_004.lean",
+      "././././equational_theories/Subgraph.lean"
+    ]
+  }
+]
