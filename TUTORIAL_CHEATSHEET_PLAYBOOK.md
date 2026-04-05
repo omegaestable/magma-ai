@@ -9,7 +9,7 @@ Produce one text cheatsheet in `cheatsheets/` that stays under 10,240 bytes, rem
 Current operating artifacts:
 
 - Baseline champion: `cheatsheets/v21f_structural.txt`
-- Active candidate: `cheatsheets/v23.txt`
+- Active candidate: `cheatsheets/v23c.txt`
 
 ## 2. Hard Rules
 
@@ -41,7 +41,7 @@ Fast wrapper form:
 Direct evaluator form:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23c.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
 For current promotion work, use this order:
@@ -135,7 +135,7 @@ Avoid:
 Always check size:
 
 ```powershell
-(Get-Item "cheatsheets\v23.txt").Length
+(Get-Item "cheatsheets\v23c.txt").Length
 ```
 
 Then re-run normal gates before any hard campaign.

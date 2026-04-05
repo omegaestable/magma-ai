@@ -16,7 +16,7 @@ Read these files first:
 ## 2. Confirm Current Artifacts
 
 1. Baseline champion: `cheatsheets/v21f_structural.txt`
-2. Active candidate: `cheatsheets/v23.txt`
+2. Active candidate: `cheatsheets/v23c.txt`
 3. Canonical evaluator: `sim_lab.py`
 4. Canonical wrapper: `run_paid_eval.ps1`
 
@@ -30,7 +30,7 @@ Example:
 
 ```powershell
 $env:OPENROUTER_API_KEY = "<your_key>"
-(Get-Item "cheatsheets\v23.txt").Length
+(Get-Item "cheatsheets\v23c.txt").Length
 ```
 
 ## 4. Run One Smoke Eval
@@ -48,13 +48,13 @@ Expected result: about 90% on this smoke test. If this fails badly, fix environm
 Once the baseline smoke test behaves normally, test the active candidate on the same seed:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v23
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v23c
 ```
 
 Or run directly with `sim_lab.py`:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23c.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
 ## 5. If You Need To Iterate

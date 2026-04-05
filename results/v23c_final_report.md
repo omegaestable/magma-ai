@@ -49,11 +49,11 @@
 | Pair ID | Equation 1 | Equation 2 | Type |
 |---------|-----------|-----------|------|
 | normal_0884 | x * x = (x * y) * (z * z) | x * x = (x * (x * y)) * z | Coverage gap (all 4 tests pass) |
-| normal_0335 | x = y * (x * (x * y)) | x = (x * (y * (y * z))) * w | **Execution error** (RP=F, VARS=F — model missed both!) |
+| normal_0335 | x = y * (x * (x * y)) | x = (x * (y * (y * z))) * w | Coverage gap (all 4 tests pass; no structural separator exists) |
 | normal_0618 | x = y * (y * (z * (z * x))) | x = (x * y) * (z * x) | Coverage gap (all 4 tests pass) |
-| normal_0301 | (x * y) * y = (y * z) * z | x * (y * z) = (z * y) * x | **Execution error** (RP=F — model missed RP difference) |
+| normal_0301 | (x * y) * y = (y * z) * z | x * (y * z) = (z * y) * x | Algebraic gap — T3L magma witness; no structural separator |
 
-**Breakdown:** 2 coverage gaps + 2 execution errors (both RP-related).
+**Breakdown:** 3 structural coverage gaps + 1 T3L algebraic gap. Zero execution errors in the massive normal run.
 
 ### Hard3 40 (rotation0002)
 

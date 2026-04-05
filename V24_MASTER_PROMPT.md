@@ -4,7 +4,8 @@
 **Status:** READY — v23c massive runs complete, evidence base established
 **Goal:** Break the 90% normal ceiling established by v21f/v23c
 **Constraint:** Only `{{equation1}}` and `{{equation2}}` substitution. NO Jinja2 logic. Max 10,240 bytes.
-**v23c evidence:** Normal 60 = 93.3% (4 FP: 2 coverage gaps + 2 RP execution errors), 100% parse, 0% FN
+**v23c evidence:** Normal 60 = 93.3% (4 FP: 3 coverage gaps + 1 T3L algebraic gap; zero execution errors), 100% parse, 0% FN
+**Deadline note:** Final eval model list due April 10, 2026 — v24 must be model-agnostic; any rescue lane must degrade gracefully on weaker or stronger models, not collapse to all-FALSE.
 
 ## 1. WHY v23 CAPS AT ~90%
 
@@ -20,30 +21,43 @@ The model (llama-3.3-70b-instruct) cannot reliably perform these computations wh
 - Temperature > 0 introduces stochastic reasoning errors
 - The output contract requires strict formatting
 
+**Correction from massive run:** All 4 FPs in the 60-problem normal run were coverage or algebraic gaps — the 4 structural tests executed correctly for every pair (zero execution errors). The ceiling is purely a coverage ceiling.
+
 ## 2. WHAT v24 SHOULD TRY
 
-### Direction A: Lightweight Algebraic Hints (RECOMMENDED)
+### Direction A: Named Finite-Witness Rescue (RECOMMENDED — evidence-grounded)
 
-After the 4 structural tests complete with no separation, add a **focused second pass** that teaches the model to check 2-3 specific algebraic patterns known to catch the most common coverage gaps.
+The directly catchable failures from the rotation0002 massive run are separated by specific named small magmas, not symbolic substitution. Add a **short rescue ladder** after the 4 structural tests: if no separator fired, check 2–3 named magmas before defaulting to TRUE.
 
-**Pattern 1 — Idempotent Test (x◇x = x):**
+Evidence: `results/proof_lab/rotation0002_v23_edit_brief.md` specifies the following rescue order:
+
+1. **XOR** — binary operation on {0,1}: x\*y = x XOR y. If E1 holds but E2 fails under this table → FALSE.
+2. **XNOR** — binary operation on {0,1}: x\*y = 1 - (x XOR y). If E1 holds but E2 fails → FALSE.
+3. **T3L** — translation magma: x\*y = (x + 1) mod 3. If E1 holds but E2 fails → FALSE.
+4. **AND** — x\*y = x AND y on {0,1}. Backup check.
+5. **OR** — x\*y = x OR y on {0,1}. Backup check.
+
+Do NOT teach the model to construct substitutions itself. Provide the Cayley tables inline and ask it to evaluate each equation by substituting specific values (e.g., check x=0/y=1/z=0 under XOR).
+
+**Catchable failures from rotation0002 normal-60:** normal_0618 (XOR, XNOR), normal_0301 (T3L).
+
+**Risk:** Model may fail to correctly evaluate 2-element Cayley tables under complex nested equations. Each witness check adds ~200-300 bytes. Net benefit depends on execution reliability.
+
+**Mitigation:** Teach ONE witness (XOR) at a time with a concrete inline trace example ≤3 lines.
+
+**Pattern 2 — Idempotent Substitution (secondary, broader coverage):**
 Many coverage gaps involve idempotent magmas. If E1 is consistent with all idempotent magmas but E2 is not, that's separation.
 - Check: substitute x◇x → x everywhere in both equations. Does E1 reduce to a tautology? Does E2 become a contradiction?
-- This catches ~15% of remaining coverage gaps based on packed pair analysis.
+- This is harder to execute reliably (requires symbolic simplification) but has broader theoretical coverage.
+- Attempt only after named-witness checks fail.
 
-**Pattern 2 — Constant Magma (x◇y = c for all x,y):**
+**Pattern 3 — Constant Magma (x◇y = c for all x,y):**
 If E1 holds in all constant magmas but E2 does not, that's separation.
 - Check: replace every `a * b` with a fixed constant `c`. Does E1 become `c = c`? Does E2?
-- This catches ~8% of remaining coverage gaps.
 
-**Pattern 3 — Left/Right Projection (x◇y = x or x◇y = y):**
-- Check: replace every `a * b` with `a` (left projection). Does E1 hold? Does E2?
-- Then replace every `a * b` with `b` (right projection). Same check.
-- This catches ~12% of remaining coverage gaps.
+**Risk across all algebraic hints:** Each hint adds ~300-600 bytes. Byte budget remaining: ~4,200 bytes.
 
-**Risk:** Each algebraic hint adds ~500-800 bytes and requires the model to do symbolic substitution, which has ~70% accuracy on llama-3.3-70b. Net benefit depends on whether the extra coverage outweighs new execution errors.
-
-**Mitigation:** Teach ONE algebraic hint at a time, measure impact, then decide whether to add more.
+**Mitigation:** Add hints one at a time with gate-loop validation before adding the next.
 
 ### Direction B: Example-Heavy Approach (ALTERNATIVE)
 
@@ -88,16 +102,17 @@ From manual analysis of 34 unique coverage-gap failures across benchmark rotatio
 
 ## 4. RECOMMENDED v24 DEVELOPMENT PLAN
 
-### Phase 1: Idempotent Hint Pilot
-1. Add a single algebraic hint (idempotent test) to v23c
-2. Test on warmup seeds
-3. Measure: new correct answers vs new execution errors
-4. If net positive → keep, else → revert
+### Phase 1: Named-Witness Rescue Pilot (XOR first)
+1. Add a single named-witness check (XOR magma: x\*y = x XOR y on {0,1}) to v23c
+2. Provide inline Cayley table + one 3-line trace example
+3. Test on warmup seeds (normal_balanced10 seed0 and seed1)
+4. Measure: new correct answers (FP→TN) vs new execution errors (TP→FN or parse failures)
+5. If net positive → keep; else → revert and try XNOR or T3L
 
-### Phase 2: Coverage Expansion
-1. If Phase 1 succeeds, add constant-magma hint
-2. Same test loop
-3. Byte budget discipline: each addition must fit under 10,240
+### Phase 2: Witness Ladder Expansion
+1. If Phase 1 passes warmup, add XNOR or T3L as a second witness check
+2. Same gate loop
+3. Byte budget check after each addition
 
 ### Phase 3: Gate Loop
 1. Full 3-seed normal gate (must beat 90%)
@@ -121,6 +136,8 @@ From manual analysis of 34 unique coverage-gap failures across benchmark rotatio
 - `v21_verify_structural_rules.py` — structural test implementations (rule_LP, rule_RP, rule_C0, rule_AND)
 - `analyze_seed_failures.py` — failure categorization
 - `distill.py` — failure → cheatsheet-edit suggestions
+- `results/proof_lab/rotation0002_v23_edit_brief.md` — primary evidence base for witness selection
+- `results/proof_lab/rotating_hard_false_report.md` — family prior for hard-false rescue
 
 ### Evaluation
 - `sim_lab.py --playground-parity` — canonical evaluator

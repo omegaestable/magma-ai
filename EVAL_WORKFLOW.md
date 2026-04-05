@@ -68,7 +68,7 @@ Quick wrapper:
 Direct evaluator:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced20_true10_false10_seed0.jsonl --cheatsheet cheatsheets/v23.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced20_true10_false10_seed0.jsonl --cheatsheet cheatsheets/v23c.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
 ## What To Inspect

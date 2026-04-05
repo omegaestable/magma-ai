@@ -17,7 +17,7 @@ Paid OpenRouter evaluation is the supported inference path in this repo.
 ## Current State
 
 - Baseline champion: `cheatsheets/v21f_structural.txt`
-- Active candidate: `cheatsheets/v23.txt`
+- Active candidate: `cheatsheets/v23c.txt`
 - Canonical evaluator: `sim_lab.py`
 - Canonical quick-run wrapper: `run_paid_eval.ps1`
 - Current strategy: pure natural-language cheatsheet, no dynamic template logic
@@ -77,13 +77,13 @@ Run a quick baseline check:
 Run the active candidate directly:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23c.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
 Check cheatsheet size on disk:
 
 ```powershell
-(Get-Item "cheatsheets\v23.txt").Length
+(Get-Item "cheatsheets\v23c.txt").Length
 ```
 
 Refresh the rotating official-like evaluation bundle:

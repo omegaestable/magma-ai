@@ -88,7 +88,7 @@ Active starting points:
 - `README.md`
 - `EVAL_WORKFLOW.md`
 - `cheatsheets/v21f_structural.txt`
-- `cheatsheets/v23.txt`
+- `cheatsheets/v23c.txt`
 - `sim_lab.py`
 
 Optional or research-only paths:

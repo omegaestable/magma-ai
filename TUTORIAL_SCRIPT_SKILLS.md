@@ -104,7 +104,7 @@ Rules:
 Main files:
 
 - `cheatsheets/v21f_structural.txt`
-- `cheatsheets/v23.txt`
+- `cheatsheets/v23c.txt`
 
 ### 5. Optional And Research Paths
 

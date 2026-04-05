@@ -38,7 +38,7 @@ v23c gate results (20 problems each):
 
 v23c massive run results:
 
-- Normal 60 (rotation0002): **93.3%** (4 FP, 0 FN, 100% parse, F1=93.8%)
+- Normal 60 (rotation0002): **93.3%** (4 FP, 0 FN, 100% parse, F1=93.8%) — 3 coverage gaps + 1 T3L algebraic gap; zero execution errors
 - Hard3 40 (rotation0002): **50.0%** (20 FP, 0 FN, 100% parse, F1=66.7%, TRUE=100%, FALSE=0%)
 
 ## Current Read
@@ -62,7 +62,7 @@ For v23 to replace v21f:
 ## Open Risks
 
 1. Structural test ceiling at ~88-92% on normal sets — cannot be broken without algebraic reasoning.
-2. RP execution errors still occur: 2/4 FP in massive normal run were RP misses despite clear structural separation.
+2. All 4 normal-60 FPs are coverage or algebraic gaps — the 4-test structural backbone executed correctly with zero execution errors.
 3. Temperature stochasticity creates ~5% noise floor per run.
 4. Hard3 performance is 50% — structural tests provide zero value on algebraically hard pairs (0% FALSE accuracy).
 5. Research-only scripts at repo root can pull fresh agents off canonical path.
@@ -72,6 +72,6 @@ For v23 to replace v21f:
 v23 line is complete. Next agent should:
 
 1. Read `V24_MASTER_PROMPT.md` for the design document.
-2. Implement Direction A (lightweight algebraic hints: idempotent/constant/projection tests).
-3. Gate v24 on the same 3 normal seeds before any stress testing.
+2. Implement Direction A Phase 1: add a single XOR named-witness rescue check after the 4 structural tests.
+3. Gate v24a on warmup seeds (normal_balanced10 seed0 + seed1) before full normal gate.
 4. Exit criteria: ≥92% average on normal, no seed below 88%, 100% parse, 0% FN.
