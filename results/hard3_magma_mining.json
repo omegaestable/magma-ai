@@ -1,0 +1,690 @@
+{
+  "top_magmas": [
+    {
+      "table": [
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 5,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0096",
+        "hard3_0113",
+        "hard3_0116",
+        "hard3_0180"
+      ]
+    },
+    {
+      "table": [
+        [
+          2,
+          0,
+          1
+        ],
+        [
+          2,
+          0,
+          1
+        ],
+        [
+          2,
+          0,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 5,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0096",
+        "hard3_0113",
+        "hard3_0116",
+        "hard3_0180"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0253",
+        "hard3_0280"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0253",
+        "hard3_0280"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0254",
+        "hard3_0383"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          2,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0254",
+        "hard3_0383"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          2,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0253",
+        "hard3_0280"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          2,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 3,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0254",
+        "hard3_0383"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          0,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          1,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 2,
+      "caught_ids": [
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    }
+  ],
+  "set_cover": [
+    {
+      "table": [
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal_catch": 5,
+      "cumulative_coverage": 5,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0096",
+        "hard3_0113",
+        "hard3_0116",
+        "hard3_0180"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal_catch": 3,
+      "cumulative_coverage": 8,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0151",
+        "hard3_0153"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal_catch": 2,
+      "cumulative_coverage": 10,
+      "caught_ids": [
+        "hard3_0128",
+        "hard3_0253",
+        "hard3_0280"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal_catch": 2,
+      "cumulative_coverage": 12,
+      "caught_ids": [
+        "hard3_0017",
+        "hard3_0254",
+        "hard3_0383"
+      ]
+    },
+    {
+      "table": [
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal_catch": 2,
+      "cumulative_coverage": 14,
+      "caught_ids": [
+        "hard3_0218",
+        "hard3_0301"
+      ]
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal_catch": 1,
+      "cumulative_coverage": 15,
+      "caught_ids": [
+        "hard3_0359"
+      ]
+    }
+  ],
+  "uncovered_ids": [
+    "hard3_0073",
+    "hard3_0074",
+    "hard3_0163",
+    "hard3_0166",
+    "hard3_0328"
+  ],
+  "total_false_pairs": 20
+}

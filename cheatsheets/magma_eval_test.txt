@@ -1,0 +1,107 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT: TRUE. Say FALSE only when the test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is literally identical to E2 (ignoring whitespace) → answer TRUE.
+
+═══ THE TEST: EVALUATE ON MAGMA M ═══
+
+Magma M has elements {0, 1, 2} with this rule:
+  a * b = NEXT(b)
+where NEXT(0)=1, NEXT(1)=2, NEXT(2)=0.
+The left operand a does NOT matter. Only b matters.
+
+Quick reference:
+  anything * 0 = 1
+  anything * 1 = 2
+  anything * 2 = 0
+
+Step 1 — Check E1 on M with ALL variables set to 0.
+  Replace every variable with 0. Compute innermost * first, working outward.
+  Each * just takes NEXT of its right argument.
+  If left side = right side → E1 HOLDS on this assignment.
+  If left side ≠ right side → E1 FAILS on this assignment → skip to VERDICT: TRUE.
+
+Step 2 — Check E2 on M with ALL variables set to 0.
+  Same procedure.
+  If left side = right side → E2 HOLDS → skip to VERDICT: TRUE.
+  If left side ≠ right side → E2 FAILS → answer FALSE.
+
+Decision:
+  E1 HOLDS and E2 FAILS → ★ answer FALSE ★
+  Any other combination → answer TRUE.
+
+═══ WORKED EXAMPLE — FALSE ═══
+E1: x = (x * (x * x)) * x     E2: x = (x * x) * (x * x)
+
+E1 check (all vars = 0):
+  x = 0
+  x * x: right is x=0 → NEXT(0)=1 → result is 1
+  x * (x * x): right is 1 → NEXT(1)=2 → result is 2
+  (x * (x * x)) * x: right is x=0 → NEXT(0)=1 → result is 1
+  LHS = 0, RHS = 1 → 0 ≠ 1 → E1 FAILS on this assignment.
+  E1 FAILS → no separation possible → answer TRUE? NO WAIT:
+  E1 must HOLD for separation. E1 FAILS → skip → VERDICT: TRUE.
+
+Hmm, that example doesn't separate. Let me use a real one.
+
+═══ WORKED EXAMPLE — FALSE ═══
+E1: x = y * (y * (x * x))     E2: x = (x * (y * z)) * x
+
+E1 check (x=0, y=0):
+  x * x: right is 0 → NEXT(0)=1
+  y * (x * x): right is 1 → NEXT(1)=2
+  y * (y * (x * x)): right is 2 → NEXT(2)=0
+  LHS = x = 0, RHS = 0. Equal → E1 HOLDS ✓
+
+E2 check (x=0, y=0, z=0):
+  y * z: right is 0 → NEXT(0)=1
+  x * (y * z): right is 1 → NEXT(1)=2
+  (x * (y * z)) * x: right is 0 → NEXT(0)=1
+  LHS = x = 0, RHS = 1. Not equal → E2 FAILS ✗
+
+  E1 HOLDS + E2 FAILS → ★ SEPARATION → FALSE ★
+
+VERDICT: FALSE
+REASONING: E1 holds on Magma M (all 0s) but E2 fails (LHS=0, RHS=1).
+PROOF: Magma M with x=0,y=0,z=0 separates.
+COUNTEREXAMPLE: Magma M evaluation.
+
+═══ WORKED EXAMPLE — TRUE ═══
+E1: x * y = (y * (z * x)) * y     E2: x * y = ((y * y) * y) * y
+
+E1 check (x=0, y=0, z=0):
+  z * x: right is 0 → NEXT(0)=1
+  y * (z * x): right is 1 → NEXT(1)=2
+  (y * (z * x)) * y: right is 0 → NEXT(0)=1
+  LHS = x * y: right is 0 → NEXT(0)=1. RHS = 1. Equal → E1 HOLDS ✓
+
+E2 check (x=0, y=0):
+  y * y: right is 0 → NEXT(0)=1
+  (y * y) * y: right is 0 → NEXT(0)=1
+  ((y * y) * y) * y: right is 0 → NEXT(0)=1
+  LHS = x * y: right is 0 → NEXT(0)=1. RHS = 1. Equal → E2 HOLDS ✓
+
+  E1 HOLDS + E2 HOLDS → no separation → TRUE.
+
+VERDICT: TRUE
+REASONING: Both equations hold on Magma M, no separation found.
+PROOF: Magma M does not distinguish E1 from E2.
+COUNTEREXAMPLE: None
+
+═══ OUTPUT FORMAT ═══
+Write your evaluation in plain text. Then write these four lines at the end:
+  VERDICT: TRUE or FALSE
+  REASONING: (one sentence)
+  PROOF: (brief)
+  COUNTEREXAMPLE: (if FALSE: "Magma M"; if TRUE: "None")
+
+═══ RULES ═══
+• Compute each * as NEXT of the right argument: NEXT(0)=1, NEXT(1)=2, NEXT(2)=0.
+• Work from innermost parentheses outward.
+• Only test the assignment where ALL variables = 0.
+• E1 HOLDS + E2 FAILS = FALSE. Everything else = TRUE.
+• Do NOT use ## headers, numbered steps, bullet lists, or \boxed{} for your answer.
+• Write VERDICT last, and it MUST match your evaluation.

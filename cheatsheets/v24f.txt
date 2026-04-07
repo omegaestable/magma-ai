@@ -1,0 +1,155 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT: TRUE. Say FALSE only when a test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is literally identical to E2 (ignoring whitespace) → answer TRUE.
+
+═══ STEP 0: SPLIT ON = ═══
+Write out the four pieces:
+  E1_L = (before = in E1)    E1_R = (after = in E1)
+  E2_L = (before = in E2)    E2_R = (after = in E2)
+"x = (big * expr)" → left side is just "x", a bare variable with NO *.
+
+═══ 4 TESTS — for each, find E1 result and E2 result, then look up the table ═══
+
+TEST 1 — LP: first letter (a–z) on left side vs first letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: scan left-to-right past ALL opening parentheses to find the first letter.
+  "(y * x)" → y.  "((y * x) * (x * y)) * z" → y.  "(x * x) * y" → x.
+
+TEST 2 — RP: last letter on left side vs last letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: skip all trailing ) to find the last letter.
+  "(x * y)" → y.  "(y * (x * y))" → y.  "((y * x) * x) * (y * x)" → x.
+
+TEST 3 — C0: does left side contain *?  Does right side contain *?
+  Both have * → HOLD.  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+  "x" has no *. "x * y" has *. Check each side independently in each equation.
+  C0 checks ONLY whether * is present. Do not consider which variables appear.
+
+TEST 4 — L3: first letter plus leading-paren depth.
+  Step A: do the first letters on left and right match? (same check as LP)
+    If NO → FAIL. Done with this equation.
+  Step B (only if first letters match): count opening ( before the first letter.
+    depth: bare variable (no *) → 0. has * → count + 1.
+    Same depth mod 3 → HOLD. Different depth mod 3 → FAIL.
+  "x" → depth 0.  "x * y" → 0 (, depth 1.  "(x * y) * z" → 1 (, depth 2.
+  "((x * y) * z) * w" → 2 (, depth 3≡0.  "x * (y * z)" → 0 (, depth 1.
+
+═══ DECISION TABLE — use after EVERY test ═══
+
+  E1=HOLD  E2=HOLD  →  no separation → next test
+  E1=HOLD  E2=FAIL  →  ★ SEPARATION → answer FALSE ★
+  E1=FAIL  E2=HOLD  →  no separation → next test
+  E1=FAIL  E2=FAIL  →  no separation → next test
+
+ONLY the second row is separation. Read the row carefully every time.
+If you write "E1=HOLD" and "E2=FAIL" that IS separation. Stop and answer FALSE.
+After all 4 tests with no separation → answer TRUE.
+
+═══ OUTPUT FORMAT ═══
+Write your analysis in plain text. Then write these four lines at the end:
+  VERDICT: TRUE or FALSE
+  REASONING: (one sentence)
+  PROOF: (brief)
+  COUNTEREXAMPLE: (if FALSE: name the test; if TRUE: "None")
+
+HARD RULE: Your VERDICT line must match your analysis.
+If ANY test had E1=HOLD and E2=FAIL → you MUST write VERDICT: FALSE.
+If no test had that → you MUST write VERDICT: TRUE.
+
+═══ EXAMPLE A — FALSE via C0 ═══
+E1: x * y = (y * x) * x     E2: x = (x * y) * z
+E1_L="x * y"  E1_R="(y * x) * x"  |  E2_L="x"  E2_R="(x * y) * z"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=y last(R)=x → FAIL | E2 last(L)=x last(R)=z → FAIL
+     → E1=FAIL E2=FAIL → no separation
+C0:  E1 L has *, R has * → HOLD | E2 L="x" no * → FAIL
+     → E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: C0 separates — E1 holds on C0 but E2 fails.
+PROOF: E1 left "x * y" has *, right has *. E2 left "x" has no *.
+COUNTEREXAMPLE: C0.
+
+═══ EXAMPLE B — FALSE via LP ═══
+E1: x = x * (y * z)     E2: (x * x) * y = (y * x) * z
+E1_L="x"  E1_R="x * (y * z)"  |  E2_L="(x * x) * y"  E2_R="(y * x) * z"
+
+LP:  E1 first(L)=x first(R)=x → HOLD | E2 first(L)=x first(R)=y → FAIL
+     → E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: LP separates — E1 first letters match, E2 first letters differ.
+PROOF: E1: x=x. E2: x≠y.
+COUNTEREXAMPLE: LP.
+
+═══ EXAMPLE C — TRUE ═══
+E1: x = (y * x) * (z * (w * y))     E2: x = ((y * x) * x) * x
+E1_L="x"  E1_R="(y * x) * (z * (w * y))"  |  E2_L="x"  E2_R="((y * x) * x) * x"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=y → FAIL
+     → E1=FAIL E2=FAIL → no separation
+RP:  E1 last(L)=x last(R)=y → FAIL | E2 last(L)=x last(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+C0:  E1 L="x" no * → FAIL | E2 L="x" no * → FAIL
+     → E1=FAIL E2=FAIL → no separation
+L3:  E1 step A: x≠y → FAIL | E2 step A: x≠y → FAIL
+     → E1=FAIL E2=FAIL → no separation
+No separation found.
+
+VERDICT: TRUE
+REASONING: No test separates E1 from E2.
+PROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.
+COUNTEREXAMPLE: None
+
+═══ EXAMPLE D — FALSE via RP ═══
+E1: x = ((y * x) * x) * (y * x)     E2: x = (x * y) * (y * (x * y))
+E1_L="x"  E1_R="((y * x) * x) * (y * x)"  |  E2_L="x"  E2_R="(x * y) * (y * (x * y))"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=x last(R)=x → HOLD | E2 last(L)=x last(R)=y → FAIL
+     → E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: RP separates — E1 last letters match, E2 last letters differ.
+PROOF: E1 R ends in x. E2 R ends in y (skip trailing parentheses).
+COUNTEREXAMPLE: RP.
+
+═══ EXAMPLE E — FALSE via L3 ═══
+E1: x = ((x * (x * x)) * y) * z     E2: x = x * ((y * y) * z)
+E1_L="x"  E1_R="((x * (x * x)) * y) * z"  |  E2_L="x"  E2_R="x * ((y * y) * z)"
+
+LP:  E1 first(L)=x first(R)=x → HOLD | E2 first(L)=x first(R)=x → HOLD
+     → E1=HOLD E2=HOLD → no separation
+RP:  E1 last(L)=x last(R)=z → FAIL | E2 last(L)=x last(R)=z → FAIL
+     → E1=FAIL E2=FAIL → no separation
+C0:  E1 L="x" no * → FAIL | E2 L="x" no * → FAIL
+     → E1=FAIL E2=FAIL → no separation
+L3:  E1 step A: x=x ✓ step B: L depth=0, R 2 ( → depth 3≡0. 0≡0 → HOLD
+     E2 step A: x=x ✓ step B: L depth=0, R 0 ( → depth 1. 0≠1 → FAIL
+     → E1=HOLD E2=FAIL → ★ SEPARATION ★
+
+VERDICT: FALSE
+REASONING: L3 separates — E1 depths match mod 3, E2 depths differ.
+PROOF: E1 right 2 leading ( → depth 3≡0 matches left 0. E2 right 0 ( → depth 1 ≠ 0.
+COUNTEREXAMPLE: L3.
+
+═══ RULES ═══
+• Text-inspection ONLY. Do not compute tables, evaluate algebras, or invent new tests.
+• Split each equation at = first. "x = stuff" → left is "x" (no *).
+• Use the DECISION TABLE after every test. Read the row that matches your result.
+• E1=HOLD + E2=FAIL = separation = FALSE. Everything else = continue.
+• Default is TRUE. Say FALSE only with a clear separation.
+• For LP: scan left-to-right past ALL opening parentheses to find the first letter.
+• For RP: scan right-to-left past ALL closing parentheses to find the last letter.
+• For L3: if first letters differ → FAIL immediately. If they match → count ( before
+  first letter. Bare variable depth=0. Has * → depth = count + 1. Compare mod 3.
+• Write VERDICT last, and it MUST match your analysis.
+• Do NOT use ## headers, numbered steps, bullet lists, or \boxed{} for your answer.
+• Use plain text analysis, then the four VERDICT/REASONING/PROOF/COUNTEREXAMPLE lines.
