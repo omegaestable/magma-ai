@@ -15,10 +15,11 @@ Read these files first:
 
 ## 2. Confirm Current Artifacts
 
-1. Baseline champion: `cheatsheets/v21f_structural.txt`
-2. Active candidate: `cheatsheets/v23c.txt`
+1. **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap)
+2. Previous champion: `cheatsheets/v21f_structural.txt` (historical)
 3. Canonical evaluator: `sim_lab.py`
 4. Canonical wrapper: `run_paid_eval.ps1`
+5. Next design doc: `V25A_MASTER_PROMPT.md`
 
 ## 3. Confirm Environment
 
@@ -30,31 +31,25 @@ Example:
 
 ```powershell
 $env:OPENROUTER_API_KEY = "<your_key>"
-(Get-Item "cheatsheets\v23c.txt").Length
+(Get-Item "cheatsheets\v24j.txt").Length
 ```
 
 ## 4. Run One Smoke Eval
 
 Purpose: verify that the evaluator, OpenRouter access, and repo wiring work before you spend tokens on a full candidate gate.
 
-Run the baseline champion first on one warmup benchmark:
+Run the champion on one warmup benchmark:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v21f_structural
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v24j
 ```
 
-Expected result: about 90% on this smoke test. If this fails badly, fix environment or provider issues before testing the candidate.
-
-Once the baseline smoke test behaves normally, test the active candidate on the same seed:
-
-```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v23c
-```
+Expected result: about 90% on this smoke test. If this fails badly, fix environment or provider issues before testing candidates.
 
 Or run directly with `sim_lab.py`:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23c.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
 ## 5. If You Need To Iterate

@@ -16,11 +16,11 @@ Paid OpenRouter evaluation is the supported inference path in this repo.
 
 ## Current State
 
-- Baseline champion: `cheatsheets/v21f_structural.txt`
-- Active candidate: `cheatsheets/v23c.txt`
+- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap)
+- Previous champion: `cheatsheets/v21f_structural.txt` (historical)
 - Canonical evaluator: `sim_lab.py`
 - Canonical quick-run wrapper: `run_paid_eval.ps1`
-- Current strategy: pure natural-language cheatsheet, no dynamic template logic
+- Current strategy: pure natural-language cheatsheet with 4 structural tests + T3R algebraic rescue
 
 ## Hard Constraints
 
@@ -71,19 +71,19 @@ $env:OPENROUTER_API_KEY = "<your_key>"
 Run a quick baseline check:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v21f_structural
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v24j
 ```
 
 Run the active candidate directly:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v23c.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
 ```
 
 Check cheatsheet size on disk:
 
 ```powershell
-(Get-Item "cheatsheets\v23c.txt").Length
+(Get-Item "cheatsheets\v24j.txt").Length
 ```
 
 Refresh the rotating official-like evaluation bundle:
@@ -146,7 +146,9 @@ If you are not inside that loop, you are probably in a research or historical pa
 - `TUTORIAL_CHEATSHEET_PLAYBOOK.md`: end-to-end operator tutorial
 - `TUTORIAL_SCRIPT_SKILLS.md`: role-based script map
 - `RULESET.md`: competition constraints and scoring
-- `V23_PLAN.md`: historical planning context for the active candidate
+- `V23_PLAN.md`: historical planning context
+- `V24_MASTER_PROMPT.md`: historical v24 design document
+- `V25A_MASTER_PROMPT.md`: next-generation design document
 
 ## Benchmarks and Data
 

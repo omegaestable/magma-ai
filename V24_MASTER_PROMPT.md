@@ -1,7 +1,9 @@
-# v24 Master Prompt — Design Document
+# v24 Master Prompt — Design Document (HISTORICAL)
+
+> **HISTORICAL**: This document is superseded by `V24I_MASTER_PROMPT.md` and the final champion `cheatsheets/v24j.txt`. For the next direction, see `V25A_MASTER_PROMPT.md`.
 
 **Date:** 2026-04-03
-**Status:** READY — v23c massive runs complete, evidence base established
+**Status:** COMPLETED — v24j promoted as champion
 **Goal:** Break the 90% normal ceiling established by v21f/v23c
 **Constraint:** Only `{{equation1}}` and `{{equation2}}` substitution. NO Jinja2 logic. Max 10,240 bytes.
 **v23c evidence:** Normal 60 = 93.3% (4 FP: 3 coverage gaps + 1 T3L algebraic gap; zero execution errors), 100% parse, 0% FN

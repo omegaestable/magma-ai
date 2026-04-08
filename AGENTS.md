@@ -23,9 +23,9 @@ Follow this order exactly:
 
 ## Current Operating Model
 
-- Baseline champion: `cheatsheets/v21f_structural.txt`
-- Active candidate: `cheatsheets/v23c.txt` (6,036 bytes, 58.9% of cap)
-- V24 design document: `V24_MASTER_PROMPT.md`
+- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap)
+- Previous champion: `cheatsheets/v21f_structural.txt` (historical)
+- Next design document: `V25A_MASTER_PROMPT.md`
 - Canonical evaluator: `sim_lab.py`
 - Canonical quick wrapper: `run_paid_eval.ps1`
 - Canonical failure loop: `analyze_seed_failures.py` then `distill.py`
@@ -87,8 +87,8 @@ Active starting points:
 
 - `README.md`
 - `EVAL_WORKFLOW.md`
-- `cheatsheets/v21f_structural.txt`
-- `cheatsheets/v23c.txt`
+- `cheatsheets/v24j.txt`
+- `V25A_MASTER_PROMPT.md`
 - `sim_lab.py`
 
 Optional or research-only paths:
