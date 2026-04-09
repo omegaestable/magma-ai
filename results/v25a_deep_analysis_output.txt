@@ -1,0 +1,137 @@
+﻿========================================================================
+v25a Deep Analysis
+========================================================================
+
+========================================================================
+SECTION 1: Implication proof types for hard3 FALSE pairs
+========================================================================
+  hard3_0091: code=-3 (implicit)
+  hard3_0105: code=-3 (implicit)
+  hard3_0229: code=-3 (implicit)
+  hard3_0206: code=-3 (implicit)
+  hard3_0349: code=-3 (implicit)
+  hard3_0200: code=-3 (implicit)
+  hard3_0312: code=-3 (implicit)
+  hard3_0201: code=-3 (implicit)
+  hard3_0371: code=-3 (implicit)
+  hard3_0189: code=-3 (implicit)
+  hard3_0215: code=-3 (implicit)
+  hard3_0346: code=-3 (implicit)
+  hard3_0119: code=-3 (implicit)
+  hard3_0026: code=-3 (implicit)
+  hard3_0152: code=-4 (explicit_needed)
+  hard3_0174: code=-3 (implicit)
+  hard3_0235: code=-3 (implicit)
+  hard3_0042: code=-3 (implicit)
+  hard3_0356: code=-3 (implicit)
+  hard3_0190: code=-3 (implicit)
+  hard3_0306: code=-3 (implicit)
+  hard3_0092: code=-3 (implicit)
+  hard3_0343: code=-3 (implicit)
+  hard3_0347: code=-3 (implicit)
+  hard3_0016: code=-3 (implicit)
+  hard3_0159: code=-4 (explicit_needed)
+  hard3_0037: code=-4 (explicit_needed)
+  hard3_0040: code=-3 (implicit)
+  hard3_0171: code=-3 (implicit)
+  hard3_0241: code=-3 (implicit)
+
+  Code distribution: {-3: 27, -4: 3}
+  -3 (implicit proof, might have no small witness): 27
+  -4 (explicit counterexample exists): 3
+
+========================================================================
+SECTION 2: Teachable witness coverage on hard3 FALSE
+========================================================================
+  T3R       : separates  4/30  ['hard3_0119', 'hard3_0174', 'hard3_0016', 'hard3_0171']
+  T3L       : separates  4/30  ['hard3_0312', 'hard3_0215', 'hard3_0042', 'hard3_0306']
+  Z3A       : separates  1/30  ['hard3_0026']
+  Z3sub     : separates  4/30  ['hard3_0091', 'hard3_0026', 'hard3_0042', 'hard3_0092']
+  T3R2      : separates  4/30  ['hard3_0119', 'hard3_0174', 'hard3_0016', 'hard3_0171']
+  T3L2      : separates  4/30  ['hard3_0312', 'hard3_0215', 'hard3_0042', 'hard3_0306']
+
+  Combined coverage (all teachable): 11/30
+  Remaining gap: ['hard3_0037', 'hard3_0040', 'hard3_0105', 'hard3_0152', 'hard3_0159', 'hard3_0189', 'hard3_0190', 'hard3_0200', 'hard3_0201', 'hard3_0206', 'hard3_0229', 'hard3_0235', 'hard3_0241', 'hard3_0343', 'hard3_0346', 'hard3_0347', 'hard3_0349', 'hard3_0356', 'hard3_0371']
+
+========================================================================
+SECTION 3: False separation risk on hard3 TRUE pairs
+========================================================================
+  (No output = all witnesses are sound on hard3 TRUE pairs)
+
+========================================================================
+SECTION 4: Teachable witness coverage on normal FALSE
+========================================================================
+  LP        : separates  7/30  ['normal_0128', 'normal_0887', 'normal_0616', 'normal_0198', 'normal_0815', 'normal_0537', 'normal_0845']
+  RP        : separates 11/30  ['normal_0760', 'normal_0128', 'normal_0624', 'normal_0533', 'normal_0608', 'normal_0529', 'normal_0279', 'normal_0497', 'normal_0347', 'normal_0695', 'normal_0503']
+  C0        : separates 10/30  ['normal_0074', 'normal_0311', 'normal_0468', 'normal_0519', 'normal_0616', 'normal_0695', 'normal_0196', 'normal_0778', 'normal_0835', 'normal_0114']
+  C1        : separates 10/30  ['normal_0074', 'normal_0311', 'normal_0468', 'normal_0519', 'normal_0616', 'normal_0695', 'normal_0196', 'normal_0778', 'normal_0835', 'normal_0114']
+  AND       : separates  1/30  ['normal_0114']
+  OR        : separates  1/30  ['normal_0114']
+  XOR       : separates  3/30  ['normal_0344', 'normal_0196', 'normal_0114']
+  XNOR      : separates  3/30  ['normal_0344', 'normal_0196', 'normal_0114']
+  A2        : separates  3/30  ['normal_0311', 'normal_0196', 'normal_0209']
+  T3R       : separates  3/30  ['normal_0624', 'normal_0533', 'normal_0279']
+  T3L       : separates  3/30  ['normal_0608', 'normal_0887', 'normal_0616']
+  Z3A       : separates  1/30  ['normal_0114']
+  Z3sub     : separates  2/30  ['normal_0347', 'normal_0628']
+  Z3R       : separates 11/30  ['normal_0760', 'normal_0128', 'normal_0624', 'normal_0533', 'normal_0608', 'normal_0529', 'normal_0279', 'normal_0497', 'normal_0347', 'normal_0695', 'normal_0503']
+  Z3L       : separates  7/30  ['normal_0128', 'normal_0887', 'normal_0616', 'normal_0198', 'normal_0815', 'normal_0537', 'normal_0845']
+  Z3mul     : separates  1/30  ['normal_0114']
+  T3R2      : separates  3/30  ['normal_0624', 'normal_0533', 'normal_0279']
+  T3L2      : separates  3/30  ['normal_0608', 'normal_0887', 'normal_0616']
+  Z3_a2b    : separates  1/30  ['normal_0196']
+
+  Normal TRUE soundness check:
+  (No output = all sound)
+
+========================================================================
+SECTION 5: Teorth full_entries.json witness data
+========================================================================
+  Loaded 12373 entries from full_entries.json
+  Entry keys: {'variant': 12373, 'proven': 12373, 'name': 12373, 'line': 12373, 'filename': 12373}
+  Entries with magma/table/counterexample: 0
+  Entry 0: {"variant": {"facts": {"satisfied": ["Equation65"], "refuted": ["Equation4065", "Equation3862", "Equation1426", "Equation817", "Equation614"], "finite": false}}, "proven": true, "name": "Asterix.Equat
+  Entry 1: {"variant": {"unconditional": "Equation1"}, "proven": true, "name": "Subgraph.Equation1_true", "line": 20, "filename": "././././equational_theories/Subgraph.lean"}
+  Entry 2: {"variant": {"implication": {"rhs": "Equation3", "lhs": "Equation2", "finite": false}}, "proven": true, "name": "Subgraph.Equation2_implies_Equation3", "line": 24, "filename": "././././equational_theo
+
+========================================================================
+SECTION 6: Teorth smallest_magma.txt
+========================================================================
+  smallest_magma.txt not found
+
+========================================================================
+SECTION 7: Greedy cover - best teachable witness combo for hard3 FALSE
+========================================================================
+  Round 1: T3R        covers +4 -> ['hard3_0016', 'hard3_0119', 'hard3_0171', 'hard3_0174'] | 26 remaining
+  Round 2: T3L        covers +4 -> ['hard3_0042', 'hard3_0215', 'hard3_0306', 'hard3_0312'] | 22 remaining
+  Round 3: Z3sub      covers +3 -> ['hard3_0026', 'hard3_0091', 'hard3_0092'] | 19 remaining
+
+  Total covered: 11/30 with 3 witnesses
+  Witnesses needed: ['T3R', 'T3L', 'Z3sub']
+  Remaining uncoverable: 19 -> ['hard3_0037', 'hard3_0040', 'hard3_0105', 'hard3_0152', 'hard3_0159', 'hard3_0189', 'hard3_0190', 'hard3_0200', 'hard3_0201', 'hard3_0206', 'hard3_0229', 'hard3_0235', 'hard3_0241', 'hard3_0343', 'hard3_0346', 'hard3_0347', 'hard3_0349', 'hard3_0356', 'hard3_0371']
+
+========================================================================
+SECTION 8: Full HF hard3 pool coverage by T3R+T3L
+========================================================================
+  Full HF hard3 pool: 400 problems (205 FALSE)
+  T3R coverage: 42/205 (20.5%)
+  T3L coverage: 34/205 (16.6%)
+  T3R+T3L combined: 76/205 (37.1%)
+  Z3A coverage: 1/205 (0.5%)
+  T3R+T3L+Z3A: 77/205 (37.6%)
+  All teachable combined: 87/205 (42.4%)
+  FN risk T3R on full hard3 TRUE: 0/195
+  FN risk T3L on full hard3 TRUE: 0/195
+  FN risk Z3A on full hard3 TRUE: 0/195
+
+========================================================================
+SECTION 9: Full HF normal pool coverage
+========================================================================
+  Full HF normal pool: 1000 (500 FALSE, 500 TRUE)
+  Structural (LP/RP/C0/AND) on normal FALSE: 390/500 (78.0%)
+  Struct+T3R: 392/500 (78.4%)
+  Struct+T3R+T3L: 398/500 (79.6%)
+  Struct+T3R+T3L+Z3A: 401/500 (80.2%)
+  FN risk T3R on normal TRUE: 0/500
+  FN risk T3L on normal TRUE: 0/500
+  FN risk Z3A on normal TRUE: 0/500

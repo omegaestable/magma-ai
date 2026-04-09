@@ -77,7 +77,7 @@ Run a quick baseline check:
 Run the active candidate directly:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --errors
 ```
 
 Check cheatsheet size on disk:

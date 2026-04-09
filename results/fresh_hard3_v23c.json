@@ -1,0 +1,990 @@
+{
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "cheatsheet": "cheatsheets/v23c.txt",
+  "subset": "(local)",
+  "repeats": 1,
+  "timestamp": "2026-04-08 12:48:29",
+  "summary": {
+    "total": 60,
+    "correct": 30,
+    "incorrect": 29,
+    "unparsed": 1,
+    "accuracy": 0.5,
+    "f1_score": 0.6591,
+    "precision": 0.5,
+    "recall": 0.9667,
+    "parse_rate": 0.9833,
+    "true_accuracy": 0.9667,
+    "false_accuracy": 0.0333,
+    "tp": 29,
+    "fp": 29,
+    "fn": 1,
+    "tn": 1,
+    "avg_time_s": 13.84,
+    "total_time_s": 830.27,
+    "prompt_tokens": 130195,
+    "completion_tokens": 33617
+  },
+  "results": [
+    {
+      "id": "hard3_0091",
+      "repeat_id": 1,
+      "equation1": "x = y * (y * ((x * y) * y))",
+      "equation2": "x = (y * (z * z)) * (y * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.14,
+      "raw_response": "To determine whether Equation 1 (E1) implies Equation 2 (E2) over all magmas, we need to analyze the given equations step by step according to the provided rules and tests.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1: x = y * (y * ((x * y) * y))\n- E2: x = (y * (z * z)) * (y * x)\n\nSo, we have:\n- E1_L = \"x\"\n- E1_R = \"y * (y * ((x * y) * y))\"\n- E2_L = \"x\"\n- E2_R = \"(y * (z * z)) * (y * x)\"\n\nNow, let's apply the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first letter on the left side is \"x\", and on the right side is \"y\" → FAIL\n- E2 first letter on the left side is \"x\", and on the right side is \"y\" → FAIL\nSince both fail, we continue to the next test.\n\nTEST 2 — RP (Last Letter):\n- E1 last letter on the left side is \"x\", and on the right side is \"y\" → FAIL\n- E2 last letter on the left side is \"x\", and on the right side is \"x\" → HOLD\nHere, E1 fails and E2 holds, so we continue.\n\nTEST 3 — C0 (Presence of *):\n- E1 left side has no \"*\", and the right side has \"*\" → FAIL\n- E2 left side has no \"*\", and the right side has \"*\" → FAIL\nBoth fail, so we continue.\n\nTEST 4 — VARS (Set of Distinct Letters):\n- E1 left side contains only \"x\", and the right side contains \"x\" and \"y\" → FAIL\n- E2 left side contains only \"x\", and the right side contains \"x\", \"y\", and \"z\" → FAIL\nBoth fail, so we conclude that there's no separation based on these tests.\n\nSince none of the tests resulted in E1 holding while E2 fails (E1=HOLD and E2=FAIL), we cannot claim a separation based on the given rules and tests. Thus, according to the instructions, the default stance is that E1 implies E2 unless proven otherwise, and since no test proved otherwise, the implication stands.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, meaning there's no clear evidence that E1 does not imply E2 based on the provided analysis framework.\nPROOF: All 4 tests were conducted without finding a scenario where E1 holds and E2 fails.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2191,
+        "completion_tokens": 575
+      }
+    },
+    {
+      "id": "hard3_0105",
+      "repeat_id": 1,
+      "equation1": "x = x * ((x * y) * (z * z))",
+      "equation2": "x * y = x * (z * (x * z))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 5.24,
+      "raw_response": "To determine whether Equation 1 (E1: x = x * ((x * y) * (z * z))) implies Equation 2 (E2: x * y = x * (z * (x * z))) over all magmas, we need to analyze the structure of both equations through the provided tests: LP (First Letter on the Left side vs First Letter on the Right side), RP (Last letter on the Left side vs Last letter on the Right side), C0 (presence of '*' on both sides), and VARS (set of distinct letters on both sides).\n\nFor E1: x = x * ((x * y) * (z * z)), splitting at '=' gives E1_L = \"x\" and E1_R = \"x * ((x * y) * (z * z))\".\nFor E2: x * y = x * (z * (x * z)), splitting at '=' gives E2_L = \"x * y\" and E2_R = \"x * (z * (x * z))\".\n\n1. **LP Test**: \n   - E1's first letter on the left is 'x', and on the right is 'x', so E1=HOLD.\n   - E2's first letter on the left is 'x', and on the right is 'x', so E2=HOLD.\n   Since both are HOLD, we proceed to the next test.\n\n2. **RP Test**:\n   - E1's last letter on the left is 'x', and on the right is 'z' (looking past the closing parentheses), so E1=FAIL.\n   - E2's last letter on the left is 'y', and on the right is 'z' (looking past the closing parentheses), so E2=FAIL.\n   Since both are FAIL, we proceed to the next test.\n\n3. **C0 Test**:\n   - E1's left side has no '*', and the right side has '*', so E1=FAIL.\n   - E2's left side has '*', and the right side has '*', so E2=HOLD.\n   Here, E1=FAIL and E2=HOLD, so we proceed to the next test.\n\n4. **VARS Test**:\n   - E1's left side has {x}, and the right side has {x, y, z}, so E1=FAIL.\n   - E2's left side has {x, y}, and the right side has {x, z}, so E2=FAIL.\n   Since both are FAIL, we conclude there's no separation found through these tests.\n\nGiven that none of the tests provided a clear separation where E1=HOLD and E2=FAIL, we conclude that E1 implies E2 over all magmas is TRUE, based on the provided method of analysis which relies on text-inspection and does not involve deeper algebraic manipulation or the generation of counterexamples beyond the scope of the defined tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1=HOLD and E2=FAIL.\nPROOF: All 4 tests were checked without finding separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2163,
+        "completion_tokens": 668
+      }
+    },
+    {
+      "id": "hard3_0229",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * x) * (z * x)",
+      "equation2": "x = (y * (x * x)) * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 6.12,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations through a series of tests: LP (first letter on the left side vs first letter on the right side), RP (last letter on the left side vs last letter on the right side), C0 (presence of * on both sides), and VARS (set of distinct letters on both sides).\n\nThe equations given are:\nE1: x = ((y * x) * x) * (z * x)\nE2: x = (y * (x * x)) * (z * x)\n\nFirst, we split each equation at the \"=\" sign:\nE1_L = \"x\"  E1_R = \"((y * x) * x) * (z * x)\"\nE2_L = \"x\"  E2_R = \"(y * (x * x)) * (z * x)\"\n\nNow, we apply the tests:\n\nLP: E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=y → FAIL\n     → E1=FAIL E2=FAIL → no separation\n\nRP: E1 last(L)=x last(R)=x → HOLD | E2 last(L)=x last(R)=x → HOLD\n     → E1=HOLD E2=HOLD → no separation\n\nC0: E1 L has no * → FAIL | E2 L has no * → FAIL\n     → E1=FAIL E2=FAIL → no separation\n\nVARS: E1 L={x} R={x,y,z} → FAIL | E2 L={x} R={x,y,z} → FAIL\n     → E1=FAIL E2=FAIL → no separation\n\nAfter all tests, there's no separation found between E1 and E2, meaning that E1 implies E2 over all magmas.\n\nVERDICT: TRUE\nREASONING: All tests were conducted without finding any separation between the two equations.\nPROOF: The analysis above shows that none of the tests resulted in E1=HOLD and E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2193,
+        "completion_tokens": 446
+      }
+    },
+    {
+      "id": "hard3_0206",
+      "repeat_id": 1,
+      "equation1": "x = (y * (y * x)) * (y * x)",
+      "equation2": "x * y = x * (z * (w * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 2.57,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the equations step by step according to the provided rules and tests.\n\nGiven Equation 1 (E1): x = (y * (y * x)) * (y * x) and Equation 2 (E2): x * y = x * (z * (w * y)), let's split them at the \"=\" sign.\n\nE1_L = \"x\"  \nE1_R = \"(y * (y * x)) * (y * x)\"  \nE2_L = \"x * y\"  \nE2_R = \"x * (z * (w * y))\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP: \nFor E1, the first letter on the left is \"x\" and on the right is \"y\". \nFor E2, the first letter on the left is \"x\" and on the right is \"x\". \nSo, E1=FAIL (since x ≠ y) and E2=HOLD (since x = x).\n\nUsing the DECISION TABLE: E1=FAIL, E2=HOLD → no separation.\n\nTEST 2 — RP: \nFor E1, the last letter on the left is \"x\" and on the right is \"x\". \nFor E2, the last letter on the left is \"y\" and on the right is \"y\". \nSo, E1=HOLD (since x = x) and E2=HOLD (since y = y).\n\nUsing the DECISION TABLE: E1=HOLD, E2=HOLD → no separation.\n\nTEST 3 — C0: \nE1's left side does not contain \"*\", but its right side does. \nE2's left side contains \"*\", and its right side also contains \"*\". \nSo, E1=FAIL (since left has no \"*\" but right does) and E2=HOLD (since both have \"*\").\n\nUsing the DECISION TABLE: E1=FAIL, E2=HOLD → no separation.\n\nTEST 4 — VARS: \nFor E1, the set of distinct letters on the left is {x} and on the right is {x, y}. \nFor E2, the set of distinct letters on the left is {x, y} and on the right is {x, z, w, y}. \nSo, E1=FAIL (different sets) and E2=FAIL (different sets).\n\nUsing the DECISION TABLE: E1=FAIL, E2=FAIL → no separation.\n\nAfter performing all the tests, there is no separation found between E1 and E2 according to the given rules and tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas according to the provided analysis framework.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2164,
+        "completion_tokens": 627
+      }
+    },
+    {
+      "id": "hard3_0349",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (y * (y * z))",
+      "equation2": "x * (y * x) = x * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.42,
+      "raw_response": "To determine whether Equation 1 (x * x = y * (y * (y * z))) implies Equation 2 (x * (y * x) = x * (z * x)) over all magmas, let's analyze them step by step according to the guidelines provided.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"y * (y * (y * z))\"\n- E2_L = \"x * (y * x)\"\n- E2_R = \"x * (z * x)\"\n\nNow, let's apply the tests:\n\nTEST 1 — LP: \n- E1 first letter on the left is \"x\" and on the right is \"y\". Since they are different, E1 = FAIL.\n- E2 first letter on the left is \"x\" and on the right is \"x\". Since they are the same, E2 = HOLD.\nAccording to the decision table, E1=FAIL and E2=HOLD means no separation, so we continue.\n\nTEST 2 — RP: \n- E1 last letter on the left is \"x\" and on the right is \"z\". Since they are different, E1 = FAIL.\n- E2 last letter on the left is \"x\" and on the right is \"x\". Since they are the same, E2 = HOLD.\nAgain, E1=FAIL and E2=HOLD means no separation, so we continue.\n\nTEST 3 — C0: \n- E1 left side contains \"*\", and the right side also contains \"*\". So, E1 = HOLD.\n- E2 left side contains \"*\", and the right side also contains \"*\". So, E2 = HOLD.\nSince both E1 and E2 = HOLD, there's no separation, and we continue.\n\nTEST 4 — VARS: \n- E1 left side contains the variable \"x\", and the right side contains variables \"y\" and \"z\". They are different, so E1 = FAIL.\n- E2 left side contains variables \"x\" and \"y\", and the right side contains variables \"x\" and \"z\". They are different, so E2 = FAIL.\nBoth E1 and E2 = FAIL means no separation, so we continue.\n\nAfter all tests, no separation was found. \n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2163,
+        "completion_tokens": 533
+      }
+    },
+    {
+      "id": "hard3_0200",
+      "repeat_id": 1,
+      "equation1": "x = (x * (x * y)) * (z * z)",
+      "equation2": "x = (x * (y * x)) * (z * w)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 5.03,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the equations step by step according to the given rules.\n\nGiven Equation 1 (E1): x = (x * (x * y)) * (z * z)\nGiven Equation 2 (E2): x = (x * (y * x)) * (z * w)\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * (x * y)) * (z * z)\"\n- E2_L = \"x\"\n- E2_R = \"(x * (y * x)) * (z * w)\"\n\nNow, perform the tests:\n\n1. **LP (First Letter)**: \n   - E1 first letter on the left is \"x\" and on the right is \"x\" (ignoring parentheses), so they match.\n   - E2 first letter on the left is \"x\" and on the right is \"x\", so they match.\n   - Both E1 and E2 have the same first letter on both sides, so E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter)**:\n   - For E1, the last letter on the left is \"x\" and on the right is \"z\" (after skipping closing parentheses).\n   - For E2, the last letter on the left is \"x\" and on the right is \"w\".\n   - E1 last letters differ (\"x\" vs \"z\"), and E2 last letters differ (\"x\" vs \"w\"), so E1=FAIL and E2=FAIL.\n\n3. **C0 (Contains *)**:\n   - E1's left side does not contain \"*\", but its right side does.\n   - E2's left side does not contain \"*\", but its right side does.\n   - Since neither left side contains \"*\" but both right sides do, E1=FAIL and E2=FAIL.\n\n4. **VARS (Variables)**:\n   - E1's left side contains only \"x\", and its right side contains \"x\", \"y\", and \"z\".\n   - E2's left side contains only \"x\", and its right side contains \"x\", \"y\", and \"z\" and \"w\".\n   - Since the sets of variables differ on both sides of both equations, E1=FAIL and E2=FAIL.\n\nGiven the results:\n- All tests resulted in either both HOLD or both FAIL, with no instance of E1=HOLD and E2=FAIL.\n\nTherefore, based on the analysis, Equation 1 does not imply Equation 2 over all magmas because no separation was found, but since the question is about implication and based on the strict format to follow without further algebraic manipulation or deeper analysis of magma properties beyond the given tests, the conclusion should reflect the inability to separate the equations based on the provided criteria.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2 based on the given criteria.\nPROOF: All 4 tests were conducted without finding a separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2169,
+        "completion_tokens": 652
+      }
+    },
+    {
+      "id": "hard3_0312",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * z)) * w) * z",
+      "equation2": "x = x * (y * (y * x))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 9.07,
+      "raw_response": "To determine whether Equation 1 (x = ((x * (y * z)) * w) * z) implies Equation 2 (x = x * (y * (y * x))) over all magmas, we need to analyze both equations using the provided tests: LP, RP, C0, and VARS.\n\nFirst, let's split both equations at the \"=\" sign:\n- For Equation 1 (E1), we have E1_L = \"x\" and E1_R = \"((x * (y * z)) * w) * z\".\n- For Equation 2 (E2), we have E2_L = \"x\" and E2_R = \"x * (y * (y * x))\".\n\nNow, let's apply the tests:\n\n1. **LP (First Letter)**: \n   - For E1, the first letter on the left is \"x\" and on the right is \"x\" (since we scan past all opening parentheses), so E1=HOLD.\n   - For E2, the first letter on the left is \"x\" and on the right is \"x\", so E2=HOLD.\n   - Since both are HOLD, we continue to the next test.\n\n2. **RP (Last Letter)**:\n   - For E1, the last letter on the left is \"x\" and on the right is \"z\" (skipping trailing parentheses), so E1=FAIL.\n   - For E2, the last letter on the left is \"x\" and on the right is \"x\", so E2=HOLD.\n   - We have E1=FAIL and E2=HOLD, so we continue.\n\n3. **C0 (Contains *)**:\n   - For E1, the left side \"x\" does not contain \"*\", but the right side does, so E1=FAIL.\n   - For E2, the left side \"x\" does not contain \"*\", and neither does the right side in the sense of having a different variable or structure without \"*\", but since it's about the presence of \"*\", the right side does contain \"*\", so E2=FAIL.\n   - Both are FAIL, so we continue.\n\n4. **VARS (Variables)**:\n   - For E1, the left side contains {x} and the right side contains {x, y, z, w}, so E1=FAIL.\n   - For E2, the left side contains {x} and the right side contains {x, y}, so E2=FAIL.\n   - Both are FAIL, which means no separation is found through these tests.\n\nGiven that none of the tests resulted in a separation (E1=HOLD and E2=FAIL), we conclude that Equation 1 does not imply Equation 2 over all magmas cannot be disproven by these tests, leading to the default answer.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2,meaning all tests either both held or both failed, never reaching the condition for separation.\nPROOF: All 4 tests were checked without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2184,
+        "completion_tokens": 648
+      }
+    },
+    {
+      "id": "hard3_0201",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * x)) * (y * z)",
+      "equation2": "x = (((x * y) * z) * y) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 16.56,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we will perform the required tests step by step.\n\nGiven equations:\n- E1: x = (x * (y * x)) * (y * z)\n- E2: x = (((x * y) * z) * y) * x\n\nSplitting the equations at =:\n- E1_L = \"x\"\n- E1_R = \"(x * (y * x)) * (y * z)\"\n- E2_L = \"x\"\n- E2_R = \"(((x * y) * z) * y) * x\"\n\nTEST 1 — LP: First letter on the left side vs first letter on the right side.\n- E1 first(L) = x, first(R) = x → HOLD\n- E2 first(L) = x, first(R) = x → HOLD\nSince both are HOLD, we continue to the next test.\n\nTEST 2 — RP: Last letter on the left side vs last letter on the right side.\n- E1 last(L) = x, last(R) = z → FAIL\n- E2 last(L) = x, last(R) = x → HOLD\nHere, E1 = FAIL and E2 = HOLD, so we continue.\n\nTEST 3 — C0: Does the left side contain *? Does the right side contain *?\n- E1 L has no *, R has * → FAIL\n- E2 L has no *, R has * → FAIL\nBoth fail, so we continue.\n\nTEST 4 — VARS: Set of distinct letters on the left vs set on the right.\n- E1 L = {x}, R = {x, y, z} → FAIL\n- E2 L = {x}, R = {x, y, z} → FAIL\nBoth fail, but since no test resulted in E1 = HOLD and E2 = FAIL, we have no separation.\n\nSince all tests have been completed without finding a separation (E1 = HOLD and E2 = FAIL), we conclude that Equation 1 implies Equation 2 over all magmas is TRUE.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas.\nPROOF: All 4 tests checked; none had E1 = HOLD with E2 = FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2169,
+        "completion_tokens": 500
+      }
+    },
+    {
+      "id": "hard3_0232",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * z) * (y * z)",
+      "equation2": "x * y = x * ((z * z) * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.69,
+      "raw_response": "To determine if Equation 1 (E1: x = ((y * x) * z) * (y * z)) implies Equation 2 (E2: x * y = x * ((z * z) * y)) over all magmas, we will go through the tests as specified.\n\nFirst, let's identify the left and right sides of both equations:\n- E1_L = \"x\"\n- E1_R = \"((y * x) * z) * (y * z)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * ((z * z) * y)\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP: \nFor E1, the first letter on the left side is \"x\" and on the right side is \"y\". \nFor E2, the first letter on the left side is \"x\" and on the right side is \"x\". \nSo, E1=FAIL and E2=HOLD.\n\nTEST 2 — RP: \nFor E1, the last letter on the left side is \"x\" and on the right side is \"z\". \nFor E2, the last letter on the left side is \"y\" and on the right side is \"y\". \nSo, E1=FAIL and E2=HOLD.\n\nTEST 3 — C0: \nFor E1, the left side does not contain \"*\" but the right side does. \nFor E2, both the left and right sides contain \"*\". \nSo, E1=FAIL and E2=HOLD.\n\nTEST 4 — VARS: \nFor E1, the set of distinct letters on the left is {x} and on the right is {x, y, z}. \nFor E2, the set of distinct letters on the left is {x, y} and on the right is {x, y, z}. \nSince one side of E1 is a bare variable and the other contains \"*\", and the variable sets differ, E1=FAIL. For E2, both sides have \"*\" and the sets of variables are different, so E2=FAIL.\n\nThroughout these tests, we have not found a case where E1=HOLD and E2=FAIL, which is the condition for separation according to the decision table. Therefore, the equations do not separate based on the provided tests, and the implication goes through by default.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, meaning E1 implies E2 by default.\nPROOF: All 4 tests were conducted without finding separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2189,
+        "completion_tokens": 549
+      }
+    },
+    {
+      "id": "hard3_0049",
+      "repeat_id": 1,
+      "equation1": "x = ((y * z) * w) * x",
+      "equation2": "x = y * (z * (x * (w * x)))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 18.45,
+      "raw_response": "Let's analyze the given equations according to the provided rules.\n\nGiven equations are E1: x = ((y * z) * w) * x and E2: x = y * (z * (x * (w * x))).\n\nFirst, split each equation at the '=' sign:\n- E1_L = \"x\", E1_R = \"((y * z) * w) * x\"\n- E2_L = \"x\", E2_R = \"y * (z * (x * (w * x)))\"\n\nNow, apply the tests:\n\nTEST 1 — LP: \n- E1 first letter on the left side is 'x', and the first letter on the right side is 'y'. Since they are different, E1=FAIL.\n- E2 first letter on the left side is 'x', and the first letter on the right side is 'y'. Since they are different, E2=FAIL.\nAccording to the decision table, E1=FAIL and E2=FAIL means no separation.\n\nTEST 2 — RP: \n- E1 last letter on the left side is 'x', and the last letter on the right side is 'x'. Since they are the same, E1=HOLD.\n- E2 last letter on the left side is 'x', and the last letter on the right side is 'x'. Since they are the same, E2=HOLD.\nAccording to the decision table, E1=HOLD and E2=HOLD means no separation.\n\nTEST 3 — C0: \n- E1 left side does not contain '*', while the right side does. E1=FAIL.\n- E2 left side does not contain '*', while the right side does. E2=FAIL.\nAccording to the decision table, E1=FAIL and E2=FAIL means no separation.\n\nTEST 4 — VARS: \n- E1 left side contains the variable 'x', and the right side contains the variables 'x', 'y', 'z', 'w'. Since the sets are different and the left side is a bare variable, E1=FAIL.\n- E2 left side contains the variable 'x', and the right side contains the variables 'x', 'y', 'z', 'w'. Since the sets are different and the left side is a bare variable, E2=FAIL.\nAccording to the decision table, E1=FAIL and E2=FAIL means no separation.\n\nAfter all tests, no separation was found, which means the default answer applies.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1=HOLD and E2=FAIL.\nPROOF: All 4 tests were checked, and none of them found a separation between E1 and E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2161,
+        "completion_tokens": 587
+      }
+    },
+    {
+      "id": "hard3_0371",
+      "repeat_id": 1,
+      "equation1": "x * x = (y * z) * (z * w)",
+      "equation2": "x * (y * z) = y * (x * z)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 18.69,
+      "raw_response": "To determine whether Equation 1 (E1: x * x = (y * z) * (z * w)) implies Equation 2 (E2: x * (y * z) = y * (x * z)) over all magmas, let's analyze the given equations step by step according to the provided instructions.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"(y * z) * (z * w)\"\n- E2_L = \"x * (y * z)\"\n- E2_R = \"y * (x * z)\"\n\nNow, let's perform the four tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first letter on the left is \"x\" and on the right is \"y\" → FAIL\n   - E2 first letter on the left is \"x\" and on the right is \"y\" → FAIL\n   - Since both fail, there's no separation.\n\n2. **RP (Last Letter Test)**:\n   - E1 last letter on the left is \"x\" and on the right is \"w\" → FAIL\n   - E2 last letter on the left is \"z\" and on the right is \"z\" → HOLD\n   - Here, E1 fails and E2 holds, so there's no separation.\n\n3. **C0 (Contains * Test)**:\n   - E1 left side contains \"*\" and the right side also contains \"*\" → HOLD\n   - E2 left side contains \"*\" and the right side contains \"*\" → HOLD\n   - Since both hold, there's no separation.\n\n4. **VARS (Variables Test)**:\n   - E1 left side has variables {x} and the right side has variables {y, z, w} → FAIL\n   - E2 left side has variables {x, y, z} and the right side has variables {x, y, z} → HOLD\n   - Here, E1 fails and E2 holds, indicating no separation.\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, there's no clear separation found through these tests. Therefore, based on the given analysis framework, the implication of E1 on E2 over all magmas cannot be disproven by these tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, meaning none of the conditions provided a scenario where E1 holds and E2 fails, which is necessary to claim that E1 does not imply E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 562
+      }
+    },
+    {
+      "id": "hard3_0378",
+      "repeat_id": 1,
+      "equation1": "x * y = (z * y) * (z * y)",
+      "equation2": "x * y = (z * w) * (w * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 17.32,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations according to the provided rules and tests.\n\nFirst, let's identify the equations:\n- Equation 1 (E1): x * y = (z * y) * (z * y)\n- Equation 2 (E2): x * y = (z * w) * (w * y)\n\nSplitting each equation at the \"=\" sign:\n- E1_L = \"x * y\"\n- E1_R = \"(z * y) * (z * y)\"\n- E2_L = \"x * y\"\n- E2_R = \"(z * w) * (w * y)\"\n\nNow, let's perform the tests:\n1. **LP (First Letter)**: \n   - E1 first letter on the left is \"x\" and on the right is \"z\". \n   - E2 first letter on the left is \"x\" and on the right is \"z\".\n   - Since the first letters are different in both equations, we have E1=FAIL and E2=FAIL.\n\n2. **RP (Last Letter)**:\n   - E1 last letter on the left is \"y\" and on the right is \"y\".\n   - E2 last letter on the left is \"y\" and on the right is \"y\".\n   - Both equations have the same last letters on both sides, so E1=HOLD and E2=HOLD.\n\n3. **C0 (Contains *)**:\n   - E1 left side contains \"*\", and the right side also contains \"*\".\n   - E2 left side contains \"*\", and the right side also contains \"*\".\n   - Since both sides of both equations contain \"*\", we have E1=HOLD and E2=HOLD.\n\n4. **VARS (Set of Variables)**:\n   - E1 left side has variables {x, y}, and the right side has variables {z, y}.\n   - E2 left side has variables {x, y}, and the right side has variables {z, w, y}.\n   - The sets of variables are different for both equations, so E1=FAIL and E2=FAIL.\n\nAfter analyzing all tests, there is no separation found because we never encountered a situation where E1=HOLD and E2=FAIL. Therefore, the implication from Equation 1 to Equation 2 over all magmas cannot be disproven by these tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as there was no instance where E1 held and E2 failed.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 570
+      }
+    },
+    {
+      "id": "hard3_0189",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * ((x * x) * x)",
+      "equation2": "x = ((y * z) * z) * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 50.99,
+      "raw_response": "To determine whether Equation 1 (E1: x = (y * x) * ((x * x) * x)) implies Equation 2 (E2: x = ((y * z) * z) * (z * x)) over all magmas, we will follow the provided steps and tests.\n\nFirst, let's split the equations at the '=' sign:\n- E1_L = \"x\"\n- E1_R = \"(y * x) * ((x * x) * x)\"\n- E2_L = \"x\"\n- E2_R = \"((y * z) * z) * (z * x)\"\n\nNow, let's apply the tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is 'x', and on the right is 'y' (scanning past opening parentheses) → FAIL\n   - E2: First letter on the left is 'x', and on the right is 'y' → FAIL\n   - Since both fail, there's no separation here (E1=FAIL, E2=FAIL).\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is 'x', and on the right is 'x' (skipping trailing parentheses) → HOLD\n   - E2: Last letter on the left is 'x', and on the right is 'x' → HOLD\n   - Both hold, so there's no separation (E1=HOLD, E2=HOLD).\n\n3. **C0 (Containment of *)**:\n   - E1_L does not contain '*', E1_R contains '*' → FAIL\n   - E2_L does not contain '*', E2_R contains '*' → FAIL\n   - Both fail, indicating no separation (E1=FAIL, E2=FAIL).\n\n4. **VARS (Set of Variables)**:\n   - E1_L = {x}, E1_R = {x, y} → FAIL\n   - E2_L = {x}, E2_R = {x, y, z} → FAIL\n   - Both fail since the sets of variables are not the same on both sides of each equation, indicating no separation (E1=FAIL, E2=FAIL).\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude there's no separation found through these tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating E1 implies E2 over all magmas based on the given analysis.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2193,
+        "completion_tokens": 562
+      }
+    },
+    {
+      "id": "hard3_0215",
+      "repeat_id": 1,
+      "equation1": "x = ((x * x) * y) * (z * x)",
+      "equation2": "x = x * ((y * (z * z)) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 25.41,
+      "raw_response": "To determine whether Equation 1 (x = ((x * x) * y) * (z * x)) implies Equation 2 (x = x * ((y * (z * z)) * x)) over all magmas, we need to analyze each equation according to the provided rules.\n\nFirst, let's split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((x * x) * y) * (z * x)\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * (z * z)) * x)\"\n\nNow, let's apply the tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"x\" (since we scan past all opening parentheses to find the first letter, which is \"x\" in \"(x * x)\").\n   - E2: First letter on the left is \"x\", and on the right is \"x\".\n   - Since both equations have the same first letter on both sides, E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"x\" (scanning right-to-left past all closing parentheses).\n   - E2: Last letter on the left is \"x\", and on the right is \"x\".\n   - Both equations have the same last letter on both sides, so E1=HOLD and E2=HOLD.\n\n3. **C0 (Contains *)**:\n   - E1: The left side does not contain \"*\", but the right side does.\n   - E2: The left side does not contain \"*\", but the right side does.\n   - Since neither side of both equations contains \"*\" on the left but both have \"*\" on the right, this is not a clear HOLD or FAIL without considering the context of variables, but given the structure, this leans towards both being in a similar state regarding the presence of \"*\".\n\n4. **VARS (Variables)**:\n   - E1: The left side contains only \"x\", and the right side contains \"x\", \"y\", and \"z\".\n   - E2: The left side contains only \"x\", and the right side contains \"x\", \"y\", and \"z\".\n   - Both equations have \"x\" on the left and a set of variables including \"x\" on the right, with additional variables. This indicates a difference in the set of variables, but given the structure, we're checking for implication rather than equivalence.\n\nGiven these tests, we don't find a clear separation based on the first letter, last letter, presence of \"*\", or variables that would definitively classify one as failing while the other holds in a manner that indicates separation for implication. The critical aspect to consider is whether the conditions under which E1 holds would also satisfy E2, given the specific structures and operations involved.\n\nSince we are tasked with determining implication and have not found a test that clearly separates the two equations in a way that indicates E1 could be true while E2 is false under the same conditions for all magmas, we must consider the nature of magmas and the operations defined. The lack of specific separation does not immediately prove implication but suggests that under the constraints provided, we cannot easily refute it with the given tests.\n\nHowever, without deeper algebraic manipulation or a counterexample, and given the constraints of the task focusing on specific tests rather than algebraic proof or countermodel construction, we lean on the principle that the default is TRUE unless a clear separation is found. The critical insight or counterexample that would definitively classify the implication as FALSE under the magma operation's general properties is not directly provided by these tests.\n\nVERDICT: TRUE\nREASONING: No clear separation was found through the specified tests that would indicate E1 implies E2 is false.\nPROOF: The analysis above, focusing on the lack of separation found through the tests provided.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2167,
+        "completion_tokens": 843
+      }
+    },
+    {
+      "id": "hard3_0134",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * (z * x)) * z)",
+      "equation2": "x * y = x * (z * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.25,
+      "raw_response": "To determine whether Equation 1 (E1: x = x * ((y * (z * x)) * z)) implies Equation 2 (E2: x * y = x * (z * y)) over all magmas, we need to follow the steps provided and analyze the equations according to the given rules and tests.\n\nFirst, let's split the equations at the '=' sign:\n- E1_L = \"x\"\n- E1_R = \"x * ((y * (z * x)) * z)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (z * y)\"\n\nNow, we'll apply the tests:\n\n1. **LP (First Letter)**: \n   - E1 first letter on the left is 'x', and on the right is 'x'. \n   - E2 first letter on the left is 'x', and on the right is 'x'.\n   - Since both equations have the same first letter on both sides, E1=HOLD and E2=HOLD. No separation.\n\n2. **RP (Last Letter)**:\n   - E1 last letter on the left is 'x', and on the right is 'z' (after skipping closing parentheses).\n   - E2 last letter on the left is 'y', and on the right is 'y'.\n   - E1=FAIL because 'x' ≠ 'z', and E2=HOLD because 'y' = 'y'. \n   - E1=FAIL and E2=HOLD, which means no separation.\n\n3. **C0 (Contains *)**:\n   - E1 left side does not contain '*', but the right side does.\n   - E2 both sides contain '*'.\n   - E1=FAIL because the left side does not contain '*', and E2=HOLD because both sides contain '*'.\n   - E1=FAIL and E2=HOLD, which means no separation.\n\n4. **VARS (Set of Variables)**:\n   - E1 left side has '{x}', and the right side has '{x, y, z}'.\n   - E2 left side has '{x, y}', and the right side has '{x, y, z}'.\n   - E1=FAIL because the sets are different, and E2=FAIL for the same reason.\n   - E1=FAIL and E2=FAIL, which means no separation.\n\nAfter applying all tests, there's no case where E1=HOLD and E2=FAIL, which would indicate separation and thus a FALSE verdict. Since no separation was found, the verdict is TRUE.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, as there was no instance where E1 held and E2 failed.\nPROOF: All 4 tests were conducted without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2157,
+        "completion_tokens": 596
+      }
+    },
+    {
+      "id": "hard3_0346",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (z * w))",
+      "equation2": "x * (y * z) = y * (z * w)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 16.75,
+      "raw_response": "To determine whether Equation 1 (x * x = y * (x * (z * w))) implies Equation 2 (x * (y * z) = y * (z * w)) over all magmas, we need to apply the given tests.\n\nFirst, let's split the equations at the \"=\" sign:\nE1_L = \"x * x\"  \nE1_R = \"y * (x * (z * w))\"  \nE2_L = \"x * (y * z)\"  \nE2_R = \"y * (z * w)\"\n\nTEST 1 — LP: \nFor E1, the first letter on the left side is \"x\" and on the right side is \"y\". Since they are different, E1 = FAIL.  \nFor E2, the first letter on the left side is \"x\" and on the right side is \"y\". Since they are different, E2 = FAIL.  \nSo, E1 = FAIL and E2 = FAIL, which means no separation.\n\nTEST 2 — RP: \nFor E1, the last letter on the left side is \"x\" and on the right side is \"w\". Since they are different, E1 = FAIL.  \nFor E2, the last letter on the left side is \"z\" and on the right side is \"w\". Since they are the same, E2 = HOLD.  \nSo, E1 = FAIL and E2 = HOLD, which means no separation.\n\nTEST 3 — C0: \nFor E1, both the left and right sides contain \"*\". So, E1 = HOLD.  \nFor E2, both the left and right sides also contain \"*\". So, E2 = HOLD.  \nSo, E1 = HOLD and E2 = HOLD, which means no separation.\n\nTEST 4 — VARS: \nFor E1, the set of distinct letters on the left side is {x} and on the right side is {x, y, z, w}. Since they are different and the left side is not a bare variable used in the right, E1 = FAIL.  \nFor E2, the set of distinct letters on the left side is {x, y, z} and on the right side is {y, z, w}. Since they are different, E2 = FAIL.  \nSo, E1 = FAIL and E2 = FAIL, which means no separation.\n\nSince none of the tests resulted in E1 = HOLD and E2 = FAIL, we conclude that E1 does not imply a separation from E2 over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2163,
+        "completion_tokens": 583
+      }
+    },
+    {
+      "id": "hard3_0119",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * z) * (x * x))",
+      "equation2": "x = x * (((x * y) * y) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 7.48,
+      "raw_response": "Given the equations E1: x = y * ((z * z) * (x * x)) and E2: x = x * (((x * y) * y) * x), let's apply the tests to determine if E1 implies E2 over all magmas.\n\nFirst, we identify the left and right sides of each equation:\n- E1_L = \"x\"\n- E1_R = \"y * ((z * z) * (x * x))\"\n- E2_L = \"x\"\n- E2_R = \"x * (((x * y) * y) * x)\"\n\nNow, we proceed with the tests:\n\nTEST 1 — LP: \n- E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n- E2 first(L) = \"x\", first(R) = \"x\" → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nTEST 2 — RP: \n- E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n- E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nTEST 3 — C0: \n- E1 L has no *, R has * → FAIL\n- E2 L has no *, R has * → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nTEST 4 — VARS: \n- E1 L={x}, R={x,y,z} → FAIL\n- E2 L={x}, R={x,y} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there is no separation found between E1 and E2 based on the given tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas based on the provided analysis.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2189,
+        "completion_tokens": 457
+      }
+    },
+    {
+      "id": "hard3_0026",
+      "repeat_id": 1,
+      "equation1": "x = y * ((y * y) * x)",
+      "equation2": "x = ((y * y) * z) * (y * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 5.3,
+      "raw_response": "To determine whether Equation 1 (x = y * ((y * y) * x)) implies Equation 2 (x = ((y * y) * z) * (y * x)) over all magmas, let's analyze the given equations step by step according to the provided rules and tests.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((y * y) * x)\"\n- E2_L = \"x\"\n- E2_R = \"((y * y) * z) * (y * x)\"\n\nNow, we perform the tests as specified:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\" and on the right is \"y\" (after scanning past the opening parenthesis) → FAIL\n   - E2: First letter on the left is \"x\" and on the right is \"y\" (after scanning past the opening parentheses) → FAIL\n   - Result: E1=FAIL, E2=FAIL → No separation, continue to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\" and on the right is \"x\" (after skipping trailing parentheses) → HOLD\n   - E2: Last letter on the left is \"x\" and on the right is \"x\" (after skipping trailing parentheses) → HOLD\n   - Result: E1=HOLD, E2=HOLD → No separation, continue to the next test.\n\n3. **C0 (Contains * Test)**:\n   - E1: Left side has no \"*\", right side has \"*\" → FAIL\n   - E2: Left side has no \"*\", right side has \"*\" → FAIL\n   - Result: E1=FAIL, E2=FAIL → No separation, continue to the next test.\n\n4. **VARS (Variables Test)**:\n   - E1: Left side has {x}, right side has {x, y} → FAIL\n   - E2: Left side has {x}, right side has {x, y, z} → FAIL\n   - Result: E1=FAIL, E2=FAIL → No separation.\n\nAfter performing all the tests without finding any separation where E1=HOLD and E2=FAIL, we conclude that Equation 1 does not imply Equation 2 in a way that can be distinguished by these tests. However, the provided framework and tests do not cover all possible implications or logical deductions that might be made from these equations in the context of magma theory. The decision is based strictly on the outcomes of the tests as defined.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2161,
+        "completion_tokens": 607
+      }
+    },
+    {
+      "id": "hard3_0002",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * y)",
+      "equation2": "x = (x * ((x * x) * x)) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.69,
+      "raw_response": "Given Equation 1 (E1): x = x * (x * y) and Equation 2 (E2): x = (x * ((x * x) * x)) * x, let's analyze the implications step by step according to the provided guidelines.\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"x * (x * y)\"\n- E2_L = \"x\"\n- E2_R = \"(x * ((x * x) * x)) * x\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first(L) = \"x\", first(R) = \"x\" → HOLD\n- E2 first(L) = \"x\", first(R) = \"x\" → HOLD\nSince both are HOLD, we continue to the next test.\n\nTEST 2 — RP (Last Letter):\n- E1 last(L) = \"x\", last(R) = \"y\" → FAIL\n- E2 last(L) = \"x\", last(R) = \"x\" → HOLD\nHere, E1 = FAIL and E2 = HOLD, so we continue.\n\nTEST 3 — C0 (Presence of \"*\"):\n- E1_L has no *, E1_R has * → FAIL\n- E2_L has no *, E2_R has * → FAIL\nBoth equations fail this test, so we continue.\n\nTEST 4 — VARS (Set of Distinct Letters):\n- E1_L = {x}, E1_R = {x, y} → FAIL\n- E2_L = {x}, E2_R = {x} → HOLD\nHere, E1 = FAIL and E2 = HOLD, but since we're looking for a scenario where E1 = HOLD and E2 = FAIL to prove separation, and this hasn't occurred, we continue.\n\nAfter performing all tests without finding a separation where E1 = HOLD and E2 = FAIL, we conclude that E1 does not imply E2 over all magmas cannot be disproven by these tests.\n\nVERDICT: TRUE\nREASONING: No test resulted in E1 = HOLD and E2 = FAIL, indicating no separation was found.\nPROOF: All 4 tests were conducted without finding the specific separation condition.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2179,
+        "completion_tokens": 485
+      }
+    },
+    {
+      "id": "hard3_0142",
+      "repeat_id": 1,
+      "equation1": "x = y * ((x * (z * x)) * x)",
+      "equation2": "x = (y * y) * (x * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.69,
+      "raw_response": "Given Equation 1 (x = y * ((x * (z * x)) * x)) and Equation 2 (x = (y * y) * (x * x)), we need to determine if E1 implies E2 over all magmas. To do this, we'll go through the tests as outlined.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((x * (z * x)) * x)\"\n- E2_L = \"x\"\n- E2_R = \"(y * y) * (x * x)\"\n\nNow, let's perform the tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - Since both fail, there's no separation here.\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - Both hold, so there's no separation.\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - Both fail, so there's no separation.\n\n4. **VARS (Variables)**:\n   - E1 L = {x}, R = {x, y, z} → FAIL\n   - E2 L = {x}, R = {x, y} → FAIL\n   - Both fail, so there's no separation.\n\nAfter going through all the tests, there's no separation found between E1 and E2, meaning E1 implies E2 over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2161,
+        "completion_tokens": 457
+      }
+    },
+    {
+      "id": "hard3_0138",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * (z * w)) * u)",
+      "equation2": "(x * y) * x = (x * z) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.97,
+      "raw_response": "To determine whether Equation 1 (x = x * ((y * (z * w)) * u)) implies Equation 2 ((x * y) * x = (x * z) * x) over all magmas, let's analyze the equations step by step according to the given instructions.\n\nFirst, we identify the left and right sides of each equation:\n- E1_L = x\n- E1_R = x * ((y * (z * w)) * u)\n- E2_L = (x * y) * x\n- E2_R = (x * z) * x\n\nNow, let's perform the tests as instructed:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is 'x', and the first letter on the right is 'x'. So, E1=HOLD.\n   - E2: First letter on the left is 'x' (since we look past the opening parenthesis), and the first letter on the right is 'x'. So, E2=HOLD.\n   - Since both are HOLD, we continue to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is 'x', and the last letter on the right is 'u'. So, E1=FAIL.\n   - E2: Last letter on the left is 'x', and the last letter on the right is 'x'. So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue to the next test.\n\n3. **C0 (Contains * Test)**:\n   - E1: The left side does not contain '*', but the right side does. So, E1=FAIL.\n   - E2: Both the left and right sides contain '*'. So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue to the next test.\n\n4. **VARS (Variables Test)**:\n   - E1: The left side contains only 'x', while the right side contains 'x', 'y', 'z', 'w', and 'u'. So, E1=FAIL.\n   - E2: Both sides contain 'x', 'y', and 'z'. So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue.\n\nGiven that none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there is no separation found through these tests, meaning Equation 1 does not necessarily imply Equation 2 in a way that can be detected by these specific tests. However, the critical insight comes from understanding that if none of the tests provide a clear separation (E1=HOLD and E2=FAIL), the default stance is that Equation 1 implies Equation 2 cannot be disproven by these methods, suggesting a deeper algebraic or logical analysis might be required for a definitive answer. But following the strict instructions given for the format of the response and the analysis provided:\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2166,
+        "completion_tokens": 688
+      }
+    },
+    {
+      "id": "hard3_0152",
+      "repeat_id": 1,
+      "equation1": "x = x * (((y * y) * y) * y)",
+      "equation2": "x = x * ((x * (x * x)) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 20.23,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations through a series of tests as specified.\n\nGiven Equation 1 (E1): x = x * (((y * y) * y) * y)\nGiven Equation 2 (E2): x = x * ((x * (x * x)) * x)\n\nFirst, let's split the equations at the \"=\" sign to identify the left and right sides of each equation.\n\nFor E1:\n- E1_L = x\n- E1_R = x * (((y * y) * y) * y)\n\nFor E2:\n- E2_L = x\n- E2_R = x * ((x * (x * x)) * x)\n\nNow, let's perform the four tests as instructed.\n\nTEST 1 — LP (First Letter Comparison):\n- E1 first letter on the left side is \"x\", and on the right side is \"x\".\n- E2 first letter on the left side is \"x\", and on the right side is \"x\".\nBoth E1 and E2 have the same first letter on both sides, which is \"x\". \nSo, E1=HOLD and E2=HOLD.\n\nTEST 2 — RP (Last Letter Comparison):\n- E1 last letter on the left side is \"x\", and on the right side is \"y\".\n- E2 last letter on the left side is \"x\", and on the right side is \"x\".\nE1 has different last letters (\"x\" and \"y\"), and E2 has the same last letter (\"x\").\nSo, E1=FAIL and E2=HOLD.\n\nTEST 3 — C0 (Presence of \"*\" Comparison):\n- E1 left side has no \"*\", and the right side has \"*\".\n- E2 left side has no \"*\", and the right side has \"*\".\nBoth equations have \"*\" on the right side but not on the left, involving the same variable \"x\".\nSo, E1=FAIL and E2=FAIL.\n\nTEST 4 — VARS (Distinct Letters Comparison):\n- E1 left side has \"x\", and the right side has \"x\" and \"y\".\n- E2 left side has \"x\", and the right side has \"x\".\nE1 has different sets of variables (\"x\" vs \"x, y\"), and E2 has the same variable \"x\" on both sides.\nSo, E1=FAIL and E2=HOLD.\n\nFrom the tests, we see that none of them resulted in E1=HOLD and E2=FAIL, which is the condition for separation and thus for the verdict to be FALSE. \n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, as none resulted in E1=HOLD and E2=FAIL.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 615
+      }
+    },
+    {
+      "id": "hard3_0174",
+      "repeat_id": 1,
+      "equation1": "x = (y * y) * (z * (y * x))",
+      "equation2": "x = (y * ((x * z) * z)) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 18.43,
+      "raw_response": "To determine whether Equation 1 (E1) implies Equation 2 (E2) over all magmas, we need to analyze the equations according to the given instructions and tests.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * y) * (z * (y * x))\"\n- E2_L = \"x\"\n- E2_R = \"(y * ((x * z) * z)) * x\"\n\nNow, let's perform the tests as instructed:\n\nTEST 1 — LP: The first letter on the left side of E1 is \"x\", and the first letter on the right side is \"y\". For E2, the first letter on both the left and right sides is \"x\" for the left side and \"y\" for the right side, since we scan past all opening parentheses.\n- E1: x ≠ y → FAIL\n- E2: x ≠ y → FAIL\nSince both are FAIL, there's no separation.\n\nTEST 2 — RP: The last letter on the left side of E1 is \"x\", and the last letter on the right side is \"x\". For E2, the last letter on the left side is \"x\", and skipping all closing parentheses, the last letter on the right side is \"x\".\n- E1: x = x → HOLD\n- E2: x = x → HOLD\nSince both are HOLD, there's no separation.\n\nTEST 3 — C0: Checking if the left and right sides of each equation contain \"*\".\n- E1_L: \"x\" has no *, E1_R has * → FAIL\n- E2_L: \"x\" has no *, E2_R has * → FAIL\nSince both are FAIL, there's no separation.\n\nTEST 4 — VARS: The set of distinct letters on the left side of E1 is {x}, and on the right side is {x, y, z}. For E2, the set of distinct letters on the left side is {x}, and on the right side is {x, y, z}.\n- E1: {x} ≠ {x, y, z} → FAIL\n- E2: {x} ≠ {x, y, z} → FAIL\nSince both are FAIL, there's no separation.\n\nGiven that no test resulted in E1=HOLD and E2=FAIL, we conclude that there is no separation, meaning E1 implies E2 over all magmas according to the given rules and tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas based on the provided analysis.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2169,
+        "completion_tokens": 594
+      }
+    },
+    {
+      "id": "hard3_0235",
+      "repeat_id": 1,
+      "equation1": "x = ((y * y) * x) * (x * z)",
+      "equation2": "x = x * ((y * (z * w)) * u)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 5.72,
+      "raw_response": "E1: x = ((y * y) * x) * (x * z)     E2: x = x * ((y * (z * w)) * u)\nE1_L=\"x\"  E1_R=\"((y * y) * x) * (x * z)\"  |  E2_L=\"x\"  E2_R=\"x * ((y * (z * w)) * u)\"\n\nLP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD\n     → E1=FAIL E2=HOLD → no separation\nRP:  E1 last(L)=x last(R)=z → FAIL | E2 last(L)=x last(R)=u → FAIL\n     → E1=FAIL E2=FAIL → no separation\nC0:  E1 L=\"x\" no * → FAIL | E2 L=\"x\" no * → FAIL\n     → E1=FAIL E2=FAIL → no separation\nVARS: E1 L={x} R={x,y,z} → FAIL | E2 L={x} R={x,y,z,w,u} → FAIL\n     → E1=FAIL E2=FAIL → no separation\nNo separation found.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2191,
+        "completion_tokens": 317
+      }
+    },
+    {
+      "id": "hard3_0361",
+      "repeat_id": 1,
+      "equation1": "x * x = y * ((y * z) * w)",
+      "equation2": "x * x = y * ((x * x) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 23.24,
+      "raw_response": "To determine whether Equation 1 (E1) implies Equation 2 (E2) over all magmas, we need to analyze the given equations step by step according to the provided instructions.\n\nFirst, let's write out the four pieces by splitting the equations at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"y * ((y * z) * w)\"\n- E2_L = \"x * x\"\n- E2_R = \"y * ((x * x) * x)\"\n\nNow, we will perform the four tests: LP (first letter on the left side vs. first letter on the right side), RP (last letter on the left side vs. last letter on the right side), C0 (presence of \"*\" on both sides), and VARS (set of distinct letters on both sides).\n\nTEST 1 — LP:\n- E1: first letter on the left is \"x\" and on the right is \"y\". Since they are different, E1=FAIL.\n- E2: first letter on the left is \"x\" and on the right is \"y\". Since they are different, E2=FAIL.\nAccording to the decision table, E1=FAIL and E2=FAIL means no separation.\n\nTEST 2 — RP:\n- E1: last letter on the left is \"x\" and on the right is \"w\". Since they are different, E1=FAIL.\n- E2: last letter on the left is \"x\" and on the right is \"x\". Since they are the same, E2=HOLD.\nAccording to the decision table, E1=FAIL and E2=HOLD means no separation.\n\nTEST 3 — C0:\n- E1: both the left and right sides contain \"*\". Therefore, E1=HOLD.\n- E2: both the left and right sides contain \"*\". Therefore, E2=HOLD.\nAccording to the decision table, E1=HOLD and E2=HOLD means no separation.\n\nTEST 4 — VARS:\n- E1: the left side contains \"x\" and the right side contains \"y\", \"z\", and \"w\". Since the sets of variables are different and both sides have \"*\", E1=FAIL.\n- E2: the left side contains \"x\" and the right side contains \"x\" and \"y\". Although \"y\" is introduced on the right side, since the left side is not a bare variable \"x\" but \"x * x\", and the right side does use \"x\", the condition for HOLD is not fully met as it might initially seem because we are comparing the sets of variables, not the expressions directly. However, considering the test specifics, since both sides have \"*\" and the variable \"x\" is used on both, but the right introduces \"y\", the interpretation of this step requires careful consideration of the rules provided. The introduced variable \"y\" on the right side actually makes E2=FAIL because the variable sets are not the same when considering all variables.\nAccording to the decision table, E1=FAIL and E2=FAIL means no separation.\n\nAfter performing all four tests without finding any separation (a situation where E1=HOLD and E2=FAIL), we conclude that E1 does not imply separation from E2 based on the provided tests and rules.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, indicating that E1 implies E2 over all magmas according to the given analysis framework.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL, which would have indicated separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2185,
+        "completion_tokens": 765
+      }
+    },
+    {
+      "id": "hard3_0135",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * (z * x)) * z)",
+      "equation2": "x = (x * y) * (y * (y * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 6.55,
+      "raw_response": "To determine whether Equation 1 (E1) implies Equation 2 (E2) over all magmas, we need to perform the specified tests: LP (first letter on the left side vs first letter on the right side), RP (last letter on the left side vs last letter on the right side), C0 (presence of * on both sides), and VARS (set of distinct letters on both sides).\n\nGiven E1: x = x * ((y * (z * x)) * z) and E2: x = (x * y) * (y * (y * x)), let's split each equation at the \"=\" sign.\n\nFor E1: E1_L = \"x\", E1_R = \"x * ((y * (z * x)) * z)\"\nFor E2: E2_L = \"x\", E2_R = \"(x * y) * (y * (y * x))\"\n\nLP: \nE1 first(L) = x, first(R) = x, so HOLD.\nE2 first(L) = x, first(R) = x, so HOLD.\nSince both are HOLD, no separation is found.\n\nRP: \nE1 last(L) = x, last(R) = z (after skipping closing parentheses), so FAIL.\nE2 last(L) = x, last(R) = x, so HOLD.\nHere, E1 = FAIL and E2 = HOLD, indicating no separation.\n\nC0: \nE1 L has no *, R has *, so FAIL.\nE2 L has no *, R has *, so FAIL.\nBoth fail, so there is no separation.\n\nVARS: \nE1 L = {x}, R = {x, y, z}, so FAIL.\nE2 L = {x}, R = {x, y}, so FAIL.\nBoth fail, indicating no separation.\n\nAfter performing all tests, no separation was found between E1 and E2, meaning E1 implies E2 over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2191,
+        "completion_tokens": 464
+      }
+    },
+    {
+      "id": "hard3_0382",
+      "repeat_id": 1,
+      "equation1": "x * y = (x * (z * w)) * x",
+      "equation2": "x * (y * y) = x * (y * z)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 19.54,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we'll analyze the given equations step by step according to the provided instructions.\n\nGiven Equation 1 (E1): x * y = (x * (z * w)) * x  \nGiven Equation 2 (E2): x * (y * y) = x * (y * z)\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x * y\"\n- E1_R = \"(x * (z * w)) * x\"\n- E2_L = \"x * (y * y)\"\n- E2_R = \"x * (y * z)\"\n\nNow, we'll perform the 4 tests as instructed:\n\n1. **LP (First Letter Test)**: \n   - E1 first letter on the left side is \"x\", and on the right side is \"x\". \n   - E2 first letter on the left side is \"x\", and on the right side is \"x\".\n   - Since both equations have the same first letter on both sides, we have E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter Test)**: \n   - For E1, the last letter on the left is \"y\", and on the right is \"x\".\n   - For E2, the last letter on the left is \"y\", and on the right is \"z\".\n   - E1=FAIL because the last letters differ, and E2=FAIL for the same reason.\n\n3. **C0 (Contains * Test)**:\n   - E1 left side contains \"*\", and the right side also contains \"*\".\n   - E2 left side contains \"*\", and the right side contains \"*\".\n   - Since both sides of both equations contain \"*\", we have E1=HOLD and E2=HOLD.\n\n4. **VARS (Variables Test)**:\n   - E1 left side has variables {x, y}, and the right side has variables {x, z, w}.\n   - E2 left side has variables {x, y}, and the right side has variables {x, y, z}.\n   - E1=FAIL because the sets of variables differ, and E2=FAIL for the same reason.\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there's no separation found through these tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2164,
+        "completion_tokens": 557
+      }
+    },
+    {
+      "id": "hard3_0042",
+      "repeat_id": 1,
+      "equation1": "x = ((x * x) * y) * y",
+      "equation2": "x = x * ((y * y) * (z * w))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 16.68,
+      "raw_response": "To solve this, let's follow the steps outlined:\n\nFirst, we identify the parts of each equation:\n- E1_L = \"x\"\n- E1_R = \"((x * x) * y) * y\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * y) * (z * w))\"\n\nNow, let's apply the tests:\n\n1. **LP (First Letter)**: \n   - E1 first letter on the left is \"x\", and on the right is \"x\" (since we scan past all opening parentheses).\n   - E2 first letter on the left is \"x\", and on the right is \"x\".\n   - Both are the same, so E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter)**:\n   - E1 last letter on the left is \"x\", and on the right is \"y\" (after skipping closing parentheses).\n   - E2 last letter on the left is \"x\", and on the right is \"w\" (after skipping closing parentheses).\n   - Different, so E1=FAIL and E2=FAIL.\n\n3. **C0 (Contains *)**:\n   - E1 left side does not contain \"*\", but the right side does.\n   - E2 left side does not contain \"*\", but the right side does.\n   - Both equations have the same condition (neither side has \"*\" on the left, but the right side does), so E1=FAIL and E2=FAIL.\n\n4. **VARS (Set of Variables)**:\n   - E1 left side contains {\"x\"}, and the right side contains {\"x\", \"y\"}.\n   - E2 left side contains {\"x\"}, and the right side contains {\"x\", \"y\", \"z\", \"w\"}.\n   - Different sets, so E1=FAIL and E2=FAIL.\n\nGiven the results, there's no separation found as none of the tests resulted in E1=HOLD and E2=FAIL. Therefore, the implication is considered to hold over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating E1 implies E2 over all magmas.\nPROOF: All 4 tests were checked without finding separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2160,
+        "completion_tokens": 484
+      }
+    },
+    {
+      "id": "hard3_0291",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * (z * w)) * x",
+      "equation2": "x * (y * y) = z * (w * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 27.16,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must analyze each equation piece by piece according to the given rules and tests.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((y * x) * (z * w)) * x\"\n- E2_L = \"x * (y * y)\"\n- E2_R = \"z * (w * y)\"\n\nNow, we proceed with the tests as outlined:\n\nTEST 1 — LP: First letter on the left side vs first letter on the right side.\n- E1: First letter of E1_L is \"x\", and the first letter of E1_R is \"y\" (scanning past opening parentheses) → FAIL\n- E2: First letter of E2_L is \"x\", and the first letter of E2_R is \"z\" → FAIL\n- Since both are FAIL, there is no separation here.\n\nTEST 2 — RP: Last letter on the left side vs last letter on the right side.\n- E1: Last letter of E1_L is \"x\", and the last letter of E1_R is \"x\" (ignoring trailing parentheses) → HOLD\n- E2: Last letter of E2_L is \"y\", and the last letter of E2_R is \"y\" → HOLD\n- Since both are HOLD, there is no separation here.\n\nTEST 3 — C0: Does the left side contain \"*\"? Does the right side contain \"*\"?\n- E1: E1_L has no \"*\", and E1_R has \"*\" → FAIL\n- E2: E2_L has \"*\", and E2_R has \"*\" → HOLD\n- Here, E1=FAIL and E2=HOLD, which means there is no separation according to the decision table.\n\nTEST 4 — VARS: Set of distinct letters on the left vs set on the right.\n- E1: E1_L contains {x}, and E1_R contains {x, y, z, w} → FAIL\n- E2: E2_L contains {x, y}, and E2_R contains {z, w, y} → FAIL\n- Since both are FAIL, there is no separation here.\n\nAfter conducting all four tests, we find that there is no test where E1=HOLD and E2=FAIL, which means according to the decision table, there is no separation found.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none of the conditions for separation (E1=HOLD and E2=FAIL) were met in any of the tests.\nPROOF: All 4 tests (LP, RP, C0, VARS) were checked, and none resulted in the separation condition being met.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2190,
+        "completion_tokens": 594
+      }
+    },
+    {
+      "id": "hard3_0008",
+      "repeat_id": 1,
+      "equation1": "x * x = y * z",
+      "equation2": "x * (x * y) = (y * x) * z",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 9.56,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first split each equation at the '=' sign and then analyze them according to the given tests.\n\nEquation 1: x * x = y * z  \n- E1_L = \"x * x\"  \n- E1_R = \"y * z\"  \n\nEquation 2: x * (x * y) = (y * x) * z  \n- E2_L = \"x * (x * y)\"  \n- E2_R = \"(y * x) * z\"  \n\nNow, we proceed with the tests.\n\nTEST 1 — LP:  \n- E1 first letter on the left side is 'x', and on the right side is 'y'. Since 'x' ≠ 'y', E1 = FAIL.\n- E2 first letter on the left side is 'x', and on the right side is 'y'. Since 'x' ≠ 'y', E2 = FAIL.\n- E1=FAIL E2=FAIL → no separation.\n\nTEST 2 — RP:  \n- E1 last letter on the left side is 'x', and on the right side is 'z'. Since 'x' ≠ 'z', E1 = FAIL.\n- E2 last letter on the left side is 'y', and on the right side is 'z'. Since 'y' ≠ 'z', E2 = FAIL.\n- E1=FAIL E2=FAIL → no separation.\n\nTEST 3 — C0:  \n- E1 left side contains '*', and the right side also contains '*'. So, E1 = HOLD.\n- E2 left side contains '*', and the right side also contains '*'. So, E2 = HOLD.\n- E1=HOLD E2=HOLD → no separation.\n\nTEST 4 — VARS:  \n- E1 left side has 'x', and the right side has 'y' and 'z'. Since the sets of variables are different and both sides have '*', E1 = FAIL.\n- E2 left side has 'x' and 'y', and the right side has 'y', 'x', and 'z'. Since both sides have '*' and the set of variables on the left is a subset of the set on the right but not identical, considering the context of this test, E2 = FAIL because the presence of '*' on both sides means we look at the sets of variables, and they are not the same.\n- E1=FAIL E2=FAIL → no separation.\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, there is no separation found, and thus Equation 1 implies Equation 2 over all magmas is considered TRUE based on the provided methodology.\n\nVERDICT: TRUE\nREASONING: No test separated Equation 1 from Equation 2, indicating that Equation 1 implies Equation 2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2176,
+        "completion_tokens": 626
+      }
+    },
+    {
+      "id": "hard3_0004",
+      "repeat_id": 1,
+      "equation1": "x = y * (z * w)",
+      "equation2": "x * (y * y) = y * (z * w)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 13.72,
+      "raw_response": "Let's analyze the given equations E1 and E2.\n\nE1: x = y * (z * w)\nE2: x * (y * y) = y * (z * w)\n\nFirst, we split each equation at the \"=\" sign.\nE1_L = \"x\"  E1_R = \"y * (z * w)\"\nE2_L = \"x * (y * y)\"  E2_R = \"y * (z * w)\"\n\nNow, we perform the tests.\n\nTEST 1 — LP: \nE1 first(L)=x first(R)=y → FAIL\nE2 first(L)=x first(R)=y → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nTEST 2 — RP: \nE1 last(L)=x last(R)=w → FAIL\nE2 last(L)=y last(R)=w → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nTEST 3 — C0: \nE1 L has no *, R has * → FAIL\nE2 L has *, R has * → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nTEST 4 — VARS: \nE1 L={x} R={y,z,w} → FAIL\nE2 L={x,y} R={y,z,w} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nWe did not find any separation, so E1 implies E2 over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2153,
+        "completion_tokens": 361
+      }
+    },
+    {
+      "id": "hard3_0356",
+      "repeat_id": 1,
+      "equation1": "x * y = z * (x * (x * y))",
+      "equation2": "x * y = ((y * y) * z) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.08,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must analyze the given equations step by step according to the provided rules and tests.\n\nThe equations given are:\nE1: x * y = z * (x * (x * y))\nE2: x * y = ((y * y) * z) * y\n\nFirst, split each equation at the \"=\" sign:\nE1_L = \"x * y\"  E1_R = \"z * (x * (x * y))\"\nE2_L = \"x * y\"  E2_R = \"((y * y) * z) * y\"\n\nTEST 1 — LP: First letter on the left side vs first letter on the right side.\nFor E1, the first letter on the left is \"x\" and on the right is \"z\". For E2, the first letter on both the left and the right is \"x\".\nE1: Different → FAIL\nE2: Same → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nTEST 2 — RP: Last letter on the left side vs last letter on the right side.\nFor E1, the last letter on the left is \"y\" and on the right is \"y\". For E2, the last letter on the left is \"y\" and on the right is \"y\".\nE1: Same → HOLD\nE2: Same → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nTEST 3 — C0: Does the left side contain *? Does the right side contain *?\nFor E1, both sides contain *. For E2, both sides contain *.\nE1: Both have * → HOLD\nE2: Both have * → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nTEST 4 — VARS: Set of distinct letters on the left vs set on the right.\nFor E1, the left side has {x, y} and the right side has {x, y, z}. For E2, the left side has {x, y} and the right side has {y, z}.\nE1: Different set → FAIL\nE2: Different set → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, there is no separation found.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2187,
+        "completion_tokens": 565
+      }
+    },
+    {
+      "id": "hard3_0283",
+      "repeat_id": 1,
+      "equation1": "x = ((x * y) * (y * z)) * w",
+      "equation2": "x = ((x * x) * x) * (y * z)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 24.47,
+      "raw_response": "To determine whether Equation 1 (x = ((x * y) * (y * z)) * w) implies Equation 2 (x = ((x * x) * x) * (y * z)) over all magmas, we will perform the four tests as instructed.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((x * y) * (y * z)) * w\"\n- E2_L = \"x\"\n- E2_R = \"((x * x) * x) * (y * z)\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP: \n- E1 first(L) = \"x\" first(R) = \"x\" → HOLD (since the first letter in both sides of E1 is 'x', when we look past the parentheses)\n- E2 first(L) = \"x\" first(R) = \"x\" → HOLD (since the first letter in both sides of E2 is 'x')\n- → E1=HOLD E2=HOLD → no separation\n\nTEST 2 — RP: \n- E1 last(L) = \"x\" last(R) = \"w\" → FAIL (since 'x' is not the same as 'w')\n- E2 last(L) = \"x\" last(R) = \"z\" → FAIL (since 'x' is not the same as 'z')\n- → E1=FAIL E2=FAIL → no separation\n\nTEST 3 — C0: \n- E1 L has no *, R has * → FAIL (left side has no '*', right side has '*')\n- E2 L has no *, R has * → FAIL (left side has no '*', right side has '*')\n- → E1=FAIL E2=FAIL → no separation\n\nTEST 4 — VARS: \n- E1 L={x} R={x,y,z,w} → FAIL (since the set of variables on the left is not the same as on the right)\n- E2 L={x} R={x,y,z} → FAIL (since the set of variables on the left is not the same as on the right)\n- → E1=FAIL E2=FAIL → no separation\n\nGiven that none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there is no separation found through these tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1 holding while E2 fails.\nPROOF: All 4 tests were checked, and none had E1=HOLD with E2=FAIL, indicating that based on the given methodology, E1 implies E2 over all magmas.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2192,
+        "completion_tokens": 583
+      }
+    },
+    {
+      "id": "hard3_0190",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * ((x * x) * y)",
+      "equation2": "x * (y * z) = (x * z) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 7.21,
+      "raw_response": "To determine whether Equation 1 (E1: x = (y * x) * ((x * x) * y)) implies Equation 2 (E2: x * (y * z) = (x * z) * y) over all magmas, let's analyze the given equations step by step according to the provided rules and tests.\n\nFirst, split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * x) * ((x * x) * y)\"\n- E2_L = \"x * (y * z)\"\n- E2_R = \"(x * z) * y\"\n\nNow, apply the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first letter on the left is \"x\", and on the right is \"y\" → FAIL\n- E2 first letter on the left is \"x\", and on the right is \"x\" → HOLD\nSo, E1=FAIL and E2=HOLD → no separation.\n\nTEST 2 — RP (Last Letter):\n- E1 last letter on the left is \"x\", and on the right is \"y\" → FAIL\n- E2 last letter on the left is \"z\", and on the right is \"y\" → FAIL\nSo, E1=FAIL and E2=FAIL → no separation.\n\nTEST 3 — C0 (Contains *):\n- E1 left side has no *, right side has * → FAIL\n- E2 left side has *, right side has * → HOLD\nSo, E1=FAIL and E2=HOLD → no separation.\n\nTEST 4 — VARS (Set of Distinct Letters):\n- E1 left side has {x}, right side has {x, y} → FAIL\n- E2 left side has {x, y, z}, right side has {x, y, z} → HOLD\nSo, E1=FAIL and E2=HOLD → no separation.\n\nAfter all tests, no separation was found between E1 and E2, meaning E1 does not imply a difference from E2 in terms of the given conditions.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas according to the given conditions.\nPROOF: All 4 tests were checked, and none resulted in E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2193,
+        "completion_tokens": 512
+      }
+    },
+    {
+      "id": "hard3_0323",
+      "repeat_id": 1,
+      "equation1": "x = ((y * (z * w)) * z) * x",
+      "equation2": "x = x * (x * (y * (y * x)))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 49.77,
+      "raw_response": "To determine whether Equation 1 (x = ((y * (z * w)) * z) * x) implies Equation 2 (x = x * (x * (y * (y * x)))) over all magmas, let's analyze the given equations step by step according to the provided instructions.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * w)) * z) * x\"\n- E2_L = \"x\"\n- E2_R = \"x * (x * (y * (y * x)))\"\n\nNext, we perform the tests as instructed:\n\nTEST 1 — LP: \n- E1 first letter on the left side is \"x\", and on the right side is \"y\". Different → FAIL.\n- E2 first letter on the left side is \"x\", and on the right side is \"x\". Same → HOLD.\nSo, E1=FAIL, E2=HOLD → no separation.\n\nTEST 2 — RP:\n- E1 last letter on the left side is \"x\", and on the right side is \"x\". Same → HOLD.\n- E2 last letter on the left side is \"x\", and on the right side is \"x\". Same → HOLD.\nSo, E1=HOLD, E2=HOLD → no separation.\n\nTEST 3 — C0:\n- E1 left side contains no \"*\", but the right side does. \n- E2 left side contains no \"*\", and the right side does.\nSince neither side of E1 or E2 has a \"*\" on the left but both have \"*\" on the right, and given the specific conditions, we need to consider the context of the test properly: \n- E1's left side is just \"x\" (no *), and its right side has *. \n- E2's left side is just \"x\" (no *), and its right side has *.\nGiven the rules, if neither has \"*\" and it's the same variable, it's a HOLD, but since the right sides have \"*\" and the left don't, the critical aspect here is the presence of \"*\" on the right sides. This test actually looks at whether * is present, and since both right sides have *, and both left sides are just \"x\" without *, it's about the condition of having \"*\" which applies to the right sides, so E1=FAIL (because it does have * on the right but not on the left), E2=FAIL (for the same reason as E1, the left doesn't have *, but the right does).\nSo, E1=FAIL, E2=FAIL → no separation.\n\nTEST 4 — VARS:\n- E1 left side contains only \"x\", and the right side contains \"x\", \"y\", \"z\", \"w\". Different sets → FAIL.\n- E2 left side contains only \"x\", and the right side contains \"x\" and \"y\". Different sets → FAIL.\nSo, E1=FAIL, E2=FAIL → no separation.\n\nAfter performing all the tests and not finding any separation (since we never had a case where E1=HOLD and E2=FAIL), we proceed to the conclusion.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1=HOLD and E2=FAIL.\nPROOF: All 4 tests were checked, and none showed separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2167,
+        "completion_tokens": 729
+      }
+    },
+    {
+      "id": "hard3_0331",
+      "repeat_id": 1,
+      "equation1": "x = (((x * y) * z) * y) * w",
+      "equation2": "x = (((x * y) * y) * z) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 47.97,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step according to the provided rules.\n\nFirst, let's split each equation at the \"=\" sign.\n- For Equation 1 (E1): x = (((x * y) * z) * y) * w\n  - E1_L = \"x\"\n  - E1_R = \"(((x * y) * z) * y) * w\"\n- For Equation 2 (E2): x = (((x * y) * y) * z) * x\n  - E2_L = \"x\"\n  - E2_R = \"(((x * y) * y) * z) * x\"\n\nNow, let's apply the tests one by one:\n\n1. **LP (First Letter Test)**: \n   - For E1, the first letter on the left side is \"x\" and on the right side is \"x\" (since we scan past opening parentheses to find the first letter, which is \"x\" in \"(x * y)\").\n   - For E2, the first letter on the left side is \"x\" and on the right side is also \"x\".\n   - Since both equations have the same first letter on both sides, we have E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter Test)**:\n   - For E1, the last letter on the left side is \"x\" and on the right side is \"w\" (skipping trailing parentheses).\n   - For E2, the last letter on the left side is \"x\" and on the right side is \"x\".\n   - E1 last letters differ (x ≠ w), so E1=FAIL. E2 last letters match, so E2=HOLD.\n   - We have E1=FAIL and E2=HOLD, which means no separation.\n\n3. **C0 (Contains * Test)**:\n   - E1's left side does not contain \"*\", but its right side does.\n   - E2's left side does not contain \"*\", but its right side does.\n   - Both equations have the same condition (left side without \"*\" and right side with \"*\"), so we have E1=FAIL and E2=FAIL, indicating no separation.\n\n4. **VARS (Variables Test)**:\n   - E1's left side contains only \"x\", and its right side contains \"x\", \"y\", \"z\", and \"w\".\n   - E2's left side contains only \"x\", and its right side contains \"x\" and \"y\".\n   - Since the left sides are bare variables and the right sides of both equations contain more than just \"x\", we check if the right sides use only \"x\". They do not, so E1=FAIL and E2=FAIL, indicating no separation.\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there is no separation based on the given tests.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, indicating that E1 implies E2 over all magmas according to the provided analysis framework.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2168,
+        "completion_tokens": 694
+      }
+    },
+    {
+      "id": "hard3_0306",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * x)) * z) * w",
+      "equation2": "x = x * ((y * z) * (x * w))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 2.9,
+      "raw_response": "To determine whether Equation 1 (x = ((x * (y * x)) * z) * w) implies Equation 2 (x = x * ((y * z) * (x * w))) over all magmas, we need to analyze them step by step according to the given rules.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((x * (y * x)) * z) * w\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * z) * (x * w))\"\n\nNow, let's apply the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first(L) = \"x\", first(R) = \"x\" (scanning past parentheses) → HOLD\n- E2 first(L) = \"x\", first(R) = \"x\" → HOLD\nSince both are HOLD, there's no separation.\n\nTEST 2 — RP (Last Letter):\n- E1 last(L) = \"x\", last(R) = \"w\" (skipping trailing parentheses) → FAIL\n- E2 last(L) = \"x\", last(R) = \"w\" → FAIL\nBoth are FAIL, so there's no separation.\n\nTEST 3 — C0 (Contains *):\n- E1 L has no *, R has * → FAIL\n- E2 L has no *, R has * → FAIL\nBoth are FAIL, indicating no separation.\n\nTEST 4 — VARS (Set of distinct letters):\n- E1 L = {x}, R = {x, y, z, w} → FAIL\n- E2 L = {x}, R = {x, y, z, w} → FAIL\nBoth are FAIL, meaning no separation.\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there's no separation found between Equation 1 and Equation 2 based on the given tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1 holding while E2 failed.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 474
+      }
+    },
+    {
+      "id": "hard3_0292",
+      "repeat_id": 1,
+      "equation1": "x = ((y * y) * (z * y)) * x",
+      "equation2": "x = x * ((y * x) * (y * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 18.16,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations E1: x = ((y * y) * (z * y)) * x and E2: x = x * ((y * x) * (y * x)).\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((y * y) * (z * y)) * x\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * x) * (y * x))\"\n\nNow, we'll perform the four tests: LP, RP, C0, and VARS.\n\nLP: The first letter in E1_L is \"x\" and in E1_R is \"y\" (after scanning past the opening parentheses), so E1=FAIL. The first letter in E2_L is \"x\" and in E2_R is \"x\", so E2=HOLD. According to the decision table, E1=FAIL and E2=HOLD means no separation.\n\nRP: The last letter in E1_L is \"x\" and in E1_R is \"x\" (after skipping the trailing parentheses), so E1=HOLD. The last letter in E2_L is \"x\" and in E2_R is \"x\", so E2=HOLD. This means no separation.\n\nC0: E1_L has no \"*\" and E1_R has \"*\", so E1=FAIL. E2_L has no \"*\" and E2_R has \"*\", so E2=FAIL. This means no separation.\n\nVARS: E1_L contains only \"x\" and E1_R contains \"x\", \"y\", and \"z\", so E1=FAIL. E2_L contains only \"x\" and E2_R contains \"x\" and \"y\", so E2=FAIL. This means no separation.\n\nAfter performing all tests and finding no separation, the conclusion is that E1 implies E2 over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2 over all magmas.\nPROOF: All 4 tests were checked, and none showed separation between E1 and E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2166,
+        "completion_tokens": 487
+      }
+    },
+    {
+      "id": "hard3_0336",
+      "repeat_id": 1,
+      "equation1": "x = (((y * y) * z) * w) * x",
+      "equation2": "x = x * ((x * x) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 5.79,
+      "raw_response": "For Equation 1 (E1): x = (((y * y) * z) * w) * x and Equation 2 (E2): x = x * ((x * x) * x), let's analyze them step by step according to the provided instructions.\n\nFirst, we identify the left and right sides of each equation:\n- E1_L = \"x\"\n- E1_R = \"(((y * y) * z) * w) * x\"\n- E2_L = \"x\"\n- E2_R = \"x * ((x * x) * x)\"\n\nNow, we perform the four tests:\n\nTEST 1 — LP: First letter on the left side vs first letter on the right side.\n- E1: first(L) = \"x\", first(R) = \"y\" (after scanning past the opening parentheses) → FAIL\n- E2: first(L) = \"x\", first(R) = \"x\" → HOLD\n→ E1=FAIL, E2=HOLD → no separation\n\nTEST 2 — RP: Last letter on the left side vs last letter on the right side.\n- E1: last(L) = \"x\", last(R) = \"x\" (after skipping trailing parentheses) → HOLD\n- E2: last(L) = \"x\", last(R) = \"x\" → HOLD\n→ E1=HOLD, E2=HOLD → no separation\n\nTEST 3 — C0: Does the left side contain *? Does the right side contain *?\n- E1_L = \"x\" has no *, E1_R has * → FAIL\n- E2_L = \"x\" has no *, E2_R has * → FAIL\n→ E1=FAIL, E2=FAIL → no separation\n\nTEST 4 — VARS: Set of distinct letters on the left vs set on the right.\n- E1_L = {x}, E1_R = {x, y, z, w} → FAIL\n- E2_L = {x}, E2_R = {x} → HOLD\n→ E1=FAIL, E2=HOLD → no separation\n\nAfter all 4 tests, there is no separation found that meets the criteria for a FALSE verdict, which requires E1=HOLD and E2=FAIL.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2 as none resulted in E1=HOLD and E2=FAIL.\nPROOF: All 4 tests checked; none had the separation condition of E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2159,
+        "completion_tokens": 546
+      }
+    },
+    {
+      "id": "hard3_0092",
+      "repeat_id": 1,
+      "equation1": "x = y * (y * ((x * y) * y))",
+      "equation2": "x * x = ((y * y) * x) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 2.34,
+      "raw_response": "To determine whether Equation 1 (x = y * (y * ((x * y) * y))) implies Equation 2 (x * x = ((y * y) * x) * x) over all magmas, we need to analyze the given equations step by step according to the provided rules and tests.\n\nFirst, we identify the left and right sides of each equation:\n- E1_L = \"x\"\n- E1_R = \"y * (y * ((x * y) * y))\"\n- E2_L = \"x * x\"\n- E2_R = \"((y * y) * x) * x\"\n\nNow, let's apply the tests:\n\n1. **LP (First Letter):** \n   - E1: The first letter on the left side is \"x\", and on the right side is \"y\". Thus, E1=FAIL.\n   - E2: The first letter on the left side is \"x\", and on the right side is \"y\" (scanning past the opening parentheses). Thus, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\n2. **RP (Last Letter):** \n   - E1: The last letter on the left side is \"x\", and on the right side is \"y\" (skipping closing parentheses). Thus, E1=FAIL.\n   - E2: The last letter on the left side is \"x\", and on the right side is \"x\". Thus, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, there's no separation.\n\n3. **C0 (Contains *):** \n   - E1: The left side does not contain \"*\", but the right side does. Thus, E1=FAIL.\n   - E2: Both the left and right sides contain \"*\". Thus, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, there's no separation.\n\n4. **VARS (Set of Variables):** \n   - E1: The left side contains only \"x\", while the right side contains \"x\" and \"y\". Thus, E1=FAIL.\n   - E2: Both sides contain \"x\" and \"y\". Thus, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, there's no separation.\n\nGiven that none of the tests resulted in E1=HOLD and E2=FAIL, which is the only condition for separation and thus for the implication to be FALSE, we conclude that Equation 1 implies Equation 2 over all magmas is TRUE, as no separation was found in any of the tests.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, meaning there's no condition where E1 holds and E2 fails.\nPROOF: All 4 tests were checked without finding any separation, indicating that E1 implies E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2189,
+        "completion_tokens": 621
+      }
+    },
+    {
+      "id": "hard3_0343",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (x * z))",
+      "equation2": "x * x = ((y * y) * y) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 21.61,
+      "raw_response": "To determine whether Equation 1 (x * x = y * (x * (x * z))) implies Equation 2 (x * x = ((y * y) * y) * x) over all magmas, we will go through the steps as outlined.\n\nFirst, split the equations at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"y * (x * (x * z))\"\n- E2_L = \"x * x\"\n- E2_R = \"((y * y) * y) * x\"\n\nNow, let's apply the tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first letter on the left is \"x\" and on the right is \"y\". Since they are different, E1=FAIL.\n   - E2 first letter on the left is \"x\" and on the right is \"y\" (looking past the opening parentheses). Since they are different, E2=FAIL.\n   - Result: E1=FAIL, E2=FAIL. No separation.\n\n2. **RP (Last Letter Test)**:\n   - E1 last letter on the left is \"x\" and on the right is \"z\" (skipping trailing parentheses). Since they are different, E1=FAIL.\n   - E2 last letter on the left is \"x\" and on the right is \"x\". Since they are the same, E2=HOLD.\n   - Result: E1=FAIL, E2=HOLD. No separation.\n\n3. **C0 (Contains * Test)**:\n   - E1 left side contains \"*\" and the right side also contains \"*\". So, E1=HOLD.\n   - E2 left side contains \"*\" and the right side also contains \"*\". So, E2=HOLD.\n   - Result: E1=HOLD, E2=HOLD. No separation.\n\n4. **VARS (Variables Test)**:\n   - E1 left side variables are {x} and the right side variables are {x, y, z}. Since they are different and both sides contain \"*\", E1=FAIL.\n   - E2 left side variables are {x} and the right side variables are {x, y}. Since they are different and both sides contain \"*\", E2=FAIL.\n   - Result: E1=FAIL, E2=FAIL. No separation.\n\nNo test resulted in E1=HOLD and E2=FAIL, which means there is no separation found according to the given rules and tests.\n\nVERDICT: TRUE\nREASONING: No test resulted in E1=HOLD and E2=FAIL, indicating no separation between the equations based on the provided analysis.\nPROOF: All 4 tests were applied without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2163,
+        "completion_tokens": 587
+      }
+    },
+    {
+      "id": "hard3_0347",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (z * w))",
+      "equation2": "x * (y * x) = (x * z) * z",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 9.31,
+      "raw_response": "To determine whether Equation 1 (x * x = y * (x * (z * w))) implies Equation 2 (x * (y * x) = (x * z) * z) over all magmas, we need to perform the four tests: LP, RP, C0, and VARS.\n\nFirst, let's split the equations at the = sign:\nE1_L = \"x * x\"    E1_R = \"y * (x * (z * w))\"\nE2_L = \"x * (y * x)\"    E2_R = \"(x * z) * z\"\n\nLP: The first letter on the left side of E1 is \"x\" and on the right side is \"y\". For E2, the first letter on both sides is \"x\". \nSo, E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nRP: The last letter on the left side of E1 is \"x\" and on the right side is \"w\". For E2, the last letter on the left side is \"x\" and on the right side is \"z\". \nSo, E1 last(L)=x last(R)=w → FAIL | E2 last(L)=x last(R)=z → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nC0: E1's left and right sides both contain *. E2's left and right sides also both contain *. \nSo, E1 L has *, R has * → HOLD | E2 L has *, R has * → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nVARS: The set of distinct letters on the left side of E1 is {x} and on the right side is {x, y, z, w}. For E2, the set of distinct letters on the left side is {x, y} and on the right side is {x, z}. \nSo, E1 L={x} R={x,y,z,w} → FAIL | E2 L={x,y} R={x,z} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nNo separation was found in any of the tests. Therefore, Equation 1 implies Equation 2 over all magmas.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2189,
+        "completion_tokens": 547
+      }
+    },
+    {
+      "id": "hard3_0016",
+      "repeat_id": 1,
+      "equation1": "x = y * (x * (x * x))",
+      "equation2": "x * y = (y * y) * (y * y)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.32,
+      "raw_response": "To solve this, let's break down the equations given and apply the rules step by step.\n\nGiven Equation 1 (E1): x = y * (x * (x * x))\nGiven Equation 2 (E2): x * y = (y * y) * (y * y)\n\nStep 0: Split on =\nE1_L = \"x\"\nE1_R = \"y * (x * (x * x))\"\nE2_L = \"x * y\"\nE2_R = \"(y * y) * (y * y)\"\n\nNow, let's apply the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first(L) = x, first(R) = y → FAIL\n- E2 first(L) = x, first(R) = y → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nTEST 2 — RP (Last Letter):\n- E1 last(L) = x, last(R) = x → HOLD\n- E2 last(L) = y, last(R) = y → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nTEST 3 — C0 (Contains *):\n- E1 L has no *, R has * → FAIL\n- E2 L has *, R has * → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\nTEST 4 — VARS (Set of Distinct Letters):\n- E1 L={x}, R={x,y} → FAIL\n- E2 L={x,y}, R={y} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nNo separation was found in any of the tests. Therefore, based on the decision table and the rules provided, since no test resulted in E1=HOLD and E2=FAIL, we conclude that E1 implies E2 over all magmas is TRUE.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, indicating that E1 implies E2.\nPROOF: All 4 tests were checked, and none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2159,
+        "completion_tokens": 452
+      }
+    },
+    {
+      "id": "hard3_0261",
+      "repeat_id": 1,
+      "equation1": "x = (x * ((y * z) * y)) * w",
+      "equation2": "x = (x * y) * (z * (x * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 8.34,
+      "raw_response": "To determine whether Equation 1 (x = (x * ((y * z) * y)) * w) implies Equation 2 (x = (x * y) * (z * (x * x))) over all magmas, we will perform the tests as specified.\n\nFirst, we identify the left and right sides of each equation:\nE1_L = \"x\"  E1_R = \"(x * ((y * z) * y)) * w\"\nE2_L = \"x\"  E2_R = \"(x * y) * (z * (x * x))\"\n\nTEST 1 — LP: \nE1 first letter on the left side is \"x\", and on the right side is \"x\". \nE2 first letter on the left side is \"x\", and on the right side is \"x\".\nBoth are the same, so E1=HOLD and E2=HOLD. No separation.\n\nTEST 2 — RP: \nE1 last letter on the left side is \"x\", and on the right side is \"w\". \nE2 last letter on the left side is \"x\", and on the right side is \"x\".\nE1 last letters are different, so E1=FAIL. E2 last letters are the same, so E2=HOLD. This gives E1=FAIL and E2=HOLD, which means no separation.\n\nTEST 3 — C0: \nE1 left side has no *, and the right side has *. \nE2 left side has no *, and the right side has *. \nSince both sides of both equations have the same presence or absence of *, we get E1=HOLD and E2=HOLD. No separation.\n\nTEST 4 — VARS: \nE1 left side has {x}, and the right side has {x, y, z, w}. \nE2 left side has {x}, and the right side has {x, y, z}.\nBoth equations have different sets of variables on their left and right sides, but since one side of each equation is just \"x\", we have to consider if the other side uses variables other than \"x\". Given that both equations do involve additional variables beyond \"x\" on their right sides, we get E1=FAIL and E2=FAIL. This means no separation.\n\nAfter performing all the tests, we find no separation between E1 and E2, which indicates that E1 implies E2 over all magmas is TRUE.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, meaning E1 implies E2 over all magmas.\nPROOF: All 4 tests were checked without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2192,
+        "completion_tokens": 565
+      }
+    },
+    {
+      "id": "hard3_0147",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * (w * w)) * x)",
+      "equation2": "x = x * ((y * (x * z)) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.85,
+      "raw_response": "To determine whether Equation 1 (E1: x = y * ((z * (w * w)) * x)) implies Equation 2 (E2: x = x * ((y * (x * z)) * x)) over all magmas, let's apply the given tests step by step.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((z * (w * w)) * x)\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * (x * z)) * x)\"\n\nNow, let's proceed with the tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and the first letter on the right is \"y\". So, E1=FAIL.\n   - E2: First letter on the left is \"x\", and the first letter on the right is \"x\". So, E2=HOLD.\n   - Result: E1=FAIL, E2=HOLD. This is no separation, so we continue.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\", and the last letter on the right is \"x\". So, E1=HOLD.\n   - E2: Last letter on the left is \"x\", and the last letter on the right is \"x\". So, E2=HOLD.\n   - Result: E1=HOLD, E2=HOLD. This is no separation, so we continue.\n\n3. **C0 (Contains * Test)**:\n   - E1_L does not contain \"*\", but E1_R does. So, E1=FAIL.\n   - E2_L does not contain \"*\", but E2_R does. So, E2=FAIL.\n   - Result: E1=FAIL, E2=FAIL. This is no separation, so we continue.\n\n4. **VARS (Variables Test)**:\n   - E1_L contains {x}, and E1_R contains {x, y, z, w}. So, E1=FAIL.\n   - E2_L contains {x}, and E2_R contains {x, y, z}. So, E2=FAIL.\n   - Result: E1=FAIL, E2=FAIL. This is no separation.\n\nAfter applying all the tests without finding any separation (a case where E1=HOLD and E2=FAIL), we conclude that E1 does not imply E2 over all magmas is not disproven by these tests. However, the process here strictly follows the given format and instructions for analysis but recognizes that the implication between the two equations under the specific rules provided doesn't directly lead to a separation based on the tests described. The critical insight is that without a direct failure in the pattern that fits the \"separation\" criteria as defined, we lean on the default stance provided in the instructions.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2165,
+        "completion_tokens": 671
+      }
+    },
+    {
+      "id": "hard3_0188",
+      "repeat_id": 1,
+      "equation1": "x = (x * y) * ((z * w) * w)",
+      "equation2": "x * y = x * (z * (z * y))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 1.76,
+      "raw_response": "To determine whether Equation 1 (E1) implies Equation 2 (E2) over all magmas, we need to analyze the given equations through the four tests provided: LP (first letter on the left side vs first letter on the right side), RP (last letter on the left side vs last letter on the right side), C0 (presence of * on both sides), and VARS (set of distinct letters on both sides).\n\nGiven E1: x = (x * y) * ((z * w) * w) and E2: x * y = x * (z * (z * y))\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * y) * ((z * w) * w)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (z * (z * y))\"\n\nNow, let's apply the tests:\n\n1. **LP Test**: \n- E1 first(L) = x, first(R) = x → HOLD\n- E2 first(L) = x, first(R) = x → HOLD\nSince both E1 and E2 hold, there is no separation.\n\n2. **RP Test**:\n- E1 last(L) = x, last(R) = w → FAIL\n- E2 last(L) = y, last(R) = y → HOLD\n- E1=FAIL, E2=HOLD → no separation\n\n3. **C0 Test**:\n- E1 L has no *, R has * → FAIL\n- E2 L has *, R has * → HOLD\n- E1=FAIL, E2=HOLD → no separation\n\n4. **VARS Test**:\n- E1 L={x}, R={x,y,z,w} → FAIL\n- E2 L={x,y}, R={x,y,z} → FAIL\n- E1=FAIL, E2=FAIL → no separation\n\nAfter applying all the tests, we did not find any separation where E1=HOLD and E2=FAIL. Therefore, we conclude that E1 implies E2 over all magmas is TRUE because no test provided a clear separation.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, indicating that E1 implies E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2189,
+        "completion_tokens": 520
+      }
+    },
+    {
+      "id": "hard3_0197",
+      "repeat_id": 1,
+      "equation1": "x = (y * z) * ((w * x) * x)",
+      "equation2": "x * y = x * (y * (x * y))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 9.64,
+      "raw_response": "For the given equations E1: x = (y * z) * ((w * x) * x) and E2: x * y = x * (y * (x * y)), we need to determine whether E1 implies E2 over all magmas by performing the specified tests.\n\nFirst, we split each equation at the '=' sign.\nE1_L = \"x\" \nE1_R = \"(y * z) * ((w * x) * x)\"\nE2_L = \"x * y\"\nE2_R = \"x * (y * (x * y))\"\n\nNow, we perform the tests as specified.\n\nTEST 1 — LP: \nE1 first letter on the left side is 'x' and on the right side is 'y'. Since they are different, E1 = FAIL.\nE2 first letter on the left side is 'x' and on the right side is 'x'. Since they are the same, E2 = HOLD.\nSo, E1 = FAIL and E2 = HOLD, which means no separation.\n\nTEST 2 — RP: \nE1 last letter on the left side is 'x' and on the right side is 'x'. Since they are the same, E1 = HOLD.\nE2 last letter on the left side is 'y' and on the right side is 'y'. Since they are the same, E2 = HOLD.\nSo, E1 = HOLD and E2 = HOLD, which means no separation.\n\nTEST 3 — C0: \nE1 left side does not contain '*', but the right side does. So, E1 = FAIL.\nE2 left side contains '*', and the right side also contains '*'. So, E2 = HOLD.\nSo, E1 = FAIL and E2 = HOLD, which means no separation.\n\nTEST 4 — VARS: \nE1 left side contains only 'x', and the right side contains 'x', 'y', 'z', 'w'. They are different, so E1 = FAIL.\nE2 left side contains 'x' and 'y', and the right side contains 'x' and 'y'. They are the same, so E2 = HOLD.\nSo, E1 = FAIL and E2 = HOLD, which means no separation.\n\nSince none of the tests resulted in E1 = HOLD and E2 = FAIL, we conclude that E1 does not separate from E2, and thus E1 implies E2 over all magmas is TRUE by default.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, so E1 implies E2 by default.\nPROOF: All 4 tests were checked, and none resulted in separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2189,
+        "completion_tokens": 565
+      }
+    },
+    {
+      "id": "hard3_0198",
+      "repeat_id": 1,
+      "equation1": "x = (y * z) * ((w * u) * x)",
+      "equation2": "x = y * (((z * w) * z) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 19.6,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze both equations step by step according to the provided rules and tests.\n\nGiven Equation 1 (E1): x = (y * z) * ((w * u) * x)\nGiven Equation 2 (E2): x = y * (((z * w) * z) * x)\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * z) * ((w * u) * x)\"\n- E2_L = \"x\"\n- E2_R = \"y * (((z * w) * z) * x)\"\n\nNow, let's apply the tests:\n\n1. **LP (First Letter on Left vs First Letter on Right)**:\n   - For E1, the first letter on the left is \"x\" and on the right is \"y\" → FAIL\n   - For E2, the first letter on the left is \"x\" and on the right is \"y\" → FAIL\n   - Since both are FAIL, there's no separation.\n\n2. **RP (Last Letter on Left vs Last Letter on Right)**:\n   - For E1, the last letter on the left is \"x\" and on the right is \"x\" → HOLD\n   - For E2, the last letter on the left is \"x\" and on the right is \"x\" → HOLD\n   - Since both are HOLD, there's no separation.\n\n3. **C0 (Presence of \"*\")**:\n   - E1's left side has no \"*\", but its right side has \"*\" → FAIL\n   - E2's left side has no \"*\", but its right side has \"*\" → FAIL\n   - Since both are FAIL, there's no separation.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1's left side contains only \"x\", but its right side contains \"y\", \"z\", \"w\", \"u\", and \"x\" → FAIL\n   - E2's left side contains only \"x\", but its right side contains \"y\", \"z\", and \"x\" → FAIL\n   - Since both are FAIL, there's no separation.\n\nAfter applying all tests, there is no separation found between Equation 1 and Equation 2 according to the given rules and tests. This means Equation 1 implies Equation 2 over all magmas, as no test resulted in a HOLD for E1 and a FAIL for E2, which is the condition required for separation.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2167,
+        "completion_tokens": 581
+      }
+    },
+    {
+      "id": "hard3_0213",
+      "repeat_id": 1,
+      "equation1": "x = (y * (z * z)) * (w * x)",
+      "equation2": "x * x = (y * (x * z)) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 17.81,
+      "raw_response": "To solve this, let's go through the steps as outlined:\n\nFirst, we split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * z)) * (w * x)\"\n- E2_L = \"x * x\"\n- E2_R = \"(y * (x * z)) * x\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP: \n- E1 first letter on the left side is \"x\", and the first letter on the right side is \"y\". Different → FAIL.\n- E2 first letter on the left side is \"x\", and the first letter on the right side is \"y\". Different → FAIL.\n→ E1=FAIL E2=FAIL → no separation.\n\nTEST 2 — RP: \n- E1 last letter on the left side is \"x\", and the last letter on the right side is \"x\". Same → HOLD.\n- E2 last letter on the left side is \"x\", and the last letter on the right side is \"x\". Same → HOLD.\n→ E1=HOLD E2=HOLD → no separation.\n\nTEST 3 — C0: \n- E1 left side contains no \"*\", and the right side contains \"*\". Neither has * and same variable → FAIL for left having no *, but since the right side does have *, it specifically checks for the presence of *, and the left side fails this because it does not have a * while the right does, indicating a failure for the left side under the condition that it does not have a *.\n- E2 left side contains \"*\", and the right side contains \"*\". Both have * → HOLD.\nGiven the misunderstanding in explaining C0 for E1, correctly: E1's left side has no *, and its right side has *, leading to FAIL for E1 because it doesn't meet the \"both have *\" or \"neither has *\" criteria when considering the Variable condition implicitly within the context of the decision table's use. \n- Correcting: E1=FAIL because its left side is a bare variable without *, and its right side has *. E2=HOLD because both sides have *.\n→ E1=FAIL E2=HOLD → no separation.\n\nTEST 4 — VARS: \n- E1 set of distinct letters on the left is {x}, and on the right is {y, z, w, x}. Different set → FAIL.\n- E2 set of distinct letters on the left is {x}, and on the right is {x, y, z}. Different set → FAIL.\n→ E1=FAIL E2=FAIL → no separation.\n\nAfter going through all tests without finding a separation where E1=HOLD and E2=FAIL, the verdict is:\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, as none resulted in E1 holding while E2 failed.\nPROOF: All 4 tests were checked, and none showed the separation criteria of E1=HOLD and E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2167,
+        "completion_tokens": 642
+      }
+    },
+    {
+      "id": "hard3_0159",
+      "repeat_id": 1,
+      "equation1": "x = y * (((y * z) * z) * x)",
+      "equation2": "(x * y) * x = (y * x) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 19.97,
+      "raw_response": "To determine whether Equation 1 (x = y * (((y * z) * z) * x)) implies Equation 2 ((x * y) * x = (y * x) * x) over all magmas, we'll follow the provided instructions and analyze the equations step by step.\n\nGiven Equation 1 (E1): x = y * (((y * z) * z) * x) and Equation 2 (E2): (x * y) * x = (y * x) * x, let's split them at the \"=\" sign:\n\nE1_L = \"x\"  \nE1_R = \"y * (((y * z) * z) * x)\"  \nE2_L = \"(x * y) * x\"  \nE2_R = \"(y * x) * x\"\n\nNow, let's apply the tests:\n\nTEST 1 — LP: \nE1 first letter on the left is \"x\" and on the right is \"y\" → FAIL  \nE2 first letter on the left is \"x\" (looking past the opening parenthesis) and on the right is \"y\" → FAIL  \n→ E1=FAIL E2=FAIL → no separation\n\nTEST 2 — RP: \nE1 last letter on the left is \"x\" and on the right is \"x\" → HOLD  \nE2 last letter on the left is \"x\" and on the right is \"x\" → HOLD  \n→ E1=HOLD E2=HOLD → no separation\n\nTEST 3 — C0: \nE1 left side contains no \"*\", right side contains \"*\" → FAIL  \nE2 both sides contain \"*\" → HOLD  \n→ E1=FAIL E2=HOLD → no separation\n\nTEST 4 — VARS: \nE1 left side has {x}, right side has {x, y, z} → FAIL  \nE2 both sides have {x, y} → HOLD  \n→ E1=FAIL E2=HOLD → no separation\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there's no separation found through these tests, which implies that Equation 1 implies Equation 2 over all magmas is not disproven by these tests. However, this conclusion may seem to follow the format for a TRUE verdict based on the lack of separation found. But considering the strict format and interpretation required:\n\nVERDICT: FALSE\nREASONING: The analysis did not follow the instructions to the letter as required, and upon careful reevaluation, it's clear that a mistake was made in interpreting the results of the tests according to the provided decision table and rules.\nPROOF: \nCOUNTEREXAMPLE: TEST 3 — C0",
+      "usage": {
+        "prompt_tokens": 2166,
+        "completion_tokens": 566
+      }
+    },
+    {
+      "id": "hard3_0051",
+      "repeat_id": 1,
+      "equation1": "x * y = z * (x * z)",
+      "equation2": "x * y = (y * (y * y)) * y",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.6,
+      "raw_response": "To determine whether Equation 1 (x * y = z * (x * z)) implies Equation 2 (x * y = (y * (y * y)) * y) over all magmas, let's analyze the given equations step by step according to the provided rules and tests.\n\nFirst, we split the equations at the \"=\" sign:\n- E1_L = \"x * y\"\n- E1_R = \"z * (x * z)\"\n- E2_L = \"x * y\"\n- E2_R = \"(y * (y * y)) * y\"\n\nNow, we apply the tests:\n\n1. **LP (First Letter):** \n   - E1: First letter on the left is \"x\", and on the right is \"z\". Different, so E1=FAIL.\n   - E2: First letter on the left is \"x\", and on the right is \"y\" (scan past the opening parenthesis). Different, so E2=FAIL.\n   - Since E1=FAIL and E2=FAIL, we continue.\n\n2. **RP (Last Letter):** \n   - E1: Last letter on the left is \"y\", and on the right is \"z\" (skip trailing parentheses). Different, so E1=FAIL.\n   - E2: Last letter on the left is \"y\", and on the right is \"y\" (skip trailing parentheses). Same, so E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue.\n\n3. **C0 (Presence of *):** \n   - E1: Both the left and right sides have \"*\". So, E1=HOLD.\n   - E2: Both the left and right sides have \"*\". So, E2=HOLD.\n   - Since E1=HOLD and E2=HOLD, we continue.\n\n4. **VARS (Set of Variables):** \n   - E1: The left side has variables {x, y}, and the right side has variables {x, y, z}. Different sets, so E1=FAIL.\n   - E2: The left side has variables {x, y}, and the right side has variables {y}. Different sets, so E2=FAIL.\n   - Since E1=FAIL and E2=FAIL, we continue.\n\nAfter applying all tests, we find that no test resulted in E1=HOLD and E2=FAIL, which means there is no separation found according to the given rules and decision table.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1 holding while E2 fails.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2181,
+        "completion_tokens": 588
+      }
+    },
+    {
+      "id": "hard3_0257",
+      "repeat_id": 1,
+      "equation1": "x = (y * (z * (w * w))) * x",
+      "equation2": "x = ((y * y) * (y * y)) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 5.99,
+      "raw_response": "To determine whether Equation 1 (x = (y * (z * (w * w))) * x) implies Equation 2 (x = ((y * y) * (y * y)) * x) over all magmas, let's follow the steps given.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * (w * w))) * x\"\n- E2_L = \"x\"\n- E2_R = \"((y * y) * (y * y)) * x\"\n\nThen, we perform the four tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - Since both fail, there's no separation here.\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - Both hold, so there's no separation here.\n\n3. **C0 (Contains *)**:\n   - E1 L contains no *, R contains * → FAIL\n   - E2 L contains no *, R contains * → FAIL\n   - Both fail, so there's no separation here.\n\n4. **VARS (Set of Variables)**:\n   - E1 L = {x}, R = {x, y, z, w} → FAIL\n   - E2 L = {x}, R = {x, y} → FAIL\n   - Both fail, so there's no separation here.\n\nSince none of the tests resulted in E1=HOLD and E2=FAIL, we conclude there's no separation between the equations based on the given tests.\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, indicating E1 implies E2 over all magmas.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2192,
+        "completion_tokens": 463
+      }
+    },
+    {
+      "id": "hard3_0037",
+      "repeat_id": 1,
+      "equation1": "x = (x * (x * y)) * x",
+      "equation2": "x * x = x * ((y * y) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 20.17,
+      "raw_response": "To determine whether Equation 1 (x = (x * (x * y)) * x) implies Equation 2 (x * x = x * ((y * y) * x)) over all magmas, we will go through the tests as outlined.\n\nFirst, let's split the equations at the= sign:\n- E1_L = \"x\"\n- E1_R = \"(x * (x * y)) * x\"\n- E2_L = \"x * x\"\n- E2_R = \"x * ((y * y) * x)\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP: \n- E1 first letter on the left is \"x\", and on the right is \"x\". \n- E2 first letter on the left is \"x\", and on the right is \"x\".\nSince both equations have the same first letter on both sides, we have E1=HOLD and E2=HOLD.\n\nTEST 2 — RP: \n- E1 last letter on the left is \"x\", and on the right is \"x\". \n- E2 last letter on the left is \"x\", and on the right is \"x\".\nBoth equations have the same last letter on both sides, so E1=HOLD and E2=HOLD.\n\nTEST 3 — C0: \n- E1 left side has no \"*\", and the right side has \"*\". \n- E2 left side has \"*\", and the right side has \"*\".\nSince the left side of E1 has no \"*\" but the right side does, and both sides of E2 have \"*\", we check the conditions. E1=FAIL because the left side does not contain \"*\", but the right side does. E2=HOLD because both sides contain \"*\". Thus, we have E1=FAIL and E2=HOLD.\n\nTEST 4 — VARS: \n- E1 left side contains only \"x\", and the right side contains \"x\" and \"y\". \n- E2 left side contains \"x\", and the right side contains \"x\" and \"y\".\nFor E1, the left side is a bare variable \"x\", and the right side uses \"x\" and \"y\", so E1=FAIL. For E2, both sides use \"x\" and at least one other variable (\"y\"), so E2=FAIL. Thus, we have E1=FAIL and E2=FAIL.\n\nAfter all tests, we did not find a separation where E1=HOLD and E2=FAIL, which means that Equation 1 does not necessarily imply Equation 2 over all magmas based on the given tests, but since we didn't find a clear separation that meets the criteria for FALSE, the default answer is TRUE.\n\nVERDICT: TRUE\nREASONING: No test resulted in E1=HOLD and E2=FAIL, which is required for separation.\nPROOF: All 4 tests were checked without finding the specific separation condition.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2182,
+        "completion_tokens": 623
+      }
+    },
+    {
+      "id": "hard3_0208",
+      "repeat_id": 1,
+      "equation1": "x = (y * (z * x)) * (y * x)",
+      "equation2": "x * y = ((y * z) * x) * y",
+      "ground_truth": true,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 4.8,
+      "raw_response": "To determine whether Equation 1 (E1: x = (y * (z * x)) * (y * x)) implies Equation 2 (E2: x * y = ((y * z) * x) * y) over all magmas, we will go through the tests as outlined.\n\nFirst, let's split the equations at the= sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * x)) * (y * x)\"\n- E2_L = \"x * y\"\n- E2_R = \"((y * z) * x) * y\"\n\nNow, let's perform the tests:\n\n",
+      "usage": {
+        "prompt_tokens": 1913,
+        "completion_tokens": 95
+      }
+    },
+    {
+      "id": "hard3_0124",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * w) * (u * x))",
+      "equation2": "x = (y * z) * (y * (z * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.3,
+      "raw_response": "To determine whether Equation 1 (E1: x = y * ((z * w) * (u * x))) implies Equation 2 (E2: x = (y * z) * (y * (z * x))) over all magmas, we need to follow the provided tests and decision table.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((z * w) * (u * x))\"\n- E2_L = \"x\"\n- E2_R = \"(y * z) * (y * (z * x))\"\n\nNow, we proceed with the tests:\n\n1. **LP (First Letter Test):**\n   - E1 first letter on the left is \"x\", and on the right is \"y\" (scanning past opening parentheses) → FAIL\n   - E2 first letter on the left is \"x\", and on the right is \"y\" (scanning past opening parentheses) → FAIL\n   - Since both are FAIL, we have E1=FAIL and E2=FAIL, which means no separation according to the decision table.\n\n2. **RP (Last Letter Test):**\n   - E1 last letter on the left is \"x\", and on the right is \"x\" (skipping closing parentheses) → HOLD\n   - E2 last letter on the left is \"x\", and on the right is \"x\" (skipping closing parentheses) → HOLD\n   - Both are HOLD, so E1=HOLD and E2=HOLD, indicating no separation.\n\n3. **C0 (Presence of * Test):**\n   - E1 left side has no *, but the right side has * → FAIL\n   - E2 left side has no *, and the right side has * → FAIL\n   - Both are FAIL, so E1=FAIL and E2=FAIL, meaning no separation.\n\n4. **VARS (Variables Test):**\n   - E1 left side has {x}, and the right side has {y, z, w, u, x} → FAIL\n   - E2 left side has {x}, and the right side has {y, z, x} → FAIL\n   - Both are FAIL, so E1=FAIL and E2=FAIL, indicating no separation.\n\nAfter conducting all the tests, none of them resulted in E1=HOLD and E2=FAIL, which is the only condition for separation according to the decision table. Therefore, we conclude that E1 does not imply E2 over all magmas based on the lack of separation found in the tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, as none resulted in E1=HOLD and E2=FAIL.\nPROOF: All 4 tests were checked without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2167,
+        "completion_tokens": 604
+      }
+    },
+    {
+      "id": "hard3_0340",
+      "repeat_id": 1,
+      "equation1": "x = (((y * z) * w) * u) * x",
+      "equation2": "x = ((y * x) * z) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.21,
+      "raw_response": "To determine whether Equation 1 (x = (((y * z) * w) * u) * x) implies Equation 2 (x = ((y * x) * z) * x) over all magmas, let's analyze the equations step by step according to the provided rules.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(((y * z) * w) * u) * x\"\n- E2_L = \"x\"\n- E2_R = \"((y * x) * z) * x\"\n\nNow, let's proceed with the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n- E2 first(L) = \"x\", first(R) = \"y\" → FAIL\nSince both fail, there's no separation.\n\nTEST 2 — RP (Last Letter):\n- E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n- E2 last(L) = \"x\", last(R) = \"x\" → HOLD\nSince both hold, there's no separation.\n\nTEST 3 — C0 (Contains *):\n- E1 L has no *, R has * → FAIL\n- E2 L has no *, R has * → FAIL\nSince both fail, there's no separation.\n\nTEST 4 — VARS (Set of Distinct Letters):\n- E1 L = {x}, R = {x, y, z, w, u} → FAIL\n- E2 L = {x}, R = {x, y, z} → FAIL\nSince both fail, there's no separation.\n\nAfter all tests, there's no separation found, which means Equation 1 implies Equation 2 over all magmas according to the given rules.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2162,
+        "completion_tokens": 436
+      }
+    },
+    {
+      "id": "hard3_0040",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * z)) * y",
+      "equation2": "x = (((x * x) * x) * x) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 9.42,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we analyze the given equations according to the provided rules and tests.\n\nGiven Equation 1: x = (x * (y * z)) * y\nGiven Equation 2: x = (((x * x) * x) * x) * x\n\nFirst, we split each equation at the '=' sign:\nE1_L = \"x\" and E1_R = \"(x * (y * z)) * y\"\nE2_L = \"x\" and E2_R = \"(((x * x) * x) * x) * x\"\n\nNow, let's apply the tests as instructed:\n\nTEST 1 — LP: First letter on the left side vs first letter on the right side.\nFor E1: first(L) = x, first(R) = x (because we scan past all opening parentheses to find the first letter, which is 'x' in \"(x * ...\").\nFor E2: first(L) = x, first(R) = x (since the first letter in \"(((x * ...)\" is 'x').\nE1: x = x → HOLD\nE2: x = x → HOLD\nSince both are HOLD, we continue to the next test.\n\nTEST 2 — RP: Last letter on the left side vs last letter on the right side.\nFor E1: last(L) = x, last(R) = y (skipping all trailing ')').\nFor E2: last(L) = x, last(R) = x.\nE1: x ≠ y → FAIL\nE2: x = x → HOLD\nWe have E1=FAIL and E2=HOLD, which means no separation, so we continue.\n\nTEST 3 — C0: Does the left side contain '*'? Does the right side contain '*'?\nFor E1: L has no '*', R has '*'.\nFor E2: L has no '*', R has '*'.\nE1: L no *, R has * → FAIL\nE2: L no *, R has * → FAIL\nSince both are FAIL, there's no separation, and we proceed to the next test.\n\nTEST 4 — VARS: Set of distinct letters on the left vs set on the right.\nFor E1: L = {x}, R = {x, y, z}\nFor E2: L = {x}, R = {x}\nE1: L ≠ R → FAIL\nE2: L = R → HOLD (because even though R has repetitions of 'x', the set of distinct letters is {x}, which matches L).\nWe have E1=FAIL and E2=HOLD, indicating no separation.\n\nAfter all tests, we find that there's no clear separation where E1=HOLD and E2=FAIL. Thus, based on the given rules and the analysis above, the verdict is:\n\nVERDICT: TRUE\nREASONING: No test separated E1 from E2, as there was no instance where E1 held and E2 failed simultaneously.\nPROOF: All 4 tests were conducted without finding a separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2186,
+        "completion_tokens": 648
+      }
+    },
+    {
+      "id": "hard3_0171",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * (z * (w * x))",
+      "equation2": "x = ((y * y) * y) * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 18.6,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we will go through the tests as outlined.\n\nFirst, we identify the parts of each equation:\n- E1: x = (y * x) * (z * (w * x))\n- E2: x = ((y * y) * y) * (z * x)\n\nE1_L = \"x\", E1_R = \"(y * x) * (z * (w * x))\"\nE2_L = \"x\", E2_R = \"((y * y) * y) * (z * x)\"\n\nNow, let's perform the tests:\n\nTEST 1 — LP: \nE1 first letter on the left side is \"x\" and on the right side is \"y\". \nE2 first letter on the left side is \"x\" and on the right side is \"y\" (after scanning past the opening parentheses).\nSince the first letters in E1 are different and in E2 are also different, we have E1=FAIL and E2=FAIL. According to the decision table, this means no separation.\n\nTEST 2 — RP: \nE1 last letter on the left side is \"x\" and on the right side is \"x\" (after skipping trailing parentheses).\nE2 last letter on the left side is \"x\" and on the right side is \"x\" (after skipping trailing parentheses).\nSince both last letters in E1 and E2 are the same, we have E1=HOLD and E2=HOLD. According to the decision table, this means no separation.\n\nTEST 3 — C0: \nE1 left side has no \"*\", and the right side has \"*\". \nE2 left side has no \"*\", and the right side has \"*\".\nSince neither side of E1 has a \"*\" and neither side of E2 has a \"*\" but both right sides do have \"*\", we have E1=FAIL and E2=FAIL. According to the decision table, this means no separation.\n\nTEST 4 — VARS: \nE1 left side variables are {x}, and right side variables are {y, z, w, x}.\nE2 left side variables are {x}, and right side variables are {y, z, x}.\nSince both equations have different sets of variables on their right sides compared to their left sides, we have E1=FAIL and E2=FAIL. According to the decision table, this means no separation.\n\nAfter all tests, there is no separation found between E1 and E2.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2, meaning E1 implies E2 over all magmas.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2193,
+        "completion_tokens": 583
+      }
+    },
+    {
+      "id": "hard3_0241",
+      "repeat_id": 1,
+      "equation1": "x = ((y * z) * x) * (x * w)",
+      "equation2": "x = (x * x) * ((y * x) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 3.69,
+      "raw_response": "To determine whether Equation 1 (E1) implies Equation 2 (E2) over all magmas, we must analyze the given equations according to the provided rules and tests.\n\nE1: x = ((y * z) * x) * (x * w)\nE2: x = (x * x) * ((y * x) * x)\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((y * z) * x) * (x * w)\"\n- E2_L = \"x\"\n- E2_R = \"(x * x) * ((y * x) * x)\"\n\nNow, let's apply the tests:\n\nTEST 1 — LP (First Letter):\n- E1 first(L) = x, first(R) = y → FAIL\n- E2 first(L) = x, first(R) = x → HOLD\n→ E1=FAIL, E2=HOLD → no separation\n\nTEST 2 — RP (Last Letter):\n- E1 last(L) = x, last(R) = w → FAIL (ignoring trailing parentheses)\n- E2 last(L) = x, last(R) = x → HOLD\n→ E1=FAIL, E2=HOLD → no separation\n\nTEST 3 — C0 (Contains *):\n- E1 L has no *, R has * → FAIL\n- E2 L has no *, R has * → FAIL\n→ E1=FAIL, E2=FAIL → no separation\n\nTEST 4 — VARS (Set of Distinct Letters):\n- E1 L = {x}, R = {x, y, z, w} → FAIL\n- E2 L = {x}, R = {x, y} → FAIL\n→ E1=FAIL, E2=FAIL → no separation\n\nAfter applying all tests, there is no separation found between E1 and E2 according to the decision table, as none of the tests resulted in E1=HOLD and E2=FAIL.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2168,
+        "completion_tokens": 472
+      }
+    },
+    {
+      "id": "hard3_0364",
+      "repeat_id": 1,
+      "equation1": "x * y = x * ((x * z) * x)",
+      "equation2": "x * (y * x) = x * (z * z)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 4.97,
+      "raw_response": "To determine whether Equation 1 (x * y = x * ((x * z) * x)) implies Equation 2 (x * (y * x) = x * (z * z)) over all magmas, we will perform the specified tests step by step.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x * y\"\n- E1_R = \"x * ((x * z) * x)\"\n- E2_L = \"x * (y * x)\"\n- E2_R = \"x * (z * z)\"\n\nNow, let's apply the tests:\n\n1. **LP (Left Prefix)** Test: We compare the first letter on the left side of each equation with the first letter on the right side.\n   - For E1: The first letter on the left is \"x\" and on the right is \"x\". So, E1 holds.\n   - For E2: The first letter on the left is \"x\" and on the right is \"x\". So, E2 holds.\n   - Result: E1=HOLD, E2=HOLD. No separation.\n\n2. **RP (Right Prefix)** Test: We compare the last letter on the left side with the last letter on the right side, ignoring any trailing parentheses.\n   - For E1: The last letter on the left is \"y\" and on the right is \"x\". So, E1 fails.\n   - For E2: The last letter on the left is \"x\" and on the right is \"z\" (ignoring the trailing parentheses). So, E2 fails.\n   - Result: E1=FAIL, E2=FAIL. No separation.\n\n3. **C0 Test**: We check if the left and right sides of each equation contain a \"*\".\n   - For E1: Both sides contain \"*\". So, E1 holds.\n   - For E2: Both sides contain \"*. So, E2 holds.\n   - Result: E1=HOLD, E2=HOLD. No separation.\n\n4. **VARS Test**: We compare the set of distinct letters on the left side with the set on the right side.\n   - For E1: The left side has {x, y} and the right side has {x, z}. So, E1 fails because the sets are not the same.\n   - For E2: The left side has {x, y} and the right side has {x, z}. So, E2 fails for the same reason as E1.\n   - Result: E1=FAIL, E2=FAIL. No separation.\n\nGiven that none of the tests resulted in E1=HOLD and E2=FAIL, we conclude that there is no separation found through these tests.\n\nVERDICT: TRUE\nREASONING: No test separates E1 from E2.\nPROOF: All 4 tests checked; none had E1=HOLD with E2=FAIL.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 2163,
+        "completion_tokens": 626
+      }
+    }
+  ]
+}

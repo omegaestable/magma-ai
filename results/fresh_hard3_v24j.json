@@ -1,0 +1,990 @@
+{
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "cheatsheet": "cheatsheets/v24j.txt",
+  "subset": "(local)",
+  "repeats": 1,
+  "timestamp": "2026-04-08 12:55:19",
+  "summary": {
+    "total": 60,
+    "correct": 30,
+    "incorrect": 29,
+    "unparsed": 1,
+    "accuracy": 0.5,
+    "f1_score": 0.6154,
+    "precision": 0.5,
+    "recall": 0.8,
+    "parse_rate": 0.9833,
+    "true_accuracy": 0.8,
+    "false_accuracy": 0.2,
+    "tp": 24,
+    "fp": 24,
+    "fn": 6,
+    "tn": 6,
+    "avg_time_s": 22.63,
+    "total_time_s": 1357.97,
+    "prompt_tokens": 201839,
+    "completion_tokens": 42031
+  },
+  "results": [
+    {
+      "id": "hard3_0091",
+      "repeat_id": 1,
+      "equation1": "x = y * (y * ((x * y) * y))",
+      "equation2": "x = (y * (z * z)) * (y * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 14.51,
+      "raw_response": "To determine whether Equation 1 (x = y * (y * ((x * y) * y))) implies Equation 2 (x = (y * (z * z)) * (y * x)) over all magmas, we'll follow the steps outlined.\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * (y * ((x * y) * y))\"\n- E2_L = \"x\"\n- E2_R = \"(y * (z * z)) * (y * x)\"\n\nNow, let's perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and on the right is \"y\". So, E1=FAIL.\n   - E2: First letter on both sides is \"x\". So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"y\". So, E1=FAIL.\n   - E2: Last letter on both sides is \"x\". So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue.\n\n3. **C0 (Contains * Test)**:\n   - E1_L has no *, E1_R has *. So, E1=FAIL.\n   - E2_L has no *, E2_R has *. So, E2=FAIL.\n   - Since both E1=FAIL and E2=FAIL, we continue.\n\n4. **VARS (Variables Test)**:\n   - E1_L has {x}, E1_R has {x, y}. So, E1=FAIL.\n   - E2_L has {x}, E2_R has {x, y, z}. So, E2=FAIL.\n   - Since both E1=FAIL and E2=FAIL, we continue.\n\nSince no separation was found and the RP test showed E1=FAIL, we do not proceed to the T3R rescue. Given that all structural tests did not yield a separation and the conditions for T3R rescue were not met (because RP showed E1=FAIL), the default verdict is TRUE.\n\nVERDICT: TRUE\nREASONING: No structural separation was found, and the conditions for T3R rescue were not met.\nPROOF: The process followed the outlined steps without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3368,
+        "completion_tokens": 546
+      }
+    },
+    {
+      "id": "hard3_0105",
+      "repeat_id": 1,
+      "equation1": "x = x * ((x * y) * (z * z))",
+      "equation2": "x * y = x * (z * (x * z))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 13.88,
+      "raw_response": "To solve this problem, we'll follow the instructions step by step.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"x * ((x * y) * (z * z))\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (z * (x * z))\"\n\nNext, we perform the four structural tests:\n\nTEST 1 — LP: \n- E1 first letter on the left side is \"x\" and on the right side is \"x\", so E1=HOLD.\n- E2 first letter on the left side is \"x\" and on the right side is \"x\", so E2=HOLD.\nSince both are HOLD, we continue.\n\nTEST 2 — RP:\n- E1 last letter on the left side is \"x\" and on the right side is \"z\" (after removing the trailing parentheses), so E1=FAIL.\n- E2 last letter on the left side is \"y\" and on the right side is \"z\", so E2=FAIL.\nBoth are FAIL, so we continue.\n\nTEST 3 — C0:\n- E1 left side has no \"*\" and the right side has \"*\", so E1=FAIL.\n- E2 left side has \"*\" and the right side has \"*\", so E2=HOLD.\nHere, E1=FAIL and E2=HOLD, so we continue.\n\nTEST 4 — VARS:\n- E1 left side has only \"x\" and the right side has \"x\", \"y\", and \"z\", so E1=FAIL.\n- E2 left side has \"x\" and \"y\" and the right side has \"x\" and \"z\", so E2=FAIL.\nBoth are FAIL, so we continue.\n\nSince no separation was found in the structural tests and TEST 2 (RP) showed E1=FAIL, we skip the T3R rescue.\n\nGiven that no structural test found a separation, the default answer is TRUE.\n\nVERDICT: TRUE\nREASONING: No separation was found in the structural tests.\nPROOF: The equations passed all structural tests without finding a separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3364,
+        "completion_tokens": 463
+      }
+    },
+    {
+      "id": "hard3_0229",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * x) * (z * x)",
+      "equation2": "x = (y * (x * x)) * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 27.71,
+      "raw_response": "To determine whether Equation 1 (E1: x = ((y * x) * x) * (z * x)) implies Equation 2 (E2: x = (y * (x * x)) * (z * x)) over all magmas, we'll follow the given structural tests and then apply the T3R rescue if necessary.\n\nGiven E1 and E2, let's start by splitting each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((y * x) * x) * (z * x)\"\n- E2_L = \"x\"\n- E2_R = \"(y * (x * x)) * (z * x)\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - Since both are FAIL, there's no separation here.\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - Both are HOLD, so no separation.\n\n3. **C0 (* Presence)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - Both are FAIL, so no separation.\n\n4. **VARS (Variables)**:\n   - E1 L = {x}, R = {x, y, z} → FAIL\n   - E2 L = {x}, R = {x, y, z} → FAIL\n   - Both are FAIL, so no separation.\n\nSince none of the structural tests found a separation and E1's RP test showed HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\nAssign numbers to variables by first appearance: x = 0, y = 1, z = 2.\n\n- Rewrite E1 RHS: \"((1 * 0) * 0) * (2 * 0)\"\n  - Evaluate from innermost * outward:\n    1. \"1 * 0\" → next(0) = 1, so \"(1 * 0)\" becomes \"1\"\n    2. \"1 * 0\" → next(0) = 1, so the expression becomes \"1 * 1\"\n    3. \"1 * 1\" → next(1) = 2, so \"1 * 1\" becomes \"2\"\n    4. \"2 * 0\" → next(0) = 1, so the expression becomes \"2 * 1\"\n    5. \"2 * 1\" → next(1) = 2, so this becomes \"2\"\n  - E1 RHS becomes \"2\"\n- E1 LHS is \"0\", so E1 LHS ≠ E1 RHS (0 ≠ 2). According to the T3R rules, if E1 LHS ≠ E1 RHS, we stop and conclude there's no separation, which implies E1 does not imply E2 over all magmas in the context of this specific test. However, the instructions for T3R indicate that if E1 LHS ≠ E1 RHS, we should stop and conclude no separation is possible, implying the answer is TRUE. This seems to be a misunderstanding in the explanation of the process.\n\nThus, based on the T3R rescue's indication that we should conclude no separation (and hence implication) when E1's sides do not match under the specific rules of T3R, but given the rules' emphasis on stopping and considering the implication true if E1's sides do not match, the analysis was incorrectly directed towards finding a separation where the process actually suggests concluding the verification of implication based on the T3R's specific conditions and the initial premise of the problem statement.\n\nVERDICT: TRUE\nREASONING: The T3R rescue procedure indicates that if E1's LHS and RHS do not match under its evaluation rules, we should consider the implication holds true as per the process's instructions for handling such cases.\nPROOF: The step-by-step evaluation under T3R rules, focusing on the procedure's guidelines for non-matching E1 sides, leads to the conclusion that E1 implies E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3370,
+        "completion_tokens": 947
+      }
+    },
+    {
+      "id": "hard3_0206",
+      "repeat_id": 1,
+      "equation1": "x = (y * (y * x)) * (y * x)",
+      "equation2": "x * y = x * (z * (w * y))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 3.76,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to follow the steps outlined.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (y * x)) * (y * x)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (z * (w * y))\"\n\nThen, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: first letter on the left is \"x\", and on the right is \"y\" → FAIL\n   - E2: first letter on the left is \"x\", and on the right is \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n2. **RP (Last Letter)**: \n   - E1: last letter on the left is \"x\", and on the right is \"x\" → HOLD\n   - E2: last letter on the left is \"y\", and on the right is \"y\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Containment of **)**:\n   - E1: left side has no *, right side has * → FAIL\n   - E2: left side has *, right side has * → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n4. **VARS (Set of Variables)**:\n   - E1: left side contains {x}, right side contains {x, y} → FAIL\n   - E2: left side contains {x, y}, right side contains {x, y, z, w} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince no structural test found a separation, and the RP test for E1 showed HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2, w=3 (though w does not appear in E1, it is in E2, so we include it for completeness in assignment).\n\n- Rewrite E1 RHS with numbers: \"(1 * (1 * 0)) * (1 * 0)\"\n  - Evaluate from innermost * outward:\n    1. \"1 * 0\" → next(0) = 1, so \"(1 * 1) * 1\"\n    2. \"1 * 1\" → next(1) = 2, so \"2 * 1\"\n    3. \"2 * 1\" → next(1) = 2\n  - E1 RHS = 2\n\n- E1 LHS is \"x\" which is 0. Since 0 ≠ 2, E1 fails the T3R test, but according to the rules, if E1 LHS ≠ E1 RHS, we STOP and conclude no separation is possible, answering TRUE.\n\nVERDICT: TRUE\nREASONING: No separation was found through structural tests, and the T3R rescue was applicable but led to a conclusion of no separation due to E1's failure to hold under the test.\nPROOF: The absence of separation in structural tests and the specific outcome of the T3R rescue for E1.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3365,
+        "completion_tokens": 719
+      }
+    },
+    {
+      "id": "hard3_0349",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (y * (y * z))",
+      "equation2": "x * (y * x) = x * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.98,
+      "raw_response": "Let's analyze the given equations according to the rules provided.\n\n\nE1: x * x = y * (y * (y * z))\nE2: x * (y * x) = x * (z * x)\n\n\nFirst, we split each equation at the equals sign:\nE1_L = \"x * x\"    E1_R = \"y * (y * (y * z))\"\nE2_L = \"x * (y * x)\"    E2_R = \"x * (z * x)\"\n\n\nNow, we proceed with the structural tests.\n\n\nLP: E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD\n     → E1=FAIL E2=HOLD → no separation\n\n\nRP: E1 last(L)=x last(R)=z → FAIL | E2 last(L)=x last(R)=x → HOLD\n     → E1=FAIL E2=HOLD → no separation\n\n\nC0: E1 L has *, R has * → HOLD | E2 L has *, R has * → HOLD\n     → E1=HOLD E2=HOLD → no separation\n\n\nVARS: E1 L={x} R={x,y,z} → FAIL | E2 L={x,y} R={x,z} → FAIL\n     → E1=FAIL E2=FAIL → no separation\n\n\nSince no separation was found in the structural tests and E1_RP showed E1=FAIL, we skip the T3R rescue and conclude that there is no separation.\n\n\nVERDICT: TRUE\nREASONING: No separation was found in the structural tests.\nPROOF: The equations do not have an obvious separation based on the given rules.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3364,
+        "completion_tokens": 369
+      }
+    },
+    {
+      "id": "hard3_0200",
+      "repeat_id": 1,
+      "equation1": "x = (x * (x * y)) * (z * z)",
+      "equation2": "x = (x * (y * x)) * (z * w)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 6.98,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first need to analyze the given equations: \nE1: x = (x * (x * y)) * (z * z)\nE2: x = (x * (y * x)) * (z * w)\n\nGiven the equations, let's break them down into their constituent parts as required:\nE1_L = \"x\"\nE1_R = \"(x * (x * y)) * (z * z)\"\nE2_L = \"x\"\nE2_R = \"(x * (y * x)) * (z * w)\"\n\nNow, let's perform the structural tests.\n\nLP: \nE1 first(L) = x, first(R) = x → HOLD\nE2 first(L) = x, first(R) = x → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nRP: \nE1 last(L) = x, last(R) = z → FAIL\nE2 last(L) = x, last(R) = w → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nC0: \nE1 L has no *, R has * → FAIL\nE2 L has no *, R has * → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nVARS: \nE1 L={x}, R={x,y,z} → FAIL\nE2 L={x}, R={x,y,z,w} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nSince no structural test found a separation and the RP test showed E1=FAIL, we skip the T3R rescue and conclude there's no separation.\n\nVERDICT: TRUE\nREASONING: All structural tests failed to find a separation, and with E1=FAIL in the RP test, the T3R rescue was skipped, leading to the conclusion that E1 implies E2 over all magmas.\nPROOF: The analysis of the structural tests and the decision to skip the T3R rescue due to E1=FAIL in the RP test support the verdict.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3394,
+        "completion_tokens": 448
+      }
+    },
+    {
+      "id": "hard3_0312",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * z)) * w) * z",
+      "equation2": "x = x * (y * (y * x))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 22.57,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first need to understand the structure of both equations and then apply the structural tests as outlined.\n\nEquation 1 (E1) is x = ((x * (y * z)) * w) * z, and Equation 2 (E2) is x = x * (y * (y * x)).\n\nLet's split both equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((x * (y * z)) * w) * z\"\n- E2_L = \"x\"\n- E2_R = \"x * (y * (y * x))\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"x\" (after scanning past parentheses), so E1=HOLD.\n   - E2: First letter on both sides is \"x\", so E2=HOLD.\n   - Since both are HOLD, we continue to the next test.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"z\", so E1=FAIL.\n   - E2: Last letter on both sides is \"x\", so E2=HOLD.\n   - Here, E1=FAIL and E2=HOLD, so we continue.\n\n3. **C0 (Contains Asterisk)**:\n   - E1: Left side does not contain \"*\", but the right side does, so E1=FAIL.\n   - E2: Left side does not contain \"*\", but the right side does, so E2=FAIL.\n   - Both are FAIL, so we continue.\n\n4. **VARS (Set of Variables)**:\n   - E1: Left side contains only \"x\", and the right side contains \"x\", \"y\", \"z\", and \"w\", so E1=FAIL.\n   - E2: Left side contains only \"x\", and the right side contains \"x\" and \"y\", so E2=FAIL.\n   - Both are FAIL, which means no separation has been found through these structural tests.\n\nSince no separation was found and E1's RP test showed FAIL, we do not proceed with the T3R rescue. Given that no test resulted in E1=HOLD and E2=FAIL (the only combination that indicates separation and thus a FALSE verdict), we default to TRUE, indicating that Equation 1 implies Equation 2 over all magmas, based on the provided structural tests and the rules outlined.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the default is TRUE unless a clear separation is identified.\nPROOF: The process followed the outlined structural tests without finding any separation that would indicate E1 does not imply E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3361,
+        "completion_tokens": 617
+      }
+    },
+    {
+      "id": "hard3_0201",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * x)) * (y * z)",
+      "equation2": "x = (((x * y) * z) * y) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 10.78,
+      "raw_response": "To determine whether Equation 1 (x = (x * (y * x)) * (y * z)) implies Equation 2 (x = (((x * y) * z) * y) * x) over all magmas, we must follow the given steps and rules for structural tests and, if necessary, apply the T3R rescue.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * (y * x)) * (y * z)\"\n- E2_L = \"x\"\n- E2_R = \"(((x * y) * z) * y) * x\"\n\nThen, we apply the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and on the right is \"x\" (after skipping the opening parenthesis).\n   - E2: First letter on the left is \"x\", and on the right is \"x\".\n   - Since both equations have the same first letter on both sides, we have E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"z\".\n   - E2: Last letter on the left is \"x\", and on the right is \"x\".\n   - E1 shows a mismatch (x ≠ z), and E2 shows a match. So, we have E1=FAIL and E2=HOLD.\n\n3. **C0 (Contains * Test)**:\n   - E1_L has no \"*\", but E1_R has \"*\". \n   - E2_L has no \"*\", but E2_R has \"*\".\n   - Since both left sides do not have \"*\" and both right sides do, we have a FAIL for both because the requirement for HOLD is that both sides either have \"*\" or not, and if one side is a bare variable, the other must use only that variable, which is not the case here as the right sides involve multiple variables.\n\n4. **VARS (Variables Test)**:\n   - E1_L involves only \"x\", while E1_R involves \"x\", \"y\", and \"z\".\n   - E2_L involves only \"x\", while E2_R involves \"x\", \"y\", and \"z\".\n   - For both equations, the left side is a single variable \"x\", and the right side involves more than just \"x\", leading to FAIL for both.\n\nGiven that all structural tests result in either both HOLD or both FAIL without finding a separation where E1=HOLD and E2=FAIL, we proceed to the T3R rescue if the conditions are met. However, for T3R rescue to be applicable, we need E1 to have passed the RP test as HOLD, which is not the case here (E1=FAIL in the RP test). Thus, we do not proceed with the T3R rescue.\n\nGiven the analysis and the rules provided, since no structural test found a separation (a situation where E1=HOLD and E2=FAIL), and we do not meet the criteria to apply the T3R rescue due to E1 failing the RP test, the default answer applies:\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for applying the T3R rescue were not met.\nPROOF: The step-by-step analysis indicates that without a specific counterexample from the tests or the T3R rescue, we default to the implication being true.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3394,
+        "completion_tokens": 753
+      }
+    },
+    {
+      "id": "hard3_0232",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * z) * (y * z)",
+      "equation2": "x * y = x * ((z * z) * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 3.4,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must analyze the structural tests provided and apply the T3R rescue if necessary.\n\nGiven Equation 1 (E1): x = ((y * x) * z) * (y * z) and Equation 2 (E2): x * y = x * ((z * z) * y), let's split them at the \"=\" sign:\n\nE1_L = \"x\"  \nE1_R = \"((y * x) * z) * (y * z)\"  \nE2_L = \"x * y\"  \nE2_R = \"x * ((z * z) * y)\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter Test)**:  \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL  \n   - E2 first(L) = \"x\", first(R) = \"x\" → HOLD  \n   → E1=FAIL, E2=HOLD → no separation\n\n2. **RP (Last Letter Test)**:  \n   - E1 last(L) = \"x\", last(R) = \"z\" → FAIL  \n   - E2 last(L) = \"y\", last(R) = \"y\" → HOLD  \n   → E1=FAIL, E2=HOLD → no separation\n\n3. **C0 (Presence of \"*\" Test)**:  \n   - E1 L has no *, R has * → FAIL  \n   - E2 L has *, R has * → HOLD  \n   → E1=FAIL, E2=HOLD → no separation\n\n4. **VARS (Set of Variables Test)**:  \n   - E1 L={x}, R={x,y,z} → FAIL  \n   - E2 L={x,y}, R={x,y,z} → FAIL  \n   → E1=FAIL, E2=FAIL → no separation\n\nSince no structural test showed separation and the RP test for E1 resulted in FAIL, we do not proceed to the T3R rescue as per the rules. The absence of separation in all tests indicates that we cannot conclude E1 implies E2 or not based on the structural tests alone, but given the format and instructions, the default stance in the absence of explicit separation is to consider the implication as not proven false.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for applying the T3R rescue were not met due to the RP test result for E1.\nPROOF: The lack of separation in the structural tests, given the constraints of the problem, leads to the conclusion that E1 implying E2 cannot be disproven through these methods.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3365,
+        "completion_tokens": 573
+      }
+    },
+    {
+      "id": "hard3_0049",
+      "repeat_id": 1,
+      "equation1": "x = ((y * z) * w) * x",
+      "equation2": "x = y * (z * (x * (w * x)))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 18.12,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step.\n\n\nE1: x = ((y * z) * w) * x\nE2: x = y * (z * (x * (w * x)))\n\nFirst, let's split each equation at the equals sign:\n\n\nE1_L = \"x\"\nE1_R = \"((y * z) * w) * x\"\nE2_L = \"x\"\nE2_R = \"y * (z * (x * (w * x)))\"\n\nNow, we'll perform the structural tests.\n\n\nTEST 1 — LP:\nE1 first(L) = x, first(R) = y → FAIL\nE2 first(L) = x, first(R) = y → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nTEST 2 — RP:\nE1 last(L) = x, last(R) = x → HOLD\nE2 last(L) = x, last(R) = x → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\nTEST 3 — C0:\nE1 L has no *, R has * → FAIL\nE2 L has no *, R has * → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nTEST 4 — VARS:\nE1 L={x}, R={x,y,z,w} → FAIL\nE2 L={x}, R={x,y,z,w} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\nSince none of the structural tests found a separation and RP showed E1=HOLD, we proceed to the T3R rescue.\n\n\nT3R rescue:\nAssign numbers to variables by first appearance:\nx = 0, y = 1, z = 2, w = 0 (since it's the 4th distinct variable, it wraps around to 0)\n\nRewrite E1 RHS with numbers:\n\"((y * z) * w) * x\" becomes \"((1 * 2) * 0) * 0\"\n\nE1 LHS \"x\" becomes 0.\nEvaluate from innermost * outward:\n1 * 2 → next(2) = 0 → \"(0 * 0) * 0\"\n0 * 0 → next(0) = 1 → \"1 * 0\"\n1 * 0 → next(0) = 1\nE1 RHS = 1, but we need to compare the LHS and RHS of E1 first.\n\nE1 LHS = 0, E1 RHS calculation ended with 1, which indicates E1 LHS ≠ E1 RHS. According to the T3R rules, if E1 LHS ≠ E1 RHS, we should stop and conclude that there's no separation, meaning the answer is TRUE.\n\n\nVERDICT: TRUE\nREASONING: The T3R rescue procedure showed that E1 does not hold under the magma operation rules as initially thought because the left-hand side and right-hand side of E1 do not match after evaluation, indicating no separation and thus E1 implies E2 over all magmas by default.\nPROOF: T3R rescue evaluation of E1.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3362,
+        "completion_tokens": 685
+      }
+    },
+    {
+      "id": "hard3_0371",
+      "repeat_id": 1,
+      "equation1": "x * x = (y * z) * (z * w)",
+      "equation2": "x * (y * z) = y * (x * z)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 7.55,
+      "raw_response": "To determine whether Equation 1 (x * x = (y * z) * (z * w)) implies Equation 2 (x * (y * z) = y * (x * z)) over all magmas, we'll follow the given steps and analyze each part systematically.\n\nGiven E1: x * x = (y * z) * (z * w) and E2: x * (y * z) = y * (x * z), let's break them down:\n\n- E1_L = \"x * x\"\n- E1_R = \"(y * z) * (z * w)\"\n- E2_L = \"x * (y * z)\"\n- E2_R = \"y * (x * z)\"\n\nNow, let's perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first(L) = x, first(R) = y → FAIL\n   - E2 first(L) = x, first(R) = y → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n2. **RP (Last Letter Test)**:\n   - E1 last(L) = x, last(R) = w → FAIL\n   - E2 last(L) = z, last(R) = z → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n3. **C0 (Presence of * Test)**:\n   - E1 L has *, R has * → HOLD\n   - E2 L has *, R has * → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n4. **VARS (Variables Test)**:\n   - E1 L={x}, R={y,z,w} → FAIL\n   - E2 L={x,y,z}, R={x,y,z} → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\nSince none of the structural tests found a separation and the RP test showed E1=FAIL, we skip the T3R rescue. Without a separation found in any of the tests, the default answer applies.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for applying the T3R rescue were not met.\nPROOF: The analysis above demonstrates that the equations do not separate through the provided tests.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3390,
+        "completion_tokens": 504
+      }
+    },
+    {
+      "id": "hard3_0378",
+      "repeat_id": 1,
+      "equation1": "x * y = (z * y) * (z * y)",
+      "equation2": "x * y = (z * w) * (w * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 42.13,
+      "raw_response": "To determine whether Equation 1 (E1: x * y = (z * y) * (z * y)) implies Equation 2 (E2: x * y = (z * w) * (w * y)) over all magmas, we'll follow the given steps and analysis format.\n\nFirst, we split each equation at the equals sign:\n- E1_L = \"x * y\"\n- E1_R = \"(z * y) * (z * y)\"\n- E2_L = \"x * y\"\n- E2_R = \"(z * w) * (w * y)\"\n\nThen, we apply the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and on the right is \"z\". Different, so E1=FAIL.\n   - E2: First letter on the left is \"x\", and on the right is \"z\". Different, so E2=FAIL.\n   - Since both are FAIL, there's no separation, and we continue.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"y\", and on the right is \"y\". Same, so E1=HOLD.\n   - E2: Last letter on the left is \"y\", and on the right is \"y\". Same, so E2=HOLD.\n   - Both are HOLD, so there's no separation, and we continue.\n\n3. **C0 (Presence of * Test)**:\n   - E1: Both sides have *. So, E1=HOLD.\n   - E2: Both sides have *. So, E2=HOLD.\n   - Both are HOLD, indicating no separation, and we continue.\n\n4. **VARS (Set of Variables Test)**:\n   - E1: Left side has {x, y}, and the right side has {z, y}. Different sets, so E1=FAIL.\n   - E2: Left side has {x, y}, and the right side has {z, w, y}. Different sets, so E2=FAIL.\n   - Both are FAIL, so there's no separation, and we proceed to the T3R rescue since RP showed E1=HOLD.\n\nBefore proceeding to T3R, we note that all structural tests did not find a separation, but since RP showed E1=HOLD, we can attempt the T3R rescue.\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2, w=0 (since it's the 4th distinct variable and wraps around to 0).\n- Rewrite E1_RHS: \"(z * y) * (z * y)\" becomes \"(2 * 1) * (2 * 1)\".\n- Evaluate E1 from innermost * outward:\n  - \"2 * 1\" → next(1)=2, so we get \"2 * 2\".\n  - \"2 * 2\" → next(2)=0.\n- So, E1_RHS evaluates to 0.\n- E1_LHS is \"x * y\" which becomes \"0 * 1\" and evaluates to next(1)=2. Since E1_LHS ≠ E1_RHS (2 ≠ 0), we STOP, and according to the rules, this means there's no separation possible, and we answer TRUE.\n\nVERDICT: TRUE\nREASONING: The structural tests did not find any separation, and the T3R rescue, although initiated, stopped due to E1_LHS ≠ E1_RHS, indicating no implication failure.\nPROOF: The analysis above provides the step-by-step reasoning for why E1 does not imply a failure of E2 over all magmas.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3390,
+        "completion_tokens": 805
+      }
+    },
+    {
+      "id": "hard3_0189",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * ((x * x) * x)",
+      "equation2": "x = ((y * z) * z) * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 16.45,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first need to apply the structural tests and then, if necessary, proceed with the T3R rescue.\n\nEquation 1 (E1) is x = (y * x) * ((x * x) * x) and Equation 2 (E2) is x = ((y * z) * z) * (z * x).\n\nLet's start by splitting each equation at the equals sign:\n- E1_L = \"x\"\n- E1_R = \"(y * x) * ((x * x) * x)\"\n- E2_L = \"x\"\n- E2_R = \"((y * z) * z) * (z * x)\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter Test)**:\n   - E1: First letter on the left is \"x\", and on the right is \"y\". So, E1=FAIL.\n   - E2: First letter on the left is \"x\", and on the right is \"y\" (considering the expression inside the parentheses). So, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"x\". So, E1=HOLD.\n   - E2: Last letter on the left is \"x\", and on the right is \"x\". So, E2=HOLD.\n   - Since both are HOLD, there's no separation.\n\n3. **C0 (Contains * Test)**:\n   - E1: Left side has no *, right side has *. So, E1=FAIL.\n   - E2: Left side has no *, right side has *. So, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\n4. **VARS (Variables Test)**:\n   - E1: Left side contains {x}, right side contains {x, y}. So, E1=FAIL.\n   - E2: Left side contains {x}, right side contains {x, y, z}. So, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\nGiven that no separation was found in the structural tests and E1=HOLD in the RP test, we proceed with the T3R rescue:\n\n- Assign numbers to variables by first appearance: x=0, y=1, z=2.\n- Rewrite E1 RHS: \"(y * x) * ((x * x) * x)\" becomes \"(1 * 0) * ((0 * 0) * 0)\".\n- Evaluate E1 RHS from innermost * outward:\n  - \"0 * 0\" becomes next(0)=1, so we have \"(1 * 0) * (1 * 0)\".\n  - Evaluating further, \"1 * 0\" becomes next(0)=1, so we have \"1 * 1\".\n  - \"1 * 1\" becomes next(1)=2.\n  - So, E1 RHS simplifies to 2.\n- E1 LHS is \"x\" which is 0. Since 0 ≠ 2, E1 fails the T3R rescue.\n\nHowever, my analysis took an incorrect turn in evaluating the outcome of the T3R rescue directly without considering the proper process for determining the implication between the two equations based on the structural tests and the T3R rescue mechanism. The critical step missed was the evaluation and comparison process within the T3R rescue, which directly influences the conclusion about whether E1 implies E2.\n\nGiven the confusion in the explanation and the incorrect application of the T3R rescue procedure, let's correct the approach for determining the implication between the two equations, following the specified rules and process correctly:\n\nSince we didn't correctly follow through with the proper T3R rescue evaluation and comparison as per the guidelines, and given the complexity of the equations and the need to adhere strictly to the provided format and rules for analysis, the correct approach involves closely following the defined steps without skipping critical evaluations or misinterpreting the outcomes of those evaluations.\n\nThus, given the misunderstanding in applying the rules and the analysis not being completed as per the specified guidelines, the correct conclusion should be based on the proper application of the structural tests and the T3R rescue, acknowledging the mistake in the evaluation process.\n\nThe analysis incorrectly proceeded with an incomplete application of the T3R rescue, missing the critical comparison and evaluation steps that are necessary for a valid conclusion.\n\nVERDICT: FALSE\nREASONING: The analysis did not correctly apply the T3R rescue mechanism as specified, leading to an incorrect conclusion about the implication between the two equations.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3394,
+        "completion_tokens": 1005
+      }
+    },
+    {
+      "id": "hard3_0215",
+      "repeat_id": 1,
+      "equation1": "x = ((x * x) * y) * (z * x)",
+      "equation2": "x = x * ((y * (z * z)) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 83.47,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step according to the provided rules.\n\nFirst, let's write out the four pieces by splitting each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * x) * y) * (z * x)\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * (z * z)) * x)\"\n\nNow, we'll proceed with the structural tests.\n\nTEST 1 — LP: \n- The first letter on the left side of E1 is \"x\", and on the right side, scanning past all opening parentheses, the first letter is \"x\".\n- The first letter on the left side of E2 is \"x\", and on the right side, it's also \"x\".\n- Since both equations have the same first letter on both sides, they both HOLD.\n\nTEST 2 — RP: \n- The last letter on the left side of E1 is \"x\", and on the right side, skipping all trailing parentheses, the last letter is \"x\".\n- The last letter on the left side of E2 is \"x\", and on the right side, it's also \"x\".\n- Both equations have the same last letter on both sides, so they both HOLD.\n\nTEST 3 — C0: \n- The left side of E1 does not contain \"*\", but the right side does.\n- The left side of E2 does not contain \"*\", and the right side does.\n- Both equations have \"*\" on one side but not the other, so they both FAIL this test.\n\nTEST 4 — VARS: \n- E1's left side contains only \"x\", and its right side contains \"x\", \"y\", and \"z\".\n- E2's left side contains only \"x\", and its right side contains \"x\", \"y\", and \"z\".\n- The left side of both equations has only \"x\", but the right sides have more variables, so they both FAIL this test.\n\nGiven that none of the structural tests found a separation where E1=HOLD and E2=FAIL, and considering that TEST 2 (RP) showed E1=HOLD, we proceed to the T3R RESCUE.\n\nFor the T3R rescue, we first assign numbers to variables by their first appearance across both equations: x=0, y=1, z=2.\n\nThen, we rewrite each side of both equations fully with numbers:\n- E1_RHS: \"(0 * 0) * 1) * (2 * 0)\" for the right side.\n- E1_LHS: \"0\" for the left side.\n- E2_RHS: \"0 * ((1 * (2 * 2)) * 0)\" for the right side.\n- E2_LHS: \"0\" for the left side.\n\nNow, we evaluate from the innermost \"*\" outward:\n- For E1, starting with the innermost operation: \"0 * 0\" gives next(0)=1, simplifying to \"1 * 1) * (2 * 0)\".\n- Continuing, \"1 * 1\" gives next(1)=2, simplifying further to \"2) * (2 * 0)\".\n- Then, \"2 * 0\" gives next(0)=1, resulting in \"2 * 1\".\n- Finally, \"2 * 1\" gives next(1)=2, so E1_RHS simplifies to \"2\", but we need to correctly follow the steps for the initial simplification error and then compare LHS and RHS properly after accurate T3R application.\n\nLet's correct the simplification process according to the T3R rule (a * b = next(b)) and accurately evaluate both equations:\n- Correctly evaluating E1's RHS step by step: \n    1. \"0 * 0\" = next(0) = 1, so we get \"(1 * 1) * (2 * 0)\".\n    2. Then, \"1 * 1\" = next(1) = 2, so we have \"2 * (2 * 0)\".\n    3. Next, \"2 * 0\" = next(0) = 1, resulting in \"2 * 1\".\n    4. Finally, \"2 * 1\" = next(1) = 2, so E1_RHS = 2.\n- E1_LHS is \"0\", so E1_LHS ≠ E1_RHS. This indicates E1 does not hold under T3R, meaning we should stop and conclude that there's no separation based on the T3R rescue attempt.\n\nSince the T3R rescue attempt showed that E1 does not hold (E1_LHS ≠ E1_RHS), we conclude there's no separation based on the rules provided, which suggests that the implication cannot be disproven through the structural tests or the T3R rescue as initially thought. Thus, our analysis should reflect the understanding that without a clear separation, the implication holds true under the default assumption.\n\nVERDICT: TRUE\nREASONING: The analysis did not find a clear separation between Equation 1 and Equation 2 through the structural tests or the T3R rescue, indicating that Equation 1 implies Equation 2 over all magmas.\nPROOF: The lack of separation in the structural tests and the outcome of the T3R rescue process supports the implication.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3392,
+        "completion_tokens": 1160
+      }
+    },
+    {
+      "id": "hard3_0134",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * (z * x)) * z)",
+      "equation2": "x * y = x * (z * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 9.55,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step according to the provided rules and tests.\n\nGiven Equation 1 (E1): x = x * ((y * (z * x)) * z)\nGiven Equation 2 (E2): x * y = x * (z * y)\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"x * ((y * (z * x)) * z)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (z * y)\"\n\nNow, we perform the four structural tests:\n\n1. **LP (First Letter Test)**:\n   - E1 first letter on the left side is \"x\", and on the right side is \"x\", so E1=HOLD.\n   - E2 first letter on the left side is \"x\", and on the right side is \"x\", so E2=HOLD.\n   Since both are HOLD, we proceed to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1 last letter on the left side is \"x\", and on the right side is \"z\", so E1=FAIL.\n   - E2 last letter on the left side is \"y\", and on the right side is \"y\", so E2=HOLD.\n   Here, E1=FAIL and E2=HOLD, so we continue to the next test.\n\n3. **C0 (Contains * Test)**:\n   - E1 left side does not contain \"*\", but the right side does, so E1=FAIL.\n   - E2 left side contains \"*\", and the right side also contains \"*\", so E2=HOLD.\n   Since E1=FAIL and E2=HOLD, we proceed.\n\n4. **VARS (Variables Test)**:\n   - E1 left side has only \"x\", while the right side has \"x\", \"y\", and \"z\", so E1=FAIL.\n   - E2 left side has \"x\" and \"y\", and the right side has \"x\", \"z\", and \"y\", so E2=FAIL.\n   Both are FAIL, so we continue.\n\nSince no separation was found through these tests and given that the RP test showed E1=FAIL, we skip the T3R rescue and conclude that there's no separation based on the structural tests provided.\n\nTherefore, based on the analysis and following the rules strictly, the verdict is determined by the lack of separation found in the tests.\n\nVERDICT: TRUE\nREASONING: No separation was found between Equation 1 and Equation 2 through the structural tests, and the conditions for the T3R rescue were not met to alter the verdict.\nPROOF: The step-by-step analysis of the structural tests (LP, RP, C0, VARS) did not yield a separation, indicating Equation 1 implies Equation 2 over all magmas under the given conditions.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3382,
+        "completion_tokens": 639
+      }
+    },
+    {
+      "id": "hard3_0346",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (z * w))",
+      "equation2": "x * (y * z) = y * (z * w)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 40.59,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must first analyze both equations structurally according to the provided tests.\n\nEquation 1 (E1): x * x = y * (x * (z * w))\nEquation 2 (E2): x * (y * z) = y * (z * w)\n\nFirst, let's split both equations at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"y * (x * (z * w))\"\n- E2_L = \"x * (y * z)\"\n- E2_R = \"y * (z * w)\"\n\nNow, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first letter on the left is \"x\" and on the right is \"y\", so E1=FAIL.\n   - E2 first letter on the left is \"x\" and on the right is \"y\", so E2=FAIL.\n   - E1=FAIL, E2=FAIL → no separation.\n\n2. **RP (Last Letter)**: \n   - For E1, the last letter on the left is \"x\" and on the right is \"w\", so E1=FAIL.\n   - For E2, the last letter on the left is \"z\" and on the right is \"w\", so E2=FAIL.\n   - E1=FAIL, E2=FAIL → no separation.\n\n3. **C0 (Presence of **)**: \n   - Both sides of E1 and E2 contain *, so E1=HOLD and E2=HOLD.\n   - E1=HOLD, E2=HOLD → no separation.\n\n4. **VARS (Set of Distinct Letters)**: \n   - E1 has {x, y, z, w} on the right and {x} on the left, so E1=FAIL.\n   - E2 has {x, y, z} on both sides but in a different arrangement, considering the context, it suggests E2=FAIL because the sets are the same but the arrangement and usage imply a different structure.\n   - E1=FAIL, E2=FAIL → no separation.\n\nGiven that no structural separation was found and E1's right side showed HOLD in the RP test, we proceed to the T3R rescue:\n\nT3R Rescue:\nAssign numbers to variables by first appearance: x=0, y=1, z=2, w=0 (since it wraps around after 2).\n\nRewrite E1 RHS: \"1 * (0 * (2 * 0))\"\n- E1 LHS is \"0 * 0\".\n  - First, evaluate \"2 * 0\" → next(0)=1, so it becomes \"1 * (0 * 1)\".\n  - Then, \"0 * 1\" → next(1)=2, so it becomes \"1 * 2\".\n  - Finally, \"1 * 2\" → next(2)=0.\n- So, E1 RHS = 0. \n- Since E1 LHS = E1 RHS (both are 0), we can proceed to evaluate E2.\n\nRewrite E2 RHS: \"(0 * (1 * 2)) * 0\"\n- E2 LHS is \"0 * (1 * 2)\".\n  - First, evaluate \"1 * 2\" → next(2)=0, so it becomes \"0 * 0\".\n  - Then, \"0 * 0\" → next(0)=1.\n- So, E2 RHS = \"1 * 0\" → next(0)=1.\n- Therefore, E2 RHS = 1.\n\nSince E2 LHS (which is equivalent to 0 after simplification similar to E1) ≠ E2 RHS (1), we find a separation.\n\nVERDICT: FALSE\nREASONING: The T3R rescue found a separation between E1 and E2, indicating E1 does not imply E2 over all magmas.\nPROOF: \nCOUNTEREXAMPLE: T3R.",
+      "usage": {
+        "prompt_tokens": 3388,
+        "completion_tokens": 867
+      }
+    },
+    {
+      "id": "hard3_0119",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * z) * (x * x))",
+      "equation2": "x = x * (((x * y) * y) * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 31.98,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first split each equation at the equals sign and analyze them according to the given structural tests.\n\nGiven:\n- Equation 1 (E1): x = y * ((z * z) * (x * x))\n- Equation 2 (E2): x = x * (((x * y) * y) * x)\n\n## Step 1: LP (First Letter Test)\nFor E1, the first letter on the left side is \"x\" and on the right side is \"y\". For E2, the first letter on both sides is \"x\".\n- E1: x (L) vs. y (R) → FAIL\n- E2: x (L) vs. x (R) → HOLD\nSo, E1=FAIL and E2=HOLD, which means we continue to the next test.\n\n## Step 2: RP (Last Letter Test)\nFor E1, the last letter on the left side is \"x\" and on the right side is \"x\". For E2, the last letter on both sides is \"x\".\n- E1: x (L) vs. x (R) → HOLD\n- E2: x (L) vs. x (R) → HOLD\nBoth E1=HOLD and E2=HOLD, so we continue.\n\n## Step 3: C0 (Contains * Test)\nFor E1, the left side does not contain \"*\" but the right side does. For E2, the left side does not contain \"*\" but the right side does.\n- E1: No * (L) vs. Has * (R) → FAIL\n- E2: No * (L) vs. Has * (R) → FAIL\nBoth E1=FAIL and E2=FAIL, so we continue.\n\n## Step 4: VARS (Variables Test)\nFor E1, the set of distinct letters on the left is {x} and on the right is {x, y, z}. For E2, the set on the left is {x} and on the right is {x, y}.\n- E1: {x} (L) vs. {x, y, z} (R) → FAIL\n- E2: {x} (L) vs. {x, y} (R) → FAIL\nBoth E1=FAIL and E2=FAIL, and since RP showed E1=HOLD, we proceed to the T3R rescue.\n\n## T3R Rescue\nAssign numbers to variables by first appearance: x=0, y=1, z=2.\nRewrite E1 RHS: \"y * ((z * z) * (x * x))\" becomes \"1 * ((2 * 2) * (0 * 0))\".\nE1 LHS is \"x\" which is 0.\n- 2 * 2 → next(2)=0 → \"1 * (0 * (0 * 0))\"\n- 0 * 0 → next(0)=1 → \"1 * (0 * 1)\"\n- 0 * 1 → next(1)=2 → \"1 * 2\"\n- 1 * 2 → next(2)=0\nE1 RHS = 0, which matches E1 LHS, so E1 holds. Now, evaluate E2.\nRewrite E2 RHS: \"x * (((x * y) * y) * x)\" becomes \"0 * (((0 * 1) * 1) * 0)\".\nE2 LHS is \"x\" which is 0.\n- 0 * 1 → next(1)=2 → \"0 * ((2 * 1) * 0)\"\n- 2 * 1 → next(1)=2 → \"0 * (2 * 0)\"\n- 2 * 0 → next(0)=1 → \"0 * 1\"\n- 0 * 1 → next(1)=2\nE2 RHS = 2, which does not match E2 LHS (0), so E2 fails. This means we have a separation.\n\nVERDICT: FALSE\nREASONING: The T3R rescue test showed that while E1 holds, E2 fails under the same variable assignments, indicating E1 does not imply E2 over all magmas.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3366,
+        "completion_tokens": 927
+      }
+    },
+    {
+      "id": "hard3_0026",
+      "repeat_id": 1,
+      "equation1": "x = y * ((y * y) * x)",
+      "equation2": "x = ((y * y) * z) * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 12.48,
+      "raw_response": "To determine whether Equation 1 (x = y * ((y * y) * x)) implies Equation 2 (x = ((y * y) * z) * (y * x)) over all magmas, we need to analyze the structure of both equations and apply the given tests.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((y * y) * x)\"\n- E2_L = \"x\"\n- E2_R = \"((y * y) * z) * (y * x)\"\n\nNow, let's apply the structural tests:\n\nTEST 1 — LP: The first letter on the left side of E1 is \"x\", and on the right side is \"y\". For E2, the first letter on both sides is \"x\".\n- E1: x ≠ y → FAIL\n- E2: x = x → HOLD\nSince E1=FAIL and E2=HOLD, we continue to the next test.\n\nTEST 2 — RP: The last letter on the left side of E1 is \"x\", and on the right side is \"x\". For E2, the last letter on the left side is \"x\", and on the right side is \"x\".\n- E1: x = x → HOLD\n- E2: x = x → HOLD\nBoth are HOLD, so we continue.\n\nTEST 3 — C0: Does the left side contain *? Does the right side contain *?\n- E1_L has no *, E1_R has * → FAIL\n- E2_L has no *, E2_R has * → FAIL\nBoth are FAIL, so we continue.\n\nTEST 4 — VARS: The set of distinct letters on the left vs the set on the right.\n- E1_L = {x}, E1_R = {x, y} → FAIL\n- E2_L = {x}, E2_R = {x, y, z} → FAIL\nBoth are FAIL, so we continue.\n\nSince none of the structural tests found a separation and E1=HOLD in the RP test, we proceed to the T3R RESCUE.\n\nT3R RESCUE:\nStep A — Assign numbers to variables by first appearance across both equations:\n- x = 0, y = 1, z = 2\n\nStep B — Rewrite each side fully with numbers:\n- E1_L = \"x\" → 0\n- E1_R = \"y * ((y * y) * x)\" → \"1 * ((1 * 1) * 0)\"\n- E2_L = \"x\" → 0\n- E2_R = \"((y * y) * z) * (y * x)\" → \"((1 * 1) * 2) * (1 * 0)\"\n\nStep C — Evaluate from innermost * outward for E1:\n- \"(1 * 1)\" → next(1) = 2 → \"1 * 2\"\n- \"1 * 2\" → next(2) = 0\nSo, E1_RHS = 0.\n\nFor E2, evaluating similarly:\n- \"(1 * 1)\" → next(1) = 2\n- \"(2 * 2)\" → next(2) = 0\n- \"(0 * 1)\" → next(1) = 2\n- \"2 * 0\" → next(0) = 1\nSo, E2_RHS = 1.\n\nStep D — Compare E1 sides:\n- E1_LHS = 0, E1_RHS = 0, so E1 holds.\n- E2_LHS = 0, E2_RHS = 1, so E2 fails.\n\nThus, we have found a separation: E1 holds but E2 fails under the T3R rescue, meaning Equation 1 does not imply Equation 2 over all magmas.\n\nVERDICT: FALSE\nREASONING: The T3R rescue test showed that while E1 holds, E2 fails, indicating Equation 1 does not imply Equation 2.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3386,
+        "completion_tokens": 879
+      }
+    },
+    {
+      "id": "hard3_0002",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * y)",
+      "equation2": "x = (x * ((x * x) * x)) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 17.06,
+      "raw_response": "To determine whether Equation 1 (x = x * (x * y)) implies Equation 2 (x = (x * ((x * x) * x)) * x) over all magmas, we will follow the given steps.\n\nFirst, we split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"x * (x * y)\"\n- E2_L = \"x\"\n- E2_R = \"(x * ((x * x) * x)) * x\"\n\nThen, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"x\". Same → HOLD.\n   - E2: First letter on the left is \"x\", and on the right is \"x\". Same → HOLD.\n   - E1=HOLD, E2=HOLD → no separation, continue.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"y\". Different → FAIL.\n   - E2: Last letter on the left is \"x\", and on the right is \"x\". Same → HOLD.\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\n3. **C0 (Contains *)**:\n   - E1: Left side does not contain *, right side contains * → FAIL.\n   - E2: Left side does not contain *, right side contains * → FAIL.\n   - E1=FAIL, E2=FAIL → no separation, continue.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1: Left side contains {x}, right side contains {x, y} → FAIL.\n   - E2: Left side contains {x}, right side contains {x} → HOLD.\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\nSince no separation was found through the structural tests, and given that the RP test showed E1=FAIL, we skip the T3R rescue and conclude that there is no separation found.\n\nVERDICT: TRUE\nREASONING: No separation was found through structural tests, and the conditions for T3R rescue were not met.\nPROOF: The structural tests did not reveal any separation between E1 and E2, indicating that E1 implies E2 over all magmas under the given conditions.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3356,
+        "completion_tokens": 520
+      }
+    },
+    {
+      "id": "hard3_0142",
+      "repeat_id": 1,
+      "equation1": "x = y * ((x * (z * x)) * x)",
+      "equation2": "x = (y * y) * (x * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 24.42,
+      "raw_response": "To determine whether Equation 1 (E1: x = y * ((x * (z * x)) * x)) implies Equation 2 (E2: x = (y * y) * (x * x)) over all magmas, we need to perform the structural tests and, if necessary, the T3R rescue.\n\nFirst, we split each equation at the equals sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((x * (z * x)) * x)\"\n- E2_L = \"x\"\n- E2_R = \"(y * y) * (x * x)\"\n\nNow, we perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n2. **RP (Last Letter Test)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Contains * Test)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n4. **VARS (Variables Test)**:\n   - E1 L={x}, R={x,y,z} → FAIL\n   - E2 L={x}, R={x,y} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince all structural tests showed no separation and RP showed E1=HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2.\n- Rewrite E1 RHS: \"y * ((x * (z * x)) * x)\" → \"1 * ((0 * (2 * 0)) * 0)\"\n- Evaluate E1 RHS:\n  - \"2 * 0\" → next(0) = 1 → \"1 * ((0 * 1) * 0)\"\n  - \"0 * 1\" → next(1) = 2 → \"1 * (2 * 0)\"\n  - \"2 * 0\" → next(0) = 1 → \"1 * 1\"\n  - \"1 * 1\" → next(1) = 2\n- E1 RHS = 2. E1 LHS = 0. Since E1 LHS ≠ E1 RHS, we stop here and conclude no separation is possible because E1 itself does not hold under the T3R evaluation, which means our initial assessment of needing to evaluate E2 was premature. The failure of E1 to match itself under T3R evaluation indicates that E1 does not imply E2 over all magmas, as E1's own validity is questionable under these specific rules.\n\nVERDICT: FALSE\nREASONING: E1 does not hold under T3R rescue evaluation, indicating it does not imply E2 over all magmas due to its own internal inconsistency under these rules.\nPROOF: \nCOUNTEREXAMPLE: T3R evaluation of E1 itself.",
+      "usage": {
+        "prompt_tokens": 3362,
+        "completion_tokens": 744
+      }
+    },
+    {
+      "id": "hard3_0138",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * (z * w)) * u)",
+      "equation2": "(x * y) * x = (x * z) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 30.56,
+      "raw_response": "Let's analyze the given problem step by step.\n\nFirst, we have Equation 1 (E1): x = x * ((y * (z * w)) * u) and Equation 2 (E2): (x * y) * x = (x * z) * x.\n\nWe split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"x * ((y * (z * w)) * u)\"\n- E2_L = \"(x * y) * x\"\n- E2_R = \"(x * z) * x\"\n\nNow, we apply the four structural tests:\n\n1. LP (First letter on the left side vs first letter on the right side):\n   - E1: First letter on the left is \"x\", and the first letter on the right is \"x\". So, E1=HOLD.\n   - E2: First letter on the left is \"x\" (since we scan past the opening parenthesis), and the first letter on the right is \"x\". So, E2=HOLD.\n   - Since both are HOLD, we continue to the next test.\n\n2. RP (Last letter on the left side vs last letter on the right side):\n   - E1: Last letter on the left is \"x\", and the last letter on the right is \"u\". So, E1=FAIL.\n   - E2: Last letter on the left is \"x\", and the last letter on the right is \"x\". So, E2=HOLD.\n   - Here, E1=FAIL and E2=HOLD, so we continue.\n\n3. C0 (Does the left side contain \"*\"? Does the right side contain \"*\"?):\n   - E1: The left side does not contain \"*\", but the right side does. So, E1=FAIL.\n   - E2: Both the left and right sides contain \"*\". So, E2=HOLD.\n   - E1=FAIL and E2=HOLD, we continue.\n\n4. VARS (Set of distinct letters on the left vs set on the right):\n   - E1: The left side contains only \"x\", while the right side contains \"x\", \"y\", \"z\", \"w\", and \"u\". So, E1=FAIL.\n   - E2: Both sides contain \"x\", \"y\", and \"z\". So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue.\n\nGiven that none of the structural tests found a separation where E1=HOLD and E2=FAIL, and since the RP test showed E1=FAIL, we skip the T3R rescue and conclude that E1 does not imply E2 over all magmas due to the failure in structural tests but actually, since no test resulted in E1=HOLD and E2=FAIL, the process suggests a continuation without finding a direct separation based on the rules provided. However, the detailed step-by-step process given was supposed to lead to a straightforward application of the rules, but it appears there was an oversight in directly applying the outcome of these tests to the final verdict based on the provided decision table and rules.\n\nGiven the structure of the problem and the rules for analysis, it seems there was an expectation to directly derive a conclusion from the tests. Since we did not achieve a clear E1=HOLD and E2=FAIL scenario from the tests as per the decision table, and considering the strict format and rules provided for the analysis, the process actually suggests that without a clear separation or direct implication from the tests as outlined, one would typically proceed under the premise that the implication might not be directly refuted by the structural tests alone, suggesting a deeper algebraic examination might be necessary or a reevaluation based on the magma properties. However, the instructions and the format strictly dictate the conclusion based on the tests provided.\n\nThus, adhering strictly to the format and the decision process as outlined, and recognizing the primary goal of determining implication based on the given structural tests and the specific decision table provided, it's critical to align the final verdict with the outcomes of these tests and the rules governing the decision-making process.\n\nVERDICT: TRUE\nREASONING: The structural tests did not provide a clear separation where E1 holds and E2 fails, and given the rules, the process does not straightforwardly lead to a false verdict without such a separation.\nPROOF: The step-by-step analysis based on the structural tests and the decision table.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3367,
+        "completion_tokens": 944
+      }
+    },
+    {
+      "id": "hard3_0152",
+      "repeat_id": 1,
+      "equation1": "x = x * (((y * y) * y) * y)",
+      "equation2": "x = x * ((x * (x * x)) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 20.97,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must analyze the given equations through the provided steps and tests.\n\nFirst, let's define the equations:\n- Equation 1 (E1): x = x * (((y * y) * y) * y)\n- Equation 2 (E2): x = x * ((x * (x * x)) * x)\n\nLet's split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"x * (((y * y) * y) * y)\"\n- E2_L = \"x\"\n- E2_R = \"x * ((x * (x * x)) * x)\"\n\nNow, let's perform the structural tests:\n\n1. **LP (First Letter Test)**:\n   - E1 first letter on the left side is \"x\", and on the right side is \"x\". E1=HOLD.\n   - E2 first letter on the left side is \"x\", and on the right side is \"x\". E2=HOLD.\n   - Since both are HOLD, we proceed to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1 last letter on the left side is \"x\", and on the right side is \"y\". E1=FAIL.\n   - E2 last letter on the left side is \"x\", and on the right side is \"x\". E2=HOLD.\n   - E1=FAIL and E2=HOLD, so we proceed to the next test.\n\n3. **C0 (Contains * Test)**:\n   - E1 left side does not contain \"*\", but the right side does. E1=FAIL.\n   - E2 left side does not contain \"*\", but the right side does. E2=FAIL.\n   - Both are FAIL, so we proceed to the next test.\n\n4. **VARS (Variables Test)**:\n   - E1 left side contains {x}, and the right side contains {x, y}. E1=FAIL.\n   - E2 left side contains {x}, and the right side contains {x}. E2=HOLD.\n   - E1=FAIL and E2=HOLD, but since we didn't find a separation that leads to a FALSE verdict directly and the last test (RP) showed E1=FAIL, we do not proceed to the T3R rescue as it requires E1=HOLD from the RP test.\n\nGiven the analysis above and based on the rules provided, since we did not find a clear separation that meets the criteria for a FALSE verdict and considering the specific conditions for proceeding to the T3R rescue were not met due to E1=FAIL in the RP test, the default stance is to consider the equations under the premise that they could be equivalent or that the given tests do not conclusively prove separation.\n\nVERDICT: TRUE\nREASONING: The structural tests did not provide a clear separation that would indicate E1 does not imply E2 over all magmas, and the conditions for the T3R rescue were not met.\nPROOF: Analysis of structural tests.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3366,
+        "completion_tokens": 658
+      }
+    },
+    {
+      "id": "hard3_0174",
+      "repeat_id": 1,
+      "equation1": "x = (y * y) * (z * (y * x))",
+      "equation2": "x = (y * ((x * z) * z)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 29.07,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, let's analyze the given equations step by step according to the provided instructions.\n\nGiven:\n- Equation 1 (E1): x = (y * y) * (z * (y * x))\n- Equation 2 (E2): x = (y * ((x * z) * z)) * x\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * y) * (z * (y * x))\"\n- E2_L = \"x\"\n- E2_R = \"(y * ((x * z) * z)) * x\"\n\nNow, let's perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first letter on the left is \"x\" and on the right is \"y\" → FAIL\n   - E2 first letter on both sides is \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\n2. **RP (Last Letter)**:\n   - E1 last letter on the left is \"x\" and on the right is \"x\" → HOLD\n   - E2 last letter on the left is \"x\" and on the right is \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation, continue.\n\n3. **C0 (Contains *)**:\n   - E1 left side does not contain \"*\", right side contains \"*\" → FAIL\n   - E2 left side does not contain \"*\", right side contains \"*\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation, continue.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1 left side contains {x}, right side contains {x, y, z} → FAIL\n   - E2 left side contains {x}, right side contains {x, y, z} → FAIL\n   - E1=FAIL, E2=FAIL → no separation, continue.\n\nSince no separation was found in the structural tests and the RP test showed E1=HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\nAssign numbers to variables by first appearance: x=0, y=1, z=2.\n\nRewrite E1 RHS: \"(y * y) * (z * (y * x))\" becomes \"(1 * 1) * (2 * (1 * 0))\".\n\nE1 LHS is \"x\" which becomes \"0\".\n\nEvaluate E1 RHS from innermost * outward:\n- \"1 * 0\" → next(0)=1, so \"(1 * 1) * (2 * 1)\"\n- \"1 * 1\" → next(1)=2, so \"2 * (2 * 1)\"\n- \"2 * 1\" → next(1)=2, so \"2 * 2\"\n- \"2 * 2\" → next(2)=0\n\nE1 RHS = 0. Since 0 = 0, E1 holds. Now, evaluate E2.\n\nRewrite E2 RHS: \"(y * ((x * z) * z)) * x\" becomes \"(1 * ((0 * 2) * 2)) * 0\".\n\nEvaluate E2 RHS from innermost * outward:\n- \"0 * 2\" → next(2)=0, so \"(1 * (0 * 2)) * 0\" becomes \"(1 * 0) * 0\"\n- \"1 * 0\" → next(0)=1, so \"1 * 0\"\n- \"1 * 0\" → next(0)=1\n\nE2 RHS = 1. Since 0 ≠ 1, E2 fails. Thus, we have a separation.\n\nVERDICT: FALSE\nREASONING: The T3R rescue test showed that E1 holds but E2 fails under the magma operation rules.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3370,
+        "completion_tokens": 854
+      }
+    },
+    {
+      "id": "hard3_0235",
+      "repeat_id": 1,
+      "equation1": "x = ((y * y) * x) * (x * z)",
+      "equation2": "x = x * ((y * (z * w)) * u)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 18.78,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step.\n\nGiven Equation 1 (E1): x = ((y * y) * x) * (x * z)\nGiven Equation 2 (E2): x = x * ((y * (z * w)) * u)\n\nFirst, we split each equation at the= sign:\n- E1_L = \"x\"\n- E1_R = \"((y * y) * x) * (x * z)\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * (z * w)) * u)\"\n\nNow, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) =x → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n2. **RP (Last Letter)**: \n   - E1 last(L) = \"x\", last(R) = \"z\" → FAIL\n   - E2 last(L) = \"x\", last(R) = \"u\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n4. **VARS (Set of Variables)**:\n   - E1 L={x}, R={x,y,z} → FAIL\n   - E2 L={x}, R={x,y,z,w,u} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince none of the structural tests found a separation and E1=FAIL in all tests, we proceed to the T3R rescue, but given that RP showed E1=FAIL, we skip the T3R rescue according to the rules.\n\nGiven that no separation was found through the structural tests and the conditions for proceeding to the T3R rescue were not met due to E1=FAIL in the RP test, we conclude that there is no clear separation based on the provided analysis framework.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for the T3R rescue were not met.\nPROOF: The analysis above demonstrates that the equations did not meet the criteria for separation through the defined tests.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3392,
+        "completion_tokens": 556
+      }
+    },
+    {
+      "id": "hard3_0361",
+      "repeat_id": 1,
+      "equation1": "x * x = y * ((y * z) * w)",
+      "equation2": "x * x = y * ((x * x) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 90.0,
+      "raw_response": "Let's start by analyzing the given equations according to the provided structural tests.\n\nGiven equations:\nE1: x * x = y * ((y * z) * w)\nE2: x * x = y * ((x * x) * x)\n\nStep 1: Split each equation at =.\nE1_L = \"x * x\"    E1_R = \"y * ((y * z) * w)\"\nE2_L = \"x * x\"    E2_R = \"y * ((x * x) * x)\"\n\nTEST 1 — LP: \nFor E1, the first letter on the left side is 'x' and on the right side is 'y'. \nFor E2, the first letter on both sides is 'x'.\nE1=FAIL (because 'x' ≠ 'y'), E2=HOLD (because 'x' = 'x').\n\nUsing the decision table, since E1=FAIL and E2=HOLD, we continue to the next test.\n\nTEST 2 — RP: \nFor E1, the last letter on the left side is 'x' and on the right side is 'w'. \nFor E2, the last letter on both sides is 'x'.\nE1=FAIL (because 'x' ≠ 'w'), E2=HOLD (because 'x' = 'x').\n\nAgain, using the decision table, since E1=FAIL and E2=HOLD, we continue.\n\nTEST 3 — C0: \nBoth sides of E1 and E2 contain *. \nE1=HOLD, E2=HOLD.\n\nUsing the decision table, since both are HOLD, we continue.\n\nTEST 4 — VARS: \nThe set of distinct letters on the left side of E1 is {x} and on the right side is {y, z, w}.\nThe set of distinct letters on the left side of E2 is {x} and on the right side is {x, y}.\nE1=FAIL (because {x} ≠ {y, z, w}), E2=FAIL (because {x} ≠ {x, y}).\n\nSince all structural tests have been performed without finding a clear separation where E1=HOLD and E2=FAIL, and given that E1=FAIL in tests where a separation could be declared based on the decision table instructions, we proceed to the T3R rescue, considering the specific conditions for its application.\n\nHowever, given that we did not reach a step where E1=HOLD and E2=FAIL directly from the structural tests, and specifically considering the rules provided for the T3R rescue which is to be applied only if RP showed E1=HOLD, we notice that our RP test for E1 resulted in FAIL. Therefore, according to the instructions, we should skip the T3R rescue and conclude based on the default rule.\n\nGiven the analysis and following the provided rules strictly, since no clear separation was found through the structural tests that directly leads to a FALSE verdict based on the decision table, and acknowledging the instruction to default to TRUE unless a clear separation is found:\n\nVERDICT: TRUE\nREASONING: The structural tests did not provide a clear separation based on the decision table, and the conditions for applying the T3R rescue were not met as per the rules provided.\nPROOF: The step-by-step analysis according to the structural tests and the decision to default to TRUE based on the rules.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3362,
+        "completion_tokens": 723
+      }
+    },
+    {
+      "id": "hard3_0135",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * (z * x)) * z)",
+      "equation2": "x = (x * y) * (y * (y * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 3.86,
+      "raw_response": "To determine whether Equation 1 (E1: x = x * ((y * (z * x)) * z)) implies Equation 2 (E2: x = (x * y) * (y * (y * x))) over all magmas, we will follow the steps outlined.\n\nFirst, we split each equation at the '=' sign:\n- E1_L = \"x\"\n- E1_R = \"x * ((y * (z * x)) * z)\"\n- E2_L = \"x\"\n- E2_R = \"(x * y) * (y * (y * x))\"\n\nThen, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\" first(R) = \"x\" → HOLD\n   - E2 first(L) = \"x\" first(R) = \"x\" → HOLD\n   - E1=HOLD E2=HOLD → no separation\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\" last(R) = \"z\" → FAIL\n   - E2 last(L) = \"x\" last(R) = \"x\" → HOLD\n   - E1=FAIL E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L=\"x\" no * → FAIL | E2 L=\"x\" no * → FAIL\n   - E1=FAIL E2=FAIL → no separation\n\n4. **VARS (Variables)**:\n   - E1 L={x} R={x,y,z} → FAIL | E2 L={x} R={x,y} → FAIL\n   - E1=FAIL E2=FAIL → no separation\n\nSince none of the structural tests found a separation and the RP test showed E1=FAIL, we skip the T3R rescue and conclude there's no separation.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests.\nPROOF: The implication holds because the equations passed the structural tests without showing any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3368,
+        "completion_tokens": 447
+      }
+    },
+    {
+      "id": "hard3_0382",
+      "repeat_id": 1,
+      "equation1": "x * y = (x * (z * w)) * x",
+      "equation2": "x * (y * y) = x * (y * z)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 33.88,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we will follow the steps outlined.\n\nFirst, we identify the left and right sides of each equation:\n- E1_L = \"x * y\"\n- E1_R = \"(x * (z * w)) * x\"\n- E2_L = \"x * (y * y)\"\n- E2_R = \"x * (y * z)\"\n\nNext, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\" and on the right is \"x\", so HOLD.\n   - E2: First letter on the left is \"x\" and on the right is \"x\", so HOLD.\n   - Result: E1=HOLD, E2=HOLD. No separation.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"y\" and on the right is \"x\", so FAIL.\n   - E2: Last letter on the left is \"y\" and on the right is \"z\", so FAIL.\n   - Result: E1=FAIL, E2=FAIL. No separation.\n\n3. **C0 (Contains *)**:\n   - E1: Both sides contain *, so HOLD.\n   - E2: Both sides contain *, so HOLD.\n   - Result: E1=HOLD, E2=HOLD. No separation.\n\n4. **VARS (Set of Variables)**:\n   - E1: Left side has {x, y}, right side has {x, z, w}, so FAIL.\n   - E2: Left side has {x, y}, right side has {x, y, z}, so FAIL.\n   - Result: E1=FAIL, E2=FAIL. No separation.\n\nSince no separation was found through the structural tests and E1's right side's last letter matches its left side's last letter is not a condition we met, we would normally proceed to the T3R rescue. However, given that RP showed E1=FAIL, we skip the T3R rescue according to the rules.\n\nGiven that all tests resulted in no separation and the conditions for proceeding to T3R rescue were not met because E1=FAIL in the RP test, we conclude there's no separation based on the structural tests provided and the specific rules guiding the T3R rescue application.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for T3R rescue were not met.\nPROOF: The lack of separation in all structural tests without meeting the criteria for T3R rescue indicates that Equation 1 implies Equation 2 over all magmas cannot be disproven by the given methods.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3365,
+        "completion_tokens": 583
+      }
+    },
+    {
+      "id": "hard3_0042",
+      "repeat_id": 1,
+      "equation1": "x = ((x * x) * y) * y",
+      "equation2": "x = x * ((y * y) * (z * w))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 9.41,
+      "raw_response": "E1: x = ((x * x) * y) * y     E2: x = x * ((y * y) * (z * w))\nE1_L=\"x\"  E1_R=\"((x * x) * y) * y\"  |  E2_L=\"x\"  E2_R=\"x * ((y * y) * (z * w))\"\n\nLP:  E1 first(L)=x first(R)=x → HOLD | E2 first(L)=x first(R)=x → HOLD\n     → E1=HOLD E2=HOLD → no separation\nRP:  E1 last(L)=x last(R)=y → FAIL | E2 last(L)=x last(R)=w → FAIL\n     → E1=FAIL E2=FAIL → no separation\nC0:  E1 L=\"x\" no * → FAIL | E2 L=\"x\" no * → FAIL\n     → E1=FAIL E2=FAIL → no separation\nVARS: E1 L={x} R={x,y} → FAIL | E2 L={x} R={x,y,z,w} → FAIL\n     → E1=FAIL E2=FAIL → no separation\nSince all structural tests showed no separation and RP showed E1=FAIL, we skip the T3R rescue.\n\nVERDICT: TRUE\nREASONING: All structural tests showed no separation between the two equations.\nPROOF: The equations passed all structural tests without finding any separation.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3385,
+        "completion_tokens": 323
+      }
+    },
+    {
+      "id": "hard3_0291",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * (z * w)) * x",
+      "equation2": "x * (y * y) = z * (w * y)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 9.69,
+      "raw_response": "To solve this, we will follow the provided steps for analyzing the given equations, E1 and E2, to determine if E1 implies E2 over all magmas.\n\nFirst, we split each equation at the \"=\" sign:\n- E1: x = ((y * x) * (z * w)) * x\n- E2: x * (y * y) = z * (w * y)\n\nFrom this, we identify the left and right sides of each equation:\n- E1_L = \"x\"\n- E1_R = \"((y * x) * (z * w)) * x\"\n- E2_L = \"x * (y * y)\"\n- E2_R = \"z * (w * y)\"\n\nNow, we apply the structural tests:\n\n1. **LP (Leftmost letter in each side)**:\n   - E1: First letter on the left is \"x\", and on the right is \"y\" (after scanning past the opening parenthesis) → FAIL\n   - E2: First letter on the left is \"x\", and on the right is \"z\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation, continue.\n\n2. **RP (Rightmost letter in each side)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"x\" → HOLD\n   - E2: Last letter on the left is \"y\", and on the right is \"y\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation, continue.\n\n3. **C0 (Presence of \"*\" in each side)**:\n   - E1: Left side has no \"*\", right side has \"*\" → FAIL\n   - E2: Left side has \"*\", right side has \"*\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\n4. **VARS (Set of distinct letters in each side)**:\n   - E1: Left side = {x}, right side = {y, x, z, w} → FAIL\n   - E2: Left side = {x, y}, right side = {z, w, y} → FAIL\n   - E1=FAIL, E2=FAIL → no separation, continue.\n\nSince we've reached the end of the structural tests without finding a separation and the RP test showed E1=HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2, w=3.\n- Rewrite E1 RHS with numbers: \"((1 * 0) * (2 * 3)) * 0\"\n- Evaluate E1 RHS from innermost \"*\" outward:\n  - 2 * 3 → next(3)=0 (since 3 is not in the initial list, we cycle back to 0 for demonstration purposes in this step, but correctly it should follow the next(b) rule where b is the right operand, thus actually, we should consider the rule application directly as per the problem's specific instruction for T3R which could lead to confusion without the specific next(b) rule clarification. The intention here is to demonstrate the process, but given the rule a * b = next(b), we evaluate based on 'b'. So, for simplicity and following the exact rule provided in examples, we should directly apply next(b)).\n  - Let's correct the evaluation step according to the specific rule provided: For \"2 * 3\", considering '3' as 'b', next(3) should actually follow the sequence given (0, 1, 2), thus next(3) is considered as next(2) due to the cycling nature implied but not clearly defined in this step. The original intention was to demonstrate but seems to have introduced confusion. Given the sequence: 0, 1, 2, and the problem's specific rule, we need to clarify that the operation result depends solely on 'b', thus necessitating a clear definition of next(b) for all possible values of 'b'. However, following the provided examples, if we were to correctly apply a similar next(b) rule as demonstrated, we should directly consider the outcome based on 'b' being '3', which under normal circumstances would not directly fit the given sequence (0, 1, 2), thus the evaluation step here is acknowledged as potentially misleading without the precise next(b) definition for values outside the demonstrated sequence.\n\nGiven the confusion in explaining the T3R step due to the rule's application and the lack of a clear definition for next(b) when 'b' exceeds '2', and considering the format and instructions provided, the focus should be on directly applying the given rules and sequence (0, 1, 2) for 'next(b)' where 'b' is the right operand in a * b. \n\nHowever, the critical insight from the provided examples and the rule application suggests that the focus should be on whether E1 holds and then evaluating E2 under the same rule, acknowledging the oversight in directly applying the next(b) rule without clear definition for values of 'b' beyond '2'.\n\nGiven the nature of the problem and the potential confusion in the explanation of the T3R rescue step, and adhering strictly to the format required for the response without further elaboration on the specific next(b) rule application for values outside the given sequence:\n\nVERDICT: TRUE\nREASONING: The analysis provided did not conclusively demonstrate a separation through the structural tests or the T3R rescue due to the adherence to the specified format and the confusion in the rule's application for values of 'b' outside the explicitly defined sequence.\nPROOF: The step-by-step analysis was intended to follow the format and rules provided, aiming to determine if E1 implies E2, but the critical path involved evaluating the equations under the given rules and sequence, acknowledging the need for a clear definition of next(b) for all possible 'b' values.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3367,
+        "completion_tokens": 1258
+      }
+    },
+    {
+      "id": "hard3_0008",
+      "repeat_id": 1,
+      "equation1": "x * x = y * z",
+      "equation2": "x * (x * y) = (y * x) * z",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 36.51,
+      "raw_response": "To solve this problem, we must follow the steps and rules provided.\n\nFirst, let's assign the parts of the equations:\n- E1_L = \"x * x\"\n- E1_R = \"y * z\"\n- E2_L = \"x * (x * y)\"\n- E2_R = \"(y * x) * z\"\n\nNow, apply the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and on the right is \"y\". Different, so E1=FAIL.\n   - E2: First letter on the left is \"x\", and on the right is \"y\". Different, so E2=FAIL.\n   - Since both are FAIL, we continue.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"z\". Different, so E1=FAIL.\n   - E2: Last letter on the left is \"y\", and on the right is \"z\". Different, so E2=FAIL.\n   - Since both are FAIL, we continue.\n\n3. **C0 (Contains * Test)**:\n   - E1: Both sides contain *. So, E1=HOLD.\n   - E2: Both sides contain *. So, E2=HOLD.\n   - Since both are HOLD, we continue.\n\n4. **VARS (Variables Test)**:\n   - E1: Left side has \"x\", right side has \"y\" and \"z\". Different sets, so E1=FAIL.\n   - E2: Left side has \"x\" and \"y\", right side has \"y\", \"x\", and \"z\". Different sets considering the requirement for matching, so E2=FAIL.\n   - Since both are FAIL, we continue.\n\nSince we've reached the end of the structural tests without finding a separation where E1=HOLD and E2=FAIL, and given that the RP test showed E1=FAIL, we skip the T3R rescue and conclude no separation was found.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for the T3R rescue were not met.\nPROOF: The step-by-step analysis of the structural tests shows that no condition for separation (E1=HOLD and E2=FAIL) was met, leading to the conclusion that E1 implies E2 over all magmas is TRUE by default.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3353,
+        "completion_tokens": 528
+      }
+    },
+    {
+      "id": "hard3_0004",
+      "repeat_id": 1,
+      "equation1": "x = y * (z * w)",
+      "equation2": "x * (y * y) = y * (z * w)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 5.52,
+      "raw_response": "To determine whether Equation 1 (x = y * (z * w)) implies Equation 2 (x * (y * y) = y * (z * w)) over all magmas, let's go through the steps as outlined.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * (z * w)\"\n- E2_L = \"x * (y * y)\"\n- E2_R = \"y * (z * w)\"\n\nNext, we perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and on the right is \"y\". Thus, E1=FAIL.\n   - E2: First letter on the left is \"x\", and on the right is \"y\". Thus, E2=FAIL.\n   - Since both are FAIL, there's no separation, and we continue.\n\n2. **RP (Last Letter Test)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"w\". Thus, E1=FAIL.\n   - E2: Last letter on the left is \"y\", and on the right is \"w\". Thus, E2=FAIL.\n   - Since both are FAIL, there's no separation, and we continue.\n\n3. **C0 (Contains * Test)**:\n   - E1: Left side does not contain \"*\", but the right side does. Thus, E1=FAIL.\n   - E2: Both sides contain \"*\". Thus, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, there's no separation, and we continue.\n\n4. **VARS (Variables Test)**:\n   - E1: Left side contains {x}, and the right side contains {y, z, w}. Thus, E1=FAIL.\n   - E2: Left side contains {x, y}, and the right side contains {y, z, w}. Thus, E2=FAIL.\n   - Since both are FAIL, there's no separation, and we continue.\n\nSince none of the structural tests found a separation and E1=FAIL in the RP test, we skip the T3R rescue and conclude that there is no separation found through the structural tests.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for the T3R rescue were not met.\nPROOF: The lack of separation in all structural tests supports the verdict.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3378,
+        "completion_tokens": 541
+      }
+    },
+    {
+      "id": "hard3_0356",
+      "repeat_id": 1,
+      "equation1": "x * y = z * (x * (x * y))",
+      "equation2": "x * y = ((y * y) * z) * y",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 25.61,
+      "raw_response": "To solve this task, we'll go through the steps outlined in the prompt.\n\n\nFirst, we'll split the equations at the equals sign:\nE1_L = \"x * y\"    E1_R = \"z * (x * (x * y))\"\nE2_L = \"x * y\"    E2_R = \"((y * y) * z) * y\"\n\nThen, we'll apply the structural tests.\n\n\nTEST 1 — LP: \nFor E1, the first letter on the left is \"x\" and on the right is \"z\". For E2, the first letter on both sides is \"x\" and \"y\" respectively. This gives us E1=FAIL and E2=FAIL.\n\n\nTEST 2 — RP: \nFor E1, the last letter on the left is \"y\" and on the right is \"y\". For E2, the last letter on the left is \"y\" and on the right is \"y\". This gives us E1=HOLD and E2=HOLD.\n\n\nTEST 3 — C0: \nE1's left side contains * and the right side also contains *. E2's left side contains * and the right side also contains *. This gives us E1=HOLD and E2=HOLD.\n\n\nTEST 4 — VARS: \nFor E1, the set of distinct letters on the left is {x, y} and on the right is {x, y, z}. For E2, the set of distinct letters on the left is {x, y} and on the right is {y, z}. This gives us E1=FAIL and E2=FAIL.\n\n\nGiven that none of the tests provided a clear separation where E1=HOLD and E2=FAIL, we proceed to the T3R RESCUE.\n\n\nStep A — Assign numbers to variables: x = 0, y = 1, z = 2.\n\n\nStep B — Rewrite each side fully with numbers:\nE1_L = \"0 * 1\"    E1_R = \"2 * (0 * (0 * 1))\"\nE2_L = \"0 * 1\"    E2_R = \"((1 * 1) * 2) * 1\"\n\n\nStep C — Evaluate from innermost * outward for E1:\n0 * 1 = next(1) = 2, so E1_R becomes \"2 * (0 * 2)\".\n0 * 2 = next(2) = 0, so E1_R becomes \"2 * 0\".\n2 * 0 = next(0) = 1.\n\n\nFor E1, the left-hand side (LHS) is \"0 * 1\" which we evaluate as next(1) = 2. Thus, E1 LHS = 2 and E1 RHS = 1.\n\n\nSince E1 LHS ≠ E1 RHS, we STOP the T3R rescue, indicating no separation is found through this method.\n\n\nGiven no separation was found through the structural tests or the T3R rescue, the default answer applies.\n\n\nVERDICT: TRUE\nREASONING: No separation was found between E1 and E2 through structural tests or T3R rescue.\nPROOF: \nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3364,
+        "completion_tokens": 682
+      }
+    },
+    {
+      "id": "hard3_0283",
+      "repeat_id": 1,
+      "equation1": "x = ((x * y) * (y * z)) * w",
+      "equation2": "x = ((x * x) * x) * (y * z)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.67,
+      "raw_response": "To determine whether Equation 1 (x = ((x * y) * (y * z)) * w) implies Equation 2 (x = ((x * x) * x) * (y * z)) over all magmas, we will go through the structural tests as outlined.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((x * y) * (y * z)) * w\"\n- E2_L = \"x\"\n- E2_R = \"((x * x) * x) * (y * z)\"\n\nNow, let's perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"x\" because we scan past all opening parentheses to find the first letter, which in E1_R is \"x\" since the expression starts with \"(x\".\n   - E2 first(L) = \"x\", first(R) = \"x\" for the same reason.\n   - Since both are \"x\", we have E1=HOLD and E2=HOLD. No separation.\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"w\" because we scan right-to-left past all closing parentheses to find the last letter.\n   - E2 last(L) = \"x\", last(R) = \"z\" for the same reason.\n   - Since they are different, we have E1=FAIL and E2=FAIL. No separation.\n\n3. **C0 (Contains *)**:\n   - E1_L has no \"*\", E1_R has \"*\".\n   - E2_L has no \"*\", E2_R has \"*\".\n   - Since both equations have the same condition (left side does not contain \"*\" but the right side does), we have E1=FAIL and E2=FAIL. No separation.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1_L = {x}, E1_R = {x, y, z, w}.\n   - E2_L = {x}, E2_R = {x, y, z}.\n   - Since the sets are different for both equations, we have E1=FAIL and E2=FAIL. No separation.\n\nSince all tests resulted in no separation and the last test (RP) showed E1=FAIL, we do not proceed to the T3R rescue. According to the rules, if no separation is found after all structural tests, the answer defaults to TRUE.\n\nVERDICT: TRUE\nREASONING: No separation was found between Equation 1 and Equation 2 after applying all structural tests.\nPROOF: The lack of separation across LP, RP, C0, and VARS tests supports the implication.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3393,
+        "completion_tokens": 594
+      }
+    },
+    {
+      "id": "hard3_0190",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * ((x * x) * y)",
+      "equation2": "x * (y * z) = (x * z) * y",
+      "ground_truth": false,
+      "predicted": null,
+      "correct": false,
+      "parsed_ok": false,
+      "elapsed_s": 5.73,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step according to the provided rules and tests.\n\nGiven Equation 1 (E1): x = (y * x) * ((x * x) * y)\nGiven Equation 2 (E2): x * (y * z) = (x * z) * y\n\nFirst, we split each equation at the= sign:\n- E1_L = \"x\"\n- E1_R = \"(y * x) * ((x * x) * y)\"\n- E2_L = \"x * (y * z)\"\n- E2_R = \"(x * z) * y\"\n\nNow, let's apply the structural tests:\n\n",
+      "usage": {
+        "prompt_tokens": 2771,
+        "completion_tokens": 121
+      }
+    },
+    {
+      "id": "hard3_0323",
+      "repeat_id": 1,
+      "equation1": "x = ((y * (z * w)) * z) * x",
+      "equation2": "x = x * (x * (y * (y * x)))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 22.13,
+      "raw_response": "Given Equation 1 (E1): x = ((y * (z * w)) * z) * x and Equation 2 (E2): x = x * (x * (y * (y * x))), let's apply the structural tests to determine if E1 implies E2 over all magmas.\n\nFirst, split the equations at \"=\":\n- E1_L = \"x\"\n- E1_R = \"((y * (z * w)) * z) * x\"\n- E2_L = \"x\"\n- E2_R = \"x * (x * (y * (y * x)))\"\n\nPerform the structural tests:\n- LP (First Letter): E1 first(L)=x, first(R)=y → FAIL | E2 first(L)=x, first(R)=x → HOLD\n  → E1=FAIL E2=HOLD → no separation\n- RP (Last Letter): E1 last(L)=x, last(R)=x → HOLD | E2 last(L)=x, last(R)=x → HOLD\n  → E1=HOLD E2=HOLD → no separation\n- C0 (Contains *): E1 L=\"x\" no *, R has * → FAIL | E2 L=\"x\" no *, R has * → FAIL\n  → E1=FAIL E2=FAIL → no separation\n- VARS (Set of Variables): E1 L={x}, R={x,y,z,w} → FAIL | E2 L={x}, R={x,y} → FAIL\n  → E1=FAIL E2=FAIL → no separation\n\nSince RP showed E1=HOLD and no structural test found separation, we proceed to the T3R rescue.\n\nT3R Rescue:\n- Assign numbers: x=0, y=1, z=2, w=0 (since it's the 4th distinct variable, it wraps around to 0).\n- Rewrite E1 RHS: \"((1 * (2 * 0)) * 2) * 0\"\n  - Innermost *: 2 * 0 → next(0)=1, so \"(1 * 1) * 2) * 0\"\n  - Next *: 1 * 1 → next(1)=2, so \"(2 * 2) * 0\"\n  - Next *: 2 * 2 → next(2)=0, so \"0 * 0\"\n  - Final *: 0 * 0 → next(0)=1, so E1 RHS = 1\n- E1 LHS is 0, so E1 does not hold because 0 ≠ 1. \n\nGiven this mistake in the T3R application and analysis, the correct approach should directly evaluate the structural tests' outcomes and correctly apply the T3R rescue if necessary. However, based on the initial analysis provided and correcting for the proper application of rules:\n\nVERDICT: FALSE\nREASONING: The initial analysis incorrectly applied the T3R rescue, leading to confusion; the critical insight comes from recognizing that E1 and E2, through the structural tests and potentially the T3R rescue, must be evaluated for implication over all magmas correctly.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3392,
+        "completion_tokens": 681
+      }
+    },
+    {
+      "id": "hard3_0331",
+      "repeat_id": 1,
+      "equation1": "x = (((x * y) * z) * y) * w",
+      "equation2": "x = (((x * y) * y) * z) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 21.93,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first need to understand the structure of both equations and then apply the given tests.\n\nEquation 1 (E1) is x = (((x * y) * z) * y) * w, and Equation 2 (E2) is x = (((x * y) * y) * z) * x.\n\nLet's split each equation at the= sign:\n- E1_L = \"x\"\n- E1_R = \"(((x * y) * z) * y) * w\"\n- E2_L = \"x\"\n- E2_R = \"(((x * y) * y) * z) * x\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first letter on the left is \"x\", and on the right is \"x\" (since we scan past all opening parentheses), so E1=HOLD.\n   - E2 first letter on the left is \"x\", and on the right is \"x\", so E2=HOLD.\n   - Since both are HOLD, we continue to the next test.\n\n2. **RP (Last Letter)**:\n   - E1 last letter on the left is \"x\", and on the right is \"w\", so E1=FAIL.\n   - E2 last letter on the left is \"x\", and on the right is \"x\", so E2=HOLD.\n   - E1=FAIL and E2=HOLD, so we continue to the next test.\n\n3. **C0 (Contains *)**:\n   - E1 left side does not contain \"*\", but the right side does, so E1=FAIL.\n   - E2 left side does not contain \"*\", but the right side does, so E2=FAIL.\n   - Both are FAIL, so we continue to the next test.\n\n4. **VARS (Set of Variables)**:\n   - E1 left side contains {x}, and the right side contains {x, y, z, w}, so E1=FAIL.\n   - E2 left side contains {x}, and the right side contains {x, y, z}, so E2=FAIL.\n   - Both are FAIL, which means no separation was found through these tests.\n\nSince no separation was found and the RP test showed E1=FAIL, we skip the T3R rescue and conclude that there is no separation based on the structural tests provided.\n\nVERDICT: TRUE\nREASONING: No separation was found between Equation 1 and Equation 2 through the structural tests.\nPROOF: The structural tests (LP, RP, C0, VARS) did not find any separation, and since RP showed E1=FAIL, the T3R rescue was skipped.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3393,
+        "completion_tokens": 592
+      }
+    },
+    {
+      "id": "hard3_0306",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * x)) * z) * w",
+      "equation2": "x = x * ((y * z) * (x * w))",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 20.27,
+      "raw_response": "To determine whether Equation 1 (x = ((x * (y * x)) * z) * w) implies Equation 2 (x = x * ((y * z) * (x * w))) over all magmas, we need to analyze the structure of both equations and apply the given rules for comparison.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((x * (y * x)) * z) * w\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * z) * (x * w))\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E2 first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"w\" → FAIL\n   - E2 last(L) = \"x\", last(R) = \"w\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n4. **VARS (Variables)**:\n   - E1 L={x}, R={x,y,z,w} → FAIL\n   - E2 L={x}, R={x,y,z,w} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince all structural tests showed no separation and the last test (RP) showed E1=FAIL, we do not proceed to the T3R rescue. The lack of separation in all tests indicates that we cannot conclusively determine that E1 implies E2 or not based on these tests alone, but given the rules, the default is to say TRUE unless a clear separation is found.\n\nVERDICT: TRUE\nREASONING: No clear separation was found through the structural tests, and the default is TRUE unless a separation is proven.\nPROOF: The step-by-step analysis of the structural tests did not reveal any separation between E1 and E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3367,
+        "completion_tokens": 527
+      }
+    },
+    {
+      "id": "hard3_0292",
+      "repeat_id": 1,
+      "equation1": "x = ((y * y) * (z * y)) * x",
+      "equation2": "x = x * ((y * x) * (y * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 11.1,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must analyze the structure of both equations and apply the given tests.\n\nEquation 1 (E1) is x = ((y * y) * (z * y)) * x, and Equation 2 (E2) is x = x * ((y * x) * (y * x)).\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"((y * y) * (z * y)) * x\"\n- E2_L = \"x\"\n- E2_R = \"x * ((y * x) * (y * x))\"\n\nNext, we perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation, continue to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation, continue to the next test.\n\n3. **C0 ( Asterisk Presence Test)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation, continue to the next test.\n\n4. **VARS (Variables Test)**:\n   - E1 L={x}, R={x,y,z} → FAIL\n   - E2 L={x}, R={x,y} → FAIL\n   - E1=FAIL, E2=FAIL → no separation, since no test found a separation, we proceed to the T3R rescue if applicable.\n\nSince RP showed E1=HOLD, we can proceed with the T3R rescue:\n\n- Assign numbers to variables by first appearance: x=0, y=1, z=2.\n- Rewrite E1 RHS with numbers: \"((1 * 1) * (2 * 1)) * 0\"\n- Evaluate E1 from innermost * outward:\n  - 1 * 1 → next(1) = 2 → \"(2 * (2 * 1)) * 0\"\n  - 2 * 1 → next(1) = 2 → \"(2 * 2) * 0\"\n  - 2 * 2 → next(2) = 0 → \"0 * 0\"\n  - 0 * 0 → next(0) = 1\n- E1 RHS = 1, but E1 LHS = 0, so E1 fails the magma condition in T3R.\n\nHowever, this step was incorrectly approached as we should compare the LHS and RHS of E1 after applying the magma rule correctly and then proceed to E2 if E1 holds. The mistake was in evaluating E1's RHS incorrectly and not following through with the correct procedure for E2. Given the error in the T3R application and the fact that no separation was found through the structural tests, the correct approach should involve a careful reevaluation of the equations under the magma rules and conditions provided. \n\nGiven the strict format requirement and the analysis provided, the conclusion based on the steps followed should reflect the outcome of the tests applied correctly. \n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the T3R rescue was not correctly applied to demonstrate a separation.\nPROOF: The structural tests did not show any separation, and the incorrect application of the T3R rescue does not negate the requirement for a clear separation to conclude FALSE.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3391,
+        "completion_tokens": 843
+      }
+    },
+    {
+      "id": "hard3_0336",
+      "repeat_id": 1,
+      "equation1": "x = (((y * y) * z) * w) * x",
+      "equation2": "x = x * ((x * x) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 29.39,
+      "raw_response": "To determine whether Equation 1 (E1: x = (((y * y) * z) * w) * x) implies Equation 2 (E2: x = x * ((x * x) * x)) over all magmas, we need to analyze them step by step according to the given instructions.\n\nFirst, let's split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(((y * y) * z) * w) * x\"\n- E2_L = \"x\"\n- E2_R = \"x * ((x * x) * x)\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"y\" (after scanning past the opening parentheses). Thus, E1=FAIL.\n   - E2: First letter on both sides is \"x\". Thus, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we have no separation, and we continue.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"x\" (after skipping the closing parentheses). Thus, E1=HOLD.\n   - E2: Last letter on both sides is \"x\". Thus, E2=HOLD.\n   - Since both E1=HOLD and E2=HOLD, there is no separation, and we continue.\n\n3. **C0 (Contains *)**:\n   - E1: The left side does not contain \"*\", but the right side does. Thus, E1=FAIL.\n   - E2: The left side does not contain \"*\", but the right side does. Thus, E2=FAIL.\n   - Since E1=FAIL and E2=FAIL, there is no separation, and we continue.\n\n4. **VARS (Set of Variables)**:\n   - E1: The left side contains only \"x\", while the right side contains \"x\", \"y\", \"z\", and \"w\". Thus, E1=FAIL.\n   - E2: The left side contains only \"x\", and the right side also contains only \"x\". Thus, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, there is no separation, and we would normally continue. However, since we've completed all structural tests without finding a separation and E1's RP test showed HOLD, we proceed to the T3R rescue.\n\nFor the **T3R Rescue**:\n- We assign numbers to variables by their first appearance: x=0, y=1, z=2, w=3 (following the pattern 0, 1, 2, 0, 1 for subsequent variables, but we don't need to reuse numbers yet).\n- **Step A**: We have x=0, y=1, z=2, w=3.\n- **Step B**: Rewrite E1_RHS with numbers: \"(((1 * 1) * 2) * 3) * 0\".\n- **Step C**: Evaluate from innermost \"*\" outward:\n  - \"1 * 1\" gives next(1)=2, so \"(((2) * 2) * 3) * 0\".\n  - \"2 * 2\" gives next(2)=0, so \"((0) * 3) * 0\".\n  - \"0 * 3\" gives next(3)=0 (following the next(b) rule, which cycles 0, 1, 2), so \"(0) * 0\".\n  - \"0 * 0\" gives next(0)=1, so \"1\".\n- E1_RHS = 1. Since E1_LHS = 0 and E1_RHS = 1, E1 does not hold, which means we stop here, and according to the rules, this leads to a conclusion without further need to evaluate E2, as the premise of using T3R rescue was to check for separation under specific conditions which are not met due to E1 not holding.\n\nGiven this analysis, the fact that E1 does not hold under the T3R rescue conditions indicates we should reconsider our approach to conclude properly according to the provided format and rules.\n\nVERDICT: FALSE\nREASONING: The equation E1 does not hold when evaluated under the T3R rescue conditions, indicating a failure in the implication.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3385,
+        "completion_tokens": 961
+      }
+    },
+    {
+      "id": "hard3_0092",
+      "repeat_id": 1,
+      "equation1": "x = y * (y * ((x * y) * y))",
+      "equation2": "x * x = ((y * y) * x) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 12.56,
+      "raw_response": "To determine whether Equation 1 (x = y * (y * ((x * y) * y))) implies Equation 2 (x * x = ((y * y) * x) * x) over all magmas, let's analyze the given equations step by step.\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * (y * ((x * y) * y))\"\n- E2_L = \"x * x\"\n- E2_R = \"((y * y) * x) * x\"\n\nNow, perform the four structural tests:\n\n1. **LP (First Letter Test):**\n   - E1: first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2: first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n2. **RP (Last Letter Test):**\n   - E1: last(L) = \"x\", last(R) = \"y\" → FAIL\n   - E2: last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n3. **C0 (Presence of * Test):**\n   - E1: L has no *, R has * → FAIL\n   - E2: L has *, R has * → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n4. **VARS (Set of Distinct Letters Test):**\n   - E1: L={x}, R={x,y} → FAIL\n   - E2: L={x}, R={x,y} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince none of the structural tests found a separation and the RP test showed E1=FAIL, we skip the T3R rescue and conclude that there's no separation found based on the structural tests alone.\n\nVERDICT: TRUE\nREASONING: No structural separation was found through the tests.\nPROOF: \nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3390,
+        "completion_tokens": 458
+      }
+    },
+    {
+      "id": "hard3_0343",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (x * z))",
+      "equation2": "x * x = ((y * y) * y) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 20.24,
+      "raw_response": "To determine whether Equation 1 (x * x = y * (x * (x * z))) implies Equation 2 (x * x = ((y * y) * y) * x) over all magmas, we need to follow the provided steps and guidelines.\n\nFirst, let's split each equation at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"y * (x * (x * z))\"\n- E2_L = \"x * x\"\n- E2_R = \"((y * y) * y) * x\"\n\nNow, let's apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - → E1=FAIL E2=FAIL → no separation\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"z\" → FAIL\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - → E1=FAIL E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has *, R has * → HOLD\n   - E2 L has *, R has * → HOLD\n   - → E1=HOLD E2=HOLD → no separation\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1 L={x}, R={x,y,z} → FAIL\n   - E2 L={x}, R={x,y} → FAIL\n   - → E1=FAIL E2=FAIL → no separation\n\nSince none of the structural tests found a separation and the RP test for E1 did not result in HOLD, we do not proceed to the T3R rescue. Given that all tests resulted in either both equations holding or both failing without finding a separation, the implication is that Equation 1 implies Equation 2 over all magmas is considered true by default, as per the guidelines.\n\nVERDICT: TRUE\nREASONING: No separation was found between Equation 1 and Equation 2 through the structural tests.\nPROOF: The lack of separation in the LP, RP, C0, and VARS tests indicates that Equation 1 implies Equation 2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3364,
+        "completion_tokens": 518
+      }
+    },
+    {
+      "id": "hard3_0347",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (z * w))",
+      "equation2": "x * (y * x) = (x * z) * z",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 8.48,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must analyze the given equations step by step.\n\nEquation 1 (E1) is x * x = y * (x * (z * w)), and Equation 2 (E2) is x * (y * x) = (x * z) * z.\n\nFirst, let's split each equation at the \"=\" sign:\n- E1_L = \"x * x\"\n- E1_R = \"y * (x * (z * w))\"\n- E2_L = \"x * (y * x)\"\n- E2_R = \"(x * z) * z\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - For E1, the first letter on the left is \"x\" and on the right is \"y\". So, E1=FAIL.\n   - For E2, the first letter on both sides is \"x\". So, E2=HOLD.\n   - Since E1=FAIL and E2=HOLD, we continue to the next test.\n\n2. **RP (Last Letter)**:\n   - For E1, the last letter on the left is \"x\" and on the right is \"w\". So, E1=FAIL.\n   - For E2, the last letter on the left is \"x\" and on the right is \"z\". So, E2=FAIL.\n   - Both E1=FAIL and E2=FAIL, so we continue.\n\n3. **C0 (Containment of *)**:\n   - E1's left side contains \"*\" and so does its right side. So, E1=HOLD.\n   - E2's left side contains \"*\" and so does its right side. So, E2=HOLD.\n   - Since both E1=HOLD and E2=HOLD, we continue.\n\n4. **VARS (Set of Variables)**:\n   - E1's left side contains {x} and its right side contains {x, y, z, w}. So, E1=FAIL.\n   - E2's left side contains {x, y} and its right side contains {x, z}. So, E2=FAIL.\n   - Both E1=FAIL and E2=FAIL, so we check if we need to proceed with the T3R rescue.\n\nSince RP showed E1=FAIL, we skip the T3R rescue and conclude that no separation has been found through the structural tests. Given that we did not find a separation and considering the instructions provided, the default stance is to consider that E1 implies E2 unless a clear separation is demonstrated.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the default stance is that E1 implies E2 unless a clear separation is demonstrated.\nPROOF: The lack of separation in structural tests and the nature of magma operations suggest that without specific counterexamples, the implication holds by default.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3390,
+        "completion_tokens": 632
+      }
+    },
+    {
+      "id": "hard3_0016",
+      "repeat_id": 1,
+      "equation1": "x = y * (x * (x * x))",
+      "equation2": "x * y = (y * y) * (y * y)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 16.39,
+      "raw_response": "Given the equations E1: x = y * (x * (x * x)) and E2: x * y = (y * y) * (y * y), we can analyze them step by step according to the provided rules.\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * (x * (x * x))\"\n- E2_L = \"x * y\"\n- E2_R = \"(y * y) * (y * y)\"\n\nApply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   → E1=FAIL E2=FAIL → no separation\n\n2. **RP (Last Letter)**: \n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"y\", last(R) = \"y\" → HOLD\n   → E1=HOLD E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has *, R has * → HOLD\n   → E1=FAIL E2=HOLD → no separation\n\n4. **VARS (Variables)**:\n   - E1 L={x}, R={x,y} → FAIL\n   - E2 L={x,y}, R={y} → FAIL\n   → E1=FAIL E2=FAIL → no separation\n\nSince no separation was found in the structural tests and E1=HOLD was not achieved in the RP test to warrant a T3R rescue, we proceed to the conclusion based on the defaults and rules provided.\n\nVERDICT: TRUE\nREASONING: No separation was found between E1 and E2 through the structural tests, and the conditions for T3R rescue were not met.\nPROOF: The lack of separation in all structural tests indicates that E1 implies E2 over all magmas, given the constraints and rules provided.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3360,
+        "completion_tokens": 472
+      }
+    },
+    {
+      "id": "hard3_0261",
+      "repeat_id": 1,
+      "equation1": "x = (x * ((y * z) * y)) * w",
+      "equation2": "x = (x * y) * (z * (x * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 26.89,
+      "raw_response": "To determine whether Equation 1 (x = (x * ((y * z) * y)) * w) implies Equation 2 (x = (x * y) * (z * (x * x))) over all magmas, we need to follow the steps outlined.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * ((y * z) * y)) * w\"\n- E2_L = \"x\"\n- E2_R = \"(x * y) * (z * (x * x))\"\n\nNext, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: first letter on the left is \"x\", and on the right is \"x\" → HOLD\n   - E2: first letter on the left is \"x\", and on the right is \"x\" → HOLD\n   - Since both are HOLD, we continue.\n\n2. **RP (Last Letter)**:\n   - E1: last letter on the left is \"x\", and on the right is \"w\" → FAIL\n   - E2: last letter on the left is \"x\", and on the right is \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\n3. **C0 (Presence of *)**:\n   - E1: left side has no *, right side has * → FAIL\n   - E2: left side has no *, right side has * → FAIL\n   - Both FAIL → no separation, continue.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1: left side has {x}, right side has {x, y, z, w} → FAIL\n   - E2: left side has {x}, right side has {x, y, z} → FAIL\n   - Both FAIL → no separation.\n\nSince no structural test found a separation and E1's right side and left side don't immediately equal each other under simple inspection, and given the complexity of directly comparing these expressions due to the magma operation properties not being specified beyond the standard (*), we proceed to the T3R rescue, keeping in mind that RP showed E1=FAIL, which according to the rules, means we should skip the T3R rescue and conclude no separation is found, leading to a determination of TRUE.\n\nHowever, my initial approach to directly apply the steps without considering the implications of each test's outcome in the context of magma operations and the specific rules provided was misleading. Given the format and instructions, let's correct the approach for determining the implication of E1 on E2 accurately:\n\nGiven the failure in the RP test for E1 and the instructions provided, the correct path involves recognizing that the failure in RP for E1 (because the last letters are different) but a hold for E2 does not directly lead to a separation without considering the magma properties. The key insight or step missed in the process is the application of the decision table correctly and the implications of each structural test's outcome in the context of magma theory and the specific rules for the T3R rescue.\n\nGiven the instructions and the format required for the answer, the correct conclusion based on the provided rules and structural tests should directly lead to a verdict without overcomplicating the explanation with unnecessary steps or incorrect applications of the rules.\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for applying the T3R rescue were not met as per the instructions provided.\nPROOF: The step-by-step analysis shows that no clear separation was identified, aligning with the default assumption of implication.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3369,
+        "completion_tokens": 770
+      }
+    },
+    {
+      "id": "hard3_0147",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * (w * w)) * x)",
+      "equation2": "x = x * ((y * (x * z)) * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.15,
+      "raw_response": "E1: x = y * ((z * (w * w)) * x)     E2: x = x * ((y * (x * z)) * x)\nE1_L=\"x\"  E1_R=\"y * ((z * (w * w)) * x)\"  |  E2_L=\"x\"  E2_R=\"x * ((y * (x * z)) * x)\"\n\nLP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD\n     → E1=FAIL E2=HOLD → no separation\nRP:  E1 last(L)=x last(R)=x → HOLD | E2 last(L)=x last(R)=x → HOLD\n     → E1=HOLD E2=HOLD → no separation\nC0:  E1 L=\"x\" no * → FAIL | E2 L=\"x\" no * → FAIL\n     → E1=FAIL E2=FAIL → no separation\nVARS: E1 L={x} R={x,y,z,w} → FAIL | E2 L={x} R={x,y,z} → FAIL\n     → E1=FAIL E2=FAIL → no separation\nSince RP showed E1=HOLD, we proceed with the T3R rescue.\n\nT3R rescue. Variables: x=0, y=1, z=2, w=0.\n  Rewrite E1 RHS \"y * ((z * (w * w)) * x)\" → \"1 * ((2 * (0 * 0)) * 0)\"\n  E1 LHS \"x\" → 0.\n    0 * 0 → next(0)=1 → \"1 * ((2 * 1) * 0)\"\n    2 * 1 → next(1)=2 → \"1 * (2 * 0)\"\n    2 * 0 → next(0)=1 → \"1 * 1\"\n    1 * 1 → next(1)=2\n  E1 RHS = 2.  0 ≠ 2. E1 FAILS → T3R does not apply as E1 does not hold.\n\nVERDICT: TRUE\nREASONING: No separation was found through structural tests, and the T3R rescue does not apply due to E1 failing.\nPROOF: The equations were analyzed using the provided structural tests and the T3R rescue method, and no separation was found.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3366,
+        "completion_tokens": 532
+      }
+    },
+    {
+      "id": "hard3_0188",
+      "repeat_id": 1,
+      "equation1": "x = (x * y) * ((z * w) * w)",
+      "equation2": "x * y = x * (z * (z * y))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 28.47,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must follow a series of tests as outlined. \n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * y) * ((z * w) * w)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (z * (z * y))\"\n\nNext, we perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1: First letter on the left is \"x\", and on the right is \"x\". \n   - E2: First letter on the left is \"x\", and on the right is \"x\".\n   - Result: E1=HOLD, E2=HOLD. No separation.\n\n2. **RP (Last Letter Test)**: \n   - E1: Last letter on the left is \"x\", and on the right is \"w\".\n   - E2: Last letter on the left is \"y\", and on the right is \"y\".\n   - Result: E1=FAIL, E2=HOLD. No separation.\n\n3. **C0 (Presence of * Test)**:\n   - E1: Left side does not contain \"*\", but the right side does.\n   - E2: Both sides contain \"*\".\n   - Result: E1=FAIL, E2=HOLD. No separation.\n\n4. **VARS (Variables Test)**:\n   - E1: Left side contains {x}, and the right side contains {x, y, z, w}.\n   - E2: Both sides contain {x, y, z}.\n   - Result: E1=FAIL, E2=HOLD. No separation.\n\nSince no separation was found after the structural tests and E1's right side last letter test (RP) showed HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\nAssign numbers to variables by first appearance: x=0, y=1, z=2, w=0 (since it's the 4th distinct variable, it wraps around to 0).\n\nRewrite E1_RHS with numbers: \"(0 * 1) * ((2 * 0) * 0)\"\n- Evaluate innermost *: (2 * 0) = next(0) = 1, so \"(0 * 1) * (1 * 0)\".\n- Next innermost *: (1 * 0) = next(0) = 1, so \"(0 * 1) * 1\".\n- Next innermost *: (0 * 1) = next(1) = 2, so \"2 * 1\".\n- Final *: (2 * 1) = next(1) = 2.\n- E1_RHS = 2.\n\nE1_LHS is \"x\" which is 0. Since E1_LHS (0) ≠ E1_RHS (2), we stop here according to the T3R rules, and the answer is TRUE because no separation was found, and the T3R rescue did not proceed to evaluate E2 due to the mismatch in E1.\n\nVERDICT: TRUE\nREASONING: The structural tests did not separate the equations, and the T3R rescue stopped due to a mismatch in Equation 1, indicating no implication failure.\nPROOF: The T3R rescue process revealed a mismatch in Equation 1, preventing further evaluation of Equation 2, thereby not demonstrating any separation or failure of implication.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3366,
+        "completion_tokens": 756
+      }
+    },
+    {
+      "id": "hard3_0197",
+      "repeat_id": 1,
+      "equation1": "x = (y * z) * ((w * x) * x)",
+      "equation2": "x * y = x * (y * (x * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 44.8,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations using the provided structural tests and the T3R rescue if necessary.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * z) * ((w * x) * x)\"\n- E2_L = \"x * y\"\n- E2_R = \"x * (y * (x * y))\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2: first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n2. **RP (Last Letter)**: \n   - E1: last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2: last(L) = \"y\", last(R) = \"y\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1: L has no *, R has * → FAIL\n   - E2: L has *, R has * → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1: L={x}, R={y,z,w,x} → FAIL\n   - E2: L={x,y}, R={x,y} → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\nSince none of the structural tests found a separation and the RP test showed E1=HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\nAssign numbers to variables by first appearance: x=0, y=1, z=2, w=3 (since w is the fourth distinct variable, it should be assigned the next number in the cycle, which is 0, but to avoid confusion with x, let's correctly follow the instruction: the first distinct variable is 0, the second is 1, the third is 2, and the pattern repeats, so the fourth distinct variable should indeed be 0, but since x is already 0, and we need to distinguish, the correct assignment following the pattern should consider the sequence: x=0, y=1, z=2, and then the next in line is w, which should logically follow as w=0, given the cyclical nature of the assignment. However, to maintain clarity and follow the pattern correctly without confusion, we should recognize the oversight and accurately state the sequence without implying w=3, but rather adhering to the 0, 1, 2 sequence restart for the next variable after z).\n\nGiven the correct approach for the sequence:\n- x=0, y=1, z=2, and following the pattern for the next variable w, it indeed should follow the cyclical pattern. Correctly, after z=2, we should restart the sequence for the next distinct variable, thus w should be considered as part of the sequence but correctly placed within the cycle, which means after 2, the next is 0, implying w should indeed follow the restart of the sequence, thus w correctly should be seen as w=0 in the cyclical pattern, but to avoid confusion with x, it seems there was an attempt to differentiate, yet incorrectly stated as w=3. The proper cycle for the first four distinct variables should thus correctly be considered in the pattern of 0, 1, 2, and then restarting for the next variable, maintaining the established cycle for magma variable assignment in T3R rescue.\n\nFor clarity and correction in applying the T3R rule:\n- x = 0, y = 1, z = 2. For w, following the established pattern of 0, 1, 2, and recognizing w as the next variable, w should indeed follow the pattern's restart, which would inaccurately suggest w=0 if strictly following the provided sequence without accounting for the need to distinguish variables in the explanation.\n\nLet's correctly apply the numbers with proper distinction for the T3R:\n- x = 0, y = 1, z = 2. Given the mistake in sequence explanation, correctly, w should be considered the next in line after z in a sequence that resets, implying the start of the pattern again. Therefore, the correct sequence considering the need for distinction is actually x=0, y=1, z=2, and for w, considering it as part of the pattern but recognizing the mistake in the explanation regarding sequence assignment, we should clarify that the intention was to follow the 0, 1, 2 pattern, which for the fourth distinct variable, suggests a restart, but in practical application for this problem, we'd consider each variable's unique contribution.\n\nFor E1 and E2 evaluation in T3R, considering the sequence start for each equation:\n- E1 RHS: \"(y * z) * ((w * x) * x)\" becomes \"(1 * 2) * ((0 * 0) * 0)\" considering x=0, y=1, z=2, and recognizing w's correct placement in the pattern should reflect the cyclical nature, thus w should indeed represent a value within the established cycle, which for the purpose of calculation and to correct the oversight, we simplify the evaluation based on given instructions.\n\nE1 LHS is \"x\" which becomes \"0\".\n- Evaluate from innermost * outward: \n  - \"0 * 0\" → next(0) = 1, so \"(0 * 0) * 0\" becomes \"1 * 0\" → next(0) = 1.\n  - Thus, \"1 * 2\" → next(2) = 0, and then \"0 * 1\" (from the previous step) → next(1) = 2, but we need to correctly evaluate \"(1 * 2) * (1 * 0)\" which simplifies to \"(1 * 2) * 1\" and further to \"0 * 1\" → next(1) = 2.\n- E1 RHS = 2. Since E1 LHS = 0 and E1 RHS = 2, E1 does not hold, which means we should stop here according to the T3R rules, as E1 not holding indicates that the equations do not satisfy the condition for further evaluation under T3R for separation.\n\nGiven this analysis, since E1 does not hold under the T3R rescue due to the error in the initial steps of variable assignment and the subsequent misinterpretation of the sequence for w, we actually conclude based on the failure of E1 to satisfy the condition for T3R evaluation correctly.\n\nVERDICT: FALSE\nREASONING: The failure of E1 to satisfy the T3R condition due to incorrect variable assignment and sequence application indicates that E1 does not imply E2 over all magmas.\nPROOF: \nCOUNTEREXAMPLE: T3R.",
+      "usage": {
+        "prompt_tokens": 3366,
+        "completion_tokens": 1518
+      }
+    },
+    {
+      "id": "hard3_0198",
+      "repeat_id": 1,
+      "equation1": "x = (y * z) * ((w * u) * x)",
+      "equation2": "x = y * (((z * w) * z) * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 5.2,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we must carefully analyze the given equations through a series of tests.\n\nGiven Equation 1 (E1): x = (y * z) * ((w * u) * x)\nGiven Equation 2 (E2): x = y * (((z * w) * z) * x)\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * z) * ((w * u) * x)\"\n- E2_L = \"x\"\n- E2_R = \"y * (((z * w) * z) * x)\"\n\nNow, we proceed with the structural tests:\n\n1. **LP (First Letter Test)**:\n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n2. **RP (Last Letter Test)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Contains * Test)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n4. **VARS (Variables Test)**:\n   - E1 L={x}, R={x,y,z,w} → FAIL\n   - E2 L={x}, R={x,y,z} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince no separation was found through the structural tests and the RP test showed E1=HOLD, we proceed to the T3R rescue (algebraic magma check).\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2, w=3, u=0 (since it's the 5th distinct variable, it cycles back to 0).\n- Rewrite E1 RHS: \"(1 * 2) * ((3 * 0) * 0)\"\n- Evaluate E1 RHS from innermost * outward:\n  - \"3 * 0\" → next(0) = 1, so \"(3 * 0)\" becomes \"1\"\n  - \"(1 * 2) * (1 * 0)\" → \"1 * 0\" → next(0) = 1, so \"(1 * 0)\" becomes \"1\"\n  - \"(1 * 2) * 1\" → \"1 * 2\" → next(2) = 0, so \"(1 * 2)\" becomes \"0\"\n  - \"0 * 1\" → next(1) = 2\n- E1 RHS = 2, but E1 LHS = 0, so E1 does not hold as expected under T3R rules for this specific interpretation. However, my initial interpretation of the T3R application was incorrect in the explanation; correctly, we should be comparing the outcome of applying the T3R rule to both sides of each equation after numerical substitution, not directly evaluating the equation's truth. The mistake was in prematurely concluding the evaluation without correctly applying the T3R comparison, which requires a step-by-step numerical substitution and evaluation that adheres strictly to the T3R rules provided.\n\nGiven the confusion in the explanation of the T3R rescue application and to align with the required analysis format without further incorrect elaboration on the T3R step, let's correct the course and finalize:\n\nVERDICT: FALSE\nREASONING: The initial analysis incorrectly applied the final steps of the T3R rescue, leading to confusion.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3367,
+        "completion_tokens": 852
+      }
+    },
+    {
+      "id": "hard3_0213",
+      "repeat_id": 1,
+      "equation1": "x = (y * (z * z)) * (w * x)",
+      "equation2": "x * x = (y * (x * z)) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 23.77,
+      "raw_response": "To solve this, we'll follow the provided steps for analyzing whether Equation 1 (E1: x = (y * (z * z)) * (w * x)) implies Equation 2 (E2: x * x = (y * (x * z)) * x) over all magmas.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * z)) * (w * x)\"\n- E2_L = \"x * x\"\n- E2_R = \"(y * (x * z)) * x\"\n\nNow, we perform the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first letter on the left side is \"x\" and on the right side is \"y\" → FAIL\n   - E2 first letter on the left side is \"x\" and on the right side is \"y\" → FAIL\n   - Since both FAIL, we continue to the next test.\n\n2. **RP (Last Letter Test)**:\n   - E1 last letter on the left side is \"x\" and on the right side is \"x\" → HOLD\n   - E2 last letter on the left side is \"x\" and on the right side is \"x\" → HOLD\n   - Both HOLD, so we continue.\n\n3. **C0 (Contains * Test)**:\n   - E1 left side does not contain \"*\" but the right side does → FAIL\n   - E2 left side contains \"*\" and the right side also contains \"*\" → HOLD\n   - E1=FAIL, E2=HOLD, so we continue.\n\n4. **VARS (Variables Test)**:\n   - E1 left side has {x} and the right side has {y, z, w, x} → FAIL\n   - E2 left side has {x} and the right side has {x, y, z} → FAIL\n   - Both FAIL, so we continue.\n\nSince we've completed all structural tests without finding a separation (a situation where E1=HOLD and E2=FAIL), and given that the RP test for E1 showed HOLD, we proceed to the T3R Rescue (algebraic magma check).\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2, w=3.\n- Rewrite E1 RHS with numbers: \"(1 * (2 * 2)) * (3 * 0)\".\n- E1 LHS is \"0\".\n  - Evaluate from innermost * outward: \n    - 2 * 2 → next(2)=0 → \"(1 * 0) * (3 * 0)\"\n    - 1 * 0 → next(0)=1 → \"1 * (3 * 0)\"\n    - 3 * 0 → next(0)=1 → \"1 * 1\"\n    - 1 * 1 → next(1)=2\n  - E1 RHS = 2. Since E1 LHS = 0 and E1 RHS = 2, E1 does not hold, which means we stop here and conclude there's no separation because E1 itself does not satisfy the condition under the T3R rescue rules.\n\nGiven that we didn't find a separation and the specific process for T3R led to a conclusion without needing further comparison with E2 under these rules, we consider the implication under the magma rules provided.\n\nVERDICT: TRUE\nREASONING: The structural tests and T3R rescue process did not provide a clear separation, indicating that E1 implies E2 over all magmas under the given conditions.\nPROOF: The step-by-step analysis following the provided rules and tests did not yield a counterexample.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3368,
+        "completion_tokens": 801
+      }
+    },
+    {
+      "id": "hard3_0159",
+      "repeat_id": 1,
+      "equation1": "x = y * (((y * z) * z) * x)",
+      "equation2": "(x * y) * x = (y * x) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 19.5,
+      "raw_response": "Given the equations E1: x = y * (((y * z) * z) * x) and E2: (x * y) * x = (y * x) * x, we will analyze them step by step according to the provided rules.\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * (((y * z) * z) * x)\"\n- E2_L = \"(x * y) * x\"\n- E2_R = \"(y * x) * x\"\n\nNow, perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: first letter on the left is \"x\", and on the right is \"y\" → Different → FAIL.\n   - E2: first letter on both sides is \"x\" (considering the entire expression including parentheses) → Same → HOLD.\n   - E1=FAIL, E2=HOLD → No separation, continue.\n\n2. **RP (Last Letter)**: \n   - E1: last letter on the left is \"x\", and on the right is \"x\" → Same → HOLD.\n   - E2: last letter on both sides is \"x\" → Same → HOLD.\n   - E1=HOLD, E2=HOLD → No separation, continue.\n\n3. **C0 (Presence of *)**:\n   - E1: Left side has no *, right side has * → FAIL.\n   - E2: Both sides have * → HOLD.\n   - E1=FAIL, E2=HOLD → No separation, continue.\n\n4. **VARS (Set of Variables)**:\n   - E1: Left side has {x}, right side has {x, y, z} → Different set → FAIL.\n   - E2: Both sides have {x, y} → Same set → HOLD (considering the variables present).\n   - E1=FAIL, E2=HOLD → No separation, continue.\n\nSince none of the structural tests found a separation and E1 did not hold in all tests but specifically RP showed E1=HOLD, we proceed to the T3R rescue to evaluate algebraically:\n\nAssign numbers to variables: x = 0, y = 1, z = 2.\n\nRewrite E1 RHS with numbers: \"1 * (((1 * 2) * 2) * 0)\".\nRewrite step by step from the innermost:\n- \"(1 * 2)\" becomes \"1 * 2 → next(2) = 0\", so it becomes \"1 * (0 * 2)\" → \"1 * (0 * 2)\" becomes \"0 * 2\" → \"next(2) = 0\".\n- So, E1 RHS simplifies to \"1 * 0\" → \"next(0) = 1\".\n- E1 LHS is \"0\".\n\nFor E1, LHS = 0, RHS = 1 after simplification, indicating that E1 does not hold under this specific algebraic evaluation (T3R rule). However, according to the T3R abort rule, if E1 LHS ≠ RHS, we stop and the answer is TRUE because we didn't find a case where E1 holds and E2 fails under the same conditions.\n\nTherefore, the analysis leads to the conclusion that there is no separation found that would indicate E1 does not imply E2 over all magmas, based on the provided structural tests and the T3R rescue attempt.\n\nVERDICT: TRUE\nREASONING: The structural tests did not find a separation, and the T3R rescue, which is the final step to check for implication, did not find a condition under which E1 holds and E2 fails, leading to the conclusion that E1 implies E2.\nPROOF: The detailed step-by-step analysis above demonstrates the reasoning process.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3391,
+        "completion_tokens": 822
+      }
+    },
+    {
+      "id": "hard3_0051",
+      "repeat_id": 1,
+      "equation1": "x * y = z * (x * z)",
+      "equation2": "x * y = (y * (y * y)) * y",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 13.94,
+      "raw_response": "Let's analyze the given equations according to the provided rules.\n\n\nE1: x * y = z * (x * z)\nE2: x * y = (y * (y * y)) * y\n\n\nFirst, split each equation at the \"=\" sign.\n\n\nE1_L = \"x * y\"    E1_R = \"z * (x * z)\"\nE2_L = \"x * y\"    E2_R = \"(y * (y * y)) * y\"\n\n\nNow, perform the structural tests.\n\n\nTEST 1 — LP: \nE1 first(L)=x first(R)=z → FAIL | E2 first(L)=x first(R)=y → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\n\nTEST 2 — RP: \nE1 last(L)=y last(R)=z → FAIL | E2 last(L)=y last(R)=y → HOLD\n→ E1=FAIL E2=HOLD → no separation\n\n\nTEST 3 — C0: \nE1 L has *, R has * → HOLD | E2 L has *, R has * → HOLD\n→ E1=HOLD E2=HOLD → no separation\n\n\nTEST 4 — VARS: \nE1 L={x,y} R={x,y,z} → FAIL | E2 L={x,y} R={y} → FAIL\n→ E1=FAIL E2=FAIL → no separation\n\n\nSince no separation was found through the structural tests and TEST 2 (RP) showed E1=FAIL, we skip the T3R rescue.\n\n\nVERDICT: TRUE\nREASONING: No separation was found between E1 and E2 through the structural tests.\nPROOF: \nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3358,
+        "completion_tokens": 362
+      }
+    },
+    {
+      "id": "hard3_0257",
+      "repeat_id": 1,
+      "equation1": "x = (y * (z * (w * w))) * x",
+      "equation2": "x = ((y * y) * (y * y)) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 50.53,
+      "raw_response": "To analyze whether Equation 1 (E1: x = (y * (z * (w * w))) * x) implies Equation 2 (E2: x = ((y * y) * (y * y)) * x) over all magmas, we follow the given steps.\n\nFirst, let's split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * (w * w))) * x\"\n- E2_L = \"x\"\n- E2_R = \"((y * y) * (y * y)) * x\"\n\nNow, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"y\". Since they are different, E1=FAIL.\n   - E2: First letter on both sides is \"x\". Since they are the same, E2=HOLD.\n   - According to the decision table, E1=FAIL and E2=HOLD means no separation, so we continue.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"x\". Since they are the same, E1=HOLD.\n   - E2: Last letter on both sides is \"x\". Since they are the same, E2=HOLD.\n   - E1=HOLD and E2=HOLD means no separation, so we continue.\n\n3. **C0 (Contains *)**:\n   - E1: The left side does not contain \"*\", but the right side does. So, E1=FAIL.\n   - E2: The left side does not contain \"*\", but the right side does. So, E2=FAIL.\n   - E1=FAIL and E2=FAIL means no separation, so we continue.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1: The left side contains \"x\", and the right side contains \"x\", \"y\", \"z\", \"w\". They are different, so E1=FAIL.\n   - E2: The left side contains \"x\", and the right side contains \"x\", \"y\". They are different, so E2=FAIL.\n   - E1=FAIL and E2=FAIL means no separation, so we continue.\n\nSince none of the structural tests found a separation and E1=HOLD in the RP test, we proceed to the T3R rescue:\n\n- Assign numbers to variables: x=0, y=1, z=2, w=0 (since it's the 4th distinct variable, it wraps around to 0).\n- Rewrite E1 RHS with numbers: \"(1 * (2 * (0 * 0))) * 0\"\n- Evaluate from innermost \"*\": \n  - \"0 * 0\" = next(0) = 1, so it becomes \"(1 * (2 * 1)) * 0\"\n  - \"2 * 1\" = next(1) = 2, so it becomes \"(1 * 2) * 0\"\n  - \"1 * 2\" = next(2) = 0, so it becomes \"0 * 0\"\n  - \"0 * 0\" = next(0) = 1\n- E1 RHS = 1, but E1 LHS = 0, so E1 does not hold. \n\nHowever, my initial approach to directly apply the T3R rule without considering the proper sequence and the fact that E1's evaluation was not correctly leading to a straightforward comparison was misleading. Given the correct process and focusing on the decision table outcomes, we should recognize that the critical comparison and evaluation were not properly addressed in my explanation, particularly in how the T3R rescue should be applied after structural tests. The proper application of T3R and the recognition of the actual process for determining whether E1 implies E2 involve careful consideration of the magma properties and the specific equations provided, which was not accurately captured.\n\nGiven the misstep in directly applying and explaining the T3R process without adhering strictly to the defined steps and recognizing the implication of the structural tests' outcomes, the correct approach should involve a detailed evaluation based on the magma properties and the specific steps outlined for such problems. However, the key mistake here was not following through with the correct application of the rules as defined and not providing a clear, step-by-step analysis that adheres to the given format and rules for determining the implication between the two equations over all magmas.\n\nVERDICT: FALSE\nREASONING: The implication between the two equations was analyzed based on structural tests and the T3R rescue mechanism, considering the properties of magmas and the rules provided for such analyses.\nPROOF: \nCOUNTEREXAMPLE: T3R",
+      "usage": {
+        "prompt_tokens": 3393,
+        "completion_tokens": 1018
+      }
+    },
+    {
+      "id": "hard3_0037",
+      "repeat_id": 1,
+      "equation1": "x = (x * (x * y)) * x",
+      "equation2": "x * x = x * ((y * y) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 29.15,
+      "raw_response": "To determine whether Equation 1 (x = (x * (x * y)) * x) implies Equation 2 (x * x = x * ((y * y) * x)) over all magmas, we must first analyze the structure of both equations and then apply the given rules for comparison.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * (x * y)) * x\"\n- E2_L = \"x * x\"\n- E2_R = \"x * ((y * y) * x)\"\n\nNow, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E2 first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has *, R has * → HOLD\n   - E1=FAIL, E2=HOLD → no separation\n\n4. **VARS (Variables)**:\n   - E1 L={x}, R={x,y} → FAIL\n   - E2 L={x}, R={x,y} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince none of the structural tests found a separation and E1=HOLD was shown in RP, we proceed to the T3R rescue. However, given that we did not have a clear E1=HOLD and E2=FAIL from the structural tests to directly apply the T3R rescue based on the rules provided, and considering the complexity of directly evaluating these expressions under the T3R rule for general magma properties without further algebraic manipulation, the key focus should be on whether the equations hold under the magma operation's properties as given.\n\nGiven the instructions and the format to follow, the critical analysis missed the direct application of magma properties to evaluate the implication directly through algebraic manipulation or specific counterexamples. The decision to proceed to T3R rescue should be based on specific conditions that were not clearly met in the initial analysis due to an oversight in directly applying the magma operation rules to evaluate Equation 1 and Equation 2's implications.\n\nHowever, the correct step after recognizing the oversight would involve directly assessing whether Equation 1 implies Equation 2 under magma operations, considering properties such as associativity, which might not be assumed in a magma. The given problem and the rules provided are designed to systematically approach such implications, but without directly engaging with the algebraic properties of magmas or providing a clear path through the structural tests to a T3R rescue that directly applies, we miss the crucial step of evaluating the implication under magma operations.\n\nThus, based on the provided instructions and the analysis structure, without a clear path to T3R or a specific counterexample derived from the structural tests or magma properties directly, and acknowledging the necessity to follow the format strictly:\n\nVERDICT: TRUE\nREASONING: The analysis followed the structural tests without finding separation, suggesting a need for further algebraic evaluation under magma properties.\nPROOF: None provided in the analysis due to the oversight in directly applying magma properties to evaluate the implication.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3359,
+        "completion_tokens": 773
+      }
+    },
+    {
+      "id": "hard3_0208",
+      "repeat_id": 1,
+      "equation1": "x = (y * (z * x)) * (y * x)",
+      "equation2": "x * y = ((y * z) * x) * y",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 14.3,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we'll follow the steps outlined.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * (z * x)) * (y * x)\"\n- E2_L = \"x * y\"\n- E2_R = \"((y * z) * x) * y\"\n\nThen, we perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" → HOLD\n   - → E1=FAIL, E2=HOLD → no separation\n\n2. **RP (Last Letter)**: \n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"y\", last(R) = \"y\" → HOLD\n   - → E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has *, R has * → HOLD\n   - → E1=FAIL, E2=HOLD → no separation\n\n4. **VARS (Set of Variables)**:\n   - E1 L={x}, R={x,y,z} → FAIL\n   - E2 L={x,y}, R={x,y,z} → FAIL\n   - → E1=FAIL, E2=FAIL → no separation\n\nSince no structural test found a separation and E1=HOLD was not consistently shown to enable the T3R rescue for a direct evaluation, we proceed under the premise that without a clear separation or a specific condition to apply the T3R rescue directly due to the nature of the equations and the instructions provided, the default position is:\n\nVERDICT: TRUE\nREASONING: No separation was found through the structural tests, and the conditions for T3R rescue were not met as required for a definitive evaluation leading to separation.\nPROOF: The structural tests did not indicate a separation, and the specific conditions for applying the T3R rescue to definitively evaluate the equations were not fully aligned with the instructions provided for this scenario.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3368,
+        "completion_tokens": 505
+      }
+    },
+    {
+      "id": "hard3_0124",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * w) * (u * x))",
+      "equation2": "x = (y * z) * (y * (z * x))",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 31.83,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations through the provided steps and tests.\n\nGiven Equation 1: x = y * ((z * w) * (u * x))\nGiven Equation 2: x = (y * z) * (y * (z * x))\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"y * ((z * w) * (u * x))\"\n- E2_L = \"x\"\n- E2_R = \"(y * z) * (y * (z * x))\"\n\nNow, we proceed with the structural tests.\n\nLP (First letter on the left side vs first letter on the right side):\n- E1: first(L) = \"x\", first(R) = \"y\" → FAIL\n- E2: first(L) = \"x\", first(R) = \"y\" → FAIL\n→ E1=FAIL, E2=FAIL → no separation\n\nRP (Last letter on the left side vs last letter on the right side):\n- E1: last(L) = \"x\", last(R) = \"x\" → HOLD\n- E2: last(L) = \"x\", last(R) = \"x\" → HOLD\n→ E1=HOLD, E2=HOLD → no separation\n\nC0 (Does the left side contain *? Does the right side contain *?):\n- E1: L has no *, R has * → FAIL\n- E2: L has no *, R has * → FAIL\n→ E1=FAIL, E2=FAIL → no separation\n\nVARS (Set of distinct letters on the left vs set on the right):\n- E1: L={x}, R={y,z,w,u,x} → FAIL\n- E2: L={x}, R={y,z,x} → FAIL\n→ E1=FAIL, E2=FAIL → no separation\n\nSince none of the structural tests found a separation and the RP test showed E1=HOLD, we proceed to the T3R RESCUE.\n\nAssigning numbers to variables by first appearance: x=0, y=1, z=2, w=3, u=0 (since we cycle back to 0 after 2).\n\nRewriting E1 RHS with numbers: \"1 * ((2 * 3) * (0 * 0))\"\nE1 LHS with numbers: \"0\"\n\nEvaluating E1 RHS from innermost * outward:\n- 0 * 0 → next(0)=1 → \"1 * ((2 * 3) * 1)\"\n- 2 * 3 → next(3)=0 → \"1 * (0 * 1)\"\n- 0 * 1 → next(1)=2 → \"1 * 2\"\n- 1 * 2 → next(2)=0\nSo, E1 RHS = 0.\n\nSince E1 LHS = E1 RHS = 0, we continue to evaluate E2.\n\nRewriting E2 RHS with numbers: \"(1 * 2) * (1 * (2 * 0))\"\nE2 LHS with numbers: \"0\"\n\nEvaluating E2 RHS from innermost * outward:\n- 2 * 0 → next(0)=1 → \"(1 * 2) * (1 * 1)\"\n- 1 * 1 → next(1)=2 → \"(1 * 2) * 2\"\n- 1 * 2 → next(2)=0 → \"0 * 2\"\n- 0 * 2 → next(2)=0\nSo, E2 RHS = 0.\n\nSince E2 LHS = E2 RHS = 0, there is no separation.\n\nVERDICT: TRUE\nREASONING: The equations passed all structural tests without finding a separation, and the T3R rescue also did not find a separation.\nPROOF: The step-by-step analysis through structural tests and the T3R rescue process.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3368,
+        "completion_tokens": 856
+      }
+    },
+    {
+      "id": "hard3_0340",
+      "repeat_id": 1,
+      "equation1": "x = (((y * z) * w) * u) * x",
+      "equation2": "x = ((y * x) * z) * x",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 22.75,
+      "raw_response": "To determine whether Equation 1 (x = (((y * z) * w) * u) * x) implies Equation 2 (x = ((y * x) * z) * x) over all magmas, we need to follow the provided steps and analysis process.\n\nFirst, let's split the equations at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(((y * z) * w) * u) * x\"\n- E2_L = \"x\"\n- E2_R = \"((y * x) * z) * x\"\n\nThen, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"y\" (after scanning past opening parentheses). So, E1=FAIL.\n   - E2: First letter on the left is \"x\", and on the right is \"y\". So, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"x\". So, E1=HOLD.\n   - E2: Last letter on the left is \"x\", and on the right is \"x\". So, E2=HOLD.\n   - Since both are HOLD, there's no separation.\n\n3. **C0 (Contains *)**:\n   - E1: Left side does not contain \"*\", but the right side does. So, E1=FAIL.\n   - E2: Left side does not contain \"*\", but the right side does. So, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\n4. **VARS (Variables)**:\n   - E1: Left side contains {x}, and the right side contains {x, y, z, w, u}. So, E1=FAIL.\n   - E2: Left side contains {x}, and the right side contains {x, y, z}. So, E2=FAIL.\n   - Since both are FAIL, there's no separation.\n\nGiven that none of the structural tests found a separation and that the RP test showed E1=HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\n- Assign numbers to variables by first appearance: x=0, y=1, z=2, w=0 (since it's the 4th distinct variable, it loops back to 0), u=1.\n- Rewrite E1 RHS: \"(((1 * 2) * 0) * 1) * 0\"\n- Evaluate E1 RHS step by step:\n  - \"1 * 2\" → next(2)=0 → \"((0 * 0) * 1) * 0\"\n  - \"0 * 0\" → next(0)=1 → \"(1 * 1) * 0\"\n  - \"1 * 1\" → next(1)=2 → \"2 * 0\"\n  - \"2 * 0\" → next(0)=1 → \"1\"\n- E1 LHS is \"0\" (for x), and the evaluated RHS is \"1\", so E1 does not hold. According to the T3R abort rule, if E1 LHS ≠ RHS, we stop and the verdict is TRUE.\n\nVERDICT: TRUE\nREASONING: The structural tests did not find any separation, and the T3R rescue, initiated due to E1 holding in the RP test, led to E1 not holding, which according to the rules, results in a verdict of TRUE.\nPROOF: The step-by-step evaluation in the T3R rescue shows that E1 does not hold, which directly leads to the conclusion that E1 implying E2 is TRUE.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3363,
+        "completion_tokens": 818
+      }
+    },
+    {
+      "id": "hard3_0040",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * z)) * y",
+      "equation2": "x = (((x * x) * x) * x) * x",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 37.04,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we first need to split each equation at the equals sign and then apply the given structural tests.\n\nEquation 1 (E1) is x = (x * (y * z)) * y, and Equation 2 (E2) is x = (((x * x) * x) * x) * x.\n\nSplitting each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(x * (y * z)) * y\"\n- E2_L = \"x\"\n- E2_R = \"(((x * x) * x) * x) * x\"\n\nNow, let's apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1: First letter on the left is \"x\", and on the right is \"x\" (after scanning past the opening parenthesis), so E1=HOLD.\n   - E2: First letter on both sides is \"x\", so E2=HOLD.\n   - Since both are HOLD, we continue.\n\n2. **RP (Last Letter)**:\n   - E1: Last letter on the left is \"x\", and on the right is \"y\", so E1=FAIL.\n   - E2: Last letter on both sides is \"x\", so E2=HOLD.\n   - E1=FAIL and E2=HOLD, so we continue.\n\n3. **C0 (Presence of *)**:\n   - E1: Left side has no \"*\", and the right side has \"*\", so E1=FAIL.\n   - E2: Left side has no \"*\", and the right side has \"*\", so E2=FAIL.\n   - Both are FAIL, so we continue.\n\n4. **VARS (Set of Variables)**:\n   - E1: Left side has {x}, and the right side has {x, y, z}, so E1=FAIL.\n   - E2: Both sides have {x}, so E2=HOLD.\n   - E1=FAIL and E2=HOLD, so we continue.\n\nSince none of the structural tests found a separation and the last letter test (RP) for E1 showed HOLD, we proceed to the T3R rescue.\n\n**T3R Rescue**:\nAssign numbers to variables by first appearance: x=0, y=1, z=2.\n\nRewrite E1 RHS: \"(x * (y * z)) * y\" becomes \"(0 * (1 * 2)) * 1\".\n\nE1 LHS is \"x\" which is 0.\n- Evaluate innermost *: \"1 * 2\" → next(2)=0, so \"(0 * 0) * 1\".\n- Next, \"0 * 0\" → next(0)=1, so \"1 * 1\".\n- Finally, \"1 * 1\" → next(1)=2.\nSo, E1 RHS = 2. Since E1 LHS = 0 and E1 RHS = 2, E1 does not hold, which means we should stop and conclude there's no separation, answering TRUE. However, my analysis mistakenly proceeded as if E1 held, which was an error in applying the protocol correctly.\n\nGiven the error in applying the T3R rescue step incorrectly by not stopping when E1 did not hold, let's correct the final assessment based on the rules provided:\n\nGiven that E1 does not hold under the T3R rescue (as the steps were incorrectly described for a scenario where E1 should hold to proceed), the correct approach should recognize that no separation was found through the structural tests and incorrectly applied the T3R steps without acknowledging the failure of E1 to hold. Thus, the correct conclusion based on the provided rules and correcting for the misinterpretation should acknowledge that without a proper separation found and given the misunderstanding in the T3R application, the default stance should be reconsidered based on the actual outcomes of the tests and the specific rules for T3R, which dictate stopping if E1's sides do not match.\n\nVERDICT: TRUE\nREASONING: The analysis incorrectly applied the T3R rescue without properly concluding the lack of separation based on the rules provided, which should default to TRUE without clear separation.\nPROOF: The structural tests did not provide a clear separation, and the T3R rescue was misapplied.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3363,
+        "completion_tokens": 924
+      }
+    },
+    {
+      "id": "hard3_0171",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * (z * (w * x))",
+      "equation2": "x = ((y * y) * y) * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 35.76,
+      "raw_response": "To solve this problem, we need to follow the given rules and procedures to compare Equation 1 (E1) and Equation 2 (E2) and determine if E1 implies E2 over all magmas.\n\nFirst, we split each equation at the \"=\" sign:\n- E1_L = \"x\"\n- E1_R = \"(y * x) * (z * (w * x))\"\n- E2_L = \"x\"\n- E2_R = \"((y * y) * y) * (z * x)\"\n\nNext, we apply the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"y\" (since the first letter after all opening parentheses is 'y') → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n2. **RP (Last Letter)**: \n   - E1 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=HOLD, E2=HOLD → no separation\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\n4. **VARS (Set of Variables)**:\n   - E1 L={x}, R={x,y,z,w} → FAIL\n   - E2 L={x}, R={x,y,z} → FAIL\n   - E1=FAIL, E2=FAIL → no separation\n\nSince none of the structural tests found a separation and the RP test for E1 showed HOLD, we proceed to the T3R Rescue (Algebraic Magma Check).\n\nFor the T3R rescue, we assign numbers to variables by their first appearance:\n- x = 0, y = 1, z = 2, w = 0 (since it's the fourth distinct variable, it cycles back to 0).\n\nNow, we rewrite each side of both equations with these numbers:\n- E1_RHS: \"(1 * 0) * (2 * (0 * 0))\" simplifies to \"(1 * 0) * (2 * 1)\" (because 0*0 = next(0) = 1)\n- E1_LHS: \"0\"\n- To evaluate E1_RHS fully: \n  - \"0 * 0\" → next(0) = 1\n  - So, \"(2 * 1)\" remains as is because we've resolved the innermost operation\n  - Then, \"1 * 1\" → next(1) = 2\n  - Finally, \"1 * 2\" → next(2) = 0\n  - Thus, E1_RHS evaluates to \"0\", which matches E1_LHS.\n\nSince E1 holds, we evaluate E2:\n- E2_RHS: \"((1 * 1) * 1) * (2 * 0)\"\n- Simplifying from the innermost operation:\n  - \"1 * 1\" → next(1) = 2\n  - So, we have \"(2 * 1) * (2 * 0)\"\n  - \"2 * 1\" → next(1) = 2\n  - Now, \"(2 * 2) * (2 * 0)\"\n  - \"2 * 2\" → next(2) = 0\n  - So, we have \"0 * (2 * 0)\"\n  - \"2 * 0\" → next(0) = 1\n  - Finally, \"0 * 1\" → next(1) = 2\n- E2_RHS evaluates to \"2\", which does not match E2_LHS (\"0\").\n\nThus, we have a separation because E1 holds (its LHS equals its RHS) but E2 does not (its LHS does not equal its RHS after evaluation).\n\nVERDICT: FALSE\nREASONING: E1 implies E2 is false because after applying the T3R rescue, E1 holds true but E2 does not.\nPROOF: \nCOUNTEREXAMPLE: T3R.",
+      "usage": {
+        "prompt_tokens": 3370,
+        "completion_tokens": 938
+      }
+    },
+    {
+      "id": "hard3_0241",
+      "repeat_id": 1,
+      "equation1": "x = ((y * z) * x) * (x * w)",
+      "equation2": "x = (x * x) * ((y * x) * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 19.28,
+      "raw_response": "To determine whether Equation 1 (E1: x = ((y * z) * x) * (x * w)) implies Equation 2 (E2: x = (x * x) * ((y * x) * x)) over all magmas, we will go through the structural tests provided.\n\nFirst, let's split each equation at the equals sign:\n- E1_L = \"x\"\n- E1_R = \"((y * z) * x) * (x * w)\"\n- E2_L = \"x\"\n- E2_R = \"(x * x) * ((y * x) * x)\"\n\nNow, let's perform the structural tests:\n\n1. **LP (First Letter)**: \n   - E1 first(L) = \"x\", first(R) = \"y\" → FAIL\n   - E2 first(L) = \"x\", first(R) = \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\n2. **RP (Last Letter)**:\n   - E1 last(L) = \"x\", last(R) = \"w\" → FAIL\n   - E2 last(L) = \"x\", last(R) = \"x\" → HOLD\n   - E1=FAIL, E2=HOLD → no separation, continue.\n\n3. **C0 (Contains *)**:\n   - E1 L has no *, R has * → FAIL\n   - E2 L has no *, R has * → FAIL\n   - E1=FAIL, E2=FAIL → no separation, continue.\n\n4. **VARS (Set of Distinct Letters)**:\n   - E1 L={x}, R={x,y,z,w} → FAIL\n   - E2 L={x}, R={x,y} → FAIL\n   - E1=FAIL, E2=FAIL → no separation.\n\nSince all structural tests showed no separation and specifically RP showed E1=FAIL, we skip the T3R rescue and conclude there's no separation found.\n\nVERDICT: TRUE\nREASONING: No structural test found a separation between E1 and E2, and the conditions for T3R rescue were not met due to E1's RP result being FAIL.\nPROOF: The step-by-step analysis of the structural tests and the decision to skip T3R rescue due to RP's result.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3370,
+        "completion_tokens": 504
+      }
+    },
+    {
+      "id": "hard3_0364",
+      "repeat_id": 1,
+      "equation1": "x * y = x * ((x * z) * x)",
+      "equation2": "x * (y * x) = x * (z * z)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 37.5,
+      "raw_response": "To determine whether Equation 1 implies Equation 2 over all magmas, we need to analyze the given equations step by step according to the provided rules and tests.\n\nGiven Equation 1 (E1): x * y = x * ((x * z) * x)\nGiven Equation 2 (E2): x * (y * x) = x * (z * z)\n\nFirst, split each equation at the \"=\" sign:\n- E1_L = \"x * y\"\n- E1_R = \"x * ((x * z) * x)\"\n- E2_L = \"x * (y * x)\"\n- E2_R = \"x * (z * z)\"\n\nNow, let's apply the structural tests:\n\n1. **LP (First Letter Test)**: \n   - E1 first letter on the left is \"x\" and on the right is \"x\".\n   - E2 first letter on the left is \"x\" and on the right is \"x\".\n   - Since both equations have the same first letter on both sides, E1=HOLD and E2=HOLD.\n\n2. **RP (Last Letter Test)**:\n   - E1 last letter on the left is \"y\" and on the right is \"x\".\n   - E2 last letter on the left is \"x\" and on the right is \"z\".\n   - E1=FAIL because \"y\" ≠ \"x\", and E2=FAIL because \"x\" ≠ \"z\".\n\n3. **C0 (Contains * Test)**:\n   - Both sides of E1 contain \"*\".\n   - Both sides of E2 contain \"*\".\n   - E1=HOLD and E2=HOLD because both equations have \"*\" on both sides.\n\n4. **VARS (Distinct Letters Test)**:\n   - E1_L contains {x, y} and E1_R contains {x, z}.\n   - E2_L contains {x, y} and E2_R contains {x, z}.\n   - E1=FAIL because {x, y} ≠ {x, z}, and similarly, E2=FAIL because {x, y} ≠ {x, z}.\n\nSince none of the structural tests found a separation where E1=HOLD and E2=FAIL, and given that the RP test for E1 showed E1=FAIL, we do not proceed to the T3R rescue. According to the rules, if no separation is found after all structural tests and the specific conditions for T3R rescue are not met (especially since E1=FAIL in the RP test), the verdict defaults to TRUE.\n\nVERDICT: TRUE\nREASONING: No separation was found between Equation 1 and Equation 2 after applying all structural tests, and the conditions for applying the T3R rescue were not met.\nPROOF: The analysis provided shows that no structural test resulted in a separation that would indicate E1 does not imply E2.\nCOUNTEREXAMPLE: None",
+      "usage": {
+        "prompt_tokens": 3388,
+        "completion_tokens": 616
+      }
+    }
+  ]
+}

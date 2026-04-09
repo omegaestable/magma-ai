@@ -1,0 +1,151 @@
+﻿========================================================================
+v25a Witness Mining & Coverage Analysis
+========================================================================
+
+[1] Loading equations & matrix...
+  4694 equations, 4694x4694 matrix
+
+[2] Computing witness masks (this takes ~60s)...
+  Witness masks: 500/4694
+  Witness masks: 1000/4694
+  Witness masks: 1500/4694
+  Witness masks: 2000/4694
+  Witness masks: 2500/4694
+  Witness masks: 3000/4694
+  Witness masks: 3500/4694
+  Witness masks: 4000/4694
+  Witness masks: 4500/4694
+  Done. 4694 masks computed.
+
+[3] Loading benchmarks...
+  Hard3: hard3_balanced60_true30_false30_rotation0003_20260408_181752.jsonl
+  Normal: normal_balanced60_true30_false30_rotation0003_20260408_181752.jsonl
+
+========================================================================
+HARD3 FALSE PAIR ANALYSIS
+========================================================================
+
+  Total hard3 problems: 60 (TRUE:30 FALSE:30)
+
+  Witness coverage: 1/30 (3.3%)
+  Uncovered (deep gap): 29/30
+
+  Witness usage on hard3 FALSE (existing 11 witnesses):
+    Z3A: separates 1/30 (3.3%)
+
+  Per-pair separation detail (COVERED):
+    hard3_0026: E1=x = y * ((y * y) * x)                    -> E2=x = ((y * y) * z) * (y * x)              | sep=Z3A
+
+  Per-pair detail (UNCOVERED - deep gap):
+    hard3_0016: E1=x = y * (x * (x * x))                              -> E2=x * y = (y * y) * (y * y)                         
+    hard3_0037: E1=x = (x * (x * y)) * x                              -> E2=x * x = x * ((y * y) * x)                         
+    hard3_0040: E1=x = (x * (y * z)) * y                              -> E2=x = (((x * x) * x) * x) * x                       
+    hard3_0042: E1=x = ((x * x) * y) * y                              -> E2=x = x * ((y * y) * (z * w))                       
+    hard3_0091: E1=x = y * (y * ((x * y) * y))                        -> E2=x = (y * (z * z)) * (y * x)                       
+    hard3_0092: E1=x = y * (y * ((x * y) * y))                        -> E2=x * x = ((y * y) * x) * x                         
+    hard3_0105: E1=x = x * ((x * y) * (z * z))                        -> E2=x * y = x * (z * (x * z))                         
+    hard3_0119: E1=x = y * ((z * z) * (x * x))                        -> E2=x = x * (((x * y) * y) * x)                       
+    hard3_0152: E1=x = x * (((y * y) * y) * y)                        -> E2=x = x * ((x * (x * x)) * x)                       
+    hard3_0159: E1=x = y * (((y * z) * z) * x)                        -> E2=(x * y) * x = (y * x) * x                         
+    hard3_0171: E1=x = (y * x) * (z * (w * x))                        -> E2=x = ((y * y) * y) * (z * x)                       
+    hard3_0174: E1=x = (y * y) * (z * (y * x))                        -> E2=x = (y * ((x * z) * z)) * x                       
+    hard3_0189: E1=x = (y * x) * ((x * x) * x)                        -> E2=x = ((y * z) * z) * (z * x)                       
+    hard3_0190: E1=x = (y * x) * ((x * x) * y)                        -> E2=x * (y * z) = (x * z) * y                         
+    hard3_0200: E1=x = (x * (x * y)) * (z * z)                        -> E2=x = (x * (y * x)) * (z * w)                       
+    hard3_0201: E1=x = (x * (y * x)) * (y * z)                        -> E2=x = (((x * y) * z) * y) * x                       
+    hard3_0206: E1=x = (y * (y * x)) * (y * x)                        -> E2=x * y = x * (z * (w * y))                         
+    hard3_0215: E1=x = ((x * x) * y) * (z * x)                        -> E2=x = x * ((y * (z * z)) * x)                       
+    hard3_0229: E1=x = ((y * x) * x) * (z * x)                        -> E2=x = (y * (x * x)) * (z * x)                       
+    hard3_0235: E1=x = ((y * y) * x) * (x * z)                        -> E2=x = x * ((y * (z * w)) * u)                       
+    hard3_0241: E1=x = ((y * z) * x) * (x * w)                        -> E2=x = (x * x) * ((y * x) * x)                       
+    hard3_0306: E1=x = ((x * (y * x)) * z) * w                        -> E2=x = x * ((y * z) * (x * w))                       
+    hard3_0312: E1=x = ((x * (y * z)) * w) * z                        -> E2=x = x * (y * (y * x))                             
+    hard3_0343: E1=x * x = y * (x * (x * z))                          -> E2=x * x = ((y * y) * y) * x                         
+    hard3_0346: E1=x * x = y * (x * (z * w))                          -> E2=x * (y * z) = y * (z * w)                         
+    hard3_0347: E1=x * x = y * (x * (z * w))                          -> E2=x * (y * x) = (x * z) * z                         
+    hard3_0349: E1=x * x = y * (y * (y * z))                          -> E2=x * (y * x) = x * (z * x)                         
+    hard3_0356: E1=x * y = z * (x * (x * y))                          -> E2=x * y = ((y * y) * z) * y                         
+    hard3_0371: E1=x * x = (y * z) * (z * w)                          -> E2=x * (y * z) = y * (x * z)                         
+
+  v24j effective coverage (LP/RP/C0/AND/T3R): 0/30 (0.0%)
+  Coverable by adding more witnesses: 1
+    hard3_0026: needs Z3A
+
+========================================================================
+NORMAL FALSE PAIR ANALYSIS
+========================================================================
+  Normal FALSE pairs: 30
+  Any-witness coverage: 28/30 (93.3%)
+  v24j coverage: 27/30 (90.0%)
+
+========================================================================
+MINING NEW WITNESSES (size 2 & 3)
+========================================================================
+
+  Gap pairs to solve: 30
+
+  Mining all 2-element magmas (16 total)...
+    Done. 0 magmas separate at least 1 gap pair.
+
+  Mining all 3-element magmas (19683 total)...
+    checked 5000/19683...
+    checked 10000/19683...
+    checked 15000/19683...
+    Done. 615 magmas separate at least 1 gap pair.
+
+  TOP 20 NEW WITNESS CANDIDATES:
+  Rank Size NewCov                          Table                                Separates
+     1    3      4 [[0, 0, 0], [2, 1, 1], [1, 2, 2]] hard3_0105,hard3_0201,hard3_0042,hard3_0037
+     2    3      4 [[0, 0, 1], [1, 1, 0], [2, 2, 2]] hard3_0105,hard3_0201,hard3_0042,hard3_0037
+     3    3      4 [[0, 2, 0], [1, 1, 1], [2, 0, 2]] hard3_0105,hard3_0201,hard3_0042,hard3_0037
+     4    3      4 [[0, 2, 1], [2, 1, 0], [1, 0, 2]] hard3_0091,hard3_0042,hard3_0092,hard3_0026
+     5    3      4 [[1, 1, 1], [2, 2, 2], [0, 0, 0]] hard3_0312,hard3_0215,hard3_0042,hard3_0306
+     6    3      4 [[1, 2, 0], [1, 2, 0], [1, 2, 0]] hard3_0119,hard3_0174,hard3_0016,hard3_0171
+     7    3      4 [[2, 0, 1], [2, 0, 1], [2, 0, 1]] hard3_0119,hard3_0174,hard3_0016,hard3_0171
+     8    3      4 [[2, 2, 2], [0, 0, 0], [1, 1, 1]] hard3_0312,hard3_0215,hard3_0042,hard3_0306
+     9    3      2 [[0, 0, 0], [1, 1, 0], [2, 2, 2]]                    hard3_0105,hard3_0037
+    10    3      2 [[0, 0, 0], [1, 1, 1], [1, 2, 2]]                    hard3_0105,hard3_0037
+    11    3      2 [[0, 0, 0], [1, 1, 1], [2, 0, 2]]                    hard3_0105,hard3_0037
+    12    3      2 [[0, 0, 0], [1, 2, 2], [2, 1, 1]]                    hard3_0201,hard3_0037
+    13    3      2 [[0, 0, 0], [2, 0, 2], [1, 1, 0]]                    hard3_0200,hard3_0037
+    14    3      2 [[0, 0, 0], [2, 1, 1], [2, 2, 2]]                    hard3_0105,hard3_0037
+    15    3      2 [[0, 0, 1], [0, 0, 0], [0, 0, 0]]                    hard3_0343,hard3_0347
+    16    3      2 [[0, 0, 1], [0, 0, 0], [0, 2, 0]]                    hard3_0349,hard3_0343
+    17    3      2 [[0, 0, 1], [0, 0, 1], [0, 0, 0]]                    hard3_0343,hard3_0347
+    18    3      2 [[0, 0, 1], [0, 0, 1], [0, 2, 0]]                    hard3_0349,hard3_0343
+    19    3      2 [[0, 0, 1], [1, 1, 1], [2, 2, 2]]                    hard3_0105,hard3_0037
+    20    3      2 [[0, 0, 1], [2, 0, 2], [1, 1, 0]]                    hard3_0200,hard3_0037
+
+========================================================================
+GREEDY WITNESS SET COVER
+========================================================================
+  Round 1: +4 covered by [[0, 0, 0], [2, 1, 1], [1, 2, 2]] (size 3), 26 remaining
+  Round 2: +4 covered by [[1, 2, 0], [1, 2, 0], [1, 2, 0]] (size 3), 22 remaining
+  Round 3: +3 covered by [[0, 2, 1], [2, 1, 0], [1, 0, 2]] (size 3), 19 remaining
+  Round 4: +3 covered by [[1, 1, 1], [2, 2, 2], [0, 0, 0]] (size 3), 16 remaining
+  Round 5: +2 covered by [[0, 0, 1], [0, 0, 0], [0, 0, 0]] (size 3), 14 remaining
+
+  Selected 5 new witnesses.
+python : Traceback (most recent call last):
+En línea: 1 Carácter: 1
++ python v25a_witness_mining.py 2>&1 | Out-File -Encoding utf8 results\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last) 
+   ::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\nacho\Documents\GitHub\magma-ai\v25a_witness_mining.py", line 
+339, in <module>
+    analyze_coverage()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nacho\Documents\GitHub\magma-ai\v25a_witness_mining.py", line 
+239, in analyze_coverage
+    print(f"  Final gap: {len(remaining)} pairs uncoverable by any size \u2264 
+3 magma")
+    
+~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2264' in 
+position 46: character maps to <undefined>

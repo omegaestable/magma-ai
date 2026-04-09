@@ -49,7 +49,7 @@ Expected result: about 90% on this smoke test. If this fails badly, fix environm
 Or run directly with `sim_lab.py`:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --model meta-llama/llama-3.3-70b-instruct --playground-parity --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --errors
 ```
 
 ## 5. If You Need To Iterate
