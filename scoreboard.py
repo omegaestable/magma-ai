@@ -25,6 +25,9 @@ PAID_MODEL_PRICING = {
     "google/gemini-2.5-pro": {"label": "Gemini 2.5 Pro", "input_per_m": 0.956, "output_per_m": 10.02},
     "meta-llama/llama-3.3-70b-instruct": {"label": "Llama 3.3 70B", "input_per_m": 0.342, "output_per_m": 0.563},
     "qwen/qwen3.5-122b-a10b": {"label": "Qwen3.5 122B", "input_per_m": 0.384, "output_per_m": 2.88},
+    # Official eval models (added 2026-04-11)
+    "openai/gpt-oss-120b": {"label": "GPT-OSS-120B", "input_per_m": 0.50, "output_per_m": 1.50},
+    "google/gemma-4-31b-it": {"label": "Gemma 4 31B IT", "input_per_m": 0.20, "output_per_m": 0.40},
 }
 
 CHEATSHEET_LABELS = {

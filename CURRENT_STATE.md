@@ -2,24 +2,37 @@
 
 This file is the operational truth for the current phase. Keep it short and update it when the champion, candidate, or gate results change.
 
-Last updated: 2026-04-07 (v24j promoted)
+Last updated: 2026-04-11 (pipeline alignment with official judge)
+
+## Critical Pipeline Changes (2026-04-11)
+
+1. **Prompt mode switched to RAW**: cheatsheet IS the complete prompt. No eval template wrapping.
+   All prior v24j scores were obtained in `wrapped` mode (evaluation.jinja2 added preamble+postamble).
+   v24j scores may differ in raw mode — rebaseline required.
+2. **3 official evaluation models**: GPT-OSS-120B, Llama 3.3 70B, Gemma 4 31B IT (equal weight).
+3. **Verdict parser upgraded**: 3-tier extraction matching official `judge.py` (boxed > labeled > line).
+4. **Spine Isolation Theorem** integrated as `spine_classify.py` — new separation test with zero false positives.
 
 ## Current Artifacts
 
-- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of 10,240 cap)
+- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of 10,240 cap) — NEEDS REBASELINE ON RAW MODE
 - Previous champion: `cheatsheets/v21f_structural.txt` (historical)
-- Canonical evaluator: `sim_lab.py`
+- Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical wrapper: `run_paid_eval.ps1`
+- Smoke/gate runner: `run_smoke_gate.ps1`
+- Spine classifier: `spine_classify.py`
 - Final report: `results/v24j_final_report.md`
 - Next design doc: `V25A_MASTER_PROMPT.md`
 
 ## Current Strategy
 
-- Submission style: pure natural-language cheatsheet
+- Submission style: pure natural-language cheatsheet (IS the complete prompt)
+- Prompt mode: **raw** (cheatsheet sent directly to model, no wrapping)
 - Allowed template variables: `{{equation1}}`, `{{equation2}}`
 - Banned: Jinja2 logic, dynamic lookup tables, benchmark-pair hardcoding
-- Architecture: 4 structural tests (LP, RP, C0, VARS) + decision table + T3R algebraic rescue (a*b=next(b) on Z3)
-- Key innovations over v21f/v23c: T3R rescue for algebraic separation, explicit rewrite-with-numbers-first protocol, E1 abort guard, verbose worked examples
+- Architecture: 4 structural tests (LP, RP, C0, VARS) + decision table + T3R algebraic rescue
+- Pending improvement: Spine Isolation Theorem integration (generalizes LP test)
+- Evaluation: 3 models × balanced benchmarks, official verdict parser
 
 ## v24j Benchmark Results
 
@@ -56,16 +69,18 @@ Invalid run (catastrophically golfed 6,690-byte version, discarded):
 
 ## Open Risks
 
-1. Hard3 FALSE accuracy (35-45%) is still the main gap — many algebraic separations need witnesses beyond T3R's Z3 next-map.
-2. Temperature stochasticity creates ~5% noise floor per run.
-3. Byte budget is 87.4% consumed — only ~1,285 bytes remain for v25 additions.
-4. Prompt is near the verbosity/performance sweet spot — further additions risk execution degradation.
+1. **Raw mode rebaseline**: All v24j scores are from wrapped mode. Raw mode may differ significantly.
+2. **Cross-model robustness**: Never tested on GPT-OSS-120B or Gemma 4 31B IT. Smaller Gemma may struggle with verbose step-by-step.
+3. Hard3 FALSE accuracy (35-45%) is still the main gap — many algebraic separations need witnesses beyond T3R's Z3 next-map.
+4. Temperature stochasticity creates ~5% noise floor per run.
+5. Byte budget is 87.4% consumed — only ~1,285 bytes remain for spine rules.
+6. **DEADLINE: April 20, 2026 (9 days)**
 
 ## Next Decision Point
 
-v24 line is complete. Next agent should:
-
-1. Read `V25A_MASTER_PROMPT.md` for the next design document.
-2. Focus on hard3 FALSE coverage improvement while protecting normal safety.
-3. Any v25 candidate must gate on normal ≥90% mean before hard3 testing.
-4. Do not compress or golf v24j content — verbosity is load-bearing.
+IMMEDIATE PRIORITY:
+1. Rebaseline v24j in raw mode on all 3 models (smoke test: 20/20 normal + 20/20 hard3).
+2. If raw mode collapses: add preamble to cheatsheet (~100 bytes).
+3. Integrate Spine Isolation Theorem into v26a candidate.
+4. Run full gate (50/50 normal + 50/50 hard) on promotion candidate.
+5. Submit best performing cheatsheet by April 20.

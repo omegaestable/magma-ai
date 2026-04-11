@@ -2,16 +2,18 @@
 """
 sim_lab — SAIR Equational Theories Stage 1 evaluator.
 
-Matches the official platform pipeline exactly:
-  - Prompt: evaluation.jinja2 template wrapping the cheatsheet
-  - Model: Llama 3.3 70B via OpenRouter
-  - Parsing: VERDICT: TRUE / FALSE
+Aligned with the official SAIRcompetition/equational-theories-stage1-judge:
+  - Prompt: cheatsheet IS the complete prompt (raw mode, default)
+  - Models: GPT-OSS-120B, Llama 3.3 70B, Gemma 4 31B IT (all 3 official)
+  - Parsing: 3-tier verdict extraction (boxed > labeled > line)
   - Scoring: strict F1 (unparsed TRUE → FN, unparsed FALSE → FP)
 
 Usage:
     python sim_lab.py --data file.jsonl --cheatsheet cheatsheets/v24j.txt
     python sim_lab.py --subset normal --n 60 --cheatsheet cheatsheets/v24j.txt
     python sim_lab.py --subset hard3 --cheatsheet cheatsheets/v24j.txt --repeats 3
+    python sim_lab.py --data file.jsonl --cheatsheet cheatsheets/v24j.txt --model gpt-oss-120b
+    python sim_lab.py --data file.jsonl --cheatsheet cheatsheets/v24j.txt --all-models
 """
 
 import argparse
@@ -21,10 +23,10 @@ import re
 import sys
 import time
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import jinja2
 import requests
 
 # ── Constants ─────────────────────────────────────────────────────────────
@@ -47,9 +49,38 @@ EVAL_TEMPLATE_URL = (
 )
 EVAL_TEMPLATE_CACHE = HF_CACHE_DIR / "evaluation.jinja2"
 
-_VERDICT_RE = re.compile(
-    r"VERDICT\s*[:：]\s*(TRUE|FALSE)(?!\s*OR\b)", re.IGNORECASE
-)
+# ── Official evaluation model configs ─────────────────────────────────────
+# Source: https://github.com/SAIRcompetition/equational-theories-stage1-judge
+#         evaluation_models.json (commit 5086db8, 2026-04-10)
+
+OFFICIAL_MODELS = {
+    "gpt-oss-120b": {
+        "model": "openai/gpt-oss-120b",
+        "provider": "deepinfra/bf16",
+        "max_output_tokens": 8192,
+        "temperature": 0.0,
+        "seed": 0,
+        "reasoning_mode": "low",
+    },
+    "llama-3-3-70b-instruct": {
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "provider": "deepinfra/fp8",
+        "max_output_tokens": 8192,
+        "temperature": 0.0,
+        "seed": 0,
+        "reasoning_mode": "disabled",
+    },
+    "gemma-4-31b-it": {
+        "model": "google/gemma-4-31b-it",
+        "provider": "novita/bf16",
+        "max_output_tokens": 8192,
+        "temperature": 0.0,
+        "seed": 0,
+        "reasoning_mode": "disabled",
+    },
+}
+
+ALL_OFFICIAL_MODEL_ALIASES = list(OFFICIAL_MODELS.keys())
 
 
 # ── Data structures ───────────────────────────────────────────────────────
@@ -217,49 +248,251 @@ def load_cheatsheet(path: str) -> str:
 
 # ── Prompt rendering ──────────────────────────────────────────────────────
 
-def render_prompt(problem: Problem, cheatsheet: str) -> str:
+def render_prompt(
+    problem: Problem, cheatsheet: str, prompt_mode: str = "raw",
+) -> str:
+    """Render the prompt sent to the model.
+
+    prompt_mode:
+      'raw'     — cheatsheet IS the complete prompt (official judge behaviour).
+                   Only {{equation1}} / {{equation2}} substitution.  No Jinja2.
+      'wrapped' — legacy: evaluation.jinja2 wraps the cheatsheet (pre-April-2026).
+    """
     eq1 = problem.equation1
     eq2 = problem.equation2
 
-    # Render cheatsheet (substitute equation placeholders)
-    rendered_cs = cheatsheet
-    rendered_cs = rendered_cs.replace("{{ equation1 }}", eq1)
-    rendered_cs = rendered_cs.replace("{{equation1}}", eq1)
-    rendered_cs = rendered_cs.replace("{{ equation2 }}", eq2)
-    rendered_cs = rendered_cs.replace("{{equation2}}", eq2)
+    # Substitute equation placeholders (both spaced and no-space variants)
+    rendered = cheatsheet
+    rendered = rendered.replace("{{equation1}}", eq1)
+    rendered = rendered.replace("{{ equation1 }}", eq1)
+    rendered = rendered.replace("{{equation2}}", eq2)
+    rendered = rendered.replace("{{ equation2 }}", eq2)
 
-    # Render evaluation template (matches official platform)
-    template_src = download_eval_template()
-    return jinja2.Template(template_src).render(
-        equation1=eq1,
-        equation2=eq2,
-        cheatsheet=rendered_cs,
-    )
+    if prompt_mode == "wrapped":
+        import jinja2
+        template_src = download_eval_template()
+        return jinja2.Template(template_src).render(
+            equation1=eq1,
+            equation2=eq2,
+            cheatsheet=rendered,
+        )
+
+    # raw mode: the rendered cheatsheet is the complete prompt
+    return rendered
 
 
-# ── Verdict parsing ──────────────────────────────────────────────────────
+# ── Verdict parsing (3-tier, ported from official judge.py) ──────────────
+# Source: SAIRcompetition/equational-theories-stage1-judge/judge.py
+# Priority: boxed (3) > labeled (2) > line (1)
+# Within same tier: last occurrence wins.
+
+_BOXED_START_RE = re.compile(r"(?i)\\+boxed\s*\{")
+_VERDICT_RE = re.compile(r"(?i)\bVERDICT\s*[:：]\s*(TRUE|FALSE)\b")
+_ANSWER_RE = re.compile(
+    r"(?i)\b(?:FINAL\s+ANSWER|ANSWER|OUTPUT_RESULT|RESULT)\s*[:：=\-]\s*(TRUE|FALSE)\b"
+)
+_LATEX_TEXT_RE = re.compile(r"(?i)\\text\s*\{\s*(TRUE|FALSE)\s*\}")
+_LINE_RE = re.compile(
+    r"(?i)^\s*(?:FINAL\s+ANSWER\s*[:：=\-]\s*)?(TRUE|FALSE)\s*[.!?]*\s*$"
+)
+_LATEX_WRAPPER_RE = re.compile(
+    r"(?is)^\\(?:text|mathrm|mathbf|operatorname)\s*\{(.+)\}$"
+)
+
+
+class _VerdictSource(Enum):
+    """Verdict source, with numeric priority (higher wins)."""
+    LINE = 1
+    LABELED = 2
+    BOXED = 3
+
+
+@dataclass
+class _VerdictCandidate:
+    value: bool
+    source: _VerdictSource
+    index: int  # byte offset for tie-breaking
+
+
+def _strip_markdown(s: str) -> str:
+    return s.replace("***", "").replace("**", "").replace("__", "").replace("`", "")
+
+
+def _parse_bool(label: str) -> Optional[bool]:
+    u = label.upper()
+    if u == "TRUE":
+        return True
+    if u == "FALSE":
+        return False
+    return None
+
+
+def _is_or_clause(response: str, match_end: int) -> bool:
+    after = response[match_end:].split("\n", 1)[0].lstrip()
+    if after[:2].upper() == "OR":
+        rest = after[2:]
+        return not rest or rest[0].isspace()
+    if after.startswith("/"):
+        return bool(re.match(r"(?i)(TRUE|FALSE)\b", after[1:].lstrip()))
+    return False
+
+
+def _parse_boxed_content(token: str) -> Optional[bool]:
+    STRIP = " \t\r\n.,;:!?$()[]"
+    current = token.strip()
+    for _ in range(4):
+        current = current.strip(STRIP)
+        if current.upper() == "ANSWER":
+            return None
+        verdict = _parse_bool(current)
+        if verdict is not None:
+            return verdict
+        m = _LATEX_WRAPPER_RE.match(current)
+        if m:
+            current = m.group(1)
+            continue
+        break
+    return None
+
+
+def _extract_boxed(response: str, out: list) -> None:
+    for m in _BOXED_START_RE.finditer(response):
+        depth = 1
+        cs = m.end()
+        ce = None
+        for i, ch in enumerate(response[cs:]):
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    ce = cs + i
+                    break
+        if ce is None:
+            continue
+        value = _parse_boxed_content(response[cs:ce])
+        if value is not None:
+            out.append(_VerdictCandidate(value=value, source=_VerdictSource.BOXED, index=m.start()))
+
+
+def _extract_labeled(response: str, out: list) -> None:
+    for pattern in (_VERDICT_RE, _ANSWER_RE, _LATEX_TEXT_RE):
+        for m in pattern.finditer(response):
+            if _is_or_clause(response, m.end()):
+                continue
+            value = _parse_bool(m.group(1))
+            if value is not None:
+                out.append(_VerdictCandidate(value=value, source=_VerdictSource.LABELED, index=m.start()))
+
+
+def _extract_leading_line(response: str, out: list) -> None:
+    first = next((line for line in response.splitlines() if line.strip()), None)
+    if first is None:
+        return
+    m = _LINE_RE.match(first)
+    if not m:
+        return
+    value = _parse_bool(m.group(1))
+    if value is not None:
+        out.append(_VerdictCandidate(value=value, source=_VerdictSource.LINE, index=0))
+
+
+def _extract_trailing_line(response: str, out: list) -> None:
+    last = next((line for line in reversed(response.splitlines()) if line.strip()), None)
+    if last is None:
+        return
+    m = _LINE_RE.match(last)
+    if not m:
+        return
+    value = _parse_bool(m.group(1))
+    if value is not None:
+        out.append(_VerdictCandidate(value=value, source=_VerdictSource.LINE, index=len(response)))
+
 
 def parse_verdict(response: str) -> Optional[bool]:
-    cleaned = response.replace("***", "").replace("**", "").replace("__", "").replace("`", "")
-    matches = list(_VERDICT_RE.finditer(cleaned))
-    if matches:
-        return matches[-1].group(1).upper() == "TRUE"
-    return None
+    """Extract TRUE/FALSE verdict using official 3-tier priority system.
+
+    Priority: \\boxed{} (3) > VERDICT:/ANSWER:/\\text{} (2) > first/last line (1).
+    Within same tier, last occurrence wins.
+    """
+    cleaned = _strip_markdown(response)
+    candidates: list[_VerdictCandidate] = []
+    _extract_boxed(cleaned, candidates)
+    _extract_labeled(cleaned, candidates)
+    _extract_leading_line(cleaned, candidates)
+    _extract_trailing_line(cleaned, candidates)
+    if not candidates:
+        return None
+    top_priority = max(c.source.value for c in candidates)
+    top = [c for c in candidates if c.source.value == top_priority]
+    chosen = max(top, key=lambda c: c.index)
+    return chosen.value
 
 
 # ── OpenRouter API ────────────────────────────────────────────────────────
 
+def resolve_model(model_arg: str) -> dict:
+    """Resolve a model argument to full OpenRouter config.
+
+    Accepts official aliases (gpt-oss-120b, llama-3-3-70b-instruct, gemma-4-31b-it)
+    or raw OpenRouter model IDs.
+    """
+    if model_arg in OFFICIAL_MODELS:
+        cfg = OFFICIAL_MODELS[model_arg].copy()
+        cfg["alias"] = model_arg
+        return cfg
+    # Raw model ID fallback (e.g. "meta-llama/llama-3.3-70b-instruct")
+    # Check if it matches any official model's full ID
+    for alias, cfg in OFFICIAL_MODELS.items():
+        if cfg["model"] == model_arg:
+            out = cfg.copy()
+            out["alias"] = alias
+            return out
+    # Unknown model: use basic config
+    return {
+        "model": model_arg,
+        "provider": None,
+        "max_output_tokens": 8192,
+        "temperature": 0.0,
+        "seed": 0,
+        "reasoning_mode": "disabled",
+        "alias": model_arg,
+    }
+
+
 def query_openrouter(
     prompt: str,
-    model: str,
+    model_cfg: dict,
     api_key: str,
     timeout_s: int = DEFAULT_TIMEOUT_S,
 ) -> tuple[str, float, Optional[dict]]:
+    """Call OpenRouter with official evaluation config."""
     t0 = time.time()
-    payload = {
-        "model": model,
+    payload: dict = {
+        "model": model_cfg["model"],
         "messages": [{"role": "user", "content": prompt}],
+        "temperature": model_cfg.get("temperature", 0.0),
+        "max_tokens": model_cfg.get("max_output_tokens", 8192),
+        "seed": model_cfg.get("seed", 0),
     }
+    # Provider routing (pinned, no fallbacks — matches official eval)
+    provider = model_cfg.get("provider")
+    if provider:
+        # Split "deepinfra/bf16" → order=["DeepInfra"], quantizations=["bf16"]
+        parts = provider.split("/", 1)
+        provider_name = parts[0]
+        quant = parts[1] if len(parts) > 1 else None
+        prov_cfg: dict = {
+            "order": [provider_name],
+            "allow_fallbacks": False,
+        }
+        if quant:
+            prov_cfg["quantizations"] = [quant]
+        payload["provider"] = prov_cfg
+    # Reasoning mode (for GPT-OSS-120B)
+    reasoning = model_cfg.get("reasoning_mode", "disabled")
+    if reasoning and reasoning != "disabled":
+        payload["reasoning"] = {"effort": reasoning}
     r = requests.post(
         OPENROUTER_URL,
         headers={
@@ -288,13 +521,14 @@ def query_openrouter(
 def evaluate_one(
     problem: Problem,
     cheatsheet: str,
-    model: str,
+    model_cfg: dict,
     api_key: str,
     repeat_id: int = 1,
+    prompt_mode: str = "raw",
 ) -> Result:
-    prompt = render_prompt(problem, cheatsheet)
+    prompt = render_prompt(problem, cheatsheet, prompt_mode=prompt_mode)
     try:
-        response, elapsed, usage = query_openrouter(prompt, model, api_key)
+        response, elapsed, usage = query_openrouter(prompt, model_cfg, api_key)
     except Exception as e:
         return Result(
             problem=problem,
@@ -362,11 +596,12 @@ def _update_stats(stats: RunStats, result: Result) -> str:
 def run_evaluation(
     problems: list[Problem],
     cheatsheet: str,
-    model: str,
+    model_cfg: dict,
     api_key: str,
     repeats: int = DEFAULT_REPEATS,
     verbose: bool = True,
     checkpoint_path: Optional[str] = None,
+    prompt_mode: str = "raw",
 ) -> RunStats:
     stats = RunStats()
     total_runs = len(problems) * repeats
@@ -391,7 +626,10 @@ def run_evaluation(
                     print(f"  [{run_idx:4d}/{total_runs}] {problem.id:15s} r{rep}  (cached)")
                 continue
 
-            result = evaluate_one(problem, cheatsheet, model, api_key, rep)
+            result = evaluate_one(
+                problem, cheatsheet, model_cfg, api_key, rep,
+                prompt_mode=prompt_mode,
+            )
             mark = _update_stats(stats, result)
 
             if verbose:
@@ -406,7 +644,7 @@ def run_evaluation(
 
             # Incremental checkpoint
             if checkpoint_path:
-                _save_checkpoint(stats, checkpoint_path, model)
+                _save_checkpoint(stats, checkpoint_path, model_cfg["model"])
 
     return stats
 
@@ -526,23 +764,100 @@ def save_results(stats: RunStats, output_path: str, model: str,
 
 # ── CLI ───────────────────────────────────────────────────────────────────
 
+def _run_single_model(
+    args, model_cfg: dict, problems: list, cheatsheet: str, api_key: str,
+) -> None:
+    """Run evaluation for a single model and save results."""
+    alias = model_cfg.get("alias", model_cfg["model"])
+    model_id = model_cfg["model"]
+
+    true_count = sum(1 for p in problems if p.answer)
+    false_count = len(problems) - true_count
+    source = args.subset or args.data
+    total_runs = len(problems) * args.repeats
+
+    print(f"\n{'═' * 60}")
+    print(f"  SAIR Stage 1 Simulation Lab")
+    print(f"{'═' * 60}")
+    print(f"  Model:       {alias} ({model_id})")
+    print(f"  Provider:    {model_cfg.get('provider', 'auto')}")
+    print(f"  Prompt mode: {args.prompt_mode}")
+    print(f"  Source:      {source}")
+    print(f"  Problems:    {len(problems)} (T:{true_count} F:{false_count})")
+    print(f"  Repeats:     {args.repeats}")
+    print(f"  Total:       {total_runs} runs")
+    print(f"  Cheatsheet:  {args.cheatsheet}")
+    print(f"{'═' * 60}\n")
+
+    # Checkpoint path
+    ckpt = None
+    if args.resume:
+        cs_label = Path(args.cheatsheet).stem
+        sub_label = args.subset or Path(args.data).stem
+        safe_alias = alias.replace("/", "_")
+        ckpt = f"results/sim_{sub_label}_{cs_label}_{safe_alias}_latest.json.checkpoint"
+
+    stats = run_evaluation(
+        problems, cheatsheet, model_cfg, api_key,
+        repeats=args.repeats, verbose=not args.quiet,
+        checkpoint_path=ckpt,
+        prompt_mode=args.prompt_mode,
+    )
+
+    print_report(stats, f"{Path(args.cheatsheet).stem} / {alias}")
+
+    if args.errors:
+        print_errors(stats)
+
+    # Save results
+    if args.output and not args.all_models:
+        out = args.output
+    else:
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        cs_label = Path(args.cheatsheet).stem
+        sub_label = args.subset or Path(args.data).stem
+        safe_alias = alias.replace("/", "_").replace(".", "_")
+        out = f"results/sim_{sub_label}_{cs_label}_{safe_alias}_{ts}.json"
+
+    save_results(stats, out, model_id, args.cheatsheet,
+                 subset=args.subset, repeats=args.repeats)
+
+    # Clean checkpoint
+    if ckpt and Path(ckpt).exists():
+        Path(ckpt).unlink()
+
+
 def main():
-    ap = argparse.ArgumentParser(description="SAIR Stage 1 Simulation Lab")
+    ap = argparse.ArgumentParser(
+        description="SAIR Stage 1 Simulation Lab (aligned with official judge)",
+    )
     ap.add_argument("--subset", choices=list(HF_SUBSETS))
     ap.add_argument("--data", help="Local JSONL benchmark file")
     ap.add_argument("--cheatsheet", required=True, help="Cheatsheet path")
-    ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument(
+        "--model", default=DEFAULT_MODEL,
+        help="Model alias (gpt-oss-120b, llama-3-3-70b-instruct, gemma-4-31b-it) "
+             "or full OpenRouter model ID",
+    )
+    ap.add_argument(
+        "--all-models", action="store_true",
+        help="Run on all 3 official evaluation models sequentially",
+    )
     ap.add_argument("--n", type=int, help="Limit number of problems")
     ap.add_argument("--repeats", type=int, default=DEFAULT_REPEATS)
     ap.add_argument("--shuffle", action="store_true")
-    ap.add_argument("--output", help="Output JSON path")
+    ap.add_argument("--output", help="Output JSON path (ignored with --all-models)")
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--errors", action="store_true", help="Print error analysis")
     ap.add_argument("--quiet", action="store_true")
     ap.add_argument("--api-key", default=None)
-    # Retained for CLI compatibility with scripts that pass these
+    ap.add_argument(
+        "--prompt-mode", default="raw", choices=["raw", "wrapped"],
+        help="raw = cheatsheet IS the prompt (official). "
+             "wrapped = legacy eval template wrapping.",
+    )
+    # Retained for CLI compatibility with old scripts
     ap.add_argument("--openrouter", action="store_true", help=argparse.SUPPRESS)
-    ap.add_argument("--prompt-mode", default="wrapped", help=argparse.SUPPRESS)
     ap.add_argument("--parser", default="strict", help=argparse.SUPPRESS)
 
     args = ap.parse_args()
@@ -559,8 +874,9 @@ def main():
         print(f"ERROR: file not found: {args.data}")
         sys.exit(1)
 
-    # Pre-download evaluation template
-    download_eval_template()
+    # Pre-download evaluation template (only needed for wrapped mode)
+    if args.prompt_mode == "wrapped":
+        download_eval_template()
 
     problems = load_problems(
         path=args.data, subset=args.subset,
@@ -569,56 +885,14 @@ def main():
 
     cheatsheet = load_cheatsheet(args.cheatsheet)
 
-    true_count = sum(1 for p in problems if p.answer)
-    false_count = len(problems) - true_count
-    source = args.subset or args.data
-    total_runs = len(problems) * args.repeats
-
-    print(f"\n{'═' * 50}")
-    print(f"  SAIR Stage 1 Simulation Lab")
-    print(f"{'═' * 50}")
-    print(f"  Model:      {args.model}")
-    print(f"  Source:     {source}")
-    print(f"  Problems:  {len(problems)} (T:{true_count} F:{false_count})")
-    print(f"  Repeats:   {args.repeats}")
-    print(f"  Total:     {total_runs} runs")
-    print(f"  Cheatsheet: {args.cheatsheet}")
-    print(f"{'═' * 50}\n")
-
-    # Checkpoint path
-    ckpt = None
-    if args.resume:
-        ts = time.strftime("%Y%m%d_%H%M%S")
-        cs_label = Path(args.cheatsheet).stem
-        sub_label = args.subset or Path(args.data).stem
-        ckpt = f"results/sim_{sub_label}_{cs_label}_latest.json.checkpoint"
-
-    stats = run_evaluation(
-        problems, cheatsheet, args.model, api_key,
-        repeats=args.repeats, verbose=not args.quiet,
-        checkpoint_path=ckpt,
-    )
-
-    print_report(stats, Path(args.cheatsheet).stem)
-
-    if args.errors:
-        print_errors(stats)
-
-    # Save results
-    if args.output:
-        out = args.output
+    # Resolve model(s) to run
+    if args.all_models:
+        model_cfgs = [resolve_model(alias) for alias in ALL_OFFICIAL_MODEL_ALIASES]
     else:
-        ts = time.strftime("%Y%m%d_%H%M%S")
-        cs_label = Path(args.cheatsheet).stem
-        sub_label = args.subset or Path(args.data).stem
-        out = f"results/sim_{sub_label}_{cs_label}_{ts}.json"
+        model_cfgs = [resolve_model(args.model)]
 
-    save_results(stats, out, args.model, args.cheatsheet,
-                 subset=args.subset, repeats=args.repeats)
-
-    # Clean checkpoint
-    if ckpt and Path(ckpt).exists():
-        Path(ckpt).unlink()
+    for model_cfg in model_cfgs:
+        _run_single_model(args, model_cfg, problems, cheatsheet, api_key)
 
 
 if __name__ == "__main__":

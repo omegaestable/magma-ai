@@ -26,29 +26,43 @@ then E2 also holds universally in M.
 |---------------------|------------------------------------------|
 | Format              | Plain text                               |
 | Max size            | **10 KB** (10,240 bytes)                 |
-| Injection point     | Inserted into system prompt before query |
+| Injection point     | Cheatsheet IS the complete prompt (raw)  |
+| Placeholders        | `{{equation1}}` and `{{equation2}}` only |
 | Content             | Any reasoning guidance, heuristics, examples, decision trees |
 
 The cheatsheet is the **only** submission artifact. No code, no model weights.
+The cheatsheet IS the complete user prompt — no wrapping template is applied.
+Only `{{equation1}}` and `{{equation2}}` are substituted before sending to model.
 
 ---
 
 ## 3. Evaluation Protocol
 
 
-### 3.2 Parsing
+### 3.2 Parsing (Official Judge)
 
-- VERDICT line is extracted; must contain exactly `TRUE` or `FALSE`.
-- If unparseable → counts as **incorrect**.
+Verdicts are extracted with a 3-tier priority system:
+1. **Priority 3 (boxed):** `\boxed{TRUE}` / `\boxed{FALSE}` (LaTeX)
+2. **Priority 2 (labeled):** `VERDICT: TRUE`, `ANSWER: FALSE`, `FINAL ANSWER:`, `\text{}`
+3. **Priority 1 (line):** First or last non-empty line is bare `TRUE` or `FALSE`
+
+Within same tier, **last occurrence** wins.
+Instruction patterns like `VERDICT: TRUE or FALSE` are skipped.
+Unparseable responses count as **incorrect**.
+
+Source: https://github.com/SAIRcompetition/equational-theories-stage1-judge
 
 ### 3.3 Evaluation Setting
 
 - **No-tools:** No browser, web search, or internet access during evaluation.
 - **Offline:** Organizer runs evaluation after submission deadline.
-- **Evaluation set:** Different from the 1200 public training problems.
+- **Evaluation set:** Different from the 1669 public training problems.
 - **Balance:** 50% TRUE, 50% FALSE in evaluation set.
-- **Multiple models:** Final model list TBD by April 10, 2026; likely includes
-  open-source (Llama, GPT-OSS, Qwen) and proprietary (Gemini Flash, GPT-nano).
+- **3 Official Models (equal weight):**
+  - `GPT-OSS-120B` (openai/gpt-oss-120b, deepinfra/bf16, reasoning_mode=low)
+  - `Llama 3.3 70B Instruct` (meta-llama/llama-3.3-70b-instruct, deepinfra/fp8)
+  - `Gemma 4 31B IT` (google/gemma-4-31b-it, novita/bf16)
+- All models: temperature=0.0, max_tokens=8192, seed=0, allow_fallbacks=false
 
 ### 3.4 Cost & Time Budget
 

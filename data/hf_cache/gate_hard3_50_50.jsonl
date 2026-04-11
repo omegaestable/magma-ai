@@ -1,0 +1,100 @@
+{"id": "hard3_0217", "index": 217, "difficulty": "hard", "eq1_id": 2049, "eq2_id": 215, "equation1": "x = ((x * x) * y) * (z * w)", "equation2": "x = (x * (y * z)) * y", "answer": false}
+{"id": "hard3_0085", "index": 85, "difficulty": "hard", "eq1_id": 644, "eq2_id": 2462, "equation1": "x = x * (y * ((y * y) * z))", "equation2": "x = (x * ((y * x) * z)) * x", "answer": true}
+{"id": "hard3_0033", "index": 33, "difficulty": "hard", "eq1_id": 172, "eq2_id": 4080, "equation1": "x = (y * x) * (z * x)", "equation2": "x * x = ((y * x) * x) * x", "answer": true}
+{"id": "hard3_0021", "index": 21, "difficulty": "hard", "eq1_id": 100, "eq2_id": 845, "equation1": "x = x * ((x * x) * y)", "equation2": "x = x * ((y * y) * (y * x))", "answer": false}
+{"id": "hard3_0340", "index": 340, "difficulty": "hard", "eq1_id": 3247, "eq2_id": 276, "equation1": "x = (((y * z) * w) * u) * x", "equation2": "x = ((y * x) * z) * x", "answer": true}
+{"id": "hard3_0267", "index": 267, "difficulty": "hard", "eq1_id": 2525, "eq2_id": 2659, "equation1": "x = (y * ((x * z) * w)) * x", "equation2": "x = ((x * y) * (x * x)) * x", "answer": true}
+{"id": "hard3_0227", "index": 227, "difficulty": "hard", "eq1_id": 2084, "eq2_id": 3095, "equation1": "x = ((x * y) * z) * (w * z)", "equation2": "x = (((x * y) * z) * z) * z", "answer": false}
+{"id": "hard3_0240", "index": 240, "difficulty": "hard", "eq1_id": 2156, "eq2_id": 2097, "equation1": "x = ((y * y) * z) * (w * x)", "equation2": "x = ((y * x) * y) * (x * x)", "answer": true}
+{"id": "hard3_0051", "index": 51, "difficulty": "hard", "eq1_id": 344, "eq2_id": 3965, "equation1": "x * y = z * (x * z)", "equation2": "x * y = (y * (y * y)) * y", "answer": true}
+{"id": "hard3_0234", "index": 234, "difficulty": "hard", "eq1_id": 2126, "eq2_id": 124, "equation1": "x = ((y * y) * x) * (x * z)", "equation2": "x = y * ((y * x) * x)", "answer": false}
+{"id": "hard3_0182", "index": 182, "difficulty": "hard", "eq1_id": 1618, "eq2_id": 3093, "equation1": "x = (y * z) * (w * (w * x))", "equation2": "x = (((x * y) * z) * z) * x", "answer": false}
+{"id": "hard3_0128", "index": 128, "difficulty": "hard", "eq1_id": 1032, "eq2_id": 2076, "equation1": "x = x * ((x * (y * z)) * y)", "equation2": "x = ((x * y) * z) * (y * z)", "answer": false}
+{"id": "hard3_0112", "index": 112, "difficulty": "hard", "eq1_id": 906, "eq2_id": 1231, "equation1": "x = y * ((y * x) * (x * x))", "equation2": "x = x * (((x * y) * y) * x)", "answer": false}
+{"id": "hard3_0120", "index": 120, "difficulty": "hard", "eq1_id": 977, "eq2_id": 1860, "equation1": "x = y * ((z * z) * (x * x))", "equation2": "x = (x * (y * y)) * (y * x)", "answer": false}
+{"id": "hard3_0151", "index": 151, "difficulty": "hard", "eq1_id": 1243, "eq2_id": 4583, "equation1": "x = x * (((y * x) * y) * z)", "equation2": "(x * x) * x = (x * x) * y", "answer": false}
+{"id": "hard3_0373", "index": 373, "difficulty": "hard", "eq1_id": 3730, "eq2_id": 3265, "equation1": "x * y = (x * y) * (z * w)", "equation2": "x * x = x * (y * (z * y))", "answer": false}
+{"id": "hard3_0026", "index": 26, "difficulty": "hard", "eq1_id": 127, "eq2_id": 2148, "equation1": "x = y * ((y * y) * x)", "equation2": "x = ((y * y) * z) * (y * x)", "answer": false}
+{"id": "hard3_0271", "index": 271, "difficulty": "hard", "eq1_id": 2575, "eq2_id": 2227, "equation1": "x = (y * ((z * x) * z)) * x", "equation2": "x = ((y * z) * w) * (w * x)", "answer": true}
+{"id": "hard3_0220", "index": 220, "difficulty": "hard", "eq1_id": 2069, "eq2_id": 1635, "equation1": "x = ((x * y) * y) * (z * w)", "equation2": "x = (x * x) * ((y * x) * y)", "answer": false}
+{"id": "hard3_0228", "index": 228, "difficulty": "hard", "eq1_id": 2086, "eq2_id": 56, "equation1": "x = ((x * y) * z) * (w * u)", "equation2": "x = x * (y * (y * y))", "answer": false}
+{"id": "hard3_0321", "index": 321, "difficulty": "hard", "eq1_id": 2985, "eq2_id": 1374, "equation1": "x = ((y * (z * x)) * w) * x", "equation2": "x = y * (((z * y) * z) * x)", "answer": true}
+{"id": "hard3_0183", "index": 183, "difficulty": "hard", "eq1_id": 1642, "eq2_id": 1432, "equation1": "x = (x * x) * ((y * z) * z)", "equation2": "x = (x * x) * (y * (x * y))", "answer": true}
+{"id": "hard3_0295", "index": 295, "difficulty": "hard", "eq1_id": 2816, "eq2_id": 1953, "equation1": "x = ((y * z) * (z * w)) * x", "equation2": "x = (y * (y * z)) * (w * x)", "answer": true}
+{"id": "hard3_0193", "index": 193, "difficulty": "hard", "eq1_id": 1699, "eq2_id": 1075, "equation1": "x = (y * x) * ((y * z) * z)", "equation2": "x = y * ((x * (x * y)) * x)", "answer": true}
+{"id": "hard3_0230", "index": 230, "difficulty": "hard", "eq1_id": 2103, "eq2_id": 4187, "equation1": "x = ((y * x) * y) * (z * x)", "equation2": "x * y = ((y * z) * w) * y", "answer": true}
+{"id": "hard3_0040", "index": 40, "difficulty": "hard", "eq1_id": 215, "eq2_id": 3050, "equation1": "x = (x * (y * z)) * y", "equation2": "x = (((x * x) * x) * x) * x", "answer": false}
+{"id": "hard3_0196", "index": 196, "difficulty": "hard", "eq1_id": 1806, "eq2_id": 545, "equation1": "x = (y * z) * ((w * x) * x)", "equation2": "x = y * (z * (x * (z * x)))", "answer": true}
+{"id": "hard3_0395", "index": 395, "difficulty": "hard", "eq1_id": 4545, "eq2_id": 4279, "equation1": "x * (y * z) = (z * y) * y", "equation2": "x * (x * x) = y * (z * y)", "answer": true}
+{"id": "hard3_0231", "index": 231, "difficulty": "hard", "eq1_id": 2105, "eq2_id": 2300, "equation1": "x = ((y * x) * y) * (z * z)", "equation2": "x = (y * (x * (y * x))) * x", "answer": true}
+{"id": "hard3_0270", "index": 270, "difficulty": "hard", "eq1_id": 2567, "eq2_id": 2849, "equation1": "x = (y * ((z * x) * x)) * x", "equation2": "x = ((x * (x * x)) * y) * x", "answer": false}
+{"id": "hard3_0291", "index": 291, "difficulty": "hard", "eq1_id": 2728, "eq2_id": 4354, "equation1": "x = ((y * x) * (z * w)) * x", "equation2": "x * (y * y) = z * (w * y)", "answer": true}
+{"id": "hard3_0390", "index": 390, "difficulty": "hard", "eq1_id": 4221, "eq2_id": 4150, "equation1": "x * y = ((z * y) * w) * y", "equation2": "x * y = ((x * z) * w) * y", "answer": true}
+{"id": "hard3_0185", "index": 185, "difficulty": "hard", "eq1_id": 1661, "eq2_id": 3540, "equation1": "x = (x * y) * ((y * z) * y)", "equation2": "x * y = x * ((z * w) * x)", "answer": false}
+{"id": "hard3_0325", "index": 325, "difficulty": "hard", "eq1_id": 3034, "eq2_id": 3762, "equation1": "x = ((y * (z * w)) * z) * x", "equation2": "x * y = (y * y) * (y * y)", "answer": true}
+{"id": "hard3_0343", "index": 343, "difficulty": "hard", "eq1_id": 3270, "eq2_id": 4093, "equation1": "x * x = y * (x * (x * z))", "equation2": "x * x = ((y * y) * y) * x", "answer": false}
+{"id": "hard3_0381", "index": 381, "difficulty": "hard", "eq1_id": 3941, "eq2_id": 3936, "equation1": "x * y = (x * (z * y)) * w", "equation2": "x * y = (x * (z * x)) * z", "answer": true}
+{"id": "hard3_0102", "index": 102, "difficulty": "hard", "eq1_id": 806, "eq2_id": 2868, "equation1": "x = y * (z * ((w * w) * x))", "equation2": "x = ((x * (y * x)) * z) * x", "answer": false}
+{"id": "hard3_0350", "index": 350, "difficulty": "hard", "eq1_id": 3291, "eq2_id": 4480, "equation1": "x * x = y * (z * (x * w))", "equation2": "x * (y * y) = (y * x) * y", "answer": false}
+{"id": "hard3_0289", "index": 289, "difficulty": "hard", "eq1_id": 2693, "eq2_id": 422, "equation1": "x = ((x * y) * (z * w)) * z", "equation2": "x = x * (x * (y * (z * x)))", "answer": false}
+{"id": "hard3_0251", "index": 251, "difficulty": "hard", "eq1_id": 2268, "eq2_id": 1851, "equation1": "x = (x * (y * (y * y))) * z", "equation2": "x = (x * (y * x)) * (y * y)", "answer": true}
+{"id": "hard3_0028", "index": 28, "difficulty": "hard", "eq1_id": 134, "eq2_id": 2222, "equation1": "x = y * ((z * x) * x)", "equation2": "x = ((y * z) * w) * (z * x)", "answer": true}
+{"id": "hard3_0355", "index": 355, "difficulty": "hard", "eq1_id": 3360, "eq2_id": 3505, "equation1": "x * y = y * (y * (z * z))", "equation2": "x * x = y * ((z * w) * z)", "answer": true}
+{"id": "hard3_0399", "index": 399, "difficulty": "hard", "eq1_id": 4577, "eq2_id": 4625, "equation1": "x * (y * z) = (w * u) * x", "equation2": "(x * x) * y = (z * w) * y", "answer": true}
+{"id": "hard3_0397", "index": 397, "difficulty": "hard", "eq1_id": 4573, "eq2_id": 4306, "equation1": "x * (y * z) = (w * w) * y", "equation2": "x * (x * y) = z * (y * w)", "answer": true}
+{"id": "hard3_0153", "index": 153, "difficulty": "hard", "eq1_id": 1259, "eq2_id": 4318, "equation1": "x = x * (((y * z) * x) * y)", "equation2": "x * (y * x) = x * (z * z)", "answer": false}
+{"id": "hard3_0372", "index": 372, "difficulty": "hard", "eq1_id": 3728, "eq2_id": 4508, "equation1": "x * y = (x * y) * (z * y)", "equation2": "x * (y * z) = (x * x) * z", "answer": false}
+{"id": "hard3_0013", "index": 13, "difficulty": "hard", "eq1_id": 58, "eq2_id": 3050, "equation1": "x = x * (y * (z * x))", "equation2": "x = (((x * x) * x) * x) * x", "answer": false}
+{"id": "hard3_0041", "index": 41, "difficulty": "hard", "eq1_id": 256, "eq2_id": 2477, "equation1": "x = ((x * x) * x) * y", "equation2": "x = (x * ((y * z) * x)) * y", "answer": false}
+{"id": "hard3_0173", "index": 173, "difficulty": "hard", "eq1_id": 1539, "eq2_id": 524, "equation1": "x = (y * y) * (z * (y * x))", "equation2": "x = y * (y * (z * (y * x)))", "answer": false}
+{"id": "hard3_0348", "index": 348, "difficulty": "hard", "eq1_id": 3280, "eq2_id": 3777, "equation1": "x * x = y * (y * (x * z))", "equation2": "x * y = (y * z) * (z * y)", "answer": false}
+{"id": "hard3_0138", "index": 138, "difficulty": "hard", "eq1_id": 1071, "eq2_id": 4631, "equation1": "x = x * ((y * (z * w)) * u)", "equation2": "(x * y) * x = (x * z) * x", "answer": true}
+{"id": "hard3_0331", "index": 331, "difficulty": "hard", "eq1_id": 3092, "eq2_id": 3081, "equation1": "x = (((x * y) * z) * y) * w", "equation2": "x = (((x * y) * y) * z) * x", "answer": true}
+{"id": "hard3_0161", "index": 161, "difficulty": "hard", "eq1_id": 1458, "eq2_id": 1862, "equation1": "x = (x * y) * (y * (z * y))", "equation2": "x = (x * (y * y)) * (y * z)", "answer": false}
+{"id": "hard3_0338", "index": 338, "difficulty": "hard", "eq1_id": 3171, "eq2_id": 4480, "equation1": "x = (((y * y) * z) * w) * x", "equation2": "x * (y * y) = (y * x) * y", "answer": true}
+{"id": "hard3_0008", "index": 8, "difficulty": "hard", "eq1_id": 41, "eq2_id": 4407, "equation1": "x * x = y * z", "equation2": "x * (x * y) = (y * x) * z", "answer": true}
+{"id": "hard3_0079", "index": 79, "difficulty": "hard", "eq1_id": 579, "eq2_id": 2144, "equation1": "x = y * (z * (z * (z * x)))", "equation2": "x = ((y * y) * z) * (x * x)", "answer": false}
+{"id": "hard3_0188", "index": 188, "difficulty": "hard", "eq1_id": 1679, "eq2_id": 3334, "equation1": "x = (x * y) * ((z * w) * w)", "equation2": "x * y = x * (z * (z * y))", "answer": true}
+{"id": "hard3_0359", "index": 359, "difficulty": "hard", "eq1_id": 3483, "eq2_id": 3766, "equation1": "x * x = y * ((y * x) * z)", "equation2": "x * y = (y * y) * (z * z)", "answer": false}
+{"id": "hard3_0073", "index": 73, "difficulty": "hard", "eq1_id": 541, "eq2_id": 1366, "equation1": "x = y * (z * (x * (y * x)))", "equation2": "x = y * (((z * y) * x) * x)", "answer": false}
+{"id": "hard3_0318", "index": 318, "difficulty": "hard", "eq1_id": 2931, "eq2_id": 2484, "equation1": "x = ((y * (x * z)) * w) * x", "equation2": "x = (x * ((y * z) * z)) * x", "answer": true}
+{"id": "hard3_0292", "index": 292, "difficulty": "hard", "eq1_id": 2757, "eq2_id": 835, "equation1": "x = ((y * y) * (z * y)) * x", "equation2": "x = x * ((y * x) * (y * x))", "answer": true}
+{"id": "hard3_0035", "index": 35, "difficulty": "hard", "eq1_id": 194, "eq2_id": 1075, "equation1": "x = (y * z) * (z * x)", "equation2": "x = y * ((x * (x * y)) * x)", "answer": false}
+{"id": "hard3_0003", "index": 3, "difficulty": "hard", "eq1_id": 13, "eq2_id": 583, "equation1": "x = y * (x * x)", "equation2": "x = y * (z * (z * (w * x)))", "answer": true}
+{"id": "hard3_0053", "index": 53, "difficulty": "hard", "eq1_id": 348, "eq2_id": 4367, "equation1": "x * y = z * (y * z)", "equation2": "x * (y * z) = y * (w * z)", "answer": true}
+{"id": "hard3_0103", "index": 103, "difficulty": "hard", "eq1_id": 827, "eq2_id": 3332, "equation1": "x = x * ((x * y) * (y * z))", "equation2": "x * y = x * (z * (y * w))", "answer": false}
+{"id": "hard3_0133", "index": 133, "difficulty": "hard", "eq1_id": 1054, "eq2_id": 2264, "equation1": "x = x * ((y * (y * z)) * w)", "equation2": "x = (x * (y * (y * x))) * y", "answer": true}
+{"id": "hard3_0363", "index": 363, "difficulty": "hard", "eq1_id": 3502, "eq2_id": 4109, "equation1": "x * x = y * ((z * z) * w)", "equation2": "x * x = ((y * z) * z) * y", "answer": false}
+{"id": "hard3_0115", "index": 115, "difficulty": "hard", "eq1_id": 926, "eq2_id": 1502, "equation1": "x = y * ((y * z) * (x * x))", "equation2": "x = (y * x) * (z * (y * x))", "answer": true}
+{"id": "hard3_0157", "index": 157, "difficulty": "hard", "eq1_id": 1328, "eq2_id": 1078, "equation1": "x = y * (((y * y) * z) * x)", "equation2": "x = y * ((x * (x * z)) * x)", "answer": true}
+{"id": "hard3_0335", "index": 335, "difficulty": "hard", "eq1_id": 3130, "eq2_id": 2119, "equation1": "x = (((y * x) * z) * z) * x", "equation2": "x = ((y * x) * z) * (w * x)", "answer": true}
+{"id": "hard3_0349", "index": 349, "difficulty": "hard", "eq1_id": 3283, "eq2_id": 4316, "equation1": "x * x = y * (y * (y * z))", "equation2": "x * (y * x) = x * (z * x)", "answer": false}
+{"id": "hard3_0197", "index": 197, "difficulty": "hard", "eq1_id": 1806, "eq2_id": 3316, "equation1": "x = (y * z) * ((w * x) * x)", "equation2": "x * y = x * (y * (x * y))", "answer": true}
+{"id": "hard3_0084", "index": 84, "difficulty": "hard", "eq1_id": 627, "eq2_id": 3869, "equation1": "x = x * (x * ((y * z) * z))", "equation2": "x * x = (x * (y * x)) * z", "answer": false}
+{"id": "hard3_0213", "index": 213, "difficulty": "hard", "eq1_id": 2004, "eq2_id": 3883, "equation1": "x = (y * (z * z)) * (w * x)", "equation2": "x * x = (y * (x * z)) * x", "answer": true}
+{"id": "hard3_0054", "index": 54, "difficulty": "hard", "eq1_id": 353, "eq2_id": 3950, "equation1": "x * y = z * (z * w)", "equation2": "x * y = (x * (z * w)) * u", "answer": true}
+{"id": "hard3_0093", "index": 93, "difficulty": "hard", "eq1_id": 714, "eq2_id": 1075, "equation1": "x = y * (y * ((y * x) * y))", "equation2": "x = y * ((x * (x * y)) * x)", "answer": false}
+{"id": "hard3_0241", "index": 241, "difficulty": "hard", "eq1_id": 2164, "eq2_id": 1634, "equation1": "x = ((y * z) * x) * (x * w)", "equation2": "x = (x * x) * ((y * x) * x)", "answer": false}
+{"id": "hard3_0332", "index": 332, "difficulty": "hard", "eq1_id": 3095, "eq2_id": 2465, "equation1": "x = (((x * y) * z) * z) * z", "equation2": "x = (x * ((y * x) * z)) * w", "answer": false}
+{"id": "hard3_0361", "index": 361, "difficulty": "hard", "eq1_id": 3490, "eq2_id": 3471, "equation1": "x * x = y * ((y * z) * w)", "equation2": "x * x = y * ((x * x) * x)", "answer": true}
+{"id": "hard3_0302", "index": 302, "difficulty": "hard", "eq1_id": 2852, "eq2_id": 2886, "equation1": "x = ((x * (x * y)) * x) * x", "equation2": "x = ((x * (y * z)) * y) * x", "answer": false}
+{"id": "hard3_0244", "index": 244, "difficulty": "hard", "eq1_id": 2190, "eq2_id": 3388, "equation1": "x = ((y * z) * y) * (w * x)", "equation2": "x * y = z * (x * (z * y))", "answer": true}
+{"id": "hard3_0152", "index": 152, "difficulty": "hard", "eq1_id": 1252, "eq2_id": 1020, "equation1": "x = x * (((y * y) * y) * y)", "equation2": "x = x * ((x * (x * x)) * x)", "answer": false}
+{"id": "hard3_0356", "index": 356, "difficulty": "hard", "eq1_id": 3380, "eq2_id": 4171, "equation1": "x * y = z * (x * (x * y))", "equation2": "x * y = ((y * y) * z) * y", "answer": false}
+{"id": "hard3_0215", "index": 215, "difficulty": "hard", "eq1_id": 2046, "eq2_id": 1063, "equation1": "x = ((x * x) * y) * (z * x)", "equation2": "x = x * ((y * (z * z)) * x)", "answer": false}
+{"id": "hard3_0166", "index": 166, "difficulty": "hard", "eq1_id": 1487, "eq2_id": 287, "equation1": "x = (y * x) * (x * (z * w))", "equation2": "x = ((y * y) * z) * y", "answer": false}
+{"id": "hard3_0158", "index": 158, "difficulty": "hard", "eq1_id": 1332, "eq2_id": 1146, "equation1": "x = y * (((y * z) * x) * x)", "equation2": "x = y * ((z * (x * x)) * x)", "answer": true}
+{"id": "hard3_0364", "index": 364, "difficulty": "hard", "eq1_id": 3514, "eq2_id": 4318, "equation1": "x * y = x * ((x * z) * x)", "equation2": "x * (y * x) = x * (z * z)", "answer": true}
+{"id": "hard3_0046", "index": 46, "difficulty": "hard", "eq1_id": 294, "eq2_id": 2318, "equation1": "x = ((y * z) * y) * x", "equation2": "x = (y * (x * (z * z))) * x", "answer": true}
+{"id": "hard3_0347", "index": 347, "difficulty": "hard", "eq1_id": 3277, "eq2_id": 4440, "equation1": "x * x = y * (x * (z * w))", "equation2": "x * (y * x) = (x * z) * z", "answer": false}
+{"id": "hard3_0095", "index": 95, "difficulty": "hard", "eq1_id": 735, "eq2_id": 2812, "equation1": "x = y * (y * ((z * w) * x))", "equation2": "x = ((y * z) * (z * z)) * x", "answer": false}
+{"id": "hard3_0393", "index": 393, "difficulty": "hard", "eq1_id": 4414, "eq2_id": 4623, "equation1": "x * (x * y) = (y * z) * w", "equation2": "(x * x) * y = (z * z) * w", "answer": true}
+{"id": "hard3_0058", "index": 58, "difficulty": "hard", "eq1_id": 373, "eq2_id": 359, "equation1": "x * x = (y * z) * w", "equation2": "x * x = (x * x) * x", "answer": true}
+{"id": "hard3_0124", "index": 124, "difficulty": "hard", "eq1_id": 1014, "eq2_id": 1577, "equation1": "x = y * ((z * w) * (u * x))", "equation2": "x = (y * z) * (y * (z * x))", "answer": true}
+{"id": "hard3_0105", "index": 105, "difficulty": "hard", "eq1_id": 830, "eq2_id": 3327, "equation1": "x = x * ((x * y) * (z * z))", "equation2": "x * y = x * (z * (x * z))", "answer": false}
+{"id": "hard3_0311", "index": 311, "difficulty": "hard", "eq1_id": 2892, "eq2_id": 4119, "equation1": "x = ((x * (y * z)) * z) * z", "equation2": "x * y = ((x * x) * x) * z", "answer": false}
+{"id": "hard3_0186", "index": 186, "difficulty": "hard", "eq1_id": 1663, "eq2_id": 214, "equation1": "x = (x * y) * ((y * z) * w)", "equation2": "x = (x * (y * z)) * x", "answer": false}
+{"id": "hard3_0137", "index": 137, "difficulty": "hard", "eq1_id": 1065, "eq2_id": 1647, "equation1": "x = x * ((y * (z * z)) * z)", "equation2": "x = (x * y) * ((x * y) * x)", "answer": true}
+{"id": "hard3_0265", "index": 265, "difficulty": "hard", "eq1_id": 2519, "eq2_id": 4405, "equation1": "x = (y * ((x * z) * y)) * z", "equation2": "x * (x * y) = (y * x) * x", "answer": true}
+{"id": "hard3_0159", "index": 159, "difficulty": "hard", "eq1_id": 1340, "eq2_id": 4635, "equation1": "x = y * (((y * z) * z) * x)", "equation2": "(x * y) * x = (y * x) * x", "answer": false}
+{"id": "hard3_0075", "index": 75, "difficulty": "hard", "eq1_id": 545, "eq2_id": 2043, "equation1": "x = y * (z * (x * (z * x)))", "equation2": "x = ((x * x) * y) * (y * x)", "answer": false}

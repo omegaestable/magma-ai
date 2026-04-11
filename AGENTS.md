@@ -23,12 +23,17 @@ Follow this order exactly:
 
 ## Current Operating Model
 
-- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap)
+- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap) — needs raw-mode rebaseline
 - Previous champion: `cheatsheets/v21f_structural.txt` (historical)
 - Next design document: `V25A_MASTER_PROMPT.md`
-- Canonical evaluator: `sim_lab.py`
+- Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical quick wrapper: `run_paid_eval.ps1`
+- Smoke/gate protocol: `run_smoke_gate.ps1`
+- Spine classifier: `spine_classify.py`
 - Canonical failure loop: `analyze_seed_failures.py` then `distill.py`
+- **Prompt mode: `raw`** (cheatsheet IS the complete prompt, no template wrapping)
+- **3 official eval models: GPT-OSS-120B, Llama 3.3 70B, Gemma 4 31B IT** (equal weight)
+- **Deadline: April 20, 2026**
 
 ## Banned Approaches
 
@@ -39,12 +44,14 @@ Follow this order exactly:
 
 ## Canonical Workflow
 
-1. Evaluate current cheatsheet on warmup normal sets.
-2. Run full normal gates.
+1. Evaluate current cheatsheet on normal smoke (20/20) across all 3 models.
+2. Run hard3 smoke (20/20) across all 3 models.
 3. Distill failures.
 4. Patch cheatsheet conservatively.
-5. Re-run normal gates.
-6. Run hard and unseen stress only after safety is stable.
+5. Re-run normal smoke gates.
+6. Run full gate (50/50 normal + 50/50 hard) only after safety is stable.
+7. Use `run_smoke_gate.ps1 -Cheatsheet <name> -Mode smoke` for standard protocol.
+8. Use `run_smoke_gate.ps1 -Cheatsheet <name> -Mode gate` for promotion gate.
 
 ## Primary Roles
 
@@ -90,6 +97,8 @@ Active starting points:
 - `cheatsheets/v24j.txt`
 - `V25A_MASTER_PROMPT.md`
 - `sim_lab.py`
+- `spine_classify.py`
+- `run_smoke_gate.ps1`
 
 Optional or research-only paths:
 
