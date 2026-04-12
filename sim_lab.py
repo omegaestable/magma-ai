@@ -19,6 +19,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import re
 import sys
 import time
@@ -28,13 +29,20 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+from filelock import FileLock
 
 # ── Constants ─────────────────────────────────────────────────────────────
 
 DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct"
 DEFAULT_REPEATS = 1
 DEFAULT_TIMEOUT_S = 600
+DEFAULT_RETRY_BUDGET_S = 120
 CHEATSHEET_MAX_BYTES = 10_240
+
+# Cross-process API lock: prevents parallel sim_lab.py processes from
+# causing a 429 retry death spiral on the same OpenRouter API key.
+_API_LOCK_PATH = Path(__file__).parent / "data" / ".sim_lab_api.lock"
+_API_LOCK = FileLock(_API_LOCK_PATH, timeout=600)
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -52,6 +60,12 @@ EVAL_TEMPLATE_CACHE = HF_CACHE_DIR / "evaluation.jinja2"
 # ── Official evaluation model configs ─────────────────────────────────────
 # Source: https://github.com/SAIRcompetition/equational-theories-stage1-judge
 #         evaluation_models.json (commit 5086db8, 2026-04-10)
+
+# Provider name map: config slug  →  OpenRouter title-case name
+_PROVIDER_DISPLAY = {
+    "deepinfra": "DeepInfra",
+    "novita": "Novita",
+}
 
 OFFICIAL_MODELS = {
     "gpt-oss-120b": {
@@ -465,8 +479,15 @@ def query_openrouter(
     model_cfg: dict,
     api_key: str,
     timeout_s: int = DEFAULT_TIMEOUT_S,
+    max_retries: int = 5,
+    retry_budget_s: int = DEFAULT_RETRY_BUDGET_S,
 ) -> tuple[str, float, Optional[dict]]:
-    """Call OpenRouter with official evaluation config."""
+    """Call OpenRouter with official evaluation config and retry on 429/5xx.
+
+    Retry uses Retry-After header when available, otherwise jittered exponential
+    backoff (initial 1s, multiplier 2×, max 30s).  A cross-process file lock
+    serializes API calls to prevent parallel 429 death spirals.
+    """
     t0 = time.time()
     payload: dict = {
         "model": model_cfg["model"],
@@ -480,39 +501,130 @@ def query_openrouter(
     if provider:
         # Split "deepinfra/bf16" → order=["DeepInfra"], quantizations=["bf16"]
         parts = provider.split("/", 1)
-        provider_name = parts[0]
+        provider_slug = parts[0]
+        provider_name = _PROVIDER_DISPLAY.get(provider_slug, provider_slug)
         quant = parts[1] if len(parts) > 1 else None
         prov_cfg: dict = {
             "order": [provider_name],
-            "allow_fallbacks": False,
+            "allow_fallbacks": model_cfg.get("allow_fallbacks", False),
         }
         if quant:
             prov_cfg["quantizations"] = [quant]
         payload["provider"] = prov_cfg
-    # Reasoning mode (for GPT-OSS-120B)
+    # Reasoning mode — official judge always sends this explicitly
     reasoning = model_cfg.get("reasoning_mode", "disabled")
     if reasoning and reasoning != "disabled":
         payload["reasoning"] = {"effort": reasoning}
-    r = requests.post(
-        OPENROUTER_URL,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json=payload,
-        timeout=timeout_s,
-    )
-    r.raise_for_status()
-    data = r.json()
-    elapsed = time.time() - t0
-    text = data["choices"][0]["message"]["content"]
-    usage = data.get("usage")
-    norm_usage = None
-    if usage:
-        norm_usage = {
-            "prompt_tokens": int(usage.get("prompt_tokens", 0) or 0),
-            "completion_tokens": int(usage.get("completion_tokens", 0) or 0),
-        }
+    else:
+        payload["reasoning"] = {"effort": "none"}
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    def _call_with_backoff(active_payload: dict, phase_label: str = "") -> tuple[str, float, Optional[dict]]:
+        """Retry one payload with Retry-After-aware backoff and file lock."""
+        last_exc = None
+        last_status = None
+        interval = 1.0
+        max_interval = 30.0
+        deadline = time.monotonic() + retry_budget_s
+        attempt = 0
+        while True:
+            try:
+                with _API_LOCK:
+                    r = requests.post(
+                        OPENROUTER_URL, headers=headers, json=active_payload, timeout=timeout_s,
+                    )
+                last_status = r.status_code
+                if r.status_code == 429 or r.status_code >= 500:
+                    # Log response body for diagnosis (rate_limit vs credits vs provider)
+                    body_preview = ""
+                    try:
+                        body_preview = r.text[:200]
+                    except Exception:
+                        pass
+                    # Respect Retry-After header if present
+                    retry_after = None
+                    ra_header = r.headers.get("Retry-After") or r.headers.get("retry-after")
+                    if ra_header:
+                        try:
+                            retry_after = float(ra_header)
+                        except (ValueError, TypeError):
+                            pass
+                    backoff = min(interval, max_interval) * random.uniform(0.5, 1.5)
+                    wait = max(backoff, retry_after) if retry_after else backoff
+                    remaining = deadline - time.monotonic()
+                    # Extend budget if Retry-After exceeds it (cap at 300s total)
+                    if retry_after and wait > remaining and (time.monotonic() - (deadline - retry_budget_s) + wait) <= 300:
+                        deadline = time.monotonic() + wait + 5.0
+                        remaining = deadline - time.monotonic()
+                    if remaining <= 0 or remaining < wait:
+                        label = f" ({phase_label})" if phase_label else ""
+                        print(f"    ⚠ {r.status_code} — retry budget exhausted{label} after {time.time() - t0:.0f}s")
+                        if body_preview:
+                            print(f"    ⚠ body: {body_preview}")
+                        break
+                    attempt += 1
+                    ra_note = f" [Retry-After: {retry_after:.0f}s]" if retry_after else ""
+                    print(f"    ⚠ {r.status_code} — retrying in {wait:.1f}s (attempt {attempt}, {remaining:.0f}s left){ra_note}")
+                    if attempt == 1 and body_preview:
+                        print(f"    ⚠ body: {body_preview}")
+                    time.sleep(wait)
+                    interval = min(interval * 2, max_interval)
+                    continue
+                r.raise_for_status()
+                data = r.json()
+                elapsed = time.time() - t0
+                text = data["choices"][0]["message"]["content"]
+                usage = data.get("usage")
+                norm_usage = None
+                if usage:
+                    norm_usage = {
+                        "prompt_tokens": int(usage.get("prompt_tokens", 0) or 0),
+                        "completion_tokens": int(usage.get("completion_tokens", 0) or 0),
+                    }
+                return text, elapsed, norm_usage
+            except requests.exceptions.RequestException as e:
+                last_exc = e
+                remaining = deadline - time.monotonic()
+                wait = min(interval, max_interval) * random.uniform(0.5, 1.5)
+                if remaining <= 0 or remaining < wait:
+                    break
+                attempt += 1
+                print(f"    ⚠ {e} — retrying in {wait:.1f}s (attempt {attempt}, {remaining:.0f}s left)")
+                time.sleep(wait)
+                interval = min(interval * 2, max_interval)
+        raise last_exc or RuntimeError(f"query_openrouter: retry budget exhausted ({retry_budget_s}s)")
+
+    # Phase 1: official strict route (always first)
+    try:
+        text, elapsed, norm_usage = _call_with_backoff(payload, phase_label="strict")
+        return text, elapsed, norm_usage
+    except Exception as strict_err:
+        # For llama+deepinfra/fp8, retry with progressively looser routing if strict fp8 is saturated.
+        if model_cfg.get("alias") != "llama-3-3-70b-instruct" or model_cfg.get("provider") != "deepinfra/fp8":
+            raise strict_err
+
+    # Phase 2 (llama only): keep DeepInfra pin, drop fp8 quantization filter.
+    payload_no_quant = dict(payload)
+    if "provider" in payload_no_quant and isinstance(payload_no_quant["provider"], dict):
+        payload_no_quant["provider"] = dict(payload_no_quant["provider"])
+        payload_no_quant["provider"].pop("quantizations", None)
+    print("    ⚠ llama fallback: retrying without fp8 quantization filter")
+    try:
+        text, elapsed, norm_usage = _call_with_backoff(payload_no_quant, phase_label="llama-no-quant")
+        return text, elapsed, norm_usage
+    except Exception:
+        pass
+
+    # Phase 3 (llama only): allow OpenRouter fallbacks as last resort.
+    payload_allow_fallbacks = dict(payload_no_quant)
+    if "provider" in payload_allow_fallbacks and isinstance(payload_allow_fallbacks["provider"], dict):
+        payload_allow_fallbacks["provider"] = dict(payload_allow_fallbacks["provider"])
+        payload_allow_fallbacks["provider"]["allow_fallbacks"] = True
+    print("    ⚠ llama fallback: enabling provider fallbacks")
+    text, elapsed, norm_usage = _call_with_backoff(payload_allow_fallbacks, phase_label="llama-fallbacks")
     return text, elapsed, norm_usage
 
 
@@ -525,10 +637,11 @@ def evaluate_one(
     api_key: str,
     repeat_id: int = 1,
     prompt_mode: str = "raw",
+    retry_budget_s: int = DEFAULT_RETRY_BUDGET_S,
 ) -> Result:
     prompt = render_prompt(problem, cheatsheet, prompt_mode=prompt_mode)
     try:
-        response, elapsed, usage = query_openrouter(prompt, model_cfg, api_key)
+        response, elapsed, usage = query_openrouter(prompt, model_cfg, api_key, retry_budget_s=retry_budget_s)
     except Exception as e:
         return Result(
             problem=problem,
@@ -602,6 +715,7 @@ def run_evaluation(
     verbose: bool = True,
     checkpoint_path: Optional[str] = None,
     prompt_mode: str = "raw",
+    retry_budget_s: int = DEFAULT_RETRY_BUDGET_S,
 ) -> RunStats:
     stats = RunStats()
     total_runs = len(problems) * repeats
@@ -629,6 +743,7 @@ def run_evaluation(
             result = evaluate_one(
                 problem, cheatsheet, model_cfg, api_key, rep,
                 prompt_mode=prompt_mode,
+                retry_budget_s=retry_budget_s,
             )
             mark = _update_stats(stats, result)
 
@@ -802,6 +917,7 @@ def _run_single_model(
         repeats=args.repeats, verbose=not args.quiet,
         checkpoint_path=ckpt,
         prompt_mode=args.prompt_mode,
+        retry_budget_s=args.retry_budget,
     )
 
     print_report(stats, f"{Path(args.cheatsheet).stem} / {alias}")
@@ -856,6 +972,16 @@ def main():
         help="raw = cheatsheet IS the prompt (official). "
              "wrapped = legacy eval template wrapping.",
     )
+    ap.add_argument(
+        "--allow-fallbacks", action="store_true",
+        help="Allow OpenRouter to fall back to alternate providers (lab use only). "
+             "Official eval uses strict pinning.",
+    )
+    ap.add_argument(
+        "--retry-budget", type=int, default=DEFAULT_RETRY_BUDGET_S,
+        help=f"Per-phase retry budget in seconds (default {DEFAULT_RETRY_BUDGET_S}). "
+             "Retry-After headers can extend this up to 300s.",
+    )
     # Retained for CLI compatibility with old scripts
     ap.add_argument("--openrouter", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--parser", default="strict", help=argparse.SUPPRESS)
@@ -890,6 +1016,11 @@ def main():
         model_cfgs = [resolve_model(alias) for alias in ALL_OFFICIAL_MODEL_ALIASES]
     else:
         model_cfgs = [resolve_model(args.model)]
+
+    # Lab override: allow provider fallbacks to work around rate limits
+    if args.allow_fallbacks:
+        for cfg in model_cfgs:
+            cfg["allow_fallbacks"] = True
 
     for model_cfg in model_cfgs:
         _run_single_model(args, model_cfg, problems, cheatsheet, api_key)

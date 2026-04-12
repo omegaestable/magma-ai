@@ -79,6 +79,8 @@ foreach ($file in $latest.files) {
     $benchPath = $file.path
     Write-Host "`n=== Evaluating $subset ($benchPath) ===" -ForegroundColor Green
 
+    # NOTE: models run sequentially to avoid 429 death spirals on the same API key.
+    # Do NOT launch multiple run_smoke_gate.ps1 instances in parallel.
     foreach ($m in $models) {
         Write-Host "`n--- Model: $m ---" -ForegroundColor Yellow
         $simArgs = @(
@@ -91,6 +93,8 @@ foreach ($file in $latest.files) {
         )
         if ($Errors) { $simArgs += "--errors" }
         & $python @simArgs
+        # Brief cooldown between models to let rate-limit windows reset
+        if ($m -ne $models[-1]) { Start-Sleep -Seconds 5 }
     }
 }
 

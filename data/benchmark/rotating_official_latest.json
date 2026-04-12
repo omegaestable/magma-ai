@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-08T23:35:21+00:00",
-  "stamp": "20260408_233521",
-  "rotation_index": 4,
+  "generated_at": "2026-04-12T04:05:15+00:00",
+  "stamp": "20260412_040515",
+  "rotation_index": 9,
   "source": {
     "dataset": "SAIRfoundation/equational-theories-selected-problems",
     "subsets": [
@@ -16,51 +16,61 @@
     {
       "subset": "normal",
       "requested": {
-        "true": 10,
-        "false": 10
+        "true": 15,
+        "false": 15
       },
       "selected": {
-        "true": 10,
-        "false": 10,
-        "total": 20
+        "true": 15,
+        "false": 15,
+        "total": 30
       },
       "true_bucket": {
         "cycle": 0,
-        "offset_start": 90,
-        "offset_end": 100,
+        "offset_start": 125,
+        "offset_end": 140,
         "pool_size": 500,
         "wrapped": false
       },
       "false_bucket": {
         "cycle": 0,
-        "offset_start": 90,
-        "offset_end": 100,
+        "offset_start": 155,
+        "offset_end": 170,
         "pool_size": 500,
         "wrapped": false
       },
       "ids": [
-        "normal_0435",
-        "normal_0259",
-        "normal_0271",
-        "normal_0406",
-        "normal_0594",
-        "normal_0235",
-        "normal_0350",
-        "normal_0780",
-        "normal_0125",
-        "normal_0200",
-        "normal_0195",
-        "normal_0244",
-        "normal_0454",
-        "normal_0823",
-        "normal_0130",
-        "normal_0702",
-        "normal_0992",
-        "normal_0148",
-        "normal_0753",
-        "normal_0112"
+        "normal_0029",
+        "normal_0452",
+        "normal_0466",
+        "normal_0431",
+        "normal_0189",
+        "normal_0938",
+        "normal_0958",
+        "normal_0399",
+        "normal_0569",
+        "normal_0554",
+        "normal_0295",
+        "normal_0754",
+        "normal_0393",
+        "normal_0362",
+        "normal_0575",
+        "normal_0993",
+        "normal_0204",
+        "normal_0345",
+        "normal_0745",
+        "normal_0984",
+        "normal_0040",
+        "normal_0343",
+        "normal_0555",
+        "normal_0319",
+        "normal_0595",
+        "normal_0212",
+        "normal_0500",
+        "normal_0169",
+        "normal_0251",
+        "normal_0669"
       ],
-      "path": "data/benchmark/normal_balanced20_true10_false10_rotation0004_20260408_233521.jsonl"
+      "path": "data/benchmark/normal_balanced30_true15_false15_rotation0009_20260412_040515.jsonl"
     },
     {
       "subset": "hard",
@@ -75,69 +85,79 @@
       },
       "true_bucket": {
         "cycle": 0,
-        "offset_start": 40,
-        "offset_end": 40,
+        "offset_start": 50,
+        "offset_end": 50,
         "pool_size": 74,
         "wrapped": false
       },
       "false_bucket": {
         "cycle": 0,
-        "offset_start": 40,
-        "offset_end": 40,
+        "offset_start": 50,
+        "offset_end": 50,
         "pool_size": 126,
         "wrapped": false
       },
       "ids": [],
-      "path": "data/benchmark/hard_balanced0_true0_false0_rotation0004_20260408_233521.jsonl"
+      "path": "data/benchmark/hard_balanced0_true0_false0_rotation0009_20260412_040515.jsonl"
     },
     {
       "subset": "hard3",
       "requested": {
-        "true": 10,
-        "false": 10
+        "true": 15,
+        "false": 15
       },
       "selected": {
-        "true": 10,
-        "false": 10,
-        "total": 20
+        "true": 15,
+        "false": 15,
+        "total": 30
       },
       "true_bucket": {
         "cycle": 0,
-        "offset_start": 60,
-        "offset_end": 70,
+        "offset_start": 115,
+        "offset_end": 130,
         "pool_size": 195,
         "wrapped": false
       },
       "false_bucket": {
         "cycle": 0,
-        "offset_start": 60,
-        "offset_end": 70,
+        "offset_start": 145,
+        "offset_end": 160,
         "pool_size": 205,
         "wrapped": false
       },
       "ids": [
-        "hard3_0284",
-        "hard3_0249",
-        "hard3_0143",
-        "hard3_0063",
-        "hard3_0094",
-        "hard3_0251",
-        "hard3_0081",
-        "hard3_0212",
-        "hard3_0160",
-        "hard3_0118",
-        "hard3_0123",
-        "hard3_0381",
-        "hard3_0351",
-        "hard3_0106",
-        "hard3_0264",
-        "hard3_0054",
-        "hard3_0366",
-        "hard3_0162",
-        "hard3_0093",
-        "hard3_0169"
+        "hard3_0077",
+        "hard3_0332",
+        "hard3_0357",
+        "hard3_0058",
+        "hard3_0098",
+        "hard3_0114",
+        "hard3_0266",
+        "hard3_0175",
+        "hard3_0399",
+        "hard3_0044",
+        "hard3_0358",
+        "hard3_0202",
+        "hard3_0335",
+        "hard3_0303",
+        "hard3_0140",
+        "hard3_0062",
+        "hard3_0144",
+        "hard3_0375",
+        "hard3_0270",
+        "hard3_0376",
+        "hard3_0104",
+        "hard3_0036",
+        "hard3_0115",
+        "hard3_0025",
+        "hard3_0287",
+        "hard3_0362",
+        "hard3_0221",
+        "hard3_0211",
+        "hard3_0012",
+        "hard3_0209"
       ],
-      "path": "data/benchmark/hard3_balanced20_true10_false10_rotation0004_20260408_233521.jsonl"
+      "path": "data/benchmark/hard3_balanced30_true15_false15_rotation0009_20260412_040515.jsonl"
     }
   ]
 }
