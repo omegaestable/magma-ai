@@ -2,27 +2,24 @@
 
 This file is the operational truth for the current phase. Keep it short and update it when the champion, candidate, or gate results change.
 
-Last updated: 2026-04-11 (pipeline alignment with official judge)
+Last updated: 2026-04-12 (v26b iteration — T3L expansion)
 
 ## Critical Pipeline Changes (2026-04-11)
 
 1. **Prompt mode switched to RAW**: cheatsheet IS the complete prompt. No eval template wrapping.
-   All prior v24j scores were obtained in `wrapped` mode (evaluation.jinja2 added preamble+postamble).
-   v24j scores may differ in raw mode — rebaseline required.
 2. **3 official evaluation models**: GPT-OSS-120B, Llama 3.3 70B, Gemma 4 31B IT (equal weight).
 3. **Verdict parser upgraded**: 3-tier extraction matching official `judge.py` (boxed > labeled > line).
 4. **Spine Isolation Theorem** integrated as `spine_classify.py` — new separation test with zero false positives.
 
 ## Current Artifacts
 
-- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of 10,240 cap) — NEEDS REBASELINE ON RAW MODE
-- Previous champion: `cheatsheets/v21f_structural.txt` (historical)
+- **Active candidate: `cheatsheets/v26b.txt`** (9,729 bytes, 95.0% of cap)
+- Previous candidate: `cheatsheets/v26a.txt` (10,146 bytes)
+- Historical champion: `cheatsheets/v24j.txt` (8,955 bytes)
 - Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical wrapper: `run_paid_eval.ps1`
 - Smoke/gate runner: `run_smoke_gate.ps1`
 - Spine classifier: `spine_classify.py`
-- Final report: `results/v24j_final_report.md`
-- Next design doc: `V25A_MASTER_PROMPT.md`
 
 ## Current Strategy
 
@@ -30,57 +27,58 @@ Last updated: 2026-04-11 (pipeline alignment with official judge)
 - Prompt mode: **raw** (cheatsheet sent directly to model, no wrapping)
 - Allowed template variables: `{{equation1}}`, `{{equation2}}`
 - Banned: Jinja2 logic, dynamic lookup tables, benchmark-pair hardcoding
-- Architecture: 4 structural tests (LP, RP, C0, VARS) + decision table + T3R algebraic rescue
-- Pending improvement: Spine Isolation Theorem integration (generalizes LP test)
-- Evaluation: 3 models × balanced benchmarks, official verdict parser
+- Architecture: 4 structural tests (LP, RP, C0, VARS) + decision table + Spine Depth Check + T3R rescue + T3L rescue
+- v26b adds: expanded T3L section with explicit guard (LP E1=HOLD), step-by-step instructions, next(a) rule
+- Evaluation: 3 models × balanced benchmarks, official verdict parser (GPT-OSS primary for speed)
 
-## v24j Benchmark Results
+## v26b Benchmark Results (GPT-OSS-120B, raw mode, 2026-04-12)
 
-All runs use `normal_balanced60` and `hard3_balanced40` rotation0002 benchmarks.
+**v26a → v26b delta**: Expanded T3L from 4 lines to full section with guard + instructions. Trimmed 5 redundant RULES lines.
 
-Current v24j (9,043 bytes):
+### v26b (9,729 bytes):
+- Normal (20, rotation0011): **95.0%** (1 FP, 0 FN, F1=95.2%) — matches v26a
+- Hard3 (20, rotation0011): **75.0%** (5 FP, 0 FN, F1=80.0%) — **+10pp vs v26a**
+- Hard2 (20, random): **40.0%** (12 FP, 0 FN) — same as v26a (10/12 need 4+ element magmas)
 
-- Normal run 1: **91.7%** (4 FP, 1 FN, 100% parse, F1=92.1%)
-- Normal run 2: **90.0%** (6 FP, 0 FN, 100% parse, F1=90.9%)
+### v26a (10,146 bytes, previous):
+- Normal (20, rotation0010): **95.0%** (1 FP)
+- Hard3 (20, rotation0010): **65.0%** (7 FP)
+- Hard2 (20, random): **40.0%** (12 FP)
+
+### Historical v24j (8,955 bytes, wrapped mode):
 - Normal mean: **90.85%**
-
-- Hard3 run 1: **72.5%** (11 FP, 0 FN, 100% parse, F1=78.4%)
-- Hard3 run 2: **65.0%** (13 FP, 1 FN, 100% parse, F1=73.1%)
 - Hard3 mean: **68.75%**
-
-Pre-final v24j (8,887 bytes, before Example F addition):
-
-- Normal: **93.3%** (4 FP, 0 FN, 100% parse)
-- Hard3: **52.5%** (17 FP, 2 FN, 100% parse)
-
-Invalid run (catastrophically golfed 6,690-byte version, discarded):
-
-- Normal: 66.7% — excluded from all averages
 
 ## Current Read
 
-- v24j is the culmination of the v24 line: v24a through v24j, adding T3R algebraic rescue to the 4-test structural backbone.
-- v24j achieves **100% parse rate** and near-zero FN on all valid runs.
-- Normal performance (90-93%) matches or exceeds the v21f/v23c structural ceiling (~88-92%).
-- Hard3 performance (65-72.5%) is a major step up from v23c's 50% (which had 0% FALSE accuracy).
-- The T3R rescue (a*b=next(b) on Z3) provides genuine algebraic separation power that structural tests alone cannot.
-- Prompt verbosity is critical: compressing examples or the decision table causes catastrophic collapse (see the 66.7% golfed run).
-- At 8,955 bytes (87.4% of cap), budget for further expansion is limited.
+- v26b is the current best candidate: 4 structural tests + Spine Depth + T3R + expanded T3L.
+- v26b achieves **100% parse rate** and **zero FN** on all runs.
+- Normal 95% is stable across v26a and v26b (structural tests carry normal).
+- Hard3 75% is a +10pp gain from v26a's 65% — the T3L expansion fixed at least one execution error class.
+- Hard2 remains at 40% because 10/12 FALSE pairs need 4+ element magma witnesses, beyond our 3-element techniques.
+- All errors are FP (model says TRUE when answer is FALSE) — coverage gaps, not execution errors.
+- 511 bytes remaining in v26b for further expansion.
+
+## Error Classification (v26b, 2026-04-12)
+
+- **Normal FP** (1): coverage gap needing 3-element magma [[0,1,2],[0,0,0],[0,0,0]]
+- **Hard3 FP** (5): all 5 are 3-element separable but need non-T3R/T3L magmas
+- **Hard2 FP** (12): 2 are 3-element separable, 10 need 4+ element magmas
+- **Theoretical ceiling** with only 3-element techniques: ~17/18 errors are fixable with unlimited byte budget
+- **Practical ceiling**: hard2 is structurally bottlenecked by 4+ element requirements
 
 ## Open Risks
 
-1. **Raw mode rebaseline**: All v24j scores are from wrapped mode. Raw mode may differ significantly.
-2. **Cross-model robustness**: Never tested on GPT-OSS-120B or Gemma 4 31B IT. Smaller Gemma may struggle with verbose step-by-step.
-3. Hard3 FALSE accuracy (35-45%) is still the main gap — many algebraic separations need witnesses beyond T3R's Z3 next-map.
-4. Temperature stochasticity creates ~5% noise floor per run.
-5. Byte budget is 87.4% consumed — only ~1,285 bytes remain for spine rules.
-6. **DEADLINE: April 20, 2026 (9 days)**
+1. **Single-model testing**: All v26b scores are GPT-OSS-120B only. Llama 3.3 70B had rate-limiting (429). Gemma 4 31B IT was too slow.
+2. Hard2 FALSE accuracy is 0% — these pairs systematically evade all current tests.
+3. Temperature stochasticity creates ~5% noise floor per run.
+4. 511 bytes remaining — tight budget for any further expansion.
+5. **DEADLINE: April 20, 2026 (8 days)**
 
-## Next Decision Point
+## Next Steps
 
-IMMEDIATE PRIORITY:
-1. Rebaseline v24j in raw mode on all 3 models (smoke test: 20/20 normal + 20/20 hard3).
-2. If raw mode collapses: add preamble to cheatsheet (~100 bytes).
-3. Integrate Spine Isolation Theorem into v26a candidate.
-4. Run full gate (50/50 normal + 50/50 hard) on promotion candidate.
-5. Submit best performing cheatsheet by April 20.
+1. Test v26b on Llama 3.3 70B and Gemma 4 31B IT when rate limits clear.
+2. Consider adding a third algebraic magma (e.g., all-zero [[0,0,0],[0,0,0],[0,0,0]]) to catch more hard3 FALSE.
+3. Run full gate (50/50 normal + 50/50 hard3) for promotion evidence.
+4. If cross-model safety holds → v26b is submission candidate.
+5. Submit by April 20.

@@ -16,11 +16,12 @@ Paid OpenRouter evaluation is the supported inference path in this repo.
 
 ## Current State
 
-- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap)
-- Previous champion: `cheatsheets/v21f_structural.txt` (historical)
+- **Active candidate: `cheatsheets/v26b.txt`** (9,729 bytes, 95.0% of cap)
+- Previous candidate: `cheatsheets/v26a.txt` (10,146 bytes)
+- Historical champion: `cheatsheets/v24j.txt` (8,955 bytes)
 - Canonical evaluator: `sim_lab.py`
 - Canonical quick-run wrapper: `run_paid_eval.ps1`
-- Current strategy: pure natural-language cheatsheet with 4 structural tests + T3R algebraic rescue
+- Current strategy: pure natural-language cheatsheet with 4 structural tests + Spine Depth + T3R + T3L algebraic rescues
 
 ## Hard Constraints
 
@@ -71,13 +72,13 @@ $env:OPENROUTER_API_KEY = "<your_key>"
 Run a quick baseline check:
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v24j
+.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v26b
 ```
 
 Run the active candidate directly:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --errors
+python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v26b.txt --prompt-mode raw --errors
 ```
 
 Check cheatsheet size on disk:

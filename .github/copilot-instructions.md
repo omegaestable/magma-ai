@@ -39,12 +39,13 @@ On a cold start, read in this order:
 
 ## Current Canonical Artifacts
 
-- Baseline: `cheatsheets/v24j.txt`
+- Active candidate: `cheatsheets/v26b.txt`
+- Previous candidate: `cheatsheets/v26a.txt`
+- Historical champion: `cheatsheets/v24j.txt`
 - Next design doc: `V25A_MASTER_PROMPT.md`
 - Evaluator: `sim_lab.py`
 - Quick-run wrapper: `run_paid_eval.ps1`
 - Score summary: `results/scoreboard.md`
-- Final report: `results/v24j_final_report.md`
 
 ## Common Failure Modes
 

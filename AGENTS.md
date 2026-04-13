@@ -23,8 +23,9 @@ Follow this order exactly:
 
 ## Current Operating Model
 
-- **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap) — needs raw-mode rebaseline
-- Previous champion: `cheatsheets/v21f_structural.txt` (historical)
+- **Active candidate: `cheatsheets/v26b.txt`** (9,729 bytes, 95.0% of cap)
+- Previous candidate: `cheatsheets/v26a.txt` (10,146 bytes)
+- Historical champion: `cheatsheets/v24j.txt` (8,955 bytes)
 - Next design document: `V25A_MASTER_PROMPT.md`
 - Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical quick wrapper: `run_paid_eval.ps1`
@@ -94,7 +95,8 @@ Active starting points:
 
 - `README.md`
 - `EVAL_WORKFLOW.md`
-- `cheatsheets/v24j.txt`
+- `cheatsheets/v26b.txt`
+- `cheatsheets/v26a.txt`
 - `V25A_MASTER_PROMPT.md`
 - `sim_lab.py`
 - `spine_classify.py`

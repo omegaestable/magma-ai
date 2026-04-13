@@ -1,15 +1,15 @@
 {
   "version": 1,
-  "generation_count": 9,
+  "generation_count": 11,
   "subsets": {
     "normal": {
       "true": {
         "cycle": 0,
-        "offset": 140
+        "offset": 160
       },
       "false": {
         "cycle": 0,
-        "offset": 170
+        "offset": 190
       }
     },
     "hard": {
@@ -25,14 +25,14 @@
     "hard3": {
       "true": {
         "cycle": 0,
-        "offset": 130
+        "offset": 150
       },
       "false": {
         "cycle": 0,
-        "offset": 160
+        "offset": 180
       }
     }
   },
-  "last_generated_at": "2026-04-12T04:05:15+00:00",
+  "last_generated_at": "2026-04-13T04:22:58+00:00",
   "latest_manifest": "data/benchmark/rotating_official_latest.json"
 }
