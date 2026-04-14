@@ -18,6 +18,7 @@ LEGACY_UNSEEN_GLOB = "*_unseen_*.jsonl"
 DEFAULT_SPECS = (
     {"subset": "normal", "n_true": 30, "n_false": 30},
     {"subset": "hard", "n_true": 20, "n_false": 20},
+    {"subset": "hard2", "n_true": 10, "n_false": 10},
     {"subset": "hard3", "n_true": 10, "n_false": 10},
 )
 
@@ -83,6 +84,7 @@ def resolve_specs(args: argparse.Namespace) -> list[dict]:
     return [
         {"subset": "normal", "n_true": args.normal_true, "n_false": args.normal_false},
         {"subset": "hard", "n_true": args.hard_true, "n_false": args.hard_false},
+        {"subset": "hard2", "n_true": args.hard2_true, "n_false": args.hard2_false},
         {"subset": "hard3", "n_true": args.hard3_true, "n_false": args.hard3_false},
     ]
 
@@ -238,7 +240,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Generate rotating official-like benchmark bundles from the SAIR Hugging Face subsets. "
-            "Defaults: normal 30/30, hard 20/20, hard3 10/10."
+            "Defaults: normal 30/30, hard 20/20, hard2 10/10, hard3 10/10."
         )
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
@@ -251,8 +253,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--normal-false", type=int, default=DEFAULT_SPECS[0]["n_false"])
     parser.add_argument("--hard-true", type=int, default=DEFAULT_SPECS[1]["n_true"])
     parser.add_argument("--hard-false", type=int, default=DEFAULT_SPECS[1]["n_false"])
-    parser.add_argument("--hard3-true", type=int, default=DEFAULT_SPECS[2]["n_true"])
-    parser.add_argument("--hard3-false", type=int, default=DEFAULT_SPECS[2]["n_false"])
+    parser.add_argument("--hard2-true", type=int, default=DEFAULT_SPECS[2]["n_true"])
+    parser.add_argument("--hard2-false", type=int, default=DEFAULT_SPECS[2]["n_false"])
+    parser.add_argument("--hard3-true", type=int, default=DEFAULT_SPECS[3]["n_true"])
+    parser.add_argument("--hard3-false", type=int, default=DEFAULT_SPECS[3]["n_false"])
     return parser
 
 

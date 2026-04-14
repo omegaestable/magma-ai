@@ -1,0 +1,875 @@
+{
+  "fp_count": 69,
+  "true_count": 30,
+  "cycling_covered": 67,
+  "universal_covered": 27,
+  "uncovered_ids": [
+    "hard2_0095",
+    "hard3_0079"
+  ],
+  "cycling_set_cover": [
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal": 22,
+      "total_catch": 22,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0134",
+        "hard2_0139",
+        "hard2_0146",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0167",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0211",
+        "hard3_0309",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "cumulative": 22,
+      "description": "[[1, 0, 0], [2, 1, 2], [1, 2, 0]]"
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 14,
+      "total_catch": 16,
+      "caught_ids": [
+        "hard2_0002",
+        "hard2_0013",
+        "hard2_0020",
+        "hard2_0031",
+        "hard2_0038",
+        "hard2_0051",
+        "hard2_0134",
+        "hard2_0142",
+        "hard2_0150",
+        "hard2_0156",
+        "hard2_0167",
+        "hard2_0171",
+        "hard2_0188",
+        "hard3_0072",
+        "hard3_0206",
+        "normal_0565"
+      ],
+      "cumulative": 36,
+      "description": "[[0, 0, 2], [0, 0, 2], [2, 2, 2]]"
+    },
+    {
+      "table": [
+        [
+          2,
+          0,
+          1
+        ],
+        [
+          1,
+          2,
+          1
+        ],
+        [
+          2,
+          0,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal": 10,
+      "total_catch": 19,
+      "caught_ids": [
+        "hard2_0013",
+        "hard2_0015",
+        "hard2_0045",
+        "hard2_0062",
+        "hard2_0077",
+        "hard2_0084",
+        "hard2_0100",
+        "hard2_0108",
+        "hard2_0144",
+        "hard2_0150",
+        "hard2_0156",
+        "hard2_0158",
+        "hard2_0166",
+        "hard2_0169",
+        "hard2_0194",
+        "hard3_0065",
+        "hard3_0206",
+        "hard3_0346",
+        "hard3_0359"
+      ],
+      "cumulative": 46,
+      "description": "[[2, 0, 1], [1, 2, 1], [2, 0, 0]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ],
+        [
+          2,
+          2,
+          1
+        ]
+      ],
+      "size": 3,
+      "marginal": 8,
+      "total_catch": 13,
+      "caught_ids": [
+        "hard2_0001",
+        "hard2_0020",
+        "hard2_0100",
+        "hard2_0129",
+        "hard2_0156",
+        "hard2_0188",
+        "hard3_0075",
+        "hard3_0078",
+        "hard3_0097",
+        "hard3_0123",
+        "hard3_0200",
+        "hard3_0370",
+        "normal_0094"
+      ],
+      "cumulative": 54,
+      "description": "[[1, 0, 2], [2, 0, 2], [2, 2, 1]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          0,
+          1
+        ]
+      ],
+      "size": 3,
+      "marginal": 4,
+      "total_catch": 8,
+      "caught_ids": [
+        "hard2_0047",
+        "hard2_0048",
+        "hard2_0084",
+        "hard2_0090",
+        "hard2_0158",
+        "hard2_0197",
+        "hard3_0167",
+        "hard3_0362"
+      ],
+      "cumulative": 58,
+      "description": "[[1, 1, 1], [2, 1, 1], [1, 0, 1]]"
+    },
+    {
+      "table": [
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          1,
+          2,
+          1
+        ],
+        [
+          1,
+          0,
+          1
+        ]
+      ],
+      "size": 3,
+      "marginal": 3,
+      "total_catch": 12,
+      "caught_ids": [
+        "hard2_0001",
+        "hard2_0013",
+        "hard2_0015",
+        "hard2_0077",
+        "hard2_0158",
+        "hard2_0176",
+        "hard2_0180",
+        "hard2_0188",
+        "hard3_0103",
+        "hard3_0206",
+        "hard3_0309",
+        "normal_0272"
+      ],
+      "cumulative": 61,
+      "description": "[[0, 1, 0], [1, 2, 1], [1, 0, 1]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          2,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 2,
+      "total_catch": 8,
+      "caught_ids": [
+        "hard2_0146",
+        "hard3_0141",
+        "hard3_0167",
+        "hard3_0211",
+        "hard3_0322",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0370"
+      ],
+      "cumulative": 63,
+      "description": "[[1, 0, 1], [0, 2, 1], [2, 2, 2]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal": 2,
+      "total_catch": 14,
+      "caught_ids": [
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0108",
+        "hard2_0144",
+        "hard2_0158",
+        "hard2_0166",
+        "hard2_0180",
+        "hard3_0206",
+        "hard3_0211",
+        "hard3_0346",
+        "hard3_0373",
+        "hard3_0377",
+        "normal_0094",
+        "normal_0700"
+      ],
+      "cumulative": 65,
+      "description": "[[1, 1, 0], [2, 1, 2], [1, 2, 0]]"
+    },
+    {
+      "table": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 13,
+      "caught_ids": [
+        "hard2_0002",
+        "hard2_0010",
+        "hard2_0020",
+        "hard2_0031",
+        "hard2_0038",
+        "hard2_0134",
+        "hard2_0156",
+        "hard2_0167",
+        "hard2_0171",
+        "hard2_0188",
+        "hard3_0072",
+        "hard3_0206",
+        "normal_0565"
+      ],
+      "cumulative": 66,
+      "description": "[[0, 1, 2], [0, 0, 2], [2, 2, 2]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          2,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ],
+        [
+          2,
+          2,
+          1
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 8,
+      "caught_ids": [
+        "hard2_0001",
+        "hard2_0129",
+        "hard3_0075",
+        "hard3_0076",
+        "hard3_0078",
+        "hard3_0097",
+        "hard3_0123",
+        "hard3_0370"
+      ],
+      "cumulative": 67,
+      "description": "[[1, 2, 2], [2, 0, 2], [2, 2, 1]]"
+    }
+  ],
+  "top10_cycling_safe": [
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 22,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0134",
+        "hard2_0139",
+        "hard2_0146",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0167",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0211",
+        "hard3_0309",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [2, 1, 2], [1, 2, 0]]"
+    },
+    {
+      "table": [
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          1,
+          2,
+          1
+        ],
+        [
+          1,
+          0,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 22,
+      "caught_ids": [
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0051",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0077",
+        "hard2_0084",
+        "hard2_0100",
+        "hard2_0144",
+        "hard2_0150",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0169",
+        "hard2_0194",
+        "hard3_0065",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0362",
+        "hard3_0370",
+        "hard3_0373"
+      ],
+      "description": "[[2, 0, 0], [1, 2, 1], [1, 0, 1]]"
+    },
+    {
+      "table": [
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          1,
+          2,
+          1
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 22,
+      "caught_ids": [
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0051",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0077",
+        "hard2_0084",
+        "hard2_0100",
+        "hard2_0144",
+        "hard2_0150",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0169",
+        "hard2_0194",
+        "hard3_0065",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0370",
+        "hard3_0373"
+      ],
+      "description": "[[2, 0, 0], [1, 2, 1], [1, 0, 2]]"
+    },
+    {
+      "table": [
+        [
+          2,
+          0,
+          2
+        ],
+        [
+          1,
+          2,
+          1
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 22,
+      "caught_ids": [
+        "hard2_0013",
+        "hard2_0045",
+        "hard2_0051",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0077",
+        "hard2_0084",
+        "hard2_0100",
+        "hard2_0108",
+        "hard2_0139",
+        "hard2_0144",
+        "hard2_0150",
+        "hard2_0156",
+        "hard2_0166",
+        "hard2_0169",
+        "hard2_0194",
+        "hard3_0065",
+        "hard3_0309",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[2, 0, 2], [1, 2, 1], [1, 0, 2]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 21,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0139",
+        "hard2_0144",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0346",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0370",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [1, 1, 1], [1, 2, 0]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          1
+        ]
+      ],
+      "size": 3,
+      "catch_count": 21,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0139",
+        "hard2_0144",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0346",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0370",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [1, 1, 1], [1, 2, 1]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 21,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0139",
+        "hard2_0144",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0346",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0370",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [1, 1, 1], [1, 2, 2]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 21,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0139",
+        "hard2_0144",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0346",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0370",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [1, 1, 2], [1, 2, 0]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "catch_count": 21,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0048",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0139",
+        "hard2_0144",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0346",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0370",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [1, 1, 2], [1, 2, 2]]"
+    },
+    {
+      "table": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          2
+        ],
+        [
+          1,
+          1,
+          0
+        ]
+      ],
+      "size": 3,
+      "catch_count": 21,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0025",
+        "hard2_0045",
+        "hard2_0062",
+        "hard2_0068",
+        "hard2_0134",
+        "hard2_0139",
+        "hard2_0146",
+        "hard2_0158",
+        "hard2_0163",
+        "hard2_0166",
+        "hard2_0167",
+        "hard2_0180",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0309",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0370",
+        "hard3_0373",
+        "normal_0094"
+      ],
+      "description": "[[1, 0, 0], [2, 1, 2], [1, 1, 0]]"
+    }
+  ],
+  "per_tag": {
+    "normal": {
+      "total": 4,
+      "covered": 4
+    },
+    "hard3": {
+      "total": 25,
+      "covered": 24
+    },
+    "hard2": {
+      "total": 40,
+      "covered": 39
+    }
+  }
+}

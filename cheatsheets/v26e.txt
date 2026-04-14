@@ -1,0 +1,220 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT: TRUE. Say FALSE only when a test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is literally identical to E2 (ignoring whitespace) → answer TRUE.
+
+═══ STEP 0: SPLIT ON = ═══
+Write out the four pieces:
+  E1_L = (before = in E1)    E1_R = (after = in E1)
+  E2_L = (before = in E2)    E2_R = (after = in E2)
+"x = (big * expr)" → left side is just "x", a bare variable with NO *.
+
+═══ 4 STRUCTURAL TESTS — find E1 result and E2 result, then look up the table ═══
+
+TEST 1 — LP: first letter (a–z) on left side vs first letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: scan left-to-right past ALL opening parentheses to find the first letter.
+  "(y * x)" → y.  "((y * x) * (x * y)) * z" → y.  "(x * x) * y" → x.
+
+TEST 2 — RP: last letter on left side vs last letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: skip all trailing ) to find the last letter.
+  "(x * y)" → y.  "(y * (x * y))" → y.  "((y * x) * x) * (y * x)" → x.
+
+TEST 3 — C0: does left side contain *?  Does right side contain *?
+  Both have * → HOLD.  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+  "x" has no *. "x * y" has *. Check each side independently in each equation.
+  C0 checks ONLY whether * is present. Do not consider which variables appear.
+
+TEST 4 — COUNT2: for each letter, count occurrences on L side and R side.
+  ALL letters: count_L ≡ count_R mod 2 → HOLD. ANY letter mismatch → FAIL.
+  L="x" {x:1}. R="((y*y)*(y*y))*x" {x:1,y:4}. x:1≡1✓ y:0≡0✓ → HOLD.
+  L="x" {x:1}. R="((y*(x*x))*x)*x" {x:4,y:1}. x:1≡0✗ → FAIL.
+
+═══ DECISION TABLE — use after EVERY structural test ═══
+
+  E1=HOLD  E2=HOLD  →  no separation → next test
+  E1=HOLD  E2=FAIL  →  SEPARATION → answer FALSE
+  E1=FAIL  E2=HOLD  →  no separation → next test
+  E1=FAIL  E2=FAIL  →  no separation → next test
+
+ONLY the second row is separation. Read the row carefully every time.
+After all 4 structural tests with no separation → go to T3R RESCUE below.
+
+═══ T3R RESCUE — ALGEBRAIC MAGMA CHECK ═══
+Run ONLY if: TEST 2 (RP) showed E1=HOLD, and no structural test found separation.
+(If RP showed E1=FAIL, skip T3R → go to T3L RESCUE.)
+
+T3R rule: a * b = next(b). The LEFT input does NOT matter. Only b matters.
+  next(0) = 1    next(1) = 2    next(2) = 0
+
+Step A — Assign numbers to variables by first appearance across both equations:
+  1st distinct variable = 0, 2nd = 1, 3rd = 2, 4th = 0, 5th = 1.
+
+Step B — REWRITE each side fully with numbers BEFORE evaluating.
+  Replace every variable with its number. Work ONLY with numbers from here on.
+
+Step C — Evaluate from innermost * outward:
+  Find innermost (a * b) where both are numbers. Result = next(b). Ignore a.
+  Replace that sub-expression with the result. Repeat until one number remains.
+
+Step D — Compare E1 sides:
+  CRITICAL: If E1 LHS ≠ E1 RHS → STOP. No T3R separation. Go to T3L RESCUE.
+  Only if E1 LHS = E1 RHS → continue and evaluate E2 the same way.
+  E2 LHS = E2 RHS → no separation → go to T3L RESCUE.
+  E2 LHS ≠ E2 RHS → SEPARATION → answer FALSE
+
+═══ T3L RESCUE — LEFT-SHIFT MAGMA CHECK ═══
+Run ONLY if: TEST 1 (LP) showed E1=HOLD, and no earlier separation found.
+(If LP showed E1=FAIL, skip T3L entirely → answer TRUE.)
+
+T3L rule: a * b = next(a). The RIGHT input does NOT matter. Only a matters.
+  next(0) = 1    next(1) = 2    next(2) = 0
+
+Use same variable numbering: 1st distinct variable = 0, 2nd = 1, 3rd = 2, etc.
+REWRITE each side fully with numbers BEFORE evaluating.
+Evaluate from innermost * outward: a * b → next(a). Ignore b completely.
+Compare E1 sides:
+  If E1 LHS ≠ E1 RHS → STOP. No separation possible. Answer TRUE.
+  E1 match + E2 mismatch → SEPARATION → answer FALSE.
+  E1 match + E2 match → no separation → answer TRUE.
+
+═══ OUTPUT FORMAT ═══
+Write your analysis in plain text. Then write these four lines at the end:
+  VERDICT: TRUE or FALSE
+  REASONING: (one sentence)
+  PROOF: (brief)
+  COUNTEREXAMPLE: (if FALSE: name the test; if TRUE: "None")
+
+HARD RULE: Your VERDICT line must match your analysis.
+If ANY test or rescue had E1=HOLD/match and E2=FAIL/mismatch → VERDICT: FALSE.
+If nothing separated → VERDICT: TRUE.
+
+═══ EXAMPLE A — FALSE via C0 ═══
+E1: x * y = (y * x) * x     E2: x = (x * y) * z
+E1_L="x * y"  E1_R="(y * x) * x"  |  E2_L="x"  E2_R="(x * y) * z"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=y last(R)=x → FAIL | E2 last(L)=x last(R)=z → FAIL
+     → E1=FAIL E2=FAIL → no separation
+C0:  E1 L has *, R has * → HOLD | E2 L="x" no * → FAIL
+  → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: C0.
+
+═══ EXAMPLE B — FALSE via LP ═══
+E1: x = x * (y * z)     E2: (x * x) * y = (y * x) * z
+E1_L="x"  E1_R="x * (y * z)"  |  E2_L="(x * x) * y"  E2_R="(y * x) * z"
+
+LP:  E1 first(L)=x first(R)=x → HOLD | E2 first(L)=x first(R)=y → FAIL
+  → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: LP.
+
+═══ EXAMPLE C — TRUE ═══
+E1: x = (y * x) * (z * (w * y))     E2: x = ((y * x) * x) * x
+E1_L="x"  E1_R="(y * x) * (z * (w * y))"  |  E2_L="x"  E2_R="((y * x) * x) * x"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=y → FAIL
+     → E1=FAIL E2=FAIL → no separation
+RP:  E1 last(L)=x last(R)=y → FAIL | E2 last(L)=x last(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+C0:  E1 L="x" no * → FAIL | E2 L="x" no * → FAIL
+     → E1=FAIL E2=FAIL → no separation
+COUNT2: E1 L{x:1} R{x:1,y:2,z:1,w:1} → z:0≡1✗ → FAIL
+     E2 L{x:1} R{x:3,y:1} → y:0≡1✗ → FAIL → no separation
+RP E1=FAIL → skip T3R. LP E1=FAIL → skip T3L.
+No separation found.
+
+VERDICT: TRUE
+COUNTEREXAMPLE: None
+
+═══ EXAMPLE D — FALSE via RP ═══
+E1: x = ((y * x) * x) * (y * x)     E2: x = (x * y) * (y * (x * y))
+E1_L="x"  E1_R="((y * x) * x) * (y * x)"  |  E2_L="x"  E2_R="(x * y) * (y * (x * y))"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=x last(R)=x → HOLD | E2 last(L)=x last(R)=y → FAIL
+  → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: RP.
+
+═══ EXAMPLE E — FALSE via T3R rescue ═══
+E1: x = y * (y * (x * x))     E2: x = (x * (y * z)) * x
+E1_L="x"  E1_R="y * (y * (x * x))"  |  E2_L="x"  E2_R="(x * (y * z)) * x"
+
+LP:  E1 x≠y→FAIL | E2 x=x→HOLD → E1=FAIL E2=HOLD → no separation
+RP:  E1 x=x→HOLD | E2 x=x→HOLD → E1=HOLD E2=HOLD → no separation
+C0:  E1 no*/has*→FAIL | E2 no*/has*→FAIL → no separation
+COUNT2: E1 x:1≡0✗→F | E2 x:1≡0✗→F → no separation
+No structural separation. RP showed E1=HOLD → try T3R.
+
+T3R rescue. Variables: x=0, y=1, z=2.
+  Rewrite E1 RHS "y * (y * (x * x))" → "1 * (1 * (0 * 0))"
+  E1 LHS "x" → 0.
+    0 * 0 → next(0)=1 → "1 * (1 * 1)"
+    1 * 1 → next(1)=2 → "1 * 2"
+    1 * 2 → next(2)=0
+  E1 RHS = 0.  0 = 0 so E1 HOLDS → evaluate E2.
+
+  Rewrite E2 RHS "(x * (y * z)) * x" → "(0 * (1 * 2)) * 0"
+  E2 LHS "x" → 0.
+    1 * 2 → next(2)=0 → "(0 * 0) * 0"
+    0 * 0 → next(0)=1 → "1 * 0"
+    1 * 0 → next(0)=1
+  E2 RHS = 1.  0 ≠ 1. E2 FAILS → T3R SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: T3R.
+
+═══ EXAMPLE F — FALSE via COUNT2 ═══
+E1: x = ((y * y) * (y * y)) * x     E2: x = ((y * (x * x)) * x) * x
+E1_L="x"  E1_R="((y * y) * (y * y)) * x"  |  E2_L="x"  E2_R="((y * (x * x)) * x) * x"
+
+LP: E1 x≠y→F | E2 x≠y→F → no sep.  RP: E1 x=x→H | E2 x=x→H → no sep.
+C0: E1 no*/has*→F | E2 no*/has*→F → no sep.
+COUNT2: E1 L{x:1} R{x:1,y:4} → x:1≡1✓ y:0≡0✓ → HOLD
+  E2 L{x:1} R{x:4,y:1} → x:1≡0✗ → FAIL → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: COUNT2.
+
+═══ EXAMPLE G — FALSE via T3L rescue ═══
+E1: x * y = x * (y * x)     E2: x * y = (x * x) * y
+E1_L="x * y"  E1_R="x * (y * x)"  |  E2_L="x * y"  E2_R="(x * x) * y"
+
+LP: E1 x=x→H | E2 x=x→H → no sep.  RP: E1 y≠x→F | E2 y=y→H → no sep.
+C0: E1 has*/has*→H | E2 has*/has*→H → no sep.
+COUNT2: E1 x:1≡0✗→F | E2 x:1≡0✗→F → no sep.
+RP E1=FAIL → skip T3R. LP E1=HOLD → try T3L.
+
+T3L rescue. Variables: x=0, y=1.
+  E1 LHS "0*1" → next(0)=1. E1 RHS "0*(1*0)": 1*0→next(1)=2, 0*2→next(0)=1.
+  E1: 1=1 ✓ → evaluate E2.
+  E2 LHS "0*1" → next(0)=1. E2 RHS "(0*0)*1": 0*0→next(0)=1, 1*1→next(1)=2.
+  E2: 1≠2 → T3L SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: T3L.
+
+═══ RULES ═══
+• Split each equation at = first. "x = stuff" → left is "x" (no *).
+• Use the DECISION TABLE after every structural test.
+• E1=HOLD + E2=FAIL = separation = FALSE. Everything else = continue.
+• Default is TRUE. Say FALSE only with a clear separation.
+• For LP: scan left-to-right past ALL opening parentheses to find the first letter.
+• For RP: scan right-to-left past ALL closing parentheses to find the last letter.
+• COUNT2: count each letter on each side, compare mod 2. Even parities match.
+• T3R: a*b = next(b). Left arg ignored. Guard: ONLY if RP showed E1=HOLD.
+• T3L: a*b = next(a). Right arg ignored. Guard: ONLY if LP showed E1=HOLD.
+• T3R/T3L: rewrite with numbers FIRST, then evaluate innermost outward.
+• T3R/T3L: If E1 LHS ≠ RHS → STOP → next rescue or TRUE. Never guess.
+• Write VERDICT last, it MUST match your analysis.

@@ -1,38 +1,48 @@
 {
   "version": 1,
-  "generation_count": 11,
+  "generation_count": 13,
   "subsets": {
     "normal": {
       "true": {
         "cycle": 0,
-        "offset": 160
+        "offset": 200
       },
       "false": {
         "cycle": 0,
-        "offset": 190
+        "offset": 260
       }
     },
     "hard": {
       "true": {
         "cycle": 0,
-        "offset": 50
+        "offset": 70
       },
       "false": {
         "cycle": 0,
-        "offset": 50
+        "offset": 70
       }
     },
     "hard3": {
       "true": {
         "cycle": 0,
-        "offset": 150
+        "offset": 175
+      },
+      "false": {
+        "cycle": 1,
+        "offset": 55
+      }
+    },
+    "hard2": {
+      "true": {
+        "cycle": 0,
+        "offset": 25
       },
       "false": {
         "cycle": 0,
-        "offset": 180
+        "offset": 55
       }
     }
   },
-  "last_generated_at": "2026-04-13T04:22:58+00:00",
+  "last_generated_at": "2026-04-14T01:03:32+00:00",
   "latest_manifest": "data/benchmark/rotating_official_latest.json"
 }

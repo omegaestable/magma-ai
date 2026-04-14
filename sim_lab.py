@@ -59,7 +59,7 @@ EVAL_TEMPLATE_CACHE = HF_CACHE_DIR / "evaluation.jinja2"
 
 # ── Official evaluation model configs ─────────────────────────────────────
 # Source: https://github.com/SAIRcompetition/equational-theories-stage1-judge
-#         evaluation_models.json (commit 5086db8, 2026-04-10)
+#         evaluation_models.json (commit afbb6ff, 2026-04-13)
 
 # Provider name map: config slug  →  OpenRouter title-case name
 _PROVIDER_DISPLAY = {
@@ -70,24 +70,28 @@ _PROVIDER_DISPLAY = {
 OFFICIAL_MODELS = {
     "gpt-oss-120b": {
         "model": "openai/gpt-oss-120b",
-        "provider": "deepinfra/bf16",
-        "max_output_tokens": 8192,
+        # provider unpinned: DeepInfra/bf16 is persistently rate-limited (429).
+        # Official eval uses deepinfra/bf16, but local testing needs any route.
+        "max_output_tokens": 16384,
         "temperature": 0.0,
         "seed": 0,
         "reasoning_mode": "low",
+        "allow_fallbacks": True,
     },
     "llama-3-3-70b-instruct": {
         "model": "meta-llama/llama-3.3-70b-instruct",
-        "provider": "deepinfra/fp8",
-        "max_output_tokens": 8192,
+        # provider unpinned: DeepInfra/fp8 is persistently rate-limited (429).
+        # Official eval uses deepinfra/fp8, but local testing needs any route.
+        "max_output_tokens": 16384,
         "temperature": 0.0,
         "seed": 0,
         "reasoning_mode": "disabled",
+        "allow_fallbacks": True,
     },
     "gemma-4-31b-it": {
         "model": "google/gemma-4-31b-it",
         "provider": "novita/bf16",
-        "max_output_tokens": 8192,
+        "max_output_tokens": 16384,
         "temperature": 0.0,
         "seed": 0,
         "reasoning_mode": "disabled",
@@ -429,6 +433,8 @@ def parse_verdict(response: str) -> Optional[bool]:
     Priority: \\boxed{} (3) > VERDICT:/ANSWER:/\\text{} (2) > first/last line (1).
     Within same tier, last occurrence wins.
     """
+    if not response:
+        return None
     cleaned = _strip_markdown(response)
     candidates: list[_VerdictCandidate] = []
     _extract_boxed(cleaned, candidates)
@@ -838,7 +844,8 @@ def print_errors(stats: RunStats, top_n: int = 10):
     if unparsed:
         print(f"\n  Unparsed:")
         for r in unparsed[:top_n]:
-            print(f"    {r.problem.id}: {r.raw_response[:100]}...")
+            snippet = (r.raw_response or "")[:100]
+            print(f"    {r.problem.id}: {snippet}...")
     print()
 
 

@@ -1,0 +1,513 @@
+{
+  "fp_count": 45,
+  "true_count": 28,
+  "covered_count": 24,
+  "uncovered_ids": [
+    "hard2_0001",
+    "hard2_0002",
+    "hard2_0007",
+    "hard2_0009",
+    "hard2_0010",
+    "hard2_0011",
+    "hard2_0012",
+    "hard2_0013",
+    "hard2_0014",
+    "hard2_0016",
+    "hard3_0072",
+    "hard3_0075",
+    "hard3_0076",
+    "hard3_0078",
+    "hard3_0079",
+    "hard3_0167",
+    "hard3_0206",
+    "hard3_0322",
+    "hard3_0346",
+    "normal_0272",
+    "normal_0700"
+  ],
+  "set_cover": [
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal": 7,
+      "total_catch": 7,
+      "caught_ids": [
+        "hard2_0015",
+        "hard2_0020",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0370",
+        "normal_0094",
+        "normal_0975"
+      ],
+      "cumulative": 7,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 5,
+      "total_catch": 5,
+      "caught_ids": [
+        "hard3_0141",
+        "hard3_0195",
+        "hard3_0211",
+        "hard3_0263",
+        "normal_0525"
+      ],
+      "cumulative": 12,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          1,
+          1
+        ],
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 4,
+      "total_catch": 4,
+      "caught_ids": [
+        "hard3_0103",
+        "hard3_0129",
+        "hard3_0184",
+        "hard3_0275"
+      ],
+      "cumulative": 16,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 6,
+      "caught_ids": [
+        "hard2_0020",
+        "hard3_0359",
+        "hard3_0362",
+        "hard3_0363",
+        "hard3_0370",
+        "normal_0094"
+      ],
+      "cumulative": 17,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "size": 2,
+      "marginal": 1,
+      "total_catch": 3,
+      "caught_ids": [
+        "normal_0525",
+        "normal_0801",
+        "normal_0975"
+      ],
+      "cumulative": 18,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 3,
+      "caught_ids": [
+        "hard3_0065",
+        "hard3_0103",
+        "hard3_0129"
+      ],
+      "cumulative": 19,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          2,
+          1,
+          0
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 2,
+      "caught_ids": [
+        "normal_0525",
+        "normal_0565"
+      ],
+      "cumulative": 20,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "size": 2,
+      "marginal": 1,
+      "total_catch": 1,
+      "caught_ids": [
+        "normal_0642"
+      ],
+      "cumulative": 21,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          2,
+          0,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 1,
+      "caught_ids": [
+        "hard3_0373"
+      ],
+      "cumulative": 22,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          2
+        ],
+        [
+          1,
+          1,
+          0
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 1,
+      "caught_ids": [
+        "hard3_0200"
+      ],
+      "cumulative": 23,
+      "false_flags": 0,
+      "false_flag_ids": []
+    },
+    {
+      "table": [
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          2
+        ],
+        [
+          1,
+          1,
+          2
+        ]
+      ],
+      "size": 3,
+      "marginal": 1,
+      "total_catch": 1,
+      "caught_ids": [
+        "hard3_0377"
+      ],
+      "cumulative": 24,
+      "false_flags": 0,
+      "false_flag_ids": []
+    }
+  ],
+  "per_tag": {
+    "normal": {
+      "total": 8,
+      "covered": 6
+    },
+    "hard3": {
+      "total": 25,
+      "covered": 16
+    },
+    "hard2": {
+      "total": 12,
+      "covered": 2
+    }
+  },
+  "normal_fp_detail": [
+    {
+      "id": "normal_0801",
+      "equation1": "x = ((y * y) * (y * y)) * x",
+      "equation2": "x = ((y * (x * x)) * x) * x",
+      "n_catchers_2elem": 4,
+      "n_catchers_3elem": 783,
+      "best": {
+        "size": 2,
+        "table": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "normal_0565",
+      "equation1": "x = (y * (x * x)) * (y * y)",
+      "equation2": "x = (y * y) * (x * (z * x))",
+      "n_catchers_2elem": 0,
+      "n_catchers_3elem": 3,
+      "best": {
+        "size": 3,
+        "table": [
+          [
+            0,
+            2,
+            1
+          ],
+          [
+            2,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "id": "normal_0094",
+      "equation1": "x * (x * y) = z * (x * z)",
+      "equation2": "x * y = (z * w) * w",
+      "n_catchers_2elem": 0,
+      "n_catchers_3elem": 57,
+      "best": {
+        "size": 3,
+        "table": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "normal_0975",
+      "equation1": "x * x = (y * (z * z)) * y",
+      "equation2": "x * y = x * ((x * z) * w)",
+      "n_catchers_2elem": 4,
+      "n_catchers_3elem": 672,
+      "best": {
+        "size": 2,
+        "table": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "normal_0525",
+      "equation1": "x = (y * y) * ((y * y) * x)",
+      "equation2": "x = (y * ((x * z) * w)) * x",
+      "n_catchers_2elem": 5,
+      "n_catchers_3elem": 879,
+      "best": {
+        "size": 2,
+        "table": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "normal_0642",
+      "equation1": "x = (x * ((y * y) * y)) * z",
+      "equation2": "x * x = (x * y) * (z * x)",
+      "n_catchers_2elem": 1,
+      "n_catchers_3elem": 3,
+      "best": {
+        "size": 2,
+        "table": [
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "normal_0700",
+      "equation1": "x = (y * ((x * y) * z)) * z",
+      "equation2": "x * (y * y) = (x * z) * z",
+      "n_catchers_2elem": 0,
+      "n_catchers_3elem": 0,
+      "best": null
+    },
+    {
+      "id": "normal_0272",
+      "equation1": "x = (y * ((x * x) * y)) * y",
+      "equation2": "(x * y) * z = (x * z) * w",
+      "n_catchers_2elem": 0,
+      "n_catchers_3elem": 0,
+      "best": null
+    }
+  ]
+}
