@@ -2,11 +2,12 @@
 """
 mine_v26d_magmas.py — Mine counterexample magmas for ALL current FPs.
 
-Reads v26c normal, v26c hard3, v26b hard2 result JSONs.
-Extracts all FP pairs (69 total) and TRUE pairs (30 total).
+Reads v26 result JSONs across normal, hard3, hard2.
+Extracts all FP pairs and TRUE pairs.
 Brute-forces all 2-elem (16) + 3-elem (19,683) magmas.
-Tests both universal and cycling-assignment separation.
-Greedy set cover. Safety check against TRUE pairs.
+PRIMARY: universal separation (admissible witnesses).
+INFORMATIONAL: cycling-assignment separation (NOT admissible, shown for context only).
+Greedy set cover uses ONLY admissible (universal) magmas.
 """
 from __future__ import annotations
 import itertools, json, re, sys
@@ -252,19 +253,19 @@ def main():
                 best = min(cyc_this, key=lambda r: (r["n_flags"], -len(r["caught"])))
                 print(f"  Best {size}-elem (cycling, min flags={best['n_flags']}): catches {len(best['caught'])}/{len(all_fps)}")
     
-    # 3. Greedy set cover — CYCLING SAFE magmas only
+    # 3. PRIMARY: Greedy set cover — UNIVERSAL (admissible) magmas only
     print(f"\n{'='*60}")
-    print("GREEDY SET COVER (cycling-assignment, zero flags)")
+    print("GREEDY SET COVER (UNIVERSAL / ADMISSIBLE — primary)")
     print(f"{'='*60}")
     
-    safe_magmas = [r for r in cyc_results.values() if r["n_flags"] == 0]
-    print(f"  {len(safe_magmas)} magmas with zero false flags")
+    uni_ranked = list(uni_results.values())
+    print(f"  {len(uni_ranked)} magmas with universal separation signal")
     
     covered = set()
     selected = []
     
-    while safe_magmas:
-        best = max(safe_magmas, key=lambda r: len(r["caught"] - covered))
+    while uni_ranked:
+        best = max(uni_ranked, key=lambda r: len(r["caught"] - covered))
         marginal = len(best["caught"] - covered)
         if marginal == 0:
             break
@@ -283,43 +284,48 @@ def main():
         print(f"  #{len(selected)}: {best['table']} ({desc})")
         print(f"         +{marginal} new → {len(covered)}/{len(all_fps)} total")
         print(f"         catches: {sorted(best['caught'] - (covered - best['caught']))}")
-        safe_magmas = [r for r in safe_magmas if r is not best]
+        uni_ranked = [r for r in uni_ranked if r is not best]
     
     uncovered = set(fp["id"] for fp in all_fps) - covered
-    print(f"\nCOVERED: {len(covered)}/{len(all_fps)}")
+    print(f"\nADMISSIBLE COVERED: {len(covered)}/{len(all_fps)}")
     
-    # 4. Also do universal set cover for comparison
+    # 4. INFORMATIONAL: Cycling-assignment cover (NOT admissible — shown for context)
     print(f"\n{'='*60}")
-    print("GREEDY SET COVER (universal, for comparison)")
+    print("CYCLING-ASSIGNMENT COVER (INFORMATIONAL ONLY — NOT ADMISSIBLE)")
     print(f"{'='*60}")
+    print("  WARNING: Cycling-assignment magmas are NOT mathematically sound.")
+    print("  They may produce false separations on unseen TRUE pairs.")
+    print("  Use ONLY for understanding coverage gaps, NOT for cheatsheet magmas.")
     
-    uni_covered = set()
-    uni_selected = []
-    uni_ranked = list(uni_results.values())
+    safe_cyc = [r for r in cyc_results.values() if r["n_flags"] == 0]
+    cyc_covered = set()
+    cyc_selected = []
     
-    while uni_ranked:
-        best = max(uni_ranked, key=lambda r: len(r["caught"] - uni_covered))
-        marginal = len(best["caught"] - uni_covered)
+    while safe_cyc:
+        best = max(safe_cyc, key=lambda r: len(r["caught"] - cyc_covered))
+        marginal = len(best["caught"] - cyc_covered)
         if marginal == 0:
             break
-        uni_covered |= best["caught"]
+        cyc_covered |= best["caught"]
         desc = describe_magma(best["table"])
-        uni_selected.append({
+        cyc_selected.append({
             "table": best["table"],
             "size": best["size"],
             "marginal": marginal,
             "description": desc,
+            "admissible": False,
         })
-        print(f"  #{len(uni_selected)}: {best['table']} ({desc})")
-        print(f"         +{marginal} new → {len(uni_covered)}/{len(all_fps)} total")
-        uni_ranked = [r for r in uni_ranked if r is not best]
+        print(f"  #{len(cyc_selected)}: {best['table']} ({desc}) [NOT ADMISSIBLE]")
+        print(f"         +{marginal} new → {len(cyc_covered)}/{len(all_fps)} total")
+        safe_cyc = [r for r in safe_cyc if r is not best]
     
-    uni_uncovered = set(fp["id"] for fp in all_fps) - uni_covered
-    print(f"COVERED (universal): {len(uni_covered)}/{len(all_fps)}")
+    cyc_extra = cyc_covered - covered
+    print(f"\nCycling extra (beyond admissible): {len(cyc_extra)} pairs")
+    print(f"  These pairs CANNOT be safely caught with 3-element universal magmas.")
     
-    # 5. Per-tag breakdown
+    # 5. Per-tag breakdown (admissible cover)
     print(f"\n{'='*60}")
-    print("PER-TAG COVERAGE (cycling-safe)")
+    print("PER-TAG COVERAGE (admissible / universal)")
     print(f"{'='*60}")
     for tag in ["normal", "hard3", "hard2"]:
         tag_fps = [fp for fp in all_fps if fp["tag"] == tag]
@@ -339,12 +345,12 @@ def main():
             print(f"  {uid:20s} [{fp['tag']:8s}]: {fp['eq1']}")
             print(f"  {'':20s}           → {fp['eq2']}")
     
-    # 7. Top 10 cycling-safe magmas by coverage
+    # 7. Top 10 ADMISSIBLE magmas by universal catch count
     print(f"\n{'='*60}")
-    print("TOP 10 CYCLING-SAFE MAGMAS (by raw catch count)")
+    print("TOP 10 ADMISSIBLE (UNIVERSAL) MAGMAS")
     print(f"{'='*60}")
     top10 = sorted(
-        [r for r in cyc_results.values() if r["n_flags"] == 0],
+        uni_results.values(),
         key=lambda r: -len(r["caught"])
     )[:10]
     for i, r in enumerate(top10):
@@ -362,10 +368,10 @@ def main():
     output = {
         "fp_count": len(all_fps),
         "true_count": len(all_trues),
-        "cycling_covered": len(covered),
-        "universal_covered": len(uni_covered),
+        "admissible_covered": len(covered),
+        "cycling_covered_informational": len(cyc_covered),
         "uncovered_ids": sorted(uncovered),
-        "cycling_set_cover": [
+        "admissible_set_cover": [
             {
                 "table": s["table"],
                 "size": s["size"],
@@ -374,16 +380,19 @@ def main():
                 "caught_ids": s["caught_ids"],
                 "cumulative": s["cumulative"],
                 "description": s["description"],
+                "admissible": True,
             }
             for s in selected
         ],
-        "top10_cycling_safe": [
+        "cycling_extra_ids_informational": sorted(cyc_extra),
+        "top10_admissible": [
             {
                 "table": r["table"],
                 "size": r["size"],
                 "catch_count": len(r["caught"]),
                 "caught_ids": sorted(r["caught"]),
                 "description": describe_magma(r["table"]),
+                "admissible": True,
             }
             for r in top10
         ],

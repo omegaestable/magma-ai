@@ -2,7 +2,7 @@
 
 This file is the operational truth for the current phase. Keep it short and update it when the champion, candidate, or gate results change.
 
-Last updated: 2026-04-12 (v26b iteration — T3L expansion)
+Last updated: 2026-04-14 (v27a created — v26b base + XOR/T4A/T5B magma tests)
 
 ## Critical Pipeline Changes (2026-04-11)
 
@@ -13,9 +13,9 @@ Last updated: 2026-04-12 (v26b iteration — T3L expansion)
 
 ## Current Artifacts
 
-- **Active candidate: `cheatsheets/v26b.txt`** (9,729 bytes, 95.0% of cap)
-- Previous candidate: `cheatsheets/v26a.txt` (10,146 bytes)
-- Historical champion: `cheatsheets/v24j.txt` (8,955 bytes)
+- **Active candidate: `cheatsheets/v27a.txt`** (10,161 bytes — v26b + XOR/T4A/T5B)
+- Previous champion: v24j (8,955 bytes)
+- Cancelled line: v26a–v26f (kept as historical artifacts)
 - Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical wrapper: `run_paid_eval.ps1`
 - Smoke/gate runner: `run_smoke_gate.ps1`

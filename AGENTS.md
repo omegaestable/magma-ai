@@ -23,9 +23,8 @@ Follow this order exactly:
 
 ## Current Operating Model
 
-- **Active candidate: `cheatsheets/v26b.txt`** (9,729 bytes, 95.0% of cap)
-- Previous candidate: `cheatsheets/v26a.txt` (10,146 bytes)
-- Historical champion: `cheatsheets/v24j.txt` (8,955 bytes)
+- **Active candidate: `cheatsheets/v27a.txt`** (10,161 bytes — v26b + XOR/T4A/T5B tests)
+- Previous champion: v24j (8,955 bytes), cancelled line: v26a–v26f
 - Next design document: `V25A_MASTER_PROMPT.md`
 - Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical quick wrapper: `run_paid_eval.ps1`
@@ -95,8 +94,7 @@ Active starting points:
 
 - `README.md`
 - `EVAL_WORKFLOW.md`
-- `cheatsheets/v26b.txt`
-- `cheatsheets/v26a.txt`
+- `cheatsheets/v24j.txt`
 - `V25A_MASTER_PROMPT.md`
 - `sim_lab.py`
 - `spine_classify.py`

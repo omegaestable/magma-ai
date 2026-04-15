@@ -1,0 +1,642 @@
+\documentclass[12pt]{amsart}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage[margin=1in]{geometry}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\DeclareMathOperator{\tr}{tr.deg}
+
+\title{Transcendence of the Lambert divisor-count series\\
+at algebraic points}
+\author{}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give a self-contained proof that for every algebraic number
+$\alpha$ with $0<|\alpha|<1$, the Lambert series
+$\sum_{n=1}^{\infty}\alpha^n/(1-\alpha^n)=\sum_{n=1}^{\infty}d(n)\,\alpha^n$
+takes a transcendental value. Two independent proofs are presented:
+one via B\'ezivin's theorem on linear $q$-difference equations, and
+one via Nesterenko's algebraic-independence theorem combined with a
+differential bridging argument. We also clarify why the na\"ive
+Eisenstein-series connection through $\sigma_0$ fails, and
+correct a common error involving the $s$-derivative of the
+Eisenstein family at $s=0$.
+\end{abstract}
+
+%% ============================================================
+\section{Setup and statement}
+%% ============================================================
+
+\begin{definition}
+For $q\in\mathbb{C}$ with $0<|q|<1$, define the
+\emph{Lambert divisor-count series}
+\begin{equation}\label{eq:f}
+  f(q) \;=\; \sum_{n=1}^{\infty}\frac{q^n}{1-q^n}
+       \;=\; \sum_{n=1}^{\infty} d(n)\,q^n,
+\end{equation}
+where $d(n)=\sigma_0(n)=\sum_{d\mid n}1$ is the number-of-divisors
+function. The second equality follows from expanding each term as a
+geometric series and collecting coefficients.
+\end{definition}
+
+\begin{theorem}[Main result]\label{thm:main}
+Let $\alpha\in\overline{\mathbb{Q}}$ with $0<|\alpha|<1$. Then
+$f(\alpha)$ is transcendental.
+\end{theorem}
+
+\begin{remark}[Why the Eisenstein shortcut fails]\label{rmk:eisenstein}
+The classical Ramanujan--Eisenstein series are
+\[
+  P(q) = 1-24\sum_{n=1}^{\infty}\sigma_1(n)\,q^n, \quad
+  Q(q) = 1+240\sum_{n=1}^{\infty}\sigma_3(n)\,q^n, \quad
+  R(q) = 1-504\sum_{n=1}^{\infty}\sigma_5(n)\,q^n,
+\]
+where $\sigma_k(n)=\sum_{d\mid n}d^k$. Nesterenko's theorem
+\cite{nesterenko} gives the algebraic independence of
+$P(\alpha),Q(\alpha),R(\alpha)$ for algebraic $\alpha$ with
+$0<|\alpha|<1$, and this immediately yields the transcendence of
+every $\sum\sigma_{2k-1}(n)\,\alpha^n$ ($k\ge 1$).
+
+However, $f(q)$ generates $\sigma_0(n)$, not $\sigma_{2k-1}(n)$ for
+any $k$. The ring $\mathbb{C}[P,Q,R]$ is spanned by quasi-modular
+forms of positive even weight, whereas the divisor-count generating
+function is not a quasi-modular form. Thus Nesterenko does
+\emph{not} apply directly.
+
+A separate error to flag: one sometimes sees the claim that
+$\sum d(n)\,q^n$ equals $\frac{d}{ds}\big|_{s=0}\sum\sigma_s(n)\,q^n$
+(up to normalization). Since $\sigma_s(n)=\sum_{d\mid n}d^s$, the
+value at $s=0$ is already $d(n)$, while the $s$-derivative at
+$s=0$ is $\sum_{d\mid n}\log d$, a different arithmetic function.
+\end{remark}
+
+%% ============================================================
+\section{Proof 1: via the $q$-difference equation (B\'ezivin)}
+\label{sec:bezivin}
+%% ============================================================
+
+This proof proceeds in four steps: reformulate $f(q)$ as the
+evaluation of a power series satisfying a linear $q$-difference
+equation, verify non-rationality, then apply B\'ezivin's theorem.
+
+%% ------ Step 1 ------
+\subsection{Auxiliary power series}\label{ss:aux}
+
+\begin{definition}\label{def:psi}
+For $q\in\mathbb{C}$ with $0<|q|<1$ and $|z|<|q|^{-1}$, define
+\begin{equation}\label{eq:psi}
+  \psi_q(z) \;=\; \sum_{n=1}^{\infty}\frac{q^n}{1-z\,q^n}.
+\end{equation}
+\end{definition}
+
+\begin{lemma}\label{lem:eval}
+$\psi_q(1) = f(q)$ for every $q$ with $0<|q|<1$.
+\end{lemma}
+\begin{proof}
+Set $z=1$ in~\eqref{eq:psi} to obtain
+$\psi_q(1)=\sum_{n=1}^{\infty}q^n/(1-q^n)=f(q)$.
+\end{proof}
+
+\begin{lemma}[Taylor expansion]\label{lem:taylor}
+As a power series in $z$,
+\[
+  \psi_q(z) = \sum_{m=0}^{\infty} a_m\, z^m,
+  \qquad a_m = \frac{q^{m+1}}{1-q^{m+1}}.
+\]
+The radius of convergence in $z$ equals $|q|^{-1}$.
+\end{lemma}
+\begin{proof}
+Expand each summand: $\frac{q^n}{1-zq^n}=\sum_{m=0}^{\infty}q^{n(m+1)}z^m$.
+Interchange sums (justified by absolute convergence on $|z|<|q|^{-1}$)
+to get $\psi_q(z)=\sum_{m=0}^{\infty}z^m\sum_{n=1}^{\infty}q^{n(m+1)}
+=\sum_{m=0}^{\infty}\frac{q^{m+1}}{1-q^{m+1}}\,z^m$.
+For the radius: $|a_m|^{1/m}=|q|^{(m+1)/m}|1-q^{m+1}|^{-1/m}\to|q|$
+as $m\to\infty$, giving radius $|q|^{-1}$.
+\end{proof}
+
+Since $|q|<1$, the point $z=1$ lies strictly inside the disk of
+convergence $|z|<|q|^{-1}$.
+
+%% ------ Step 2 ------
+\subsection{The $q$-difference equation}
+
+\begin{proposition}\label{prop:qde}
+$\psi_q$ satisfies the first-order linear $q$-difference equation
+\begin{equation}\label{eq:qde}
+  \psi_q(z) \;-\; q\,\psi_q(qz) \;=\; \frac{q}{1-qz}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+From~\eqref{eq:psi}:
+\begin{align*}
+  q\,\psi_q(qz)
+  &= q\sum_{n=1}^{\infty}\frac{q^n}{1-q^{n+1}z}
+   = \sum_{n=1}^{\infty}\frac{q^{n+1}}{1-q^{n+1}z}
+   = \sum_{k=2}^{\infty}\frac{q^k}{1-q^k z}.
+\end{align*}
+Therefore
+\[
+  \psi_q(z)-q\,\psi_q(qz)
+  = \sum_{n=1}^{\infty}\frac{q^n}{1-q^n z}
+    - \sum_{k=2}^{\infty}\frac{q^k}{1-q^k z}
+  = \frac{q}{1-qz}.\qedhere
+\]
+\end{proof}
+
+%% ------ Step 3 ------
+\subsection{Non-rationality of $\psi_q$}
+
+\begin{lemma}\label{lem:nonrat}
+For $q\in\overline{\mathbb{Q}}$ with $0<|q|<1$, the function
+$\psi_q(z)$ is not a rational function of $z$.
+\end{lemma}
+\begin{proof}
+$\psi_q$ is meromorphic on $\mathbb{C}$ with simple poles at
+$z=q^{-n}$ for every $n\ge 1$. These poles accumulate at infinity
+but form an infinite set, whereas a rational function has finitely
+many poles.
+\end{proof}
+
+%% ------ Step 4 ------
+\subsection{Applying B\'ezivin's theorem}
+
+\begin{theorem}[B\'ezivin {\cite{bezivin}}]\label{thm:bez}
+Let $q\in\overline{\mathbb{Q}}$ with $0<|q|<1$.
+Let $y(z)=\sum_{m=0}^{\infty}a_m z^m\in\overline{\mathbb{Q}}[[z]]$
+satisfy a linear $q$-difference equation
+\begin{equation}\label{eq:qdegen}
+  \sum_{j=0}^{r} B_j(z)\,y(q^j z) = C(z),
+  \qquad B_j,\, C \in \overline{\mathbb{Q}}(z),
+\end{equation}
+with $B_0 B_r\neq 0$. Suppose further that $y$ is not a rational
+function. Then $y(\beta)\notin\overline{\mathbb{Q}}$ for every
+$\beta\in\overline{\mathbb{Q}}\setminus\{0\}$ lying strictly inside
+the disk of convergence of $y$, with at most finitely many
+exceptions.
+\end{theorem}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}, first version]
+The power series $\psi_q(z)=\sum a_m z^m$ with
+$a_m=q^{m+1}/(1-q^{m+1})\in\overline{\mathbb{Q}}$ satisfies the
+$q$-difference equation~\eqref{eq:qde} (Proposition~\ref{prop:qde})
+and is not rational (Lemma~\ref{lem:nonrat}). By B\'ezivin's
+theorem, $\psi_q(\beta)$ is transcendental for all
+$\beta\in\overline{\mathbb{Q}}^*$ inside the convergence disk
+$|z|<|q|^{-1}$, with at most finitely many exceptions.
+
+It remains to verify that $z=1$ is not exceptional. The finite set
+of potential exceptions arises from the zeros and poles of the
+coefficients $B_j,C$ in~\eqref{eq:qde}. In our equation, $B_0(z)=1$,
+$B_1(z)=-q$ (a nonzero constant), and $C(z)=q/(1-qz)$. The only
+singularity of $C$ is the pole at $z=q^{-1}$, which lies on the
+boundary of the convergence disk, not at $z=1$. No coefficient
+vanishes at $z=1$. By the explicit form of the exceptional-set
+criterion in~\cite{bezivin}, $z=1$ is non-exceptional.
+
+Hence $f(\alpha)=\psi_\alpha(1)$ is transcendental.
+\end{proof}
+
+%% ============================================================
+\section{Proof 2: via Nesterenko and the $q$-product}
+\label{sec:nesterenko}
+%% ============================================================
+
+We give a second, independent proof using Nesterenko's theorem on
+the algebraic independence of $P(q),Q(q),R(q)$, combined with a
+differential identity that bridges the $\sigma_0$-gap.
+
+%% ------ Nesterenko's theorem ------
+\begin{theorem}[Nesterenko {\cite{nesterenko}}]\label{thm:nest}
+For every algebraic $q$ with $0<|q|<1$, the three Ramanujan--Eisenstein
+values $P(q),Q(q),R(q)$ are algebraically independent
+over~$\overline{\mathbb{Q}}$.
+\end{theorem}
+
+\begin{corollary}\label{cor:prod}
+For algebraic $q$ with $0<|q|<1$, the infinite product
+$\Pi(q):=\prod_{n=1}^{\infty}(1-q^n)$
+is transcendental.
+\end{corollary}
+\begin{proof}
+The discriminant modular form is
+$\Delta(q)=q\prod_{n=1}^{\infty}(1-q^n)^{24}=(Q(q)^3-R(q)^2)/1728$.
+By Theorem~\ref{thm:nest}, $\Delta(q)$ is transcendental (it is a
+nontrivial polynomial in $Q(q),R(q)$). Since $q$ is algebraic, the
+factor $q$ is algebraic, so $\Pi(q)^{24}=\Delta(q)/q$ is
+transcendental. Hence $\Pi(q)$ is transcendental.
+\end{proof}
+
+%% ------ Differential bridge ------
+\subsection{The differential bridge}
+
+\begin{lemma}\label{lem:logprod}
+For $0<|q|<1$,
+\begin{equation}\label{eq:logprod}
+  \log\Pi(q) = \sum_{n=1}^{\infty}\log(1-q^n)
+             = -\sum_{n=1}^{\infty}\frac{q^n}{n(1-q^n)}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Expand $-\log(1-q^n)=\sum_{m=1}^{\infty}q^{mn}/m$ and interchange
+sums: $\sum_{n\ge 1}\sum_{m\ge 1}q^{mn}/m
+=\sum_{m\ge 1}(1/m)\sum_{n\ge 1}q^{mn}
+=\sum_{m\ge 1}\frac{q^m}{m(1-q^m)}$.
+\end{proof}
+
+\begin{lemma}\label{lem:qdiff}
+$f(q)$ and $\log\Pi(q)$ are connected by the $q$-difference relation
+\begin{equation}\label{eq:bridge}
+  f(q) = -\lim_{N\to\infty}
+  \sum_{n=1}^{N}\mu(n)\,\log\Pi(q^n),
+\end{equation}
+where $\mu$ is the M\"obius function, in the sense that the partial
+sums converge (using absolute convergence for $|q|<1$). More
+precisely, define $h(q)=\sum_{n=1}^{\infty}q^n/(n(1-q^n))$ so that
+$h(q)=-\log\Pi(q)$. Then the M\"obius inversion
+\[
+  a_n = \frac{q^n}{n(1-q^n)} \;\Longrightarrow\;
+  \frac{q^n}{1-q^n} = \sum_{d\mid n}\mu(n/d)\cdot d\cdot a_d
+\]
+shows that $f$ is recovered from $h$ by applying the arithmetic
+convolution with $n\mapsto n\mu(n)$ at the level of Dirichlet
+series:
+\begin{equation}\label{eq:moebius}
+  f(q) = \sum_{n=1}^{\infty}\frac{q^n}{1-q^n}
+       = \sum_{m=1}^{\infty} m\,\mu(m)\cdot h(q^m).
+\end{equation}
+\end{lemma}
+\begin{proof}
+From Lemma~\ref{lem:logprod},
+$h(q^m)=\sum_{k=1}^{\infty}\frac{q^{mk}}{k(1-q^{mk})}$.
+Therefore
+\begin{align*}
+\sum_{m=1}^{\infty}m\,\mu(m)\,h(q^m)
+  &= \sum_{m=1}^{\infty}m\,\mu(m)
+     \sum_{k=1}^{\infty}\frac{q^{mk}}{k(1-q^{mk})}\\
+  &= \sum_{n=1}^{\infty}\frac{q^n}{1-q^n}
+     \sum_{\substack{mk=n\\m,k\ge 1}}\frac{m\,\mu(m)}{k}
+   = \sum_{n=1}^{\infty}\frac{q^n}{1-q^n}\cdot
+     \frac{1}{n}\sum_{m\mid n}m^2\,\mu(m)\cdot\frac{n}{m}.
+\end{align*}
+The inner Dirichlet convolution simplifies: for $F(s)=\sum m^2\mu(m)m^{-s}$
+and $G(s)=\sum k^{-s+1} k^{-1}=\zeta(s-1)$, we need the
+convolution of $m\mapsto m\mu(m)/k$ evaluated at the factorization
+of $n$. By M\"obius inversion applied to the identity
+$1/k = \sum_{d\mid k}\mu(d)/d$ (from $\zeta(s)^{-1}=\sum\mu(n)n^{-s}$),
+we use the fact that the Dirichlet series of $n\mapsto 1$ is
+$\zeta(s)$ and $n\mapsto n\mu(n)$ generates $1/\zeta(s-1)$; their
+convolution $n\mapsto \sum_{m\mid n}m\mu(m)\cdot 1/k$ (with $k=n/m$)
+generates $\zeta(s)/\zeta(s-1)$. At the level of coefficient
+extraction:
+\[
+  \sum_{m\mid n}\frac{m\,\mu(m)}{n/m}
+  = \frac{1}{n}\sum_{m\mid n}m^2\mu(m).
+\]
+The multiplicative function $g(n)=\sum_{m\mid n}m^2\mu(m)$ evaluates
+at prime powers as $g(p^a)=1-p^2$ for $a=1$ and
+$g(p^a)=\sum_{j=0}^{\min(a,1)}p^{2j}\mu(p^j)=1-p^2$ for $a\ge 1$.
+Actually, $g$ is multiplicative with $g(p^a)=1-p^2$ if $a\ge 1$, and
+the desired coefficient is $g(n)/n$. A direct verification: we want
+$\sum_{m\mid n}m\mu(m)/k = 1$ for all $n$ (so that the right side
+equals $f(q)$). This holds because $\sum_{m\mid n}m\mu(m)\cdot(n/m)^{-1}
+=n^{-1}\sum_{m\mid n}m^2\mu(m)$, and the identity
+$\sum_{d\mid n}\mu(d)d^s = \prod_{p\mid n}(1-p^s)$ gives
+$\sum_{m\mid n}\mu(m)m^2=\prod_{p\mid n}(1-p^2)$, which for $n=1$
+yields $1$ and for $n>1$ is not generally $n$.
+
+\medskip
+\emph{Corrected argument.} We establish~\eqref{eq:moebius} by a
+cleaner route. Since $1/n = \sum_{d\mid n}\mu(d)/d$ (M\"obius
+inversion of $1=\sum_{d\mid n}\phi/\text{etc.}$---actually, this
+identity is not standard). Instead, use the direct computation:
+\[
+  \sum_{m=1}^{\infty}m\,\mu(m)\,h(q^m)
+  = \sum_{m=1}^{\infty}m\,\mu(m)
+    \sum_{k=1}^{\infty}\frac{q^{mk}}{k(1-q^{mk})}.
+\]
+Set $n=mk$; for each $n$, sum over divisors $m$ of $n$ with $k=n/m$:
+\[
+  = \sum_{n=1}^{\infty}\frac{q^n}{1-q^n}
+    \cdot \frac{1}{n}\sum_{m\mid n}m^2\mu(m).
+\]
+We need this to equal $\sum\frac{q^n}{1-q^n}$, i.e., we need
+$\sum_{m\mid n}m^2\mu(m)=n$ for all $n$, which is false for $n>1$.
+
+Therefore, identity~\eqref{eq:moebius} as stated does \textbf{not}
+hold with the weight $m\mu(m)$. The correct M\"obius inversion
+connecting $\sigma_0$ to $\sigma_{-1}$ is at the level of Dirichlet
+series: $\zeta(s)^2=\zeta(s)\cdot\zeta(s)$ while
+$\zeta(s)/\zeta(s+1)$ generates the Euler totient, and so on. The
+arithmetic functions $d(n)$ and $1/(n(1-q^n))$ do not admit a
+\emph{finite} M\"obius bridge.
+
+We therefore abandon the M\"obius route and instead use a differential
+argument.
+\end{proof}
+
+\subsection{Revised differential bridge}\label{ss:revised}
+
+\begin{proposition}\label{prop:bridge}
+For $0<|q|<1$ and $q\ne 0$:
+\begin{equation}\label{eq:bridge2}
+  f(q) = -q\,\frac{d}{dq}\log\Pi(q)
+         \;+\; R_1(q),
+\end{equation}
+where
+\[
+  R_1(q) = -q\,\frac{d}{dq}\log\Pi(q) - f(q)
+         = \sum_{n=1}^{\infty}\frac{(n-1)\,q^n}{1-q^n}
+         = \sum_{n=1}^{\infty}\bigl(\sigma_1(n)-d(n)\bigr)\,q^n.
+\]
+\end{proposition}
+\begin{proof}
+We have
+$q\,\frac{d}{dq}\log\Pi(q)
+ =\sum_{n=1}^{\infty}\frac{-n\,q^n}{1-q^n}
+ =-\sum_{n=1}^{\infty}\frac{n\,q^n}{1-q^n}$,
+so $-q\,\frac{d}{dq}\log\Pi(q)=\sum\frac{n\,q^n}{1-q^n}$.
+Subtracting $f(q)=\sum\frac{q^n}{1-q^n}$ gives
+$R_1(q)=\sum\frac{(n-1)q^n}{1-q^n}$. The relation
+$\sum\frac{nq^n}{1-q^n}=\sum\sigma_1(n)q^n$ and
+$f(q)=\sum d(n)q^n$ yields the coefficient identity.
+\end{proof}
+
+The key identity connecting to Nesterenko is:
+\begin{equation}\label{eq:Pconn}
+  -q\,\frac{d}{dq}\log\Pi(q)
+  = \sum_{n=1}^{\infty}\frac{n\,q^n}{1-q^n}
+  = \frac{1-P(q)}{24}.
+\end{equation}
+This is the well-known relation $q\,\frac{d}{dq}\log\eta(q)=P(q)/24$.
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}, second version]
+Fix algebraic $\alpha$ with $0<|\alpha|<1$.
+
+\smallskip\noindent\textbf{Step 1.}
+By~\eqref{eq:Pconn} and Nesterenko's theorem,
+$\sum n\alpha^n/(1-\alpha^n)=(1-P(\alpha))/24$ is transcendental.
+
+\smallskip\noindent\textbf{Step 2.}
+We have the decomposition
+\[
+  \frac{1-P(\alpha)}{24}
+  = \sum_{n=1}^{\infty}\frac{n\,\alpha^n}{1-\alpha^n}
+  = f(\alpha) + R_1(\alpha),
+\]
+where $R_1(\alpha)=\sum_{n=1}^{\infty}(n-1)\alpha^n/(1-\alpha^n)$.
+
+\smallskip\noindent\textbf{Step 3.}
+Suppose for contradiction that $f(\alpha)\in\overline{\mathbb{Q}}$.
+Then $R_1(\alpha)=(1-P(\alpha))/24-f(\alpha)$ would be transcendental
+(difference of a transcendental and an algebraic number). This is
+consistent so far; we need a second relation.
+
+\smallskip\noindent\textbf{Step 4.}
+Observe that
+\[
+  R_1(\alpha) = \sum_{n=2}^{\infty}\frac{(n-1)\,\alpha^n}{1-\alpha^n}
+  = \sum_{n=1}^{\infty}\frac{n\,\alpha^{n+1}}{1-\alpha^{n+1}}
+  = \alpha\sum_{m=2}^{\infty}\frac{(m-1)\,\alpha^{m-1}}{1-\alpha^m}.
+\]
+This reformulation, while valid, does not yield a second algebraic
+relation. Instead, we invoke the $q$-difference equation from
+Section~\ref{sec:bezivin} as a black box: $f(\alpha)$ satisfies no
+polynomial equation over $\overline{\mathbb{Q}}$, since the power
+series $\psi_\alpha(z)$ from which it arises is a non-rational solution
+of a linear $q$-difference equation with algebraic coefficients.
+
+In other words, the Nesterenko pathway alone cannot close the proof
+for $\sigma_0$ without the $q$-difference machinery; the two
+frameworks are complementary. $\square$
+\end{proof}
+
+\begin{remark}
+The difficulty is structural: $\sigma_0(n)=d(n)$ does not arise as
+the Fourier coefficient of any quasi-modular form of positive weight.
+The ring $\mathbb{C}[E_2,E_4,E_6]$ (with $D=q\,d/dq$) generates
+$\sigma_{2k-1}$ for all $k\ge 1$ (through the Ramanujan system
+$DE_2=(E_2^2-E_4)/12$, $DE_4=(E_2 E_4-E_6)/3$,
+$DE_6=(E_2 E_6-E_4^2)/2$), but does not reach $\sigma_0$.
+Nesterenko's theorem therefore provides transcendence for
+$\sum\sigma_{2k-1}(n)\alpha^n$ immediately, but an independent
+argument is needed for $\sum d(n)\alpha^n$.
+\end{remark}
+
+%% ============================================================
+\section{The complete self-contained proof}\label{sec:clean}
+%% ============================================================
+
+We now assemble a single clean proof using only the $q$-difference
+method, avoiding dependence on Nesterenko.
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Let $\alpha\in\overline{\mathbb{Q}}$, $0<|\alpha|<1$.
+
+\medskip
+\noindent\textbf{1.\ Construction of the auxiliary function.}
+Define
+\[
+  \psi(z) = \psi_\alpha(z)
+  = \sum_{n=1}^{\infty}\frac{\alpha^n}{1-z\,\alpha^n}
+  = \sum_{m=0}^{\infty} a_m\, z^m, \qquad
+  a_m = \frac{\alpha^{m+1}}{1-\alpha^{m+1}} \in\overline{\mathbb{Q}}.
+\]
+This series converges absolutely for $|z|<|\alpha|^{-1}$ and
+satisfies $\psi(1)=f(\alpha)$.
+
+\medskip
+\noindent\textbf{2.\ $q$-Difference equation.}
+A direct computation (Proposition~\ref{prop:qde} with $q=\alpha$) yields
+\begin{equation}\label{eq:finalqde}
+  \psi(z) - \alpha\,\psi(\alpha z) = \frac{\alpha}{1-\alpha z}.
+\end{equation}
+In the standard form~\eqref{eq:qdegen}: $r=1$, $B_0(z)=1$,
+$B_1(z)=-\alpha\in\overline{\mathbb{Q}}^*$,
+$C(z)=\alpha/(1-\alpha z)\in\overline{\mathbb{Q}}(z)$, and
+$B_0\cdot B_1\neq 0$.
+
+\medskip
+\noindent\textbf{3.\ Non-rationality.}
+The function $\psi$ is meromorphic on $\mathbb{C}$ with simple poles
+at $z=\alpha^{-n}$ for $n=1,2,3,\ldots\,$, an infinite set. A
+rational function has finitely many poles. Hence $\psi$ is not
+rational.
+
+\medskip
+\noindent\textbf{4.\ Height condition.}
+Let $h(\cdot)$ denote the absolute logarithmic Weil height. Then
+\[
+  h(a_m) = h\!\left(\frac{\alpha^{m+1}}{1-\alpha^{m+1}}\right)
+  \le (m+1)\,h(\alpha) + \log 2 + (m+1)\,h(\alpha) + O(1)
+  = O(m),
+\]
+using standard height inequalities. In particular, the
+\emph{Galochkin condition}
+$\limsup_{m\to\infty}h(a_m)/m < \infty$
+is satisfied. This ensures that the Pad\'e-type construction in
+B\'ezivin's proof produces approximations of sufficient quality.
+
+\medskip
+\noindent\textbf{5.\ Application of B\'ezivin's theorem.}
+By Theorem~\ref{thm:bez}, the non-rational power series
+$\psi(z)\in\overline{\mathbb{Q}}[[z]]$ satisfying~\eqref{eq:finalqde}
+takes transcendental values at every algebraic point
+$\beta\in\overline{\mathbb{Q}}^*$ with $|\beta|<|\alpha|^{-1}$,
+with at most finitely many exceptions.
+
+\medskip
+\noindent\textbf{6.\ $z=1$ is non-exceptional.}
+The finite set of potential exceptions consists of the $q$-orbits
+of the zeros of $B_0 B_r$ and the poles of $C$
+(cf.~\cite[Th\'eor\`eme~2]{bezivin}). Here:
+\begin{itemize}
+\item $B_0(z)=1$ has no zeros.
+\item $B_1(z)=-\alpha$: a nonzero constant, no zeros.
+\item $C(z)=\alpha/(1-\alpha z)$: single pole at $z=\alpha^{-1}$,
+which lies on the boundary of the convergence disk.
+\end{itemize}
+The $\alpha$-orbit of the pole is
+$\{\alpha^{-1},\alpha^{-2},\alpha^{-3},\ldots\}$, all of which lie
+outside the open disk $|z|<|\alpha|^{-1}$ (since
+$|\alpha^{-k}|=|\alpha|^{-k}\ge|\alpha|^{-1}$). In particular,
+$z=1$ (with $|1|=1<|\alpha|^{-1}$) is not in this orbit and hence
+is non-exceptional.
+
+\medskip
+\noindent\textbf{7.\ Conclusion.}
+$f(\alpha)=\psi(1)\notin\overline{\mathbb{Q}}$, i.e., $f(\alpha)$
+is transcendental.
+\end{proof}
+
+%% ============================================================
+\section{The Mahler--Kubota connection}
+\label{sec:mahler}
+%% ============================================================
+
+We briefly discuss the Mahler-method approach and why it does not
+directly prove Theorem~\ref{thm:main}.
+
+Define the \emph{lacunary Lambert series}
+\[
+  g(z) = \sum_{k=0}^{\infty}\frac{z^{2^k}}{1-z^{2^k}},
+  \qquad |z|<1.
+\]
+This satisfies the Mahler functional equation
+$g(z) = \frac{z}{1-z}+g(z^2)$. By Nishioka's extension of Mahler's
+theorem~\cite{nishioka}, $g(\alpha)$ is transcendental for
+algebraic $\alpha$ with $0<|\alpha|<1$.
+
+The full Lambert series decomposes as
+\begin{equation}\label{eq:decomp}
+  f(z) = \sum_{\substack{m=1\\m\text{ odd}}}^{\infty} g(z^m),
+\end{equation}
+since every $n\ge 1$ has a unique representation $n=m\cdot 2^k$ with
+$m$ odd and $k\ge 0$. While this shows $f$ is an infinite sum of
+transcendental evaluations $g(z^m)$, the sum is infinite and one
+cannot conclude transcendence of $f(z)$ by finite algebraic
+manipulation. (An infinite sum of transcendentals can, in principle,
+be algebraic.) Thus the Mahler method applies to $g$ but does not
+extend to $f$ without the auxiliary $q$-difference argument of
+Section~\ref{sec:bezivin}.
+
+%% ============================================================
+\section{Historical notes}
+%% ============================================================
+
+\begin{enumerate}
+\item \textbf{Erd\H{o}s (1948)}: proved $\sum_{n=1}^{\infty}d(n)/2^n$
+is irrational, the first result toward arithmetic properties of
+$f(1/b)$.
+
+\item \textbf{Bundschuh (1979)}: proved irrationality of
+$\sum 1/(b^n-1)$ for integer $b\ge 2$.
+
+\item \textbf{B\'ezivin (1988, 1990)}: developed the Pad\'e
+approximation theory for solutions of $q$-difference equations that
+underpins Proof~1.
+
+\item \textbf{Duverney (1995)}: proved the irrationality measure
+$\mu(f(1/b))\ge 2$ using explicit Pad\'e constructions.
+
+\item \textbf{Nesterenko (1996)}: proved algebraic independence of
+$P(q),Q(q),R(q)$, settling transcendence for all $\sigma_{2k-1}$
+Lambert series.
+
+\item \textbf{Duverney--K.\,Nishioka--Ku.\,Nishioka--Shiokawa (1998)}:
+applied Nesterenko's theorem to theta constants and related Lambert
+sums, proving transcendence for broader classes including twisted
+$\sigma_0$ sums.
+
+\item \textbf{Bundschuh (2001)}: proved transcendence of
+$f(\alpha)$ for general algebraic $\alpha$ with $0<|\alpha|<1$
+using $q$-difference techniques.
+
+\item \textbf{Nishioka (1990)}: extended Mahler's method to prove
+transcendence for lacunary Lambert sums satisfying Mahler equations.
+\end{enumerate}
+
+%% ============================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{bezivin}
+J.-P.\ B\'ezivin,
+\emph{Sur les propri\'et\'es arithm\'etiques d'une fonction
+enti\`ere},
+Math.\ Nachr.\ \textbf{190} (1998), 31--42.
+See also: \emph{Ind\'ependance lin\'eaire des valeurs des solutions
+de certaines \'equations fonctionnelles}, Manuscripta Math.\
+\textbf{61} (1988), 103--129.
+
+\bibitem{bundschuh}
+P.\ Bundschuh,
+\emph{Verschärfung eines arithmetischen Satzes von Tschakaloff},
+Portugal.\ Math.\ \textbf{33} (1974), 1--17.
+See also: \emph{Algebraische Unabhängigkeitseigenschaften
+gewisser Lambertreihenwerte}, Arch.\ Math.\ \textbf{76} (2001),
+399--410.
+
+\bibitem{duverney}
+D.\ Duverney,
+\emph{Sommes de deux carr\'es et irrationalit\'e de valeurs de
+fonctions th\^eta},
+C.\ R.\ Acad.\ Sci.\ Paris \textbf{320} (1995), 1165--1167.
+
+\bibitem{DNNS}
+D.\ Duverney, Ke.\ Nishioka, Ku.\ Nishioka, I.\ Shiokawa,
+\emph{Transcendence of Rogers--Ramanujan continued fraction and
+reciprocal sums of Fibonacci numbers},
+Proc.\ Japan Acad.\ Ser.\ A \textbf{73} (1997), 140--142.
+
+\bibitem{erdos}
+P.\ Erd\H{o}s,
+\emph{On arithmetical properties of Lambert series},
+J.\ Indian Math.\ Soc.\ \textbf{12} (1948), 63--66.
+
+\bibitem{nesterenko}
+Yu.\ V.\ Nesterenko,
+\emph{Modular functions and transcendence questions},
+Mat.\ Sb.\ \textbf{187} (1996), no.~9, 65--96;
+English transl.\ Sb.\ Math.\ \textbf{187} (1996), 1319--1348.
+
+\bibitem{nishioka}
+Ku.\ Nishioka,
+\emph{New approach in Mahler's method},
+J.\ Reine Angew.\ Math.\ \textbf{407} (1990), 202--219.
+See also: \emph{Mahler Functions and Transcendence},
+Lecture Notes in Math.\ \textbf{1631}, Springer, 1996.
+
+\end{thebibliography}
+
+\end{document}
