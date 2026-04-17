@@ -39,8 +39,8 @@ On a cold start, read in this order:
 
 ## Current Canonical Artifacts
 
-- Active candidate: `cheatsheets/v27a.txt` (v26b + XOR/T4A/T5B magma tests)
-- Previous champion: v24j, cancelled line: v26a–v26f
+- Active candidate: `cheatsheets/v28d.txt` (v28c + T5B all-ones guard fix)
+- Previous champion: v28c, cancelled line: v26a–v26f
 - Next design doc: `V25A_MASTER_PROMPT.md`
 - Evaluator: `sim_lab.py`
 - Quick-run wrapper: `run_paid_eval.ps1`

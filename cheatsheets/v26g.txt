@@ -1,0 +1,197 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+TASK: Does E1 imply E2 over all magmas?
+DEFAULT: TRUE. Say FALSE only when a test below proves separation.
+
+═══ QUICK TRUE ═══
+If E1 is literally identical to E2 (ignoring whitespace) → answer TRUE.
+
+═══ STEP 0: SPLIT ON = ═══
+Write out the four pieces:
+  E1_L = (before = in E1)    E1_R = (after = in E1)
+  E2_L = (before = in E2)    E2_R = (after = in E2)
+"x = (big * expr)" → left side is just "x", a bare variable with NO *.
+
+═══ 6 STRUCTURAL TESTS — find E1 result and E2 result, then look up the table ═══
+
+TEST 1 — LP: first letter (a–z) on left side vs first letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: scan left-to-right past ALL opening parentheses to find the first letter.
+  "(y * x)" → y.  "((y * x) * (x * y)) * z" → y.  "(x * x) * y" → x.
+
+TEST 2 — RP: last letter on left side vs last letter on right side.
+  Same → HOLD.  Different → FAIL.
+  Tip: skip all trailing ) to find the last letter.
+  "(x * y)" → y.  "(y * (x * y))" → y.  "((y * x) * x) * (y * x)" → x.
+
+TEST 3 — C0: does left side contain *?  Does right side contain *?
+  Both have * → HOLD.  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+  "x" has no *. "x * y" has *. Check each side independently in each equation.
+  C0 checks ONLY whether * is present. Do not consider which variables appear.
+
+TEST 4 — VARS: set of distinct letters on left vs set on right.
+  Both have *: same set → HOLD, different set → FAIL.
+  One side is bare variable v, other has *: HOLD only if * side uses only v.
+  Neither has * and same variable → HOLD.  Otherwise → FAIL.
+
+TEST 5 — COUNT2: for each letter, count occurrences on L side and R side.
+  ALL letters: count_L ≡ count_R mod 2 → HOLD. ANY letter mismatch → FAIL.
+  L="x" {x:1}. R="((y*y)*(y*y))*x" {x:1,y:4}. x:1≡1✓ y:0≡0✓ → HOLD.
+  L="x" {x:1}. R="((y*(x*x))*x)*x" {x:4,y:1}. x:1≡0✗ → FAIL.
+
+TEST 6 — LDEPTH: count * nodes from root to leftmost letter, always going LEFT.
+  Bare var→0. "x*y"→1. "(x*y)*z"→2. "x*(y*z)"→1. "((x*y)*z)*w"→3.
+  HOLD iff LP=HOLD for this eq AND depth(L) ≡ depth(R) mod 2.
+  If LP=FAIL for this eq → LDEPTH=FAIL.
+
+═══ DECISION TABLE — use after EVERY structural test ═══
+
+  E1=HOLD  E2=HOLD  →  no separation → next test
+  E1=HOLD  E2=FAIL  →  SEPARATION → answer FALSE
+  E1=FAIL  E2=HOLD  →  no separation → next test
+  E1=FAIL  E2=FAIL  →  no separation → next test
+
+ONLY the second row is separation. Read the row carefully every time.
+After all 6 structural tests with no separation → go to SPINE DEPTH CHECK.
+
+═══ SPINE DEPTH CHECK ═══
+Run ONLY if LP showed E1=HOLD AND E2=HOLD, no structural separation found.
+
+Left-spine depth: in the RHS, count opening ( at the start before the first
+letter. Depth = count + 1. The first letter MUST be the LHS variable.
+If different → not pure left-spine → skip → go to T4A RESCUE.
+
+Both pure left-spine? E1 depth n, E2 depth m:
+  n divides m → no separation → go to T4A RESCUE.
+  n does NOT divide m → SEPARATION → answer FALSE.
+
+═══ T4A RESCUE — LINEAR MAGMA CHECK ═══
+Run when no earlier test found separation.
+
+T4A rule: a * b = (2a + b) mod 3.
+Full table:  0*0=0  0*1=1  0*2=2 | 1*0=2  1*1=0  1*2=1 | 2*0=1  2*1=2  2*2=0
+
+Variable order: scan E1 then E2 left-to-right, record each new letter.
+
+Try FOUR variable assignments. Stop at first FALSE found.
+  A1: every variable = 1.
+  A2: 1st var=1, 2nd=2, 3rd=1, 4th=2, 5th=1.  (cycle 1,2)
+  A3: 1st var=2, 2nd=0, 3rd=2, 4th=0, 5th=2.  (cycle 2,0)
+  A4: 1st var=0, 2nd=1, 3rd=2, 4th=0, 5th=1.  (default cycle)
+
+For each assignment:
+  1. Replace every variable with its assigned number.
+  2. Evaluate innermost * outward using the table above.
+  3. If E1 LHS ≠ E1 RHS → this assignment fails. Try next.
+  4. If E1 LHS = E1 RHS AND E2 LHS ≠ E2 RHS → SEPARATION → FALSE.
+  5. If both match → try next assignment.
+
+All four tried, no separation → go to XOR RESCUE.
+
+═══ XOR RESCUE — ADDITIVE MAGMA CHECK ═══
+Run if T4A found no separation.
+
+XOR rule: a * b = (a + b) mod 3.
+Full table:  0*0=0  0*1=1  0*2=2 | 1*0=1  1*1=2  1*2=0 | 2*0=2  2*1=0  2*2=1
+
+Try TWO variable assignments. Stop at first FALSE found.
+  A1: 1st var=0, 2nd=1, rest=1.
+  A2: 1st var=1, 2nd=2, 3rd=0, 4th=1, 5th=2.  (cycle 1,2,0)
+
+Evaluate same as T4A but use XOR table above.
+  E1 mismatch → skip. E1 match + E2 mismatch → SEPARATION → FALSE.
+
+No separation found after all tests → answer TRUE.
+
+═══ OUTPUT FORMAT ═══
+Write your analysis in plain text. Then write these four lines at the end:
+  VERDICT: TRUE or FALSE
+  REASONING: (one sentence)
+  PROOF: (brief)
+  COUNTEREXAMPLE: (if FALSE: name the test; if TRUE: "None")
+
+HARD RULE: Your VERDICT line must match your analysis.
+If ANY test or rescue had E1=HOLD/match and E2=FAIL/mismatch → VERDICT: FALSE.
+If nothing separated → VERDICT: TRUE.
+
+═══ EXAMPLE A — FALSE via C0 ═══
+E1: x * y = (y * x) * x     E2: x = (x * y) * z
+E1_L="x * y"  E1_R="(y * x) * x"  |  E2_L="x"  E2_R="(x * y) * z"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=y last(R)=x → FAIL | E2 last(L)=x last(R)=z → FAIL
+     → E1=FAIL E2=FAIL → no separation
+C0:  E1 L has *, R has * → HOLD | E2 L="x" no * → FAIL
+  → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: C0.
+
+═══ EXAMPLE B — FALSE via LP ═══
+E1: x = x * (y * z)     E2: (x * x) * y = (y * x) * z
+LP:  E1 first(L)=x first(R)=x → HOLD | E2 first(L)=x first(R)=y → FAIL
+  → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: LP.
+
+═══ EXAMPLE C — TRUE (no test separates) ═══
+E1: x = y * (y * x)     E2: x = y * (y * (y * (y * x)))
+LP: E1 x≠y→F | E2 x≠y→F → FF no sep.
+RP: E1 x=x→H | E2 x=x→H → HH no sep.
+C0/VARS/COUNT2/LDEPTH: all FF or HH → no sep.
+No spine (LP E1=FAIL). T4A rescue:
+Vars x,y. A1 all=1: E1 1*(1*1): 1*1=0, 1*0=2. RHS=2≠1 skip.
+  A2 x=1,y=2: E1 2*(2*1): 2*1=2, 2*2=0. RHS=0≠1 skip.
+  A3 x=2,y=0: E1 0*(0*2): 0*2=2, 0*2=2. RHS=2=2✓
+    E2 0*(0*(0*(0*2))): 0*2=2,0*2=2,0*2=2,0*2=2. RHS=2=2✓ no sep.
+  A4 x=0,y=1: E1 1*(1*0): 1*0=2, 1*2=1. RHS=1≠0 skip.
+XOR: A1 x=0,y=1: E1 1*(1*0)=1*1=2≠0 skip. A2 x=1,y=2: E1 2*(2*1)=2*0=2≠1 skip.
+No separation → TRUE. (E1 means y*(y*x)=x; apply twice: y*(y*(y*(y*x)))=y*(y*x)=x.)
+
+VERDICT: TRUE
+COUNTEREXAMPLE: None
+
+═══ EXAMPLE D — FALSE via RP ═══
+E1: x = ((y * x) * x) * (y * x)     E2: x = (x * y) * (y * (x * y))
+E1_L="x"  E1_R="((y * x) * x) * (y * x)"  |  E2_L="x"  E2_R="(x * y) * (y * (x * y))"
+
+LP:  E1 first(L)=x first(R)=y → FAIL | E2 first(L)=x first(R)=x → HOLD
+     → E1=FAIL E2=HOLD → no separation
+RP:  E1 last(L)=x last(R)=x → HOLD | E2 last(L)=x last(R)=y → FAIL
+  → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: RP.
+
+═══ EXAMPLE E — FALSE via T4A (A1) ═══
+E1: x = y * (y * (x * x))     E2: x = (x * (y * z)) * x
+All 6 structural + spine: no separation. T4A rescue:
+Vars: x,y,z. A1: all=1. E1 RHS 1*(1*(1*1)): 1*1=0, 1*0=2, 1*2=1. RHS=1=LHS✓
+  E2 RHS (1*(1*1))*1: 1*1=0, 1*0=2, 2*1=2. RHS=2≠1=LHS → T4A SEPARATION.
+
+VERDICT: FALSE
+COUNTEREXAMPLE: T4A.
+
+═══ EXAMPLE F — FALSE via COUNT2 ═══
+E1: x = ((y * y) * (y * y)) * x     E2: x = ((y * (x * x)) * x) * x
+LP: E1 x≠y→F | E2 x≠y→F → no sep.  RP: E1 x=x→H | E2 x=x→H → no sep.
+C0: E1 no*/has*→F | E2 no*/has*→F → no sep.  VARS: E1 {x}≠{x,y}→F | E2 {x}≠{x,y}→F → no sep.
+COUNT2: E1 L{x:1} R{x:1,y:4} → x:1≡1✓ y:0≡0✓ → HOLD
+  E2 L{x:1} R{x:4,y:1} → x:1≡0✗ → FAIL → E1=HOLD E2=FAIL → SEPARATION
+
+VERDICT: FALSE
+COUNTEREXAMPLE: COUNT2.
+
+═══ EXAMPLE G — FALSE via T4A (A2, multi-assignment) ═══
+E1: x = ((x * x) * y) * (z * z)     E2: x * (y * z) = (x * y) * z
+All 6 structural + spine: no separation. T4A rescue:
+Vars: x,y,z. A1: all=1. E1 RHS ((1*1)*1)*(1*1):
+  1*1=0, 0*1=1, 1*1=0, 1*0=2. RHS=2≠1=LHS → skip A1.
+A2: x=1,y=2,z=1. E1 RHS ((1*1)*2)*(1*1):
+  1*1=0, 0*2=2, 1*1=0, 2*0=1. RHS=1=LHS✓ → check E2.
+  E2 LHS 1*(2*1): 2*1=2, 1*2=1. E2 RHS (1*2)*1: 1*2=1, 1*1=0. 1≠0 → SEP.
+
+VERDICT: FALSE
+COUNTEREXAMPLE: T4A (assignment A2).

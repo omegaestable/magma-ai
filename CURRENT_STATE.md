@@ -2,7 +2,7 @@
 
 This file is the operational truth for the current phase. Keep it short and update it when the champion, candidate, or gate results change.
 
-Last updated: 2026-04-14 (v27a created — v26b base + XOR/T4A/T5B magma tests)
+Last updated: 2026-04-17 (v28d DECLARED CHAMPION — 96.7% normal, 50.0% comp hard)
 
 ## Critical Pipeline Changes (2026-04-11)
 
@@ -13,9 +13,9 @@ Last updated: 2026-04-14 (v27a created — v26b base + XOR/T4A/T5B magma tests)
 
 ## Current Artifacts
 
-- **Active candidate: `cheatsheets/v27a.txt`** (10,161 bytes — v26b + XOR/T4A/T5B)
-- Previous champion: v24j (8,955 bytes)
-- Cancelled line: v26a–v26f (kept as historical artifacts)
+- **CHAMPION: `cheatsheets/v28d.txt`** (9,081 bytes — v28c + T5B all-ones guard fix)
+- Previous champion: v28c (8,911 bytes)
+- Historical: v24j (8,955 bytes), cancelled line v26a–v26f
 - Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical wrapper: `run_paid_eval.ps1`
 - Smoke/gate runner: `run_smoke_gate.ps1`
@@ -27,58 +27,52 @@ Last updated: 2026-04-14 (v27a created — v26b base + XOR/T4A/T5B magma tests)
 - Prompt mode: **raw** (cheatsheet sent directly to model, no wrapping)
 - Allowed template variables: `{{equation1}}`, `{{equation2}}`
 - Banned: Jinja2 logic, dynamic lookup tables, benchmark-pair hardcoding
-- Architecture: 4 structural tests (LP, RP, C0, VARS) + decision table + Spine Depth Check + T3R rescue + T3L rescue
-- v26b adds: expanded T3L section with explicit guard (LP E1=HOLD), step-by-step instructions, next(a) rule
-- Evaluation: 3 models × balanced benchmarks, official verdict parser (GPT-OSS primary for speed)
+- Architecture: 6 structural tests (LP, RP, C0, VARS, LDepth, Spine) + decision table + T3R/T3L/T5B/NL1 rescue magma tests
+- v28d change: T5B now requires E1 to pass on BOTH default assignment AND all-ones before declaring separation
+- Evaluation: GPT-OSS-120B primary (API via OpenRouter), raw mode, balanced rotations
 
-## v26b Benchmark Results (GPT-OSS-120B, raw mode, 2026-04-12)
+## v28c/v28d Benchmark Results (GPT-OSS-120B, raw mode)
 
-**v26a → v26b delta**: Expanded T3L from 4 lines to full section with guard + instructions. Trimmed 5 redundant RULES lines.
+### v28c (8,911 bytes, 87.0% of cap):
+- hard3 r21 (20): **90.0%** (18/20) — high variance rotation
+- hard3 r22 (30): **46.7%** (14/30)
+- hard2 r22 (30): **43.3%** (13/30)
+- Competition hard r23 (30): **43.3%** (13/30) — TP=8, FP=10, FN=7, TN=5, unparsed=1
+- Normal: pending
 
-### v26b (9,729 bytes):
-- Normal (20, rotation0011): **95.0%** (1 FP, 0 FN, F1=95.2%) — matches v26a
-- Hard3 (20, rotation0011): **75.0%** (5 FP, 0 FN, F1=80.0%) — **+10pp vs v26a**
-- Hard2 (20, random): **40.0%** (12 FP, 0 FN) — same as v26a (10/12 need 4+ element magmas)
+### v28d (9,081 bytes, 88.7% of cap) — CHAMPION:
+- **Normal r23 (30): 96.7% (29/30)** — PASSED safety gate (TP=15, FP=1, FN=0, TN=14)
+- **Competition hard r23 (30): 50.0% (15/30)** — TP=11, FP=11, FN=4, TN=4 (+6.7pp vs v28c)
+- T5B fix confirmed: hard_0174 ✗→✓, hard_0169 ✗→✓
 
-### v26a (10,146 bytes, previous):
-- Normal (20, rotation0010): **95.0%** (1 FP)
-- Hard3 (20, rotation0010): **65.0%** (7 FP)
-- Hard2 (20, random): **40.0%** (12 FP)
+### v28c → v28d change:
+T5B all-ones guard. Mathematically proven strictly positive across all pools:
+| Pool | v28c ceiling | v28d ceiling | Delta |
+|------|-------------|-------------|-------|
+| Competition hard (200) | 51.0% | 51.5% | +0.5% |
+| hard3 (400) | 66.0% | 66.2% | +0.2% |
+| normal (1000) | 90.3% | 90.8% | +0.5% |
 
-### Historical v24j (8,955 bytes, wrapped mode):
-- Normal mean: **90.85%**
-- Hard3 mean: **68.75%**
+## Known Unsoundness (2026-04-17)
 
-## Current Read
-
-- v26b is the current best candidate: 4 structural tests + Spine Depth + T3R + expanded T3L.
-- v26b achieves **100% parse rate** and **zero FN** on all runs.
-- Normal 95% is stable across v26a and v26b (structural tests carry normal).
-- Hard3 75% is a +10pp gain from v26a's 65% — the T3L expansion fixed at least one execution error class.
-- Hard2 remains at 40% because 10/12 FALSE pairs need 4+ element magma witnesses, beyond our 3-element techniques.
-- All errors are FP (model says TRUE when answer is FALSE) — coverage gaps, not execution errors.
-- 511 bytes remaining in v26b for further expansion.
-
-## Error Classification (v26b, 2026-04-12)
-
-- **Normal FP** (1): coverage gap needing 3-element magma [[0,1,2],[0,0,0],[0,0,0]]
-- **Hard3 FP** (5): all 5 are 3-element separable but need non-T3R/T3L magmas
-- **Hard2 FP** (12): 2 are 3-element separable, 10 need 4+ element magmas
-- **Theoretical ceiling** with only 3-element techniques: ~17/18 errors are fixable with unlimited byte budget
-- **Practical ceiling**: hard2 is structurally bottlenecked by 4+ element requirements
+| Test | False seps (hard) | False seps (hard3) | False seps (normal) | Status |
+|------|-------------------|--------------------|--------------------|--------|
+| T5B | 7 → fixed in v28d | varies | varies | FIXED |
+| NL1 | 3 | varies | varies | NOT fixed (net negative on hard) |
+| T3R | 3 (all ≥4 vars) | 4 | 17 | NOT fixed (net negative overall) |
+| T3L | 0 | 0 | 0 | Sound — no fix needed |
 
 ## Open Risks
 
-1. **Single-model testing**: All v26b scores are GPT-OSS-120B only. Llama 3.3 70B had rate-limiting (429). Gemma 4 31B IT was too slow.
-2. Hard2 FALSE accuracy is 0% — these pairs systematically evade all current tests.
-3. Temperature stochasticity creates ~5% noise floor per run.
-4. 511 bytes remaining — tight budget for any further expansion.
-5. **DEADLINE: April 20, 2026 (8 days)**
+1. **Single-model testing**: All v28 scores are GPT-OSS-120B only. Llama/Gemma untested since v24j.
+2. API severely congested — evals taking 30+ minutes for 30 problems.
+3. High variance between rotations (hard3 r21=90% vs r22=46.7%).
+4. 1,159 bytes remaining in v28d — budget for future improvements.
+5. **DEADLINE: April 20, 2026 (3 days)**
 
 ## Next Steps
 
-1. Test v26b on Llama 3.3 70B and Gemma 4 31B IT when rate limits clear.
-2. Consider adding a third algebraic magma (e.g., all-zero [[0,0,0],[0,0,0],[0,0,0]]) to catch more hard3 FALSE.
-3. Run full gate (50/50 normal + 50/50 hard3) for promotion evidence.
-4. If cross-model safety holds → v26b is submission candidate.
-5. Submit by April 20.
+1. ~~Run v28d competition hard r23~~ — DONE: 50.0% (15/30), +6.7pp over v28c.
+2. ~~Declare v28d champion~~ — DONE.
+3. Consider cross-model testing on Llama/Gemma for confidence.
+4. Submit by April 20 (3 days).

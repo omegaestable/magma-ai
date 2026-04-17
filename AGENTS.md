@@ -23,8 +23,8 @@ Follow this order exactly:
 
 ## Current Operating Model
 
-- **Active candidate: `cheatsheets/v27a.txt`** (10,161 bytes — v26b + XOR/T4A/T5B tests)
-- Previous champion: v24j (8,955 bytes), cancelled line: v26a–v26f
+- **Active candidate: `cheatsheets/v28d.txt`** (9,081 bytes — v28c + T5B all-ones guard fix)
+- Previous champion: v28c (8,911 bytes), historical: v24j (8,955 bytes)
 - Next design document: `V25A_MASTER_PROMPT.md`
 - Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
 - Canonical quick wrapper: `run_paid_eval.ps1`

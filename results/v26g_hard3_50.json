@@ -1,0 +1,830 @@
+{
+  "model": "openai/gpt-oss-120b",
+  "cheatsheet": "cheatsheets/v26g.txt",
+  "subset": "(local)",
+  "repeats": 1,
+  "timestamp": "2026-04-16 19:42:32",
+  "summary": {
+    "total": 50,
+    "correct": 39,
+    "incorrect": 11,
+    "unparsed": 0,
+    "accuracy": 0.78,
+    "f1_score": 0.1538,
+    "precision": 0.3333,
+    "recall": 0.1,
+    "parse_rate": 1.0,
+    "true_accuracy": 0.1,
+    "false_accuracy": 0.95,
+    "tp": 1,
+    "fp": 2,
+    "fn": 9,
+    "tn": 38,
+    "avg_time_s": 46.17,
+    "total_time_s": 2308.59,
+    "prompt_tokens": 176025,
+    "completion_tokens": 114568
+  },
+  "results": [
+    {
+      "id": "hard3_0010",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * (y * x))",
+      "equation2": "x * x = (x * (y * x)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 71.84,
+      "raw_response": "**Analysis**\n\n1. **Split equations**\n   - E1 _L = `x`  E1 _R = `x * (x * (y * x))`\n   - E2 _L = `x * x` E2 _R = `(x * (y * x)) * x`\n\n2. **Structural tests**\n   - **LP**: both equations have first letter `x` on each side → HOLD.\n   - **RP**: both have last letter `x` on each side → HOLD.\n   - **C0**: E1 left side has no `*` while right side does → **FAIL**; E2 both sides have `*` → HOLD. (No separation because only E1 = FAIL, E2 = HOLD.)\n   - **VARS**: E1 left `{x}` vs right `{x,y}` → FAIL; E2 left `{x}` vs right `{x,y}` → FAIL. (No separation.)\n   - **COUNT2**: parity mismatches on both equations → FAIL for both. (No separation.)\n   - **LDEPTH**: parity of left‑spine depths mismatches for both → FAIL for both. (No separation.)\n\n   All six structural tests finish with no separation.\n\n3. **Spine depth check**\n   - Both RHS expressions start with the LHS variable `x`, so they are considered pure left‑spine.\n   - Depth(E1 _R) = 1, Depth(E2 _R) = 2; 1 divides 2, so no separation.\n\n4. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order from left to right: `x`, `y`.\n   - **Assignment A1**: `x = 1`, `y = 1`.\n     - E1: `x = x * (x * (y * x))` evaluates to `1 = 1` → true.\n     - E2: `x * x = (x * (y * x)) * x` evaluates to `0 ≠ 2` → false.\n   - Since E1 holds and E2 fails, separation is found.\n\nNo later rescues are needed.\n\n**Verdict**: FALSE – the implication does **not** hold in all magmas.\n\n**Counterexample**: T4A rescue with assignment A1 (`x = 1`, `y = 1`) in the linear magma `a * b = (2a + b) mod 3`.\n\n---\n\nVERDICT: FALSE  \nREASONING: Structural tests give no separation, but the linear magma assignment A1 satisfies E1 and falsifies E2.  \nPROOF: In the magma defined by `a * b = (2a + b) mod 3`, set `x = y = 1`. Then `x = x * (x * (y * x))` holds, while `x * x = (x * (y * x)) * x` fails.  \nCOUNTEREXAMPLE: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3506,
+        "completion_tokens": 2424
+      }
+    },
+    {
+      "id": "hard3_0312",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * z)) * w) * z",
+      "equation2": "x = x * (y * (y * x))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 55.93,
+      "raw_response": "**Analysis**\n\n1. **Split the equations**\n   - E1 LHS = `x`  RHS = `((x * (y * z)) * w) * z`\n   - E2 LHS = `x`  RHS = `x * (y * (y * x))`\n\n2. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | HOLD (first letter = x on both sides) | HOLD | – |\n| RP   | **FAIL** (RHS ends with z) | HOLD (RHS ends with x) | – (FAIL/HOLD) |\n| C0   | **FAIL** (LHS has no `*`, RHS does) | **FAIL** | – |\n| VARS | **FAIL** (RHS uses {x,y,z,w}) | **FAIL** (RHS uses {x,y}) | – |\n| COUNT2 | **FAIL** (parity of y differs) | **FAIL** | – |\n| LDEPTH | **FAIL** (depth 0 ≠ 3 mod 2) | **FAIL** (depth 0 ≠ 1 mod 2) | – |\n\nNo test produced the “E1 = HOLD, E2 = FAIL” pattern, so we proceed.\n\n3. **Spine‑depth check**  \n   Both RHSs are **not** pure left‑spine expressions (E1’s RHS contains a right‑hand sub‑term `(y * z)`), so the spine check is skipped.\n\n4. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n\n   Variable order from left‑to‑right across both equations: **x, y, z, w**.\n\n   - **Assignment A1** (all = 1): E1 fails.  \n   - **Assignment A2** (1,2,1,2): E1 fails.  \n   - **Assignment A3** (2,0,2,0):  \n     *E1*: RHS evaluates to 2, LHS = x = 2 → **E1 holds**.  \n     *E2*: RHS evaluates to 0, LHS = 2 → **E2 fails**.  \n\n   Since an assignment makes E1 true while E2 false, a separation is found.\n\nNo further tests are needed.\n\n**Verdict**\n\n- **VERDICT:** FALSE  \n- **REASONING:** The T4A linear‑magma assignment `x=2, y=0, z=2, w=0` satisfies E1 but violates E2.  \n- **PROOF:** Under the operation `a * b = (2a + b) mod 3`, E1’s RHS evaluates to 2 (equal to LHS), whereas E2’s RHS evaluates to 0 (different from LHS).  \n- **COUNTEREXAMPLE:** T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3521,
+        "completion_tokens": 2476
+      }
+    },
+    {
+      "id": "hard3_0084",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * ((y * z) * z))",
+      "equation2": "x * x = (x * (y * x)) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 6.85,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not text‑identical.\n\n2. **Split**\n   - E1 L = `x`  E1 R = `x * (x * ((y * z) * z))`\n   - E2 L = `x * x` E2 R = `(x * (y * x)) * z`\n\n3. **Structural tests**\n   - **LP**: both equations have the same first letter on each side → HOLD.\n   - **RP**: both equations have different last letters on each side → FAIL (both FAIL, no separation).\n   - **C0**: E1 L has no `*` while E1 R does → FAIL; E2 both sides have `*` → HOLD (no separation).\n   - **VARS**: both equations fail the variable‑set test (no separation).\n   - **COUNT2**: both equations fail the parity‑count test (no separation).\n   - **LDEPTH**: both equations fail the left‑depth parity test (no separation).\n\n   No structural test produced the “E1 = HOLD, E2 = FAIL” pattern, so we proceed.\n\n4. **Spine‑depth check** – E1’s RHS is a pure left‑spine of depth 1, but E2’s LHS is not a bare variable, so the spine test is skipped.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order from left to right: `x, y, z`.\n   - **Assignment A3** (`x=2, y=0, z=2`) makes E1 true:\n     - RHS evaluates to 2, LHS is 2.\n   - Under the same assignment E2 is false:\n     - LHS (`x * x`) evaluates to 0, RHS evaluates to 2.\n\n   A separation is found, so E1 does **not** imply E2 over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The linear magma test (T4A, assignment A3) satisfies E1 but falsifies E2.  \nPROOF: In the magma defined by `a * b = (2a + b) mod 3`, with `x=2, y=0, z=2`, we have `x = x * (x * ((y * z) * z))` true, while `x * x = (x * (y * x)) * z` is false.  \nCOUNTEREXAMPLE: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3526,
+        "completion_tokens": 2774
+      }
+    },
+    {
+      "id": "hard3_0044",
+      "repeat_id": 1,
+      "equation1": "x = ((x * y) * z) * w",
+      "equation2": "x * y = (x * (z * w)) * w",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.47,
+      "raw_response": "**Analysis**\n\n1. **Literal check** – E1 and E2 are different → continue.  \n2. **Split**  \n   - E1 _L = `x` E1 _R = `((x * y) * z) * w`  \n   - E2 _L = `x * y` E2 _R = `(x * (z * w)) * w`  \n\n3. **Structural tests**  \n   - **LP**: both equations have the same first letter on each side → HOLD.  \n   - **RP**: both have different last letters (E1: x vs w, E2: y vs w) → FAIL.  \n   - **C0**: E1 has * on only one side → FAIL; E2 has * on both sides → HOLD. (No separation, because only E1 = FAIL, E2 = HOLD.)  \n   - **VARS**: both sides differ in variable sets → FAIL for each.  \n   - **COUNT2**: parity mismatches on several letters → FAIL for each.  \n   - **LDEPTH**: parity of left‑spine depths mismatches → FAIL for each.  \n\n   No test produced the separation pattern (E1 = HOLD, E2 = FAIL), so we proceed.\n\n4. **Spine‑depth check** – Neither RHS is a pure left‑spine (E1 has a right‑most `* w`, E2’s LHS is not a single variable) → skip.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from left‑to‑right: `x, y, z, w`.  \n   - Assignment A1 (all 1): E1 fails.  \n   - Assignment A2 (1,2,1,2): E1 fails.  \n   - Assignment A3 (2,0,2,0): E1 holds and E2 also holds.  \n   - Assignment A4 (0,1,2,0): E1 fails.  \n   No separation found.\n\n6. **XOR rescue (additive magma)**  \n   Same variable order.  \n   - Assignment A1: x=0, y=1, z=1, w=1.  \n     *E1*: `((0*1)*1)*1 = 0` → matches LHS `0`.  \n     *E2*: LHS `0*1 = 1`; RHS `(0*(1*1))*1 = 0` → mismatch.  \n   Separation is found here.\n\nSince a counterexample exists in the XOR rescue, E1 does **not** imply E2 over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: The XOR rescue assignment `x=0, y=1, z=1, w=1` satisfies E1 but falsifies E2.  \n**Proof**: In the magma with operation `a * b = (a + b) mod 3`, E1 evaluates to `0 = 0` while E2 evaluates to `1 = 0`, a contradiction.  \n**Counterexample**: XOR rescue (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 3209
+      }
+    },
+    {
+      "id": "hard3_0166",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * (x * (z * w))",
+      "equation2": "x = ((y * y) * z) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 35.22,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not textually identical.\n\n2. **Split** – both equations have left‑hand side `x` (a bare variable) and a right‑hand side containing `*`.\n\n3. **Structural tests**\n   - **LP** (first letter on each side): both equations have first letter `y` on the right, so LP = HOLD for E1 and E2.\n   - **RP** (last letter):  \n     - E1: left last = `x`, right last = `w` → FAIL.  \n     - E2: left last = `x`, right last = `y` → FAIL.  \n     Both FAIL → no separation.\n   - **C0** (presence of `*`): left side has no `*`, right side does → FAIL for both.\n   - **VARS** (variable sets): RHS contains extra variables beyond `{x}` → FAIL for both.\n   - **COUNT2** (parity of occurrences): mismatched parity for `x` in each equation → FAIL for both.\n   - **LDEPTH** (left‑spine depth, applied because LP held):\n     - E1: left‑spine depth = 2 (even), left side depth = 0 → parity matches → **HOLD**.\n     - E2: left‑spine depth = 3 (odd), left side depth = 0 → parity differs → **FAIL**.\n\n   According to the decision table, a case where **E1 = HOLD** and **E2 = FAIL** constitutes a separation, so the implication does **not** hold.\n\n4. Since separation was already found at the LDEPTH test, no further spine‑depth, T4A, or XOR rescues are needed.\n\n**Verdict**: FALSE – E1 does **not** imply E2 over all magmas.\n\n**Output**\n\nVERDICT: FALSE  \nREASONING: LDEPTH test gives HOLD for E1 but FAIL for E2, creating a separation.  \nPROOF: E1’s right‑hand side has left‑spine depth 2 (even), matching the left side’s depth 0; E2’s right‑hand side has left‑spine depth 3 (odd), mismatching the left side’s depth 0, so the parity condition fails for E2 while holding for E1.  \nCOUNTEREXAMPLE: LDEPTH.",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 1607
+      }
+    },
+    {
+      "id": "hard3_0070",
+      "repeat_id": 1,
+      "equation1": "x = y * (x * (z * (y * x)))",
+      "equation2": "x = y * ((x * x) * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 33.72,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not textually identical.\n\n2. **Structural split**  \n   - E1 L = `x` E1 R = `y * (x * (z * (y * x)))`  \n   - E2 L = `x` E2 R = `y * ((x * x) * x)`\n\n3. **Test 1 LP** – first letter on RHS is `y` for both equations, while LHS first letter is `x`.  \n   → E1 LP = FAIL, E2 LP = FAIL → no separation.\n\n4. **Test 2 RP** – last letter on both RHS’s is `x`, matching LHS `x`.  \n   → E1 RP = HOLD, E2 RP = HOLD → no separation.\n\n5. **Test 3 C0** – left sides have no `*`, right sides do. Both equations FAIL this test → no separation.\n\n6. **Test 4 VARS** – right‑hand sides contain variables beyond the single left‑hand variable `x`. Both FAIL → no separation.\n\n7. **Test 5 COUNT2** – parity of variable occurrences differs on each side for both equations. Both FAIL → no separation.\n\n8. **Test 6 LDEPTH** – LP already failed, so both FAIL → no separation.\n\n9. **Spine‑depth check** – not applicable because LP was not HOLD for either equation.\n\n10. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**  \n    - Variable order from left to right: `x, y, z`.  \n    - **Assignment A2** (x=1, y=2, z=1) gives:  \n        *E1*: RHS evaluates to 1, matching LHS `x = 1`.  \n        *E2*: RHS evaluates to 2, not matching LHS `x = 1`.  \n      Hence E1 holds while E2 fails → separation found.\n\nSince a separation is found, the implication does **not** hold over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: T4A rescue with assignment A2 makes E1 true and E2 false.  \nPROOF: In the linear magma `a * b = (2a + b) mod 3`, setting x=1, y=2, z=1 satisfies `x = y * (x * (z * (y * x)))` but violates `x = y * ((x * x) * x)`.  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3519,
+        "completion_tokens": 2104
+      }
+    },
+    {
+      "id": "hard3_0216",
+      "repeat_id": 1,
+      "equation1": "x = ((x * x) * y) * (z * z)",
+      "equation2": "x * (y * z) = (x * y) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 55.41,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.\n\n2. **Split**  \n   - E1 : L = `x` R = `((x * x) * y) * (z * z)`  \n   - E2 : L = `x * (y * z)` R = `(x * y) * z`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | HOLD (first letters both x) | HOLD (first letters both x) | – |\n| RP   | **FAIL** (R ends with z) | HOLD (both end with z) | – (FAIL/HOLD) |\n| C0   | **FAIL** (L has no `*`, R does) | HOLD (both have `*`) | – |\n| VARS | **FAIL** (R uses y,z besides x) | HOLD (same var set) | – |\n| COUNT2 | **FAIL** (x count parity differs) | HOLD (parities match) | – |\n| LDEPTH | **FAIL** (depths 0 vs 3 differ mod 2) | **FAIL** (depths 1 vs 2 differ mod 2) | – |\n\nNo test produced the “E1 = HOLD & E2 = FAIL” pattern, so we proceed.\n\n4. **Spine‑depth check** – E1’s RHS is not a pure left‑spine (it contains a right‑hand factor `(z * z)`), so the spine test is skipped.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**  \n   Variable order from left to right: **x, y, z**.\n\n   - **Assignment A1** (all = 1): E1 fails → skip.  \n   - **Assignment A2** (x=1, y=2, z=1):  \n\n     *E1*:  \n     - `x*x = 1*1 = 0`  \n     - `(0)*y = 0*2 = 2`  \n     - `z*z = 1*1 = 0`  \n     - `2*0 = 1` → RHS = 1 = LHS (`x`). **E1 holds**.  \n\n     *E2*:  \n     - `y*z = 2*1 = 2`  \n     - `x*(y*z) = 1*2 = 1` → LHS = 1  \n     - `x*y = 1*2 = 1`  \n     - `(x*y)*z = 1*1 = 0` → RHS = 0  \n\n     LHS ≠ RHS, so **E2 fails**.\n\n   Since an assignment makes E1 true and E2 false, a separation is found.\n\nNo later rescues are needed.\n\n**Verdict**: FALSE – E1 does **not** imply E2 over all magmas.\n\n---\n\n**OUTPUT**\n\nVERDICT: FALSE  \nREASONING: The linear magma test (T4A, assignment A2) satisfies E1 but violates E2.  \nPROOF: In the magma defined by `a * b = (2a + b) mod 3`, with `x=1, y=2, z=1`, we have `x = ((x*x)*y)*(z*z)` true, while `x*(y*z) = (x*y)*z` is false.  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 2695
+      }
+    },
+    {
+      "id": "hard3_0073",
+      "repeat_id": 1,
+      "equation1": "x = y * (z * (x * (y * x)))",
+      "equation2": "x = y * (((z * y) * x) * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 59.97,
+      "raw_response": "**Analysis**\n\n1. The equations are not literally identical, so we continue with the structural tests.  \n2. Splitting on “=”: both have left‑hand side `x`.  \n3. **LP** – first letter on each side is `x` (LHS) and `y` (RHS) for both equations → both HOLD.  \n4. **RP** – last letter on each side is `x` for both equations → both HOLD.  \n5. **C0** – left side has no `*`, right side does → both FAIL (no separation).  \n6. **VARS** – RHS contains variables other than `x` → both FAIL (no separation).  \n7. **COUNT2** – parity of variable occurrences differs on each side for both equations → both FAIL.  \n8. **LDEPTH** – LP holds, but depths are 0 (LHS) vs 1 (RHS) → both FAIL.  \n\nAll six structural tests give no separation, so we proceed to the **T4A rescue** (linear magma).\n\nVariable order encountered: `x, y, z`.  \nAssignments tried:\n\n* **A1** (all = 1): E1 evaluates to `0` ≠ `1` → E1 fails, skip.  \n* **A2** (`x=1, y=2, z=1`):  \n  * E1: `y * (z * (x * (y * x)))` evaluates to `1`, matching LHS `x = 1`.  \n  * E2: `y * (((z * y) * x) * x)` evaluates to `2`, not matching LHS `x = 1`.  \n\nThus under assignment A2, E1 holds while E2 does not, giving a separation.\n\nSince a separation is found, the implication does **not** hold over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: T4A rescue with assignment A2 makes E1 true and E2 false.  \n**Proof**: In the linear magma `a * b = (2a + b) mod 3`, with `x=1, y=2, z=1` we have  \n E1: `1 = 2 * (1 * (1 * (2 * 1)))` evaluates to `1 = 1` (true),  \n E2: `1 = 2 * (((1 * 2) * 1) * 1)` evaluates to `1 = 2` (false).  \n**Counterexample**: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 2401
+      }
+    },
+    {
+      "id": "hard3_0303",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (x * y)) * y) * y",
+      "equation2": "x = x * (x * ((x * y) * x))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 33.72,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split** – E1 _L = `x`, _E1_R = `((x * (x * y)) * y) * y`  \n   E2 _L = `x`, _E2_R = `x * (x * ((x * y) * x))`\n3. **Structural tests** – All six tests (LP, RP, C0, VARS, COUNT2, LDEPTH) give either both HOLD or both FAIL; no test yields the separation pattern (E1 = HOLD, E2 = FAIL).  \n4. **Spine‑depth check** – LP held for both equations, but neither RHS is a pure left‑spine, so the spine test is skipped.  \n5. **T4A rescue (linear magma)** – Variable order is `[x, y]`.  \n   * **A1** (x=1, y=1): E1 fails.  \n   * **A2** (x=1, y=2): E1 fails.  \n   * **A3** (x=2, y=0): E1 holds (RHS = 2 = LHS).  \n     – E2 under the same assignment gives RHS = 1 ≠ LHS = 2, so E2 fails.  \n   Separation is found, so the implication does **not** hold in all magmas.\n\n**Verdict:** FALSE  \n**Reasoning:** The linear magma `a * b = (2a + b) mod 3` with assignment x = 2, y = 0 satisfies E1 but violates E2.  \n**Proof:** Under this magma, E1 evaluates to `2 = 2` while E2 evaluates to `2 = 1`, a contradiction.  \n**Counterexample:** T4A (assignment A3).  \n\n---\nVERDICT: FALSE  \nREASONING: T4A rescue finds an assignment where E1 holds but E2 does not.  \nPROOF: In the linear magma a * b = (2a + b) mod 3, set x=2, y=0; E1 evaluates true, E2 false.  \nCOUNTEREXAMPLE: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3526,
+        "completion_tokens": 2469
+      }
+    },
+    {
+      "id": "hard3_0051",
+      "repeat_id": 1,
+      "equation1": "x * y = z * (x * z)",
+      "equation2": "x * y = (y * (y * y)) * y",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 16.65,
+      "raw_response": "**Analysis**\n\n1. **Literal check** – E1 and E2 are not identical.  \n2. **Structural tests** – All six tests (LP, RP, C0, VARS, COUNT2, LDEPTH) give either both FAIL or no “HOLD/FAIL” separation (the only separating pattern is E1 = HOLD and E2 = FAIL).  \n3. **Spine‑depth check** – Skipped because LP was not HOLD for both equations.  \n4. **T4A rescue (linear magma a * b = (2a + b) mod 3)**  \n   - Variable order from left to right: **x, y, z**.  \n   - Assignment A3 (x=2, y=0, z=2) makes E1 true:  \n     - LHS = x * y = 2 * 0 = 1.  \n     - RHS = z * (x * z) = 2 * (2 * 2) = 2 * 0 = 1.  \n   - Under the same assignment E2 is false:  \n     - LHS = x * y = 2 * 0 = 1.  \n     - RHS = (y * (y * y)) * y = 0 * (0 * 0) * 0 = 0 * 0 = 0.  \n   - Hence E1 holds while E2 fails, providing a separation.\n\nSince a separation is found, E1 does **not** imply E2 over all magmas.\n\n**Verdict:** FALSE  \n**Reasoning:** T4A rescue yields an assignment (x=2, y=0, z=2) where E1 is satisfied but E2 is not.  \n**Proof:** In the linear magma defined by a * b = (2a + b) mod 3, the above assignment makes the two sides of E1 equal (both 1) and the two sides of E2 unequal (1 ≠ 0).  \n**Counterexample:** T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3516,
+        "completion_tokens": 1933
+      }
+    },
+    {
+      "id": "hard3_0328",
+      "repeat_id": 1,
+      "equation1": "x = (((x * y) * x) * y) * y",
+      "equation2": "x = (x * x) * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 49.14,
+      "raw_response": "**Analysis**\n\n- **Step 0 (split):**  \n  E1 L = `x` E1 R = `(((x * y) * x) * y) * y`  \n  E2 L = `x` E2 R = `(x * x) * (y * x)`\n\n- **LP:** first letter on each side is `x` for both equations → **HOLD** for E1 and E2.  \n- **RP:** E1 R ends with `y` (≠ `x`) → **FAIL** for E1; E2 R ends with `x` (= `x`) → **HOLD** for E2. No separation (only E1 FAIL / E2 HOLD).\n\n- **C0:** both equations have `*` on the right but not on the left → **FAIL** for both. No separation.\n\n- **VARS:** left side `{x}` vs right side `{x,y}` → **FAIL** for both. No separation.\n\n- **COUNT2:** parity of variable occurrences mismatches on both sides → **FAIL** for both. No separation.\n\n- **LDEPTH:**  \n  - E1 L depth = 0, E1 R depth = 3 → 0 ≡ 3 (mod 2) is false → **FAIL** for E1.  \n  - E2 L depth = 0, E2 R depth = 2 → 0 ≡ 2 (mod 2) is true → **HOLD** for E2. No separation.\n\nAll six structural tests give no separation, and LP held for both equations, so we proceed to the **Spine Depth Check**.\n\n- **Spine depth:**  \n  - E1 R is a pure left‑spine: it begins with three ‘(’, first letter is `x`.  \n    Depth n = 3 + 1 = 4.  \n  - E2 R also starts with a left‑spine: one ‘(’, first letter `x`.  \n    Depth m = 1 + 1 = 2.\n\n- Since n = 4 does **not** divide m = 2, the spine‑depth condition yields a separation.\n\nThus E1 does **not** imply E2 over all magmas.\n\n**Verdict:** FALSE  \n**Reasoning:** Spine‑depth check separates the equations.  \n**Proof:** E1’s RHS has left‑spine depth 4, E2’s RHS depth 2; 4 ∤ 2, so there exists a magma where E1 holds but E2 fails.  \n**Counterexample:** SPINE DEPTH.",
+      "usage": {
+        "prompt_tokens": 3507,
+        "completion_tokens": 1771
+      }
+    },
+    {
+      "id": "hard3_0045",
+      "repeat_id": 1,
+      "equation1": "x = ((y * x) * y) * x",
+      "equation2": "x * (y * z) = y * (x * z)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 32.28,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split**  \n   - E1 _L = `x`  E1 _R = `((y * x) * y) * x`  \n   - E2 _L = `x * (y * z)`  E2 _R = `y * (x * z)`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | FAIL (x ≠ y) | FAIL (x ≠ y) | – |\n| RP   | HOLD (x = x) | HOLD (z = z) | – |\n| C0   | FAIL (left no `*`, right has `*`) | HOLD (both have `*`) | – |\n| VARS | FAIL (right uses y besides x) | HOLD (same variable set) | – |\n| COUNT2 | FAIL (x count parity differs) | HOLD (parities match) | – |\n| LDEPTH | FAIL (LP already FAIL) | FAIL (LP already FAIL) | – |\n\nNo test produced the pattern **E1 = HOLD & E2 = FAIL**, so no separation is found structurally.\n\n4. **Spine‑depth check** – skipped because both LP’s failed.\n\n5. **T4A rescue (linear magma `a*b = (2a+b) mod 3`)**  \n   Variable order: x, y, z.  \n\n   - **A1** (all = 1): E1 fails.  \n   - **A2** (x=1, y=2, z=1): E1 holds, E2 also holds.  \n   - **A3** (x=2, y=0, z=2): E1 fails.  \n   - **A4** (x=0, y=1, z=2): E1 fails.  \n\n   No assignment yields E1 true and E2 false.\n\n6. **XOR rescue (additive magma `a*b = (a+b) mod 3`)**  \n   Variable order: x, y, z.  \n\n   - **A1** (x=0, y=1, z=1): E1 fails.  \n   - **A2** (x=1, y=2, z=0): E1 fails.  \n\n   Again, no separating assignment.\n\nSince all tests and both rescues found no counterexample, the implication holds in all magmas.\n\n**Verdict**: TRUE  \n**Reasoning**: No structural or algebraic test produced a model where E1 is true and E2 false.  \n**Proof**: Exhaustive checks through the prescribed six structural tests, spine‑depth analysis, and the two rescue magmas found no separating instance.  \n**Counterexample**: None.",
+      "usage": {
+        "prompt_tokens": 3519,
+        "completion_tokens": 2504
+      }
+    },
+    {
+      "id": "hard3_0357",
+      "repeat_id": 1,
+      "equation1": "x * y = z * (z * (y * x))",
+      "equation2": "x * y = (x * z) * (y * z)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 46.89,
+      "raw_response": "**Analysis**\n\n- Split the equations:  \n  E1 _L = `x * y`, E1 _R = `z * (z * (y * x))`  \n  E2 _L = `x * y`, E2 _R = `(x * z) * (y * z)`\n\n- **LP**: E1 _L starts with `x`, E1 _R starts with `z` → **FAIL**.  \n  E2 _L starts with `x`, E2 _R starts with `x` → **HOLD**. No separation (only E1 = FAIL, E2 = HOLD).\n\n- **RP**: Both equations have mismatching last letters (`y` vs `x` for E1, `y` vs `z` for E2) → **FAIL** for both. No separation.\n\n- **C0**: All sides contain `*` → both **HOLD**. No separation.\n\n- **VARS**: Sets differ (`{x,y}` vs `{x,y,z}`) → both **FAIL**. No separation.\n\n- **COUNT2**: Parities match on both sides for each equation → both **HOLD**. No separation.\n\n- **LDEPTH**: E1 fails LP, so LDEPTH = FAIL. E2 has depths 1 (LHS) vs 2 (RHS) → parity mismatch → **FAIL**. No separation.\n\n- Since LP was not HOLD for both equations, the **Spine Depth Check** is skipped.\n\n- **T4A Rescue (linear magma)**  \n  Variable order from scanning E1 then E2: `x, y, z`.  \n\n  - Assignment A1 (all = 1): E1 fails.  \n  - Assignment A2 (`x=1, y=2, z=1`): E1 fails.  \n  - Assignment A3 (`x=2, y=0, z=2`):  \n    *E1*: `x*y = 2*0 = 1`; RHS evaluates to `1` → **E1 holds**.  \n    *E2*: `x*y = 1`; RHS evaluates to `2` → **E2 fails**.  \n\n  Separation is found at assignment A3.\n\nThus E1 does **not** imply E2 over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: The T4A linear magma assignment `x=2, y=0, z=2` satisfies E1 but violates E2.  \n**Proof**: Under the operation `a*b = (2a + b) mod 3`, E1 evaluates to `1 = 1` while E2 evaluates to `1 ≠ 2`.  \n**Counterexample**: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3508,
+        "completion_tokens": 2238
+      }
+    },
+    {
+      "id": "hard3_0274",
+      "repeat_id": 1,
+      "equation1": "x = ((x * x) * (x * x)) * y",
+      "equation2": "x = (x * (y * (z * w))) * z",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 64.07,
+      "raw_response": "**Analysis**\n\n- Split both equations at “=”.  \n  - E1 L = “x”, E1 R = “((x * x) * (x * x)) * y”  \n  - E2 L = “x”, E2 R = “(x * (y * (z * w))) * z”\n\n**Structural tests**\n\n1. **LP** – first letter on each side: both RHS start with `x`. → E1 = HOLD, E2 = HOLD.  \n2. **RP** – last letter: E1 R ends with `y`, E2 R ends with `z`. Both have LHS last `x`, so both FAIL. → no separation.  \n3. **C0** – left side has no `*`, right side does → both FAIL.  \n4. **VARS** – left set `{x}`; right sets contain other variables → both FAIL.  \n5. **COUNT2** – parity of occurrences mismatches on both sides → both FAIL.  \n6. **LDEPTH** – LP holds for both.  \n   - E1 depth = 3 (odd) → FAIL.  \n   - E2 depth = 2 (even) → HOLD.  \n   → E1 = FAIL, E2 = HOLD → no separation.\n\nAll six structural tests give no separation.\n\n**Spine‑depth check**  \nLP held for both, but neither RHS is a pure left‑spine (E1 R is not left‑associated). Skip spine check.\n\n**T4A rescue (linear magma a * b = (2a + b) mod 3)**  \nVariable order from left to right: `x, y, z, w`.\n\n- **Assignment A1**: all variables = 1.  \n  - E1 RHS: `((1*1)*(1*1))*1` → `1` (holds).  \n  - E2 RHS: `(1*(1*(1*1)))*1` → `0` (fails, LHS is `1`).  \n\nSince E1 is satisfied and E2 is not, separation is found.\n\nThus E1 does **not** imply E2 over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The linear magma test (T4A, assignment A1) satisfies E1 but violates E2.  \nPROOF: In the linear magma `a*b = (2a+b) mod 3`, setting all variables to 1 makes E1 true and E2 false.  \nCOUNTEREXAMPLE: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3510,
+        "completion_tokens": 2015
+      }
+    },
+    {
+      "id": "hard3_0083",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * ((y * z) * y))",
+      "equation2": "x * y = (x * z) * (w * y)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 10.86,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not identical.  \n2. **Split**  \n   - E1 _L = `x`  E1 _R = `x * (x * ((y * z) * y))`  \n   - E2 _L = `x * y` E2 _R = `(x * z) * (w * y)`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | HOLD (x = x) | HOLD (x = x) | – |\n| RP   | **FAIL** (x vs y) | HOLD (y = y) | – (FAIL/HOLD) |\n| C0   | **FAIL** (one side has `*`) | HOLD (both have `*`) | – |\n| VARS | **FAIL** (right uses y,z) | **FAIL** (different variable sets) | – |\n| COUNT2 | **FAIL** (x count mismatch) | **FAIL** (z,w appear) | – |\n| LDEPTH | **FAIL** (depth 0 vs 1) | **FAIL** (depth 1 vs 2) | – |\n\nNo test produced the “E1 = HOLD & E2 = FAIL” pattern, so no separation yet.\n\n4. **Spine depth check** – E2’s left‑hand side is not a bare variable, so the spine test is skipped.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from left to right: `x, y, z, w`.\n\n   - **Assignment A1** (all = 1): E1 fails, skip.  \n   - **Assignment A2** (`x=1, y=2, z=1, w=2`):  \n\n     *E1*:  \n     - `y*z = 2*1 = 2`  \n     - `(y*z)*y = 2*2 = 0`  \n     - `x * ((y*z)*y) = 1*0 = 2`  \n     - `x * (…) = 1*2 = 1` → RHS = 1 = LHS (`x`).  \n\n     *E2*:  \n     - `x*y = 1*2 = 1` (LHS)  \n     - `x*z = 1*1 = 0`  \n     - `w*y = 2*2 = 0`  \n     - `(x*z)*(w*y) = 0*0 = 0` (RHS)  \n\n     LHS ≠ RHS, so E2 fails while E1 holds → separation found.\n\nSince a separation occurs at the T4A rescue, the implication does **not** hold over all magmas.\n\n**Verdict**: FALSE  \n\n**Reasoning**: The T4A linear magma assignment `x=1, y=2, z=1, w=2` satisfies E1 but violates E2.  \n\n**Proof**: Under the operation `a*b = (2a + b) mod 3`, E1 evaluates to `1 = 1` while E2 evaluates to `1 ≠ 0`.  \n\n**Counterexample**: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3533,
+        "completion_tokens": 2777
+      }
+    },
+    {
+      "id": "hard3_0280",
+      "repeat_id": 1,
+      "equation1": "x = ((x * y) * (y * z)) * x",
+      "equation2": "x * y = x * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 9.24,
+      "raw_response": "**Analysis**\n\n- Split the equations:\n  - E1 : L = `x`  R = `((x * y) * (y * z)) * x`\n  - E2 : L = `x * y` R = `x * (x * (z * y))`\n\n- **LP**: first letters are `x` vs `x` (E1) and `x` vs `x` (E2) → both HOLD.  \n- **RP**: last letters are `x` vs `x` (E1) and `y` vs `y` (E2) → both HOLD.  \n- **C0**: E1 left side has no `*` while right side does → **FAIL**; E2 both sides have `*` → HOLD. (FAIL/HOLD → no separation)  \n- **VARS**: E1 left `{x}` vs right `{x,y,z}` → FAIL; E2 left `{x,y}` vs right `{x,y,z}` → FAIL. (FAIL/FAIL → no separation)  \n- **COUNT2**: parity of variable occurrences mismatches on both sides for each equation → both FAIL.  \n- **LDEPTH**:  \n  - E1 : left depth 0, right depth 3 → parity mismatch → FAIL.  \n  - E2 : left depth 1, right depth 1 → parity match → HOLD. (FAIL/HOLD → no separation)\n\nAll six structural tests finish with no separation.\n\n- **Spine‑depth check**: LP held for both, but E1’s RHS is not a pure left‑spine (its first letter `x` is followed by a closing parenthesis before the final `* x`). Hence the spine test is skipped.\n\n- **T4A rescue (linear magma a * b = (2a + b) mod 3)**  \n  Variable order from left to right: `x, y, z`.  \n\n  **Assignment A1** (all variables = 1):  \n  - E1: RHS evaluates to 1, matching LHS = 1 → E1 holds.  \n  - E2: LHS evaluates to 0, RHS evaluates to 1 → E2 fails.\n\n  Since E1 holds and E2 fails under this assignment, a separation is found.\n\nThus E1 does **not** imply E2 over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: The linear‑magma test (T4A, assignment A1) satisfies E1 but violates E2.  \n**Proof**: In the magma defined by a * b = (2a + b) (mod 3) with all variables set to 1, E1 is true while E2 is false.  \n**Counterexample**: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3532,
+        "completion_tokens": 2457
+      }
+    },
+    {
+      "id": "hard3_0293",
+      "repeat_id": 1,
+      "equation1": "x = ((y * z) * (y * x)) * x",
+      "equation2": "x = y * (x * (x * (y * x)))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 64.61,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not text‑identical.\n\n2. **Split**  \n   - E1 L = `x`  E1 R = `((y * z) * (y * x)) * x`  \n   - E2 L = `x`  E2 R = `y * (x * (x * (y * x)))`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | **FAIL** (x vs y) | **FAIL** (x vs y) | – |\n| RP   | **HOLD** (x vs x) | **HOLD** (x vs x) | – |\n| C0   | **FAIL** (L has no `*`, R has) | **FAIL** (same) | – |\n| VARS | **FAIL** (R uses y,z) | **FAIL** (R uses y) | – |\n| COUNT2 | **FAIL** (x‑parity differs) | **HOLD** (parities match) | – (E1 FAIL, E2 HOLD) |\n| LDEPTH | **FAIL** (LP failed) | **FAIL** (LP failed) | – |\n\nNo test produced the “E1 = HOLD & E2 = FAIL” pattern, so we proceed to the rescues.\n\n4. **Spine‑depth check** – skipped because LP was not HOLD for both equations.\n\n5. **T4A rescue (linear magma)**  \n   - Variable order from left to right: `x, y, z`.  \n   - **Assignment A1** (all variables = 1)  \n\n   Using the linear magma rule \\(a * b = (2a + b) \\bmod 3\\):\n\n   *E1*:  \n   - `y*z = (2·1+1) mod 3 = 0`  \n   - `y*x = 0`  \n   - `(y*z)*(y*x) = 0*0 = 0`  \n   - `((…))*x = 0*1 = 1` → RHS = 1 = LHS (`x`=1). **E1 holds**.\n\n   *E2*:  \n   - `y*x = 0`  \n   - `x*(y*x) = 1*0 = 2`  \n   - `x*(previous) = 1*2 = 1`  \n   - `y*(previous) = 1*1 = 0` → RHS = 0 ≠ LHS (`x`=1). **E2 fails**.\n\n   Since E1 is true and E2 is false under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Conclusion** – E1 does **not** imply E2 over all magmas.\n\n---\n\nVERDICT: FALSE  \nREASONING: The T4A linear magma assignment (all variables = 1) satisfies E1 but violates E2.  \nPROOF: Under the operation \\(a*b = (2a+b)\\bmod3\\), E1 evaluates to `1 = 1` while E2 evaluates to `1 = 0`.  \nCOUNTEREXAMPLE: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 2082
+      }
+    },
+    {
+      "id": "hard3_0342",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (x * (x * z))",
+      "equation2": "x * y = (x * z) * (y * y)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 10.28,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not syntactically identical.\n\n2. **Split**\n   - E1 _L = `x * x`  E1 _R = `y * (x * (x * z))`\n   - E2 _L = `x * y`  E2 _R = `(x * z) * (y * y)`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | FAIL (x ≠ y) | HOLD (x = x) | No (needs E1 = HOLD & E2 = FAIL) |\n| RP   | FAIL (x ≠ z) | HOLD (y = y) | No |\n| C0   | HOLD (both sides contain `*`) | HOLD | No |\n| VARS | FAIL (different variable sets) | FAIL | No |\n| COUNT2 | FAIL (y‑parity differs) | FAIL | No |\n| LDEPTH | FAIL (LP already FAIL) | FAIL (depth parity differs) | No |\n\nNo structural test produced a separation.\n\n4. **Spine‑depth check** – Skipped because LP was not HOLD for both equations.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n\n   Variable order from left to right: **x, y, z**.\n\n   - **Assignment A1** (all = 1): E1 fails → move on.\n   - **Assignment A2** (x=1, y=2, z=1):\n     - E1: `x*x = 1*1 = 0`; RHS evaluates to `0`, so E1 holds.\n     - E2: LHS `x*y = 1*2 = 1`; RHS evaluates to `0`; E2 fails.\n\n   A separation is found (E1 true, E2 false).\n\nSince a counterexample appears at T4A A2, the implication does **not** hold in all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: T4A rescue yields an assignment where E1 is satisfied but E2 is not.  \n**Proof**: In the linear magma `a*b = (2a+b) mod 3`, with `x=1, y=2, z=1`, E1 evaluates to `0 = 0` (true) while E2 evaluates to `1 = 0` (false).  \n**Counterexample**: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3521,
+        "completion_tokens": 1993
+      }
+    },
+    {
+      "id": "hard3_0355",
+      "repeat_id": 1,
+      "equation1": "x * y = y * (y * (z * z))",
+      "equation2": "x * x = y * ((z * w) * z)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 60.79,
+      "raw_response": "**Analysis**\n\n1. **Split equations**\n   - E1 _L = `x * y`  E1 _R = `y * (y * (z * z))`\n   - E2 _L = `x * x`  E2 _R = `y * ((z * w) * z)`\n\n2. **Structural tests**\n   - **LP**: first letters differ for both equations → E1 = FAIL, E2 = FAIL.\n   - **RP**: last letters differ for both equations → E1 = FAIL, E2 = FAIL.\n   - **C0**: both sides contain `*` in each equation → both = HOLD.\n   - **VARS**: variable sets differ (`{x,y}` vs `{y,z}` and `{x}` vs `{y,z,w}`) → both = FAIL.\n   - **COUNT2**: parity of occurrences mismatches for both equations → both = FAIL.\n   - **LDEPTH**: LP already failed, so both = FAIL.\n\n   No test produced the separation pattern (E1 = HOLD & E2 = FAIL).  \n\n3. **Spine‑depth check** – skipped because LP was not HOLD for both.\n\n4. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order: `x, y, z, w`.\n   - Assignments A1–A3 make E1 false, so they are ignored.\n   - Assignment A4 (`x=0, y=1, z=2, w=0`) satisfies **both** E1 and E2.\n\n   No separation found in T4A.\n\n5. **XOR rescue (additive magma `a * b = (a + b) mod 3`)**\n   - Assignment A1 (`x=0, y=1, z=1, w=1`):\n     - E1: `x*y = 0+1 = 1`; RHS evaluates to `1` → **E1 holds**.\n     - E2: `x*x = 0`; RHS evaluates to `1` → **E2 fails**.\n\n   This yields a separation: E1 is true while E2 is false in the same magma.\n\nSince a separation is found, the implication does **not** hold over all magmas.\n\n**Verdict:** FALSE  \n**Reasoning:** The XOR magma (addition modulo 3) with the assignment `x=0, y=1, z=1, w=1` makes E1 true and E2 false.  \n**Proof:** In this magma, `x*y = 1 = y*(y*(z*z))` holds, but `x*x = 0 ≠ y*((z*w)*z) = 1`.  \n**Counterexample:** XOR rescue (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3522,
+        "completion_tokens": 2438
+      }
+    },
+    {
+      "id": "hard3_0050",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (y * x)",
+      "equation2": "x * y = ((z * x) * y) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 54.97,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split sides**  \n   - E1 _L = `x * x`, _E1_R = `y * (y * x)`  \n   - E2 _L = `x * y`, _E2_R = `((z * x) * y) * y`\n\n3. **Structural tests**  \n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | FAIL (x ≠ y) | FAIL (x ≠ z) | – |\n| RP   | HOLD (x = x) | HOLD (y = y) | – |\n| C0   | HOLD (both sides have `*`) | HOLD | – |\n| VARS | FAIL (sets `{x}` vs `{x,y}`) | FAIL (sets `{x,y}` vs `{x,y,z}`) | – |\n| COUNT2 | FAIL (x count parity differs) | FAIL (y count parity differs) | – |\n| LDEPTH | FAIL (LP was FAIL) | FAIL | – |\n\nNo structural test gave the “E1 = HOLD & E2 = FAIL” pattern, so we proceed.\n\n4. **Spine‑depth check** – skipped because LP was not HOLD for either equation.\n\n5. **T4A rescue (linear magma)**  \n\nVariable order from left to right across both equations: `x, y, z`.\n\n- **Assignment A1** (all = 1): E1 fails → skip.  \n- **Assignment A2** (cycle 1,2,1):  \n  - `x=1, y=2, z=1`  \n  - E1: `1*1 = 0`, RHS `2*(2*1) = 2*2 = 0` → **holds**.  \n  - E2: LHS `1*2 = 1`, RHS `((1*1)*2)*2 = (0*2)*2 = 2*2 = 0` → **fails**.  \n\nSince E1 is true and E2 is false under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The T4A linear‑magma assignment `x=1, y=2, z=1` satisfies E1 but falsifies E2.  \nPROOF: Under the operation `a*b = (2a+b) mod 3`, `x*x = y*(y*x)` holds while `x*y = ((z*x)*y)*y` does not for the given assignment.  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3505,
+        "completion_tokens": 1681
+      }
+    },
+    {
+      "id": "hard3_0252",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * (y * y))) * z",
+      "equation2": "x = (x * (y * y)) * (z * w)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 58.01,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.\n\n2. **Split**  \n   - E1 L = `x`  E1 R = `(x * (y * (y * y))) * z`  \n   - E2 L = `x`  E2 R = `(x * (y * y)) * (z * w)`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|----------|----------|--------------|\n| LP   | HOLD (first letters both `x`) | HOLD (both `x`) | – |\n| RP   | FAIL (`x` vs `z`) | FAIL (`x` vs `w`) | – |\n| C0   | FAIL (left has no `*`, right does) | FAIL | – |\n| VARS | FAIL (right uses more vars) | FAIL | – |\n| COUNT2 | FAIL (parity of `y`/`z` differs) | FAIL | – |\n| LDEPTH | HOLD (depth = 2 on both sides) | HOLD (depth = 2) | – |\n\nNo structural test produced the **E1 = HOLD / E2 = FAIL** pattern, so we proceed.\n\n4. **Spine‑depth check** – Both RHSs are **not** pure left‑spine (they contain right‑nested sub‑expressions), so the spine test is skipped.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n\n   Variable order from left‑to‑right across both equations: `x, y, z, w`.\n\n   - **Assignment A1** (all = 1): E1 fails, so move on.  \n   - **Assignment A2** (`x=1, y=2, z=1, w=2`):  \n     *E1* evaluates to `1`, matching the LHS `x`.  \n     *E2* evaluates to `2`, **not** matching the LHS `x = 1`.  \n\n   Hence E1 holds while E2 fails under this assignment – a separation is found.\n\nSince a separation occurs at the T4A rescue stage, the implication does **not** hold over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The linear magma assignment `x=1, y=2, z=1, w=2` satisfies E1 but falsifies E2.  \nPROOF: Under the operation `a * b = (2a+b) mod 3`, E1 evaluates to `1 = 1` while E2 evaluates to `1 ≠ 2`.  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3525,
+        "completion_tokens": 2452
+      }
+    },
+    {
+      "id": "hard3_0383",
+      "repeat_id": 1,
+      "equation1": "x * y = (y * (z * x)) * y",
+      "equation2": "x * y = ((y * y) * y) * y",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 48.74,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Structural tests** – All six tests (LP, RP, C0, VARS, COUNT2, LDEPTH) give the same result for E1 and E2 (no row `E1=HOLD E2=FAIL`), so no separation is found structurally.  \n3. **Spine‑depth check** – Skipped because LP failed for both equations.  \n4. **T4A rescue (linear magma *a * b = (2a + b) mod 3*)** – Variables in order: **x, y, z**.  \n\n   *Assignment A2*: x = 1, y = 2, z = 1.  \n\n   - **E1**:  \n     - LHS = x * y = (2·1 + 2) mod 3 = 1.  \n     - RHS = (y * (z * x)) * y  \n       - z * x = (2·1 + 1) mod 3 = 0  \n       - y * 0 = (2·2 + 0) mod 3 = 1  \n       - 1 * y = (2·1 + 2) mod 3 = 1.  \n     - RHS = 1 = LHS → **E1 holds**.  \n\n   - **E2**:  \n     - LHS = x * y = 1 (as above).  \n     - RHS = ((y * y) * y) * y  \n       - y * y = (2·2 + 2) mod 3 = 0  \n       - 0 * y = (0 + 2) mod 3 = 2  \n       - 2 * y = (4 + 2) mod 3 = 0.  \n     - RHS = 0 ≠ 1 → **E2 fails**.  \n\n   Since E1 is true and E2 is false under this assignment, a separation is exhibited.\n\nNo later rescue (XOR) is needed.\n\n**Conclusion** – E1 does **not** imply E2 over all magmas.\n\n**Output**\n\nVERDICT: FALSE  \nREASONING: T4A rescue with assignment A2 makes E1 true and E2 false.  \nPROOF: In the linear magma a * b = (2a + b) mod 3, set x=1, y=2, z=1; then E1 holds while E2 does not.  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 2004
+      }
+    },
+    {
+      "id": "hard3_0019",
+      "repeat_id": 1,
+      "equation1": "x = y * (y * (z * x))",
+      "equation2": "x = y * (((z * w) * y) * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 41.37,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not textually identical.\n\n2. **Split** – both equations have left‑hand side `x` (a bare variable) and a right‑hand side containing `*`.\n\n3. **Structural tests**\n\n   * **LP** – first letter on each RHS is `y` → both HOLD.  \n   * **RP** – last letter on each RHS is `x` → both HOLD.  \n   * **C0** – LHS has no `*`, RHS does and uses variables other than `x` → both FAIL.  \n   * **VARS** – RHS uses extra variables (`y,z` in E1, `y,w,z` in E2) → both FAIL.  \n   * **COUNT2** – parity of variable counts mismatches (`z` appears odd times) → both FAIL.  \n   * **LDEPTH** – left‑spine depth of each RHS is 1; parity matches → both HOLD.\n\n   No structural test produced a separation (the only separating row is “E1 = HOLD, E2 = FAIL”).\n\n4. **Spine‑depth check** – the RHS does not start with the LHS variable `x`, so the spine test is skipped.\n\n5. **T4A rescue (linear magma)**  \n   * Variable order from left to right across both equations: `x, y, z, w`.  \n   * **Assignment A1** (all variables = 1) gives  \n\n     - **E1:** `y*(y*(z*x)) = 1*(1*(1*1)) = 1` → matches LHS `x = 1`.  \n     - **E2:** `y*(((z*w)*y)*x) = 1*(((1*1)*1)*1) = 2` → does **not** match LHS `x = 1`.\n\n   Since E1 holds while E2 fails under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Verdict**: FALSE  \n**Reasoning**: The linear‑magma assignment where all variables equal 1 satisfies E1 but violates E2.  \n**Proof**: Under the operation \\(a*b = (2a+b)\\bmod 3\\), E1 evaluates to `1 = 1` while E2 evaluates to `1 = 2`.  \n**Counterexample**: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3521,
+        "completion_tokens": 1558
+      }
+    },
+    {
+      "id": "hard3_0086",
+      "repeat_id": 1,
+      "equation1": "x = x * (y * ((y * z) * y))",
+      "equation2": "x * y = ((x * z) * y) * w",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 67.06,
+      "raw_response": "**Analysis**\n\n1. **Split equations**\n   - E1 L: `x`  R: `x * (y * ((y * z) * y))`\n   - E2 L: `x * y` R: `((x * z) * y) * w`\n\n2. **Structural tests**\n   - **LP** – first letters: both equations hold (x = x, x = x).  \n   - **RP** – last letters: both equations fail (x vs y, y vs w).  \n   - **C0** – presence of `*`: E1 fails (left side has no `*`), E2 holds.  \n   - **VARS** – variable sets differ on both sides → both fail.  \n   - **COUNT2** – parity of occurrences differs on both sides → both fail.  \n   - **LDEPTH** – E1 fails (depth parity mismatch), E2 holds.  \n\n   No test produced the “E1 = HOLD, E2 = FAIL” pattern, so no separation yet.\n\n3. **Spine‑depth check**\n   - LP was HOLD for both, but the RHS of E1 is not a pure left‑spine (it contains inner parentheses).  \n   - Hence the spine‑depth check is skipped.\n\n4. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order from left to right: `x, y, z, w`.\n   - **Assignment A3** (`x=2, y=0, z=2, w=0`) makes E1 true:\n     - RHS evaluates to `2`, equal to LHS `x = 2`.\n   - Under the same assignment E2 is false:\n     - LHS `x * y = 1`, RHS `((x * z) * y) * w = 0`.\n   - Thus a separation is found.\n\nSince a counterexample exists, the implication does **not** hold over all magmas.\n\n---\n\n**VERDICT:** FALSE  \n**REASONING:** T4A rescue with assignment A3 satisfies E1 but violates E2.  \n**PROOF:** In the linear magma `a * b = (2a + b) mod 3`, set `x=2, y=0, z=2, w=0`. Then  \n E1: `x = x * (y * ((y * z) * y))` evaluates to `2 = 2`, true;  \n E2: `x * y = ((x * z) * y) * w` evaluates to `1 = 0`, false.  \n**COUNTEREXAMPLE:** T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 2888
+      }
+    },
+    {
+      "id": "hard3_0040",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * z)) * y",
+      "equation2": "x = (((x * x) * x) * x) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 59.45,
+      "raw_response": "**Analysis**\n\n1. **Quick identity check** – E1 and E2 are not textually identical.\n\n2. **Structural tests**\n   - **LP** (first letter): both equations have first letter `x` on each side → HOLD.\n   - **RP** (last letter): E1 fails (`x` vs `y`), E2 holds (`x` vs `x`) → no separation.\n   - **C0** (presence of `*`): both equations have `*` on the right but not on the left → both FAIL → no separation.\n   - **VARS**: E1 fails (right side uses `y,z` besides `x`), E2 holds (right side only uses `x`) → no separation.\n   - **COUNT2**: parity of variable occurrences fails for E1 (odd `z` count) and holds for E2 → no separation.\n   - **LDEPTH**: both equations satisfy the parity condition (depths 2 and 4 are even) → no separation.\n\n   No structural test produced the separating pattern (E1 = HOLD, E2 = FAIL).\n\n3. **Spine‑depth check** – E1’s RHS is not a pure left‑spine (it contains the sub‑expression `(y * z)`), so the spine test is skipped.\n\n4. **T4A rescue (linear magma)**  \n   Variable order from left to right: `x, y, z`.  \n   - **Assignment A1** (all = 1): E1 fails, so we continue.  \n   - **Assignment A2** (cycle 1, 2): `x=1, y=2, z=1`.  \n     - E1 RHS evaluates to `1`, matching the LHS `x=1`.  \n     - E2 RHS evaluates to `0`, not matching the LHS `x=1`.  \n     → Separation found.\n\nSince a separation is found at the T4A rescue step, the implication does **not** hold over all magmas.\n\n**Result**\n\nVERDICT: FALSE  \nREASONING: Structural tests gave no separation, but the linear‑magma rescue (assignment A2) makes E1 true while E2 false.  \nPROOF: In the linear magma defined by `a * b = (2a + b) mod 3`, with `x=1, y=2, z=1`, we have  \n E1: `(x * (y * z)) * y = (1 * (2 * 1)) * 2 = 1 = x` (true),  \n E2: `(((x * x) * x) * x) * x = 0 ≠ x` (false).  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3522,
+        "completion_tokens": 2281
+      }
+    },
+    {
+      "id": "hard3_0038",
+      "repeat_id": 1,
+      "equation1": "x = (x * (x * y)) * z",
+      "equation2": "x * x = x * (x * (y * y))",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 52.35,
+      "raw_response": "**Analysis**\n\n1. **Split on “=”**  \n   - E1 _L = `x`  E1 _R = `(x * (x * y)) * z`  \n   - E2 _L = `x * x` E2 _R = `x * (x * (y * y))`\n\n2. **Structural Tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|----------|----------|--------------|\n| LP   | HOLD (first letters both `x`) | HOLD (first letters both `x`) | – |\n| RP   | FAIL (`x` vs `z`) | FAIL (`x` vs `y`) | – |\n| C0   | FAIL (left side no `*`, right side has `*`) | HOLD (both sides have `*`) | – |\n| VARS | FAIL (right side uses `{x,y,z}` not only `x`) | FAIL (sets `{x}` vs `{x,y}` differ) | – |\n| COUNT2 | FAIL (parity of `x` differs) | HOLD (parities match) | – |\n| LDEPTH | **HOLD** (left‑spine depth 2, left side depth 0 → same parity) | **FAIL** (left‑spine depth 1, left side depth 0 → different parity) | **YES** (E1 = HOLD, E2 = FAIL) |\n\nThe separation occurs at **LDEPTH**: E1 satisfies the parity condition while E2 does not. According to the decision table, this yields a separation, so E1 does **not** imply E2 over all magmas.\n\nNo further checks (spine‑depth, T4A, XOR) are needed.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The LDEPTH test shows E1 holds while E2 fails.  \nPROOF: In E1 the left‑spine depth of the RHS is 2 (even), matching the left side depth 0; in E2 the left‑spine depth is 1 (odd), mismatching the left side depth 0, giving a counter‑example in a magma.  \nCOUNTEREXAMPLE: LDEPTH.",
+      "usage": {
+        "prompt_tokens": 3520,
+        "completion_tokens": 1526
+      }
+    },
+    {
+      "id": "hard3_0174",
+      "repeat_id": 1,
+      "equation1": "x = (y * y) * (z * (y * x))",
+      "equation2": "x = (y * ((x * z) * z)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 80.49,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split** – Both equations have left side `x` (bare variable) and non‑trivial right sides.  \n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | FAIL (x ≠ y) | FAIL (x ≠ y) | – |\n| RP   | HOLD (x = x) | HOLD (x = x) | – |\n| C0   | FAIL (L has no `*`, R has) | FAIL | – |\n| VARS | FAIL (right uses y,z) | FAIL | – |\n| COUNT2 | FAIL (y‑parity mismatch) | FAIL | – |\n| LDEPTH | FAIL (LP was FAIL) | FAIL | – |\n\nNo separation occurs in any structural test.\n\n4. **Spine‑depth check** – Skipped because LP was not HOLD for both equations.\n\n5. **T4A rescue (linear magma `a * b = (2a+b) mod 3`)**  \n   Variable order from left to right: `x, y, z`.  \n\n   *Assignment A1* (all = 1): E1 evaluates to 2 ≠ 1 → E1 fails → continue.  \n   *Assignment A2* (`x=1, y=2, z=1`):  \n   - E1 RHS = 1, matching LHS `x=1` → E1 holds.  \n   - E2 RHS = 2, not matching LHS `x=1` → E2 fails.  \n\n   Hence a separation is found at T4A assignment A2.\n\nSince a counterexample exists, E1 does **not** imply E2 over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: Structural tests give no separation, but the linear magma rescue yields an assignment where E1 is true and E2 is false.  \n**Proof**: In the magma defined by `a * b = (2a+b) mod 3`, with `x=1, y=2, z=1`, we have  \n- E1: `1 = (2*2)*(1*((2*1)))` evaluates to `1 = 1` (true).  \n- E2: `1 = (2*((1*1)*1))*1` evaluates to `1 = 2` (false).  \n**Counterexample**: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3511,
+        "completion_tokens": 2115
+      }
+    },
+    {
+      "id": "hard3_0013",
+      "repeat_id": 1,
+      "equation1": "x = x * (y * (z * x))",
+      "equation2": "x = (((x * x) * x) * x) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 82.54,
+      "raw_response": "**Analysis**\n\n- The equations are not syntactically identical, so QUICK TRUE does not apply.  \n- Splitting gives `E1_L = x`, `E1_R = x * (y * (z * x))`; `E2_L = x`, `E2_R = (((x * x) * x) * x) * x`.  \n\n**Structural tests**\n\n| Test | E1 result | E2 result |\n|------|-----------|-----------|\n| LP   | HOLD (first letters x, x) | HOLD (first letters x, x) |\n| RP   | HOLD (last letters x, x) | HOLD (last letters x, x) |\n| C0   | **FAIL** (LHS no `*`, RHS has `*`) | **FAIL** (same) |\n| VARS | **FAIL** (RHS uses y,z besides x) | HOLD (RHS uses only x) |\n| COUNT2 | **FAIL** (x count parity differs) | HOLD (parity matches) |\n| LDEPTH | **FAIL** (depth 0 vs 1) | HOLD (depth 0 vs 4) |\n\nNo test yields the separation pattern (E1 = HOLD, E2 = FAIL), so we proceed.\n\n**Spine‑depth check** – `E1_R` is not a pure left‑spine, so the check is skipped.\n\n**T4A rescue (linear magma)** – with assignments A1…A4, both equations hold in every case; no separation is found.\n\n**XOR rescue (additive magma)** – using assignment A2 (`x=1, y=2, z=0`):\n- `E1`: `x = x * (y * (z * x))` evaluates to `1 = 1`, so E1 holds.\n- `E2`: `x = (((x * x) * x) * x) * x` evaluates to `1 = 2`, so E2 fails.\n\nThus a separation is exhibited.\n\n**Conclusion**\n\nE1 does **not** imply E2 over all magmas.\n\n**Output**\n\nVERDICT: FALSE  \nREASONING: XOR rescue (assignment A2) makes E1 true while E2 false.  \nPROOF: In the additive magma (a * b = (a + b) mod 3) with x=1, y=2, z=0, E1 holds but E2 does not.  \nCOUNTEREXAMPLE: XOR rescue.",
+      "usage": {
+        "prompt_tokens": 3507,
+        "completion_tokens": 2601
+      }
+    },
+    {
+      "id": "hard3_0218",
+      "repeat_id": 1,
+      "equation1": "x = ((x * y) * x) * (z * w)",
+      "equation2": "x = x * (y * (z * (w * u)))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 27.75,
+      "raw_response": "**Analysis**\n\n- QUICK TRUE: E1 and E2 are not text‑identical.  \n- Split: E1_L = `x`, E1_R = `((x * y) * x) * (z * w)`; E2_L = `x`, E2_R = `x * (y * (z * (w * u)))`.\n\n**Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | HOLD (first letters both x) | HOLD (first letters both x) | – |\n| RP   | FAIL (x ≠ w) | FAIL (x ≠ u) | – |\n| C0   | FAIL (LHS no *, RHS has *) | FAIL (same) | – |\n| VARS | FAIL (RHS uses extra vars) | FAIL | – |\n| COUNT2 | FAIL (x count mismatch) | FAIL | – |\n| LDEPTH | FAIL (depth 0 vs 3) | FAIL (depth 0 vs 1) | – |\n\nNo separation appears in any of the six structural tests.\n\n**Spine‑depth check**  \nLP holds for both, but neither RHS is a pure left‑spine (E1_R contains a right‑hand factor `(z * w)`). Hence the spine check is skipped.\n\n**T4A rescue (linear magma a * b = (2a + b) mod 3)**  \nVariable order: x, y, z, w, u.  \n- A1 (all 1): E1 fails.  \n- A2 (1,2,1,2,1): E1 true, E2 true.  \n- A3 (2,0,2,0,2): E1 fails.  \n- A4 (0,1,2,0,1): E1 fails.  \nNo assignment separates E1 and E2.\n\n**XOR rescue (additive magma a * b = (a + b) mod 3)**  \nSame variable order.  \n\n- **A1**: x=0, y=1, z=1, w=1, u=1.  \n  - E1 RHS: `((0*1)*0)*(1*1) = ((1)*0)*(2) = 1*2 = 0` → equals LHS x = 0 (E1 holds).  \n  - E2 RHS: `0*(1*(1*(1*1))) = 0*(1*(1*2)) = 0*(1*0) = 0*1 = 1` → ≠ LHS x = 0 (E2 fails).  \n\nThus this assignment yields a model where E1 is true but E2 is false, providing a separation.\n\nSince a separation is found, the implication **does not hold** over all magmas.\n\n---\n\n**VERDICT:** FALSE  \n**REASONING:** The XOR rescue assignment `x=0, y=1, z=1, w=1, u=1` satisfies E1 but falsifies E2.  \n**PROOF:** In the additive magma (mod 3 addition), E1 evaluates to `0 = 0` while E2 evaluates to `0 = 1`, a contradiction.  \n**COUNTEREXAMPLE:** XOR rescue (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3511,
+        "completion_tokens": 2953
+      }
+    },
+    {
+      "id": "hard3_0033",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * (z * x)",
+      "equation2": "x * x = ((y * x) * x) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 57.61,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.\n\n2. **Split**\n   - E1 L = `x`  E1 R = `(y * x) * (z * x)`\n   - E2 L = `x * x` E2 R = `((y * x) * x) * x`\n\n3. **Structural tests**\n   - **LP**: both equations have different first letters on left vs. right → **FAIL** for E1 and E2.\n   - **RP**: both have the same last letter (`x`) on left and right → **HOLD** for both.\n   - **C0**: E1 left side lacks `*` while right side has it → **FAIL**; E2 has `*` on both sides → **HOLD**. No separation (only E1 HOLD / E2 FAIL separates).\n   - **VARS**: both equations fail the VARS test.\n   - **COUNT2**: both equations fail the parity count test.\n   - **LDEPTH**: automatically **FAIL** (LP already failed).\n\n   No structural test produced the separating pattern (E1 HOLD / E2 FAIL), so we continue.\n\n4. **Spine‑depth check** – not applicable because LP was not HOLD for both equations.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order from left to right: `x, y, z`.\n   - **Assignment A1** (all = 1): E1 fails → skip.\n   - **Assignment A2** (`x=1, y=2, z=1`):\n     - E1: `x = (y*x)*(z*x)` evaluates to `1 = 1` → **true**.\n     - E2: `x*x = ((y*x)*x)*x` evaluates to `0 = 2` → **false**.\n   - Separation found (E1 true, E2 false).\n\nSince a counterexample is found at the T4A stage, the implication does **not** hold over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The T4A linear‑magma test with assignment A2 satisfies E1 but violates E2.  \nPROOF: Under the linear magma `a*b = (2a+b) mod 3`, with `x=1, y=2, z=1` we have  \n E1: `1 = (2*1+1) * (2*1+1) = 1` (true),  \n E2: `1*1 = 0` while `((2*1+1)*1)*1 = 2` (false).  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3522,
+        "completion_tokens": 1985
+      }
+    },
+    {
+      "id": "hard3_0376",
+      "repeat_id": 1,
+      "equation1": "x * y = (z * x) * (y * z)",
+      "equation2": "x * (x * y) = x * (y * x)",
+      "ground_truth": true,
+      "predicted": true,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 51.34,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.\n\n2. **Split**\n   - E1 L = `x * y`  E1 R = `(z * x) * (y * z)`\n   - E2 L = `x * (x * y)`  E2 R = `x * (y * x)`\n\n3. **Structural tests**\n   - **LP**: E1 L first = `x`, E1 R first = `z` → **FAIL**; E2 L first = `x`, E2 R first = `x` → **HOLD** (no separation).\n   - **RP**: E1 L last = `y`, E1 R last = `z` → **FAIL**; E2 L last = `y`, E2 R last = `x` → **FAIL** (no separation).\n   - **C0**: both sides of each equation contain `*` → **HOLD** for both (no separation).\n   - **VARS**: E1 L vars = {`x`,`y`}, E1 R vars = {`x`,`y`,`z`} → **FAIL**; E2 L and E2 R both have {`x`,`y`} → **HOLD** (no separation).\n   - **COUNT2**: parity of each variable’s occurrence matches on both sides of each equation → **HOLD** for both (no separation).\n   - **LDEPTH**: E1 LP = FAIL → LDEPTH = FAIL; E2 LP = HOLD and depths are both 1 (odd), so LDEPTH = HOLD (no separation).\n\n   No structural test produced the “E1 = HOLD & E2 = FAIL” pattern.\n\n4. **Spine‑depth check** – skipped because E1 LP = FAIL.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from left‑to‑right: `x`, `y`, `z`.  \n   - **A1** (all = 1): both E1 and E2 hold.  \n   - **A2** (`x=1,y=2,z=1`): E1 fails.  \n   - **A3** (`x=2,y=0,z=2`): E1 fails.  \n   - **A4** (`x=0,y=1,z=2`): E1 fails.  \n   No assignment makes E1 true while E2 false.\n\n6. **XOR rescue (additive magma)**  \n   Same variable order.  \n   - **A1** (`x=0,y=1,z=1`): E1 fails.  \n   - **A2** (`x=1,y=2,z=0`): both E1 and E2 hold.  \n   No separation found.\n\nSince every test and both rescues failed to separate the equations, the implication holds in all magmas.\n\n**Verdict**: TRUE  \n**Reasoning**: No structural or algebraic test produced a model where E1 is true and E2 false.  \n**Proof**: All six structural tests gave no separation; spine‑depth was inapplicable; both the linear‑magma and additive‑magma rescues found no counterexample.  \n**Counterexample**: None.",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 2919
+      }
+    },
+    {
+      "id": "hard3_0327",
+      "repeat_id": 1,
+      "equation1": "x = (((x * x) * y) * z) * y",
+      "equation2": "x = (x * y) * (z * (x * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 58.93,
+      "raw_response": "**Analysis**\n\n- Split both equations:  \n  - E1 LHS = `x`, RHS = `(((x * x) * y) * z) * y`  \n  - E2 LHS = `x`, RHS = `(x * y) * (z * (x * y))`\n\n- **LP**: first letter on each RHS is `x` → both HOLD.  \n- **RP**: RHS last letters are `y` (E1) and `y` (E2) while LHS last is `x` → both FAIL.  \n- **C0**, **VARS**, **COUNT2**, **LDEPTH**: all give the same result (both equations either HOLD or FAIL), never a “E1 = HOLD & E2 = FAIL” pattern, so no separation yet.\n\n- **Spine‑depth check**:  \n  - E1’s RHS is a pure left‑spine (depth 5).  \n  - E2’s RHS is *not* a pure left‑spine, so the spine test is skipped.\n\n- **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**  \n  - Variable order from left‑to‑right: `x, y, z`.  \n  - **Assignment A1** (all variables = 1):  \n\n    E1 RHS: `(((1*1)*1)*1)*1 = 1` → matches LHS `x = 1`.  \n    E2 RHS: `(1*1)*(1*(1*1)) = 2` → does **not** match LHS `x = 1`.  \n\n    Hence E1 holds while E2 fails.\n\nSince a separation is found at T4A A1, the implication does **not** hold over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: T4A rescue with all variables = 1 satisfies E1 but violates E2.  \n**Proof**: In the linear magma `a * b = (2a + b) mod 3`, E1 evaluates to `1 = 1` while E2 evaluates to `1 ≠ 2`.  \n**Counterexample**: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3525,
+        "completion_tokens": 2124
+      }
+    },
+    {
+      "id": "hard3_0058",
+      "repeat_id": 1,
+      "equation1": "x * x = (y * z) * w",
+      "equation2": "x * x = (x * x) * x",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 4.46,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not syntactically identical.\n\n2. **Split sides**\n   - E1 _L = `x * x`, _E1_R = `(y * z) * w`\n   - E2 _L = `x * x`, _E2_R = `(x * x) * x`\n\n3. **Structural tests**\n   - **LP**: E1 fails (x ≠ y), E2 holds (x = x) → no separation.\n   - **RP**: E1 fails (x ≠ w), E2 holds (x = x) → no separation.\n   - **C0**: both equations have `*` on both sides → both hold.\n   - **VARS**: E1 fails (different variable sets), E2 holds → no separation.\n   - **COUNT2**: both equations fail → no separation.\n   - **LDEPTH**: E1 fails (LP already failed), E2 fails (depth parity mismatch) → no separation.\n\n   No structural test produced the pattern **E1 = HOLD, E2 = FAIL**, so we continue.\n\n4. **Spine‑depth check** – skipped because LP did not hold for E1.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from left to right across both equations: `x, y, z, w`.\n\n   - **Assignment A1** (all = 1): E1 fails, so move on.  \n   - **Assignment A2** (1, 2, 1, 2):  \n     - E1: `x*x = (y*z)*w` → `0 = 0` (holds).  \n     - E2: `x*x = (x*x)*x` → `0 ≠ 1` (fails).  \n\n   Since E1 is true and E2 is false under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Verdict**: FALSE – E1 does **not** imply E2 over all magmas.\n\n---\n\nVERDICT: FALSE  \nREASONING: The T4A linear magma assignment `x=1, y=2, z=1, w=2` satisfies E1 but falsifies E2.  \nPROOF: Under the operation \\(a*b = (2a+b)\\bmod 3\\), E1 evaluates to \\(0=0\\) while E2 evaluates to \\(0\\neq1\\).  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3515,
+        "completion_tokens": 1841
+      }
+    },
+    {
+      "id": "hard3_0305",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * x)) * x) * z",
+      "equation2": "x = x * (x * ((y * y) * z))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 60.66,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not text‑identical.\n\n2. **Split**\n   - E1 L = `x`  E1 R = `((x * (y * x)) * x) * z`  \n   - E2 L = `x`  E2 R = `x * (x * ((y * y) * z))`\n\n3. **Structural tests**\n   - **LP**: both equations have first letter `x` on each side → HOLD.\n   - **RP**: both have last letter `x` on left and `z` on right → FAIL for both (no separation).\n   - **C0**: left side bare, right side contains `*` → FAIL for both.\n   - **VARS**: left side `{x}`, right side `{x,y,z}` → FAIL for both.\n   - **COUNT2**: parity of variable counts differs on the right side for both equations → FAIL for both.\n   - **LDEPTH**: depths are `0` vs `3` (E1) and `0` vs `1` (E2) → FAIL for both.\n\n   No test produced the pattern **E1 = HOLD, E2 = FAIL**, so we proceed.\n\n4. **Spine‑depth check** – LP held for both, but the right‑hand sides are not pure left‑spines, so this check is skipped.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order from left to right: `x, y, z`.\n   - **Assignment A2** (x=1, y=2, z=1) makes E1 true:\n     - RHS of E1 evaluates to 1, matching LHS `x=1`.\n   - Under the same assignment E2 is false:\n     - RHS of E2 evaluates to 2, while LHS is 1.\n\n   A separation is found, so the implication does **not** hold in all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: T4A rescue with assignment A2 satisfies E1 but falsifies E2.  \n**Proof**: In the linear magma `a * b = (2a + b) mod 3`, set `x=1, y=2, z=1`. Then  \n E1: `1 = ((1 * (2 * 1)) * 1) * 1` evaluates to `1 = 1` (true),  \n E2: `1 = 1 * (1 * ((2 * 2) * 1))` evaluates to `1 = 2` (false).  \n**Counterexample**: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3522,
+        "completion_tokens": 2642
+      }
+    },
+    {
+      "id": "hard3_0201",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * x)) * (y * z)",
+      "equation2": "x = (((x * y) * z) * y) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 7.87,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not text‑identical.\n\n2. **Split**  \n   - E1 L = `x`  E1 R = `(x * (y * x)) * (y * z)`  \n   - E2 L = `x`  E2 R = `(((x * y) * z) * y) * x`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | HOLD (first letter `x` on both sides) | HOLD (first letter `x` on both sides) | – |\n| RP   | **FAIL** (rightmost letter `z` ≠ left `x`) | HOLD (rightmost letter `x` = left `x`) | – (FAIL/HOLD) |\n| C0   | FAIL (left side has no `*`) | FAIL (left side has no `*`) | – |\n| VARS | FAIL (right side uses `y,z` besides `x`) | FAIL (right side uses `y,z` besides `x`) | – |\n| COUNT2 | FAIL (parities of `x` differ) | FAIL (parities of `x` differ) | – |\n| LDEPTH | HOLD (depth 2, parity matches depth 4) | HOLD | – |\n\nNo test produced the **E1 = HOLD / E2 = FAIL** pattern, so no separation yet.\n\n4. **Spine‑depth check** – LP held for both, but the RHS of E1 is not a pure left‑spine (it contains a right‑nested sub‑term), so the spine test is skipped.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from left to right in the two equations: `x, y, z`.  \n\n   - **Assignment A1**: `x = y = z = 1`.  \n     Using the linear magma table (`a * b = (2a + b) mod 3`):\n\n     *E1*:  \n     - `y * x = 1*1 = 0`  \n     - `x * (y * x) = 1*0 = 2`  \n     - `y * z = 1*1 = 0`  \n     - `(x * (y * x)) * (y * z) = 2*0 = 1` → RHS = 1 = LHS (`x`). **E1 holds**.\n\n     *E2*:  \n     - `x * y = 1*1 = 0`  \n     - `(x*y) * z = 0*1 = 1`  \n     - `((x*y)*z) * y = 1*1 = 0`  \n     - `(((x*y)*z)*y) * x = 0*1 = 2` → RHS = 2 ≠ LHS (`x`=1). **E2 fails**.\n\n   Since E1 is true and E2 is false under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The T4A linear‑magma assignment `x = y = z = 1` satisfies E1 but not E2.  \nPROOF: Under the linear magma `a * b = (2a + b) mod 3`, E1 evaluates to `1 = 1` while E2 evaluates to `1 = 2`, a contradiction.  \nCOUNTEREXAMPLE: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 2070
+      }
+    },
+    {
+      "id": "hard3_0349",
+      "repeat_id": 1,
+      "equation1": "x * x = y * (y * (y * z))",
+      "equation2": "x * (y * x) = x * (z * x)",
+      "ground_truth": false,
+      "predicted": true,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 7.87,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split** – E1_L = `x * x`, E1_R = `y * (y * (y * z))`; E2_L = `x * (y * x)`, E2_R = `x * (z * x)`.  \n3. **Structural tests**  \n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | **FAIL** (x ≠ y) | **HOLD** (x = x) | no |\n| RP   | **FAIL** (x ≠ z) | **HOLD** (x = x) | no |\n| C0   | HOLD (both sides contain `*`) | HOLD | no |\n| VARS | **FAIL** (sets {x} vs {y,z}) | **FAIL** (sets {x,y} vs {x,z}) | no |\n| COUNT2 | **FAIL** (y‑parity differs) | **FAIL** (y‑parity differs) | no |\n| LDEPTH | **FAIL** (LP already failed) | HOLD (depth 1 ≡ 1) | no |\n\nNo test produced the “E1 = HOLD & E2 = FAIL” pattern, so we continue.\n\n4. **Spine‑depth check** – skipped because LP failed for E1.  \n5. **T4A rescue (linear magma `a*b = (2a+b) mod 3`)** – variables in order: x, y, z.  \n   - A1 (all 1): E1 fails.  \n   - A2 (1,2,1): E1 fails.  \n   - A3 (2,0,2): E1 fails.  \n   - A4 (0,1,2): E1 fails.  \n   No assignment makes E1 true, so no separation here.  \n6. **XOR rescue (additive magma `a*b = (a+b) mod 3`)** – same variable order.  \n   - A1 (x=0,y=1,z=1): E1 fails.  \n   - A2 (x=1,y=2,z=0): E1 fails.  \n   No separation found.\n\nAll tests and rescues found no case where E1 holds while E2 fails. Hence E1 **does** imply E2 over all magmas.\n\n**Verdict**: TRUE  \n\n**Reasoning**: No structural, spine‑depth, or magma‑specific test separates the equations.  \n\n**Proof**: Exhaustive application of the prescribed decision procedure finds no counterexample; therefore every magma satisfying E1 also satisfies E2.  \n\n**Counterexample**: None.",
+      "usage": {
+        "prompt_tokens": 3521,
+        "completion_tokens": 2468
+      }
+    },
+    {
+      "id": "hard3_0062",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * (y * (y * x)))",
+      "equation2": "x = x * ((y * y) * (x * x))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 92.67,
+      "raw_response": "**Analysis**\n\n- Split equations:  \n  E1 : `x = x * (x * (y * (y * x)))` (LHS `x`, RHS `x * (x * (y * (y * x)))`)  \n  E2 : `x = x * ((y * y) * (x * x))` (LHS `x`, RHS `x * ((y * y) * (x * x))`)\n\n**Structural tests**\n\n1. **LP** – first letter on each side: both LHS `x`; RHS of both start with `x`. → E1 = HOLD, E2 = HOLD.  \n2. **RP** – last letter on each side: both RHS end with `x`. → HOLD for both.  \n3. **C0** – both RHS contain `*`. → HOLD for both.  \n4. **VARS** – RHS of each uses `{x,y}` while LHS is `{x}` → FAIL for both (no separation).  \n5. **COUNT2** – parity of each variable matches on both sides (x ≡ 1, y ≡ 0) → HOLD for both.  \n6. **LDEPTH** – left‑most depth is 1 for both RHS → HOLD for both.\n\nNo structural test yields separation (the only separating row is “E1 = HOLD, E2 = FAIL”).\n\n**Spine depth check**\n\nBoth RHS begin directly with `x` (no leading parentheses), giving left‑spine depth = 1 for each. Since 1 divides 1, no separation.\n\n**T4A rescue (linear magma)**  \n\nVariables encountered in order: `x, y`.\n\n- **Assignment A1** (all = 1): E1 fails, so skip.  \n- **Assignment A2** (`x=1, y=2`):  \n  - Evaluate E1 RHS using `a * b = (2a + b) mod 3` → result = 1, matching LHS (`x=1`).  \n  - Evaluate E2 RHS with the same assignment → result = 2, not matching LHS (`x=1`).  \n\nThus E1 holds while E2 fails under this assignment, giving a separation.\n\nSince a separation is found, the implication does **not** hold over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The T4A linear‑magma test (assignment A2) satisfies E1 but violates E2.  \nPROOF: In the linear magma `a * b = (2a + b) mod 3`, set `x = 1`, `y = 2`. Then  \n E1: `1 = 1 * (1 * (2 * (2 * 1)))` evaluates to `1 = 1` (true),  \n E2: `1 = 1 * ((2 * 2) * (1 * 1))` evaluates to `1 = 2` (false).  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3509,
+        "completion_tokens": 2098
+      }
+    },
+    {
+      "id": "hard3_0074",
+      "repeat_id": 1,
+      "equation1": "x = y * (z * (x * (z * x)))",
+      "equation2": "x = (x * (x * x)) * (x * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 15.3,
+      "raw_response": "**Analysis**\n\n1. **Literal check** – E1 and E2 are not identical.  \n2. **Split** – E1_L = `x`, E1_R = `y * (z * (x * (z * x)))`; E2_L = `x`, E2_R = `(x * (x * x)) * (x * x)`.\n\n**Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | **FAIL** (first letters x vs y) | **HOLD** (x vs x) | No (FAIL/HOLD) |\n| RP   | **HOLD** (both x) | **HOLD** (both x) | No |\n| C0   | **FAIL** (left has no `*`, right has) | **FAIL** (same) | No |\n| VARS | **FAIL** (right uses y,z) | **HOLD** (right uses only x) | No |\n| COUNT2 | **FAIL** (x count 1 vs 0 mod 2) | **HOLD** (x count matches) | No |\n| LDEPTH | **FAIL** (LP failed) | **HOLD** (depths 0 vs 2, both even) | No |\n\nNo separation after the six structural tests, and LP for E1 failed, so the **spine‑depth check is skipped**.\n\n**T4A rescue (linear magma)** – variables order `[x, y, z]`.\n\n- A1 (all = 1): E1 fails.  \n- A2 (x=1, y=2, z=1): E1 fails.  \n- A3 (x=2, y=0, z=2): both E1 and E2 hold.  \n- A4 (x=0, y=1, z=2): E1 fails.\n\nNo assignment separates E1 from E2.\n\n**XOR rescue (additive magma)** – same variable order.\n\n- A1 (x=0, y=1, z=1): both E1 and E2 hold.  \n- **A2 (x=1, y=2, z=0):**  \n  - E1 evaluates to `1`, matching LHS `x = 1`.  \n  - E2 evaluates to `2`, **not** matching LHS `x = 1`.  \n\nThus a separation is found.\n\n**Conclusion** – there exists a magma (the XOR magma) and an assignment of variables for which E1 is true while E2 is false. Hence E1 does **not** imply E2 over all magmas.\n\n---\n\nVERDICT: FALSE  \nREASONING: XOR rescue assignment A2 separates the equations.  \nPROOF: In the additive magma (a * b = (a + b) mod 3) with x=1, y=2, z=0, E1 holds but E2 fails.  \nCOUNTEREXAMPLE: XOR rescue (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3534,
+        "completion_tokens": 2894
+      }
+    },
+    {
+      "id": "hard3_0169",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * (z * (z * x))",
+      "equation2": "x = ((y * z) * (z * w)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 26.75,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.\n\n2. **Split**\n   - E1_L = `x`  E1_R = `(y * x) * (z * (z * x))`\n   - E2_L = `x`  E2_R = `((y * z) * (z * w)) * x`\n\n3. **Structural tests**\n   - **LP**: first letter of RHS is `y` for both equations, while LHS is `x` → **FAIL** for E1 and E2.\n   - **RP**: last letter of RHS is `x` for both → **HOLD** for E1 and E2.\n   - **C0**: LHS has no `*`, RHS has `*` → **FAIL** for both.\n   - **VARS**: variable sets differ (`{x}` vs `{x,y,z}` etc.) → **FAIL** for both.\n   - **COUNT2**: parity of variable occurrences mismatches on both sides → **FAIL** for both.\n   - **LDEPTH**: LP already failed, so LDEPTH = **FAIL** for both.\n\n   No test produced the separation pattern (E1 = HOLD, E2 = FAIL), so we proceed to the rescue stage.\n\n4. **Spine‑depth check** – skipped because LP was not HOLD for E1.\n\n5. **T4A rescue (linear magma)**  \n   Variables in order of first appearance: `x, y, z, w`.\n\n   - **Assignment A1** (all = 1): E1 fails → move on.  \n   - **Assignment A2** (`x=1, y=2, z=1, w=2`): E1 fails → move on.  \n   - **Assignment A3** (`x=2, y=0, z=2, w=0`):  \n     - E1 evaluates to `2 = 2` (true).  \n     - E2 evaluates to `2 = 0` (false).  \n\n   Since E1 holds while E2 does not under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Conclusion** – E1 does **not** imply E2 over all magmas.\n\n**Output**\n\nVERDICT: FALSE  \nREASONING: T4A rescue with assignment x=2, y=0, z=2, w=0 makes E1 true and E2 false.  \nPROOF: In the linear magma a * b = (2a + b) mod 3, E1 evaluates to 2 = 2 while E2 evaluates to 2 ≠ 0.  \nCOUNTEREXAMPLE: T4A.",
+      "usage": {
+        "prompt_tokens": 3529,
+        "completion_tokens": 2062
+      }
+    },
+    {
+      "id": "hard3_0399",
+      "repeat_id": 1,
+      "equation1": "x * (y * z) = (w * u) * x",
+      "equation2": "(x * x) * y = (z * w) * y",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 59.83,
+      "raw_response": "**Analysis**\n\n1. **Split equations**\n   - E1 _L = `x * (y * z)`  E1 _R = `(w * u) * x`\n   - E2 _L = `(x * x) * y`  E2 _R = `(z * w) * y`\n\n2. **Structural tests**\n   - **LP**: first letters differ for both equations → E1 = FAIL, E2 = FAIL (no separation).\n   - **RP**: E1 = FAIL, E2 = HOLD (no separation).\n   - **C0**: both sides contain `*` in each equation → both = HOLD.\n   - **VARS**: variable sets differ in both equations → both = FAIL.\n   - **COUNT2**: parity of variable counts mismatches in both equations → both = FAIL.\n   - **LDEPTH**: LP already failed for both, so LDEPTH = FAIL.\n\n   No structural test produced the “E1 = HOLD & E2 = FAIL” pattern, so we proceed to the rescue stage.\n\n3. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n   - Variable order (first appearance): `x, y, z, w, u`.\n   - **Assignment A1** (all = 1): E1 fails.\n   - **Assignment A2** (1,2,1,2,1): E1 fails.\n   - **Assignment A3** (2,0,2,0,2):  \n     - E1 evaluates to `((w*u)*x) = 0`, matching the left side → **E1 holds**.  \n     - E2 evaluates to `(z*w)*y = 2`, while the left side is `0` → **E2 fails**.\n   - Separation found; further assignments are unnecessary.\n\nSince a valuation exists where E1 is true and E2 is false, E1 does **not** imply E2 over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: T4A rescue gave a valuation (x=2, y=0, z=2, w=0, u=2) where E1 holds but E2 does not.  \nPROOF: Under the linear magma `a * b = (2a + b) mod 3`, the assignment above satisfies `x * (y * z) = (w * u) * x` but violates `(x * x) * y = (z * w) * y`.  \nCOUNTEREXAMPLE: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3525,
+        "completion_tokens": 2016
+      }
+    },
+    {
+      "id": "hard3_0120",
+      "repeat_id": 1,
+      "equation1": "x = y * ((z * z) * (x * x))",
+      "equation2": "x = (x * (y * y)) * (y * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 26.8,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split** – E1 _L = `x`, _E1_R = `y * ((z * z) * (x * x))`; E2 _L = `x`, _E2_R = `(x * (y * y)) * (y * x)`.\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | FAIL (x ≠ y) | HOLD (x = x) | no |\n| RP   | HOLD (x = x) | HOLD (x = x) | no |\n| C0   | FAIL (L has no `*`, R has) | FAIL | no |\n| VARS | FAIL (R uses y,z) | FAIL (R uses y) | no |\n| COUNT2 | FAIL (parities differ) | FAIL | no |\n| LDEPTH | FAIL (LP failed) | HOLD (depths 0 vs 2, both even) | no |\n\nNo separation was found in any of the six structural tests.\n\n4. **Spine‑depth check** – Skipped because LP failed for E1.\n\n5. **T4A rescue (linear magma)**  \n\n   Variable order from left‑to‑right in E1 then E2: **x, y, z**.\n\n   *Assignment A1* (all = 1):  \n   - E1 RHS evaluates to 2, LHS = 1 → E1 fails → try next.\n\n   *Assignment A2* (x=1, y=2, z=1):  \n   - E1 RHS = 1, LHS = 1 → **E1 holds**.  \n   - E2 RHS = 0, LHS = 1 → **E2 fails**.\n\n   Since an assignment makes E1 true and E2 false, a separation is exhibited.\n\nNo further tests are needed.\n\n**Verdict**: FALSE – E1 does **not** imply E2 over all magmas.\n\n**Counterexample**: T4A rescue, assignment A2 (x=1, y=2, z=1) in the linear magma `a * b = (2a + b) mod 3`.  \n\n---  \n\n**OUTPUT**\n\nVERDICT: FALSE  \nREASONING: T4A rescue found an assignment where E1 holds but E2 does not.  \nPROOF: In the linear magma `a*b = (2a+b) mod 3`, with x=1, y=2, z=1, E1 evaluates to `1 = 1` while E2 evaluates to `1 = 0`.  \nCOUNTEREXAMPLE: T4A (assignment A2).",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 2259
+      }
+    },
+    {
+      "id": "hard3_0108",
+      "repeat_id": 1,
+      "equation1": "x = x * ((y * z) * (z * x))",
+      "equation2": "x * (y * x) = x * (z * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 35.1,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split** – E1 _L = “x”, _E1_R = “x * ((y * z) * (z * x))”.  \n      E2 _L = “x * (y * x)”, _E2_R = “x * (z * x)”.\n3. **Structural tests**  \n   *LP* – both equations have the same first letter on each side → HOLD.  \n   *RP* – both have the same last letter on each side → HOLD.  \n   *C0* – E1 left side lacks “*” while right side has it → FAIL (E1).  \n   *C0* – E2 has “*” on both sides → HOLD (E2). → no separation (only E1 = HOLD & E2 = FAIL separates).  \n   *VARS* – both equations fail the VARS test.  \n   *COUNT2* – both equations fail the parity‑count test.  \n   *LDEPTH* – both equations fail the left‑spine depth parity test.  \n\n   No structural test produced the separating pattern (E1 = HOLD, E2 = FAIL).\n\n4. **Spine‑depth check** – E1_R does not start with “(”, so the spine test is skipped.\n\n5. **T4A rescue (linear magma a * b = (2a + b) mod 3)**  \n   Variable order from left‑to‑right: **x, y, z**.  \n\n   *Assignment A3*: x = 2, y = 0, z = 2.  \n\n   - **E1**:  \n     RHS = x * ((y*z)*(z*x)) = 2 * ((0*2)*(2*2)) = 2 * ((2)*(0)) = 2 * 1 = 2.  \n     LHS = x = 2 → **E1 holds**.  \n\n   - **E2**:  \n     LHS = x * (y*x) = 2 * (0*2) = 2 * 2 = 0.  \n     RHS = x * (z*x) = 2 * (2*2) = 2 * 0 = 1.  \n     0 ≠ 1 → **E2 fails**.\n\n   Since E1 is true and E2 is false under this assignment, a separation is found.\n\nNo later rescue is needed.\n\n**Verdict**: FALSE – E1 does **not** imply E2 over all magmas.\n\n**Output**\n\nVERDICT: FALSE  \nREASONING: T4A rescue with assignment x=2, y=0, z=2 makes E1 true and E2 false.  \nPROOF: In the linear magma a * b = (2a + b) mod 3, E1 evaluates to 2=2 while E2 evaluates to 0≠1.  \nCOUNTEREXAMPLE: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3522,
+        "completion_tokens": 2648
+      }
+    },
+    {
+      "id": "hard3_0095",
+      "repeat_id": 1,
+      "equation1": "x = y * (y * ((z * w) * x))",
+      "equation2": "x = ((y * z) * (z * z)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 18.1,
+      "raw_response": "**Analysis**\n\n1. **Literal check** – E1 and E2 are not identical.  \n2. **Split** – E1 _L = `x`, _E1_R = `y * (y * ((z * w) * x))`; E2 _L = `x`, _E2_R = `((y * z) * (z * z)) * x`.\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | **FAIL** (x vs y) | **FAIL** (x vs y) | none |\n| RP   | HOLD (x = x) | HOLD (x = x) | none |\n| C0   | FAIL (left has no `*`) | FAIL (left has no `*`) | none |\n| VARS | FAIL (right uses y,z,w) | FAIL (right uses y,z) | none |\n| COUNT2 | FAIL (z appears odd times) | FAIL (y appears odd times) | none |\n| LDEPTH | FAIL (LP failed) | FAIL (LP failed) | none |\n\nNo separation was found in any structural test, and LP did not hold for both equations, so the **spine‑depth check** is skipped.\n\n4. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n\nVariable order from left to right in the whole input: `x, y, z, w`.\n\nAssignments tried:\n\n- **A1** (all = 1): E1 fails.  \n- **A2** (`x=1, y=2, z=1, w=2`): E1 fails.  \n- **A3** (`x=2, y=0, z=2, w=0`): E1 fails.  \n- **A4** (`x=0, y=1, z=2, w=0`): E1 holds (`0 = 0`), but E2 evaluates to `1 ≠ 0`.  \n\nThus under assignment **A4** the premise E1 is true while the conclusion E2 is false, giving a separation.\n\nSince a separation is found, we do not need the XOR rescue.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: T4A rescue with assignment A4 separates E1 from E2.  \nPROOF: In the linear magma `a*b = (2a+b) mod 3`, setting `x=0, y=1, z=2, w=0` makes `y*(y*((z*w)*x)) = 0` (so E1 holds) but `((y*z)*(z*z))*x = 1` (so E2 fails).  \nCOUNTEREXAMPLE: T4A (assignment A4).",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 2237
+      }
+    },
+    {
+      "id": "hard3_0306",
+      "repeat_id": 1,
+      "equation1": "x = ((x * (y * x)) * z) * w",
+      "equation2": "x = x * ((y * z) * (x * w))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 5.9,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not text‑identical.\n\n2. **Split**\n   - E1 : L = `x`  R = `((x * (y * x)) * z) * w`  \n   - E2 : L = `x`  R = `x * ((y * z) * (x * w))`\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | HOLD (first = x) | HOLD (first = x) | – |\n| RP   | FAIL (x vs w) | FAIL (x vs w) | – |\n| C0   | FAIL (left no *, right has *) | FAIL | – |\n| VARS | FAIL (right uses y,z,w) | FAIL | – |\n| COUNT2 | FAIL (parity of x differs) | FAIL | – |\n| LDEPTH | FAIL (depth = 3, left = 0, parity mismatch) | HOLD (depth = 0) | – |\n\nNo test produced the pattern **E1 = HOLD & E2 = FAIL**, so no separation yet.\n\n4. **Spine‑depth check** (run because LP held for both)\n\n   - E1 RHS begins with two ‘(’ before the first letter x → left‑spine depth = 2 + 1 = 3.  \n   - E2 RHS begins with the letter x immediately → depth = 0 + 1 = 1.  \n\n   Both RHSs are pure left‑spines (first letter is the LHS variable x).  \n   Since 3 does **not** divide 1, the spine‑depth condition yields a separation.\n\nThus E1 does **not** imply E2 over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The spine‑depth check separates the equations (depth 3 does not divide depth 1).  \nPROOF: Both equations have pure left‑spine right‑hand sides; E1’s spine depth is 3, E2’s is 1, and 3 ∤ 1, which violates the implication condition.  \nCOUNTEREXAMPLE: Spine Depth Check.",
+      "usage": {
+        "prompt_tokens": 3522,
+        "completion_tokens": 1759
+      }
+    },
+    {
+      "id": "hard3_0269",
+      "repeat_id": 1,
+      "equation1": "x = (y * ((y * z) * w)) * x",
+      "equation2": "x = ((y * x) * y) * (y * x)",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 54.71,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not text‑identical.  \n2. **Split** – E1_L = `x`, E1_R = `(y * ((y * z) * w)) * x`; E2_L = `x`, E2_R = `((y * x) * y) * (y * x)`.\n\n3. **Structural tests**\n\n| Test | E1 result | E2 result | Separation? |\n|------|-----------|-----------|--------------|\n| LP   | **FAIL** (first letters x vs y) | **FAIL** (first letters x vs y) | none |\n| RP   | HOLD (both end with x) | HOLD (both end with x) | none |\n| C0   | FAIL (L has no `*`, R has) | FAIL (same) | none |\n| VARS | FAIL (R uses y,z,w besides x) | FAIL (R uses y besides x) | none |\n| COUNT2 | FAIL (z appears odd number of times) | FAIL (x parity mismatches) | none |\n| LDEPTH | FAIL (LP already FAIL) | FAIL | none |\n\nNo structural test produced the “E1 = HOLD & E2 = FAIL” pattern, so we proceed to the **T4A rescue**.\n\n4. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**\n\nVariable order (first appearance scanning E1 then E2): `x, y, z, w`.\n\n- **Assignment A1**: all variables = 1.  \n  - *E1*:  \n    - `y*z = f(1,1)=0`  \n    - `(y*z)*w = f(0,1)=1`  \n    - `y * (…) = f(1,1)=0`  \n    - ` (…) * x = f(0,1)=1` → RHS = 1 = LHS (`x`). **E1 holds**.  \n  - *E2*:  \n    - `y*x = f(1,1)=0`  \n    - `(y*x)*y = f(0,1)=1`  \n    - `y*x = 0` (again)  \n    - ` (…) * (y*x) = f(1,0)=2` → RHS = 2 ≠ LHS (`x`=1). **E2 fails**.\n\nSince E1 is true and E2 is false under this assignment, a separation is found.\n\nNo further tests are needed.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: T4A rescue with all variables = 1 makes E1 true but E2 false.  \nPROOF: Under the linear magma `a*b = (2a+b) mod 3`, E1 evaluates to `1 = 1` while E2 evaluates to `1 = 2`, a contradiction.  \nCOUNTEREXAMPLE: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3525,
+        "completion_tokens": 1905
+      }
+    },
+    {
+      "id": "hard3_0368",
+      "repeat_id": 1,
+      "equation1": "x * x = (x * y) * (y * z)",
+      "equation2": "x * y = x * (z * (z * x))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 150.82,
+      "raw_response": "**Analysis**\n\n1. **Split equations**\n   - E1 L = `x * x`  R = `(x * y) * (y * z)`\n   - E2 L = `x * y`  R = `x * (z * (z * x))`\n\n2. **Structural tests**\n   - **LP**: both equations have the same first letter on each side → E1 = HOLD, E2 = HOLD.\n   - **RP**: both equations have different last letters on each side → E1 = FAIL, E2 = FAIL.\n   - **C0**: both sides contain `*` in each equation → E1 = HOLD, E2 = HOLD.\n   - **VARS**: variable sets differ on both sides for each equation → E1 = FAIL, E2 = FAIL.\n   - **COUNT2**: parity of variable occurrences differs on both equations → E1 = FAIL, E2 = FAIL.\n   - **LDEPTH**:  \n     - E1: left‑depth = 1, right‑depth = 2 → parity mismatch → E1 = FAIL.  \n     - E2: left‑depth = 1, right‑depth = 1 → parity matches → E2 = HOLD.  \n\n   No test produced the separation pattern (E1 = HOLD, E2 = FAIL). Hence we continue.\n\n3. **Spine‑depth check** (LP was HOLD for both)\n   - RHS of E1 begins with one ‘(’, so depth = 2; first letter `x` matches the LHS variable `x`.  \n   - RHS of E2 begins with no ‘(’, so depth = 1; first letter `x` matches the LHS variable `x`.  \n   - Both RHSs are pure left‑spine.  \n   - Depth 2 does **not** divide depth 1 → separation is found.\n\nSince a separation occurs at the spine‑depth stage, E1 does **not** imply E2 over all magmas.\n\n**Verdict**\n\nVERDICT: FALSE  \nREASONING: The spine‑depth check shows a depth‑division failure, giving a separating model.  \nPROOF: E1’s RHS has left‑spine depth 2 while E2’s RHS has depth 1; 2 does not divide 1, so a magma can satisfy E1 but not E2.  \nCOUNTEREXAMPLE: SPINE DEPTH CHECK.",
+      "usage": {
+        "prompt_tokens": 3523,
+        "completion_tokens": 1936
+      }
+    },
+    {
+      "id": "hard3_0247",
+      "repeat_id": 1,
+      "equation1": "x = (x * (y * (x * x))) * z",
+      "equation2": "x = (x * ((y * z) * z)) * w",
+      "ground_truth": true,
+      "predicted": false,
+      "correct": false,
+      "parsed_ok": true,
+      "elapsed_s": 78.46,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – the two equations are not textually identical.\n\n2. **Split**  \n   - E1 : LHS = `x` RHS = `(x * (y * (x * x))) * z`  \n   - E2 : LHS = `x` RHS = `(x * ((y * z) * z)) * w`\n\n3. **Structural tests** – all six tests give no separation:\n   - LP holds for both (first letter on each side is `x`).  \n   - RP fails for both (right‑hand side ends with `z` / `w`).  \n   - C0 fails for both (left side has no `*`, right side does).  \n   - VARS fails for both (right side uses more variables than the bare `x`).  \n   - COUNT2 fails for both (parity of variable counts differs).  \n   - LDEPTH holds for both (depth = 2, equal modulo 2).\n\n4. **Spine‑depth check** – RHS of neither equation is a pure left‑spine, so we skip this step.\n\n5. **T4A rescue (linear magma `a * b = (2a + b) mod 3`)**  \n   - Variable order encountered: `x, y, z, w`.  \n   - Assignment A4 (cycle 0, 1, 2, 0): `x=0, y=1, z=2, w=0`.  \n\n   Evaluating under the linear magma:\n\n   *E1*:  \n   - `x*x = 0*0 = 0`  \n   - `y*(x*x) = 1*0 = 2`  \n   - `x*(y*(x*x)) = 0*2 = 2`  \n   - `(x*(y*(x*x))) * z = 2*2 = 0` → RHS = 0 = LHS (`x`).\n\n   *E2*:  \n   - `y*z = 1*2 = 1`  \n   - `(y*z)*z = 1*2 = 1`  \n   - `x*((y*z)*z) = 0*1 = 1`  \n   - `(x*((y*z)*z)) * w = 1*0 = 2` → RHS = 2 ≠ LHS (`x` = 0).\n\n   Hence E1 is satisfied while E2 is not, giving a separation.\n\nSince a separation is found, the implication **does not hold** over all magmas.\n\n---\n\n**VERDICT:** FALSE  \n**REASONING:** The linear magma test (T4A, assignment A4) satisfies E1 but falsifies E2.  \n**PROOF:** Under the magma `a * b = (2a + b) mod 3` with `x=0, y=1, z=2, w=0`, E1 evaluates to `0 = 0` while E2 evaluates to `0 = 2`, violating the implication.  \n**COUNTEREXAMPLE:** T4A (assignment A4).",
+      "usage": {
+        "prompt_tokens": 3525,
+        "completion_tokens": 2878
+      }
+    },
+    {
+      "id": "hard3_0082",
+      "repeat_id": 1,
+      "equation1": "x = x * (x * ((y * z) * x))",
+      "equation2": "x = ((x * x) * (x * y)) * x",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 68.06,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not textually identical.  \n2. **Split** – Both equations have left side `x`.  \n3. **LP** – First letter on each right‑hand side is `x` → both HOLD.  \n4. **RP** – Last letter on each right‑hand side is `x` → both HOLD.  \n5. **C0** – Left side has no `*`, right side does → both FAIL (no separation).  \n6. **VARS** – Right‑hand sides contain `{x,y,z}` while left side is `{x}` → both FAIL.  \n7. **COUNT2** – Parity of variable occurrences differs (e.g., `y` appears on RHS of E1 but not on LHS) → both FAIL.  \n8. **LDEPTH** – Depths are 1 (E1) and 3 (E2); both differ from left‑side depth 0 → both FAIL.  \n\nNo structural test produced a separation, and the RHSs are not pure left‑spines, so we proceed to the **T4A rescue** (linear magma).\n\nVariable order from left to right: `x, y, z`.\n\n- **Assignment A1** (all = 1): E1 fails.  \n- **Assignment A2** (`x=1, y=2, z=1`): E1 fails.  \n- **Assignment A3** (`x=2, y=0, z=2`):  \n\n  *E1*:  \n  - `y*z = (2·0+2) = 2`  \n  - `(y*z)*x = (2·2+2) = 0`  \n  - `x*(…)= (2·2+0) = 1`  \n  - `x*(…)= (2·2+1) = 2` → RHS = 2 = LHS (`x`).  \n\n  *E2*:  \n  - `x*x = (2·2+2) = 0`  \n  - `x*y = (2·0+2) = 2`  \n  - `(x*x)*(x*y) = (2·0+2) = 2`  \n  - `…*x = (2·2+2) = 0` → RHS = 0 ≠ LHS (`x`=2).\n\nThus E1 holds while E2 does not under this assignment, giving a separation.\n\nSince a separation is found, the implication does **not** hold in all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: The linear magma test (T4A, assignment A3) satisfies E1 but violates E2.  \n**Proof**: In the linear magma defined by \\(a*b = (2a+b)\\bmod 3\\) with \\(x=2, y=0, z=2\\), we have  \n\\(x = x*(x*((y*z)*x))\\) true, but \\(x = ((x*x)*(x*y))*x\\) false.  \n**Counterexample**: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3510,
+        "completion_tokens": 2661
+      }
+    },
+    {
+      "id": "hard3_0223",
+      "repeat_id": 1,
+      "equation1": "x = ((x * y) * z) * (w * y)",
+      "equation2": "x = (x * y) * ((x * y) * x)",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 72.17,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not syntactically identical.\n\n2. **Split**\n   - E1 _L = `x` E1 _R = `((x * y) * z) * (w * y)`\n   - E2 _L = `x` E2 _R = `(x * y) * ((x * y) * x)`\n\n3. **Structural tests**\n   - **LP** – first letters match (`x` on both sides) → E1 = HOLD, E2 = HOLD.\n   - **RP** – E1: `x` vs `y` → FAIL; E2: `x` vs `x` → HOLD. No separation (FAIL/HOLD).\n   - **C0** – both equations have a `*` on the right but not on the left → FAIL for both. No separation.\n   - **VARS** – RHS of each uses extra variables → FAIL for both. No separation.\n   - **COUNT2** – E1 fails (z appears odd number of times only on RHS); E2 holds. No separation (FAIL/HOLD).\n   - **LDEPTH** – both equations have LP = HOLD and depths 0 (LHS) vs 2 (RHS), parity matches → HOLD for both. No separation.\n\n   All six structural tests finish without a separation.\n\n4. **Spine‑depth check** – E1’s RHS is not a pure left‑spine (it contains the sub‑term `(w * y)` on the right), so the spine test is skipped.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from first appearance: `x, y, z, w`.\n\n   - **Assignment A1** (all = 1): E1 fails → skip.  \n   - **Assignment A2** (`x=1, y=2, z=1, w=2`): E1 fails → skip.  \n   - **Assignment A3** (`x=2, y=0, z=2, w=0`):  \n     - E1 RHS evaluates to `2`, matching LHS `x = 2` → **E1 holds**.  \n     - E2 RHS evaluates to `0`, not matching LHS `x = 2` → **E2 fails**.  \n\n   A separation is found at this assignment.\n\nSince a rescue test produced a model where E1 is true and E2 is false, E1 does **not** imply E2 over all magmas.\n\n**Verdict**: FALSE  \n**Reasoning**: The linear‑magma assignment `x=2, y=0, z=2, w=0` satisfies E1 but falsifies E2.  \n**Proof**: Under this assignment, `((x*y)*z)*(w*y) = 2 = x` holds, while `(x*y)*((x*y)*x) = 0 ≠ x`.  \n**Counterexample**: T4A (assignment A3).",
+      "usage": {
+        "prompt_tokens": 3526,
+        "completion_tokens": 2648
+      }
+    },
+    {
+      "id": "hard3_0191",
+      "repeat_id": 1,
+      "equation1": "x = (y * x) * ((x * z) * x)",
+      "equation2": "x * y = x * (x * (z * y))",
+      "ground_truth": false,
+      "predicted": false,
+      "correct": true,
+      "parsed_ok": true,
+      "elapsed_s": 57.53,
+      "raw_response": "**Analysis**\n\n1. **Quick check** – E1 and E2 are not textually identical.\n\n2. **Split**\n   - E1 L = `x`  E1 R = `(y * x) * ((x * z) * x)`\n   - E2 L = `x * y` E2 R = `x * (x * (z * y))`\n\n3. **Structural tests**\n   - **LP**: E1 L first letter `x` vs E1 R first letter `y` → **FAIL**; E2 L first `x` vs E2 R first `x` → **HOLD** (no separation).\n   - **RP**: both equations have matching last letters → **HOLD** (no separation).\n   - **C0**: E1 L has no `*` while E1 R does → **FAIL**; E2 both sides have `*` → **HOLD** (no separation).\n   - **VARS**: both equations fail the VARS test (different variable sets) → no separation.\n   - **COUNT2**: both equations fail (parity mismatches) → no separation.\n   - **LDEPTH**: E1 LP already failed, so LDEPTH fails; E2 LP held and depths match → **HOLD** (no separation).\n\n   No structural test produced the separation pattern (E1 HOLD & E2 FAIL).\n\n4. **Spine‑depth check** – skipped because E1 LP was not a hold.\n\n5. **T4A rescue (linear magma)**  \n   Variable order from left to right: `x, y, z`.  \n   - **Assignment A1** (all variables = 1) satisfies E1 but falsifies E2:\n     - E1: `x = (y * x) * ((x * z) * x)` evaluates to `1 = 1` (true).\n     - E2: `x * y = x * (x * (z * y))` evaluates to `0 = 1` (false).\n\n   Since a single assignment makes E1 true and E2 false, a separation is found; later rescues are unnecessary.\n\n**Conclusion** – E1 does **not** imply E2 over all magmas.\n\n---\n\nVERDICT: FALSE  \nREASONING: The linear‑magma assignment (all variables = 1) makes E1 true and E2 false.  \nPROOF: Under the operation \\(a * b = (2a + b) \\bmod 3\\), E1 evaluates to \\(1 = 1\\) while E2 evaluates to \\(0 = 1\\).  \nCOUNTEREXAMPLE: T4A (assignment A1).",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 2092
+      }
+    }
+  ]
+}
