@@ -2,7 +2,7 @@
 
 Only two cheatsheet versions achieved both normal ≥95% AND hard3 ≥75%.
 
-Current champion: **v28d** (9,081 bytes) — 96.7% normal, 50.0% competition hard.
+Current champion: **v28d** (9,081 bytes) — 96.7% normal, 83.3% hard3, 50.0% competition hard.
 
 ---
 
@@ -15,7 +15,9 @@ Current champion: **v28d** (9,081 bytes) — 96.7% normal, 50.0% competition har
 | Difficulty | Model | N | Acc | TAcc | FAcc |
 |-----------|-------|-----|-------|-------|-------|
 | normal r23 | GPT-OSS-120B | 30 | 96.7% | 100% | 93.3% |
+| hard3 r24 | GPT-OSS-120B | 30 | 83.3% | 100% | 66.7% |
 | comp hard r23 | GPT-OSS-120B | 30 | 50.0% | 73.3% | 26.7% |
+| hard2 r24 | GPT-OSS-120B | 30 | 43.3% | 60.0% | 26.7% |
 
 ### What v28d Added Over v28c
 - **T5B all-ones guard**: requires E1 to pass on BOTH default variable assignment AND all-ones before declaring separation. Fixes 7 false separations on competition hard pool.

@@ -43,6 +43,8 @@ Last updated: 2026-04-17 (v28d DECLARED CHAMPION — 96.7% normal, 50.0% comp ha
 ### v28d (9,081 bytes, 88.7% of cap) — CHAMPION:
 - **Normal r23 (30): 96.7% (29/30)** — PASSED safety gate (TP=15, FP=1, FN=0, TN=14)
 - **Competition hard r23 (30): 50.0% (15/30)** — TP=11, FP=11, FN=4, TN=4 (+6.7pp vs v28c)
+- **Hard3 r24 (30): 83.3% (25/30)** — TP=15, FP=5, FN=0, TN=10, 100% TRUE recall
+- **Hard2 r24 (30): 43.3% (13/30)** — TP=9, FP=11, FN=6, TN=4
 - T5B fix confirmed: hard_0174 ✗→✓, hard_0169 ✗→✓
 
 ### v28c → v28d change:
@@ -74,5 +76,8 @@ T5B all-ones guard. Mathematically proven strictly positive across all pools:
 
 1. ~~Run v28d competition hard r23~~ — DONE: 50.0% (15/30), +6.7pp over v28c.
 2. ~~Declare v28d champion~~ — DONE.
-3. Consider cross-model testing on Llama/Gemma for confidence.
-4. Submit by April 20 (3 days).
+3. ~~Run v28d hard3 r24~~ — DONE: 83.3% (25/30), 100% TRUE recall.
+4. ~~Run v28d hard2 r24~~ — DONE: 43.3% (13/30).
+5. Consider cross-model testing on Llama/Gemma for confidence.
+6. Repo cleanup and submission polish.
+7. Submit by April 20.
