@@ -1,0 +1,70 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+Reallocating 'name_of_file' (item size: 1) to 9 items.
+The style file: plainurl.bst
+Reallocating 'name_of_file' (item size: 1) to 11 items.
+Reallocating 'glb_str_end' (item size: 4) to 20 items.
+Reallocating 'glb_str_ptr' (item size: 4) to 20 items.
+Reallocating 'global_strs' (item size: 1) to 4000000 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Reallocating 'singl_function' (item size: 4) to 100 items.
+Database file #1: references.bib
+Warning--entry type for "prover9-mace4" isn't style-file defined
+--line 1237 of file references.bib
+Warning--entry type for "the_coq_development_team_2024_14542673" isn't style-file defined
+--line 1529 of file references.bib
+Warning--entry type for "EMS_code_of_practice" isn't style-file defined
+--line 1745 of file references.bib
+Warning--entry type for "PFR_Tao_Dilles_2023" isn't style-file defined
+--line 1811 of file references.bib
+Warning--entry type for "The_Equational_Theories_repository" isn't style-file defined
+--line 1851 of file references.bib
+Warning--entry type for "Monticone_LeanProject_2025" isn't style-file defined
+--line 1955 of file references.bib
+Warning--entry type for "leanblueprint" isn't style-file defined
+--line 1975 of file references.bib
+Warning--entry type for "FLT_Lean" isn't style-file defined
+--line 1991 of file references.bib
+You've used 70 entries,
+            2943 wiz_defined-function locations,
+            1172 strings with 22322 characters,
+and the built_in function-call counts, 37609 in all, are:
+= -- 3984
+> -- 1596
+< -- 30
++ -- 601
+- -- 512
+* -- 2337
+:= -- 5297
+add.period$ -- 273
+call.type$ -- 70
+change.case$ -- 448
+chr.to.int$ -- 0
+cite$ -- 70
+duplicate$ -- 993
+empty$ -- 3295
+format.name$ -- 512
+if$ -- 9533
+int.to.chr$ -- 0
+int.to.str$ -- 70
+missing$ -- 58
+newline$ -- 398
+num.names$ -- 162
+pop$ -- 844
+preamble$ -- 1
+purify$ -- 382
+quote$ -- 0
+skip$ -- 2445
+stack$ -- 0
+substring$ -- 1741
+swap$ -- 369
+text.length$ -- 110
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 272
+warning$ -- 0
+while$ -- 262
+width$ -- 72
+write$ -- 872
+(There were 8 warnings)

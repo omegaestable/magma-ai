@@ -1,0 +1,13 @@
+{
+  "seed_pair_count": 12,
+  "visited_pair_count": 12,
+  "ok_count": 12,
+  "failed_count": 0,
+  "recursive": false,
+  "limit": 12,
+  "cache_dir": "C:/Users/nacho/Documents/GitHub/magma-ai/data/teorth_cache/proof_page_cache",
+  "discovered_edge_count": 0,
+  "discovered_edges": [],
+  "failures": [],
+  "remaining_queue": []
+}

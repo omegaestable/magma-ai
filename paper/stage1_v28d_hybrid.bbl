@@ -1,0 +1,56 @@
+\begin{thebibliography}{1}
+
+\bibitem{ETPRepo2026}
+Matthew Bolan, Joachim Breitner, Jose Brox, Nicholas Carlini, Mario Carneiro,
+  Floris van Doorn, Martin Dvorak, Andr{\'e}s Goens, Aaron Hill, Harald Husum,
+  Hern{\'a}n Ibarra~Mejia, Zoltan~A. Kocsis, Bruno Le~Floch, Amir Livne Bar-on,
+  Lorenzo Luccioli, Douglas McNeil, Alex Meiburg, Pietro Monticone, Pace~P.
+  Nielsen, Emmanuel~Osalotioman Osazuwa, Giovanni Paolini, Marco Petracci,
+  Bernhard Reinke, David Renshaw, Marcus Rossel, Cody Roux, J{\'e}r{\'e}my
+  Scanvic, Shreyas Srinivas, Anand~Rao Tadipatri, Terence Tao, Vlad
+  Tsyrklevich, Fernando Vaquerizo-Villar, Daniel Weber, and Fan Zheng.
+\newblock The {E}quational {T}heories project.
+\newblock GitHub repository, 2024.
+\newblock Accessed 2026-04-17.
+\newblock URL: \url{https://github.com/teorth/equational_theories}.
+
+\bibitem{knuth-bendix}
+Donald~E. Knuth and Peter~B. Bendix.
+\newblock Simple word problems in universal algebras.
+\newblock In {\em Computational Problems in Abstract Algebra ({P}roc. {C}onf.,
+  {O}xford, 1967)}, pages 263--297. Pergamon, Oxford-New York-Toronto, Ont.,
+  1970.
+
+\bibitem{DBLP:journals/pacmpl/KoehlerGBGTS24}
+Thomas Koehler, Andr{\'{e}}s Goens, Siddharth Bhat, Tobias Grosser, Phil
+  Trinder, and Michel Steuwer.
+\newblock Guided equality saturation.
+\newblock {\em Proc. {ACM} Program. Lang.}, 8({POPL}):1727--1758, 2024.
+\newblock \href {https://doi.org/10.1145/3632900} {\path{doi:10.1145/3632900}}.
+
+\bibitem{SAIROverview2026}
+{SAIR Foundation}.
+\newblock Mathematics distillation challenge: Equational theories stage 1
+  overview.
+\newblock Competition website, 2026.
+\newblock Accessed 2026-04-17.
+\newblock URL:
+  \url{https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage1/overview}.
+
+\bibitem{SAIRJudge2026}
+{SAIRcompetition}.
+\newblock Stage 1 judge for the mathematics distillation challenge: Equational
+  theories.
+\newblock GitHub repository, 2026.
+\newblock Accessed 2026-04-17.
+\newblock URL:
+  \url{https://github.com/SAIRcompetition/equational-theories-stage1-judge}.
+
+\bibitem{DBLP:journals/pacmpl/WillseyNWFTP21}
+Max Willsey, Chandrakana Nandi, Yisu~Remy Wang, Oliver Flatt, Zachary Tatlock,
+  and Pavel Panchekha.
+\newblock {egg}: Fast and extensible equality saturation.
+\newblock {\em Proc. {ACM} Program. Lang.}, 5({POPL}):1--29, 2021.
+\newblock \href {https://doi.org/10.1145/3434304} {\path{doi:10.1145/3434304}}.
+
+\end{thebibliography}

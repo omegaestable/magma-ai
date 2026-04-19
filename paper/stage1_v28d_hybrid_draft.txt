@@ -1,0 +1,287 @@
+Compressed Theorem Search Under Prompt Constraints:
+A Cheatsheet-Guided System for Equational Implication in Magmas
+
+Draft prepared on 2026-04-17 for later LaTeX integration.
+This is a prose-first manuscript draft, intended to be converted into a standalone arXiv manuscript after review.
+
+Evidence snapshot used in this draft:
+- SAIR Stage 1 local rules and protocol summary in RULESET.md
+- Official judge repository: https://github.com/SAIRcompetition/equational-theories-stage1-judge
+- Equational Theories Project: https://teorth.github.io/equational_theories/ and https://github.com/teorth/equational_theories
+- Teorth refresh date: 2026-04-17
+- Teorth upstream commit SHA recorded during refresh: d69afe6eee96801b1cbfad2bfca18eb48a74fc2e
+- Refreshed Teorth snapshot details: 4,694 equations, graph.json decoded to a 4694 x 4694 implication matrix with 1,415 equivalence classes, full_entries.json with 12,373 entries
+- Local v28d evaluation files: normal r23, competition hard r23, hard3 r24, hard2 r24
+
+Citation convention in this draft:
+[ETP] = The Equational Theories Project
+[SAIR-JUDGE] = Stage 1 judge repository
+[SAIR-OVERVIEW] = competition overview
+[EGG] = egg equality saturation
+[GUIDED-EQSAT] = Guided Equality Saturation
+
+Abstract
+
+We study prompt-only reasoning for equational implication over magmas under the severe interface constraints of SAIR Equational Theories Stage 1. In this task, the submission artifact is not code or weights but a single plain-text prompt of at most 10,240 bytes. The prompt is rendered directly as the complete model input, only two placeholders are substituted, verdict extraction is strict, and unparseable answers are scored as wrong. These rules convert a mathematical reasoning problem into a compression problem: a successful submission must encode a reliable proof search policy in natural language, within a fixed byte budget, for models that are powerful but execution-fragile.
+
+Our case study is the v28d cheatsheet, a prompt program that defaults to TRUE and outputs FALSE only when a structural invariant or a guarded finite-magma witness proves separation. The mathematical core consists of six structural tests, a spine-depth divisibility check, and four small magma witnesses. On local GPT-OSS-120B evaluations, v28d achieves 96.7% accuracy on a normal 30-problem gate, 83.3% on a hard3 30-problem rotation, 50.0% on a competition-hard 30-problem rotation, and 43.3% on a hard2 30-problem rotation, with 100% parse rate and perfect TRUE recall on the normal and hard3 slices. More important than the scores alone, however, is the failure analysis across the version lineage. We find that mathematically plausible heuristics often fail because they exceed the model’s execution capacity. Ungated lookup-table magmas, multi-stage shortcuts, and overgrown test suites can be algebraically sound yet operationally harmful.
+
+The resulting picture is neither “LLMs discover proofs” nor “formal methods solve everything.” Instead, we argue for a middle layer: compressed theorem search under prompt constraints. The core design principle is to optimize not only separation power but soundness per byte and executability per token. This viewpoint yields several original methodological ideas: guard design for finite witnesses, asymmetric optimization for TRUE recall, and a distinction between mathematical soundness and model-executability soundness. We present these ideas as a reproducible engineering and mathematical synthesis rooted in the Equational Theories Project and the SAIR competition setting.
+
+1. Introduction
+
+The implication relation between equations over magmas is a deceptively rich mathematical object. A magma is merely a set equipped with one binary operation and no additional axioms. Even with this minimal structure, determining whether one equation implies another over all magmas leads quickly to a large and intricate implication graph. The Equational Theories Project has made this space concrete and explorable by enumerating 4,694 single-equation laws up to the project’s chosen symmetry and relabeling conventions, together with a large implication and anti-implication database, Lean-verified proofs, and finite-magma witnesses [ETP]. The raw search space contains 22,028,942 ordered implication pairs, far beyond what one would want to handle by ad hoc human inspection alone.
+
+The SAIR Stage 1 challenge imposes an unusual and consequential interface on this underlying mathematics. Instead of submitting a prover, a decision procedure, or a trained model, participants submit a single plain-text cheatsheet of at most 10,240 bytes. The cheatsheet is the full prompt seen by the evaluation model. It may contain instructions, examples, heuristics, and decision procedures, but it may not call tools, fetch data, or rely on external state. Only the placeholders {{equation1}} and {{equation2}} are substituted. Answers must not only be mathematically good; they must also survive a strict verdict parser and the failure modes of a large language model reasoning under a long, compressed instruction sequence [SAIR-JUDGE].
+
+This combination of universal algebra and prompt compression creates a distinctive scientific problem. A cheatsheet is not just a prompt. It is closer to a compressed proof-search program written in natural language for an unreliable interpreter. The natural language must carry mathematical content, but also control flow, format stability, and operational safety. It must tell the model which tests to run, in what order, when to stop, and when not to trust a tempting but unsafe witness. The fundamental objective is not simply “maximize theorem-proving power.” It is to maximize theorem-proving power subject to execution risk, parse risk, and byte budget.
+
+The system documented in this paper, culminating in the v28d prompt, emerged from that design pressure. The core idea is conceptually simple: assume TRUE by default, and only say FALSE when a test establishes a separation of Equation 1 from Equation 2. The tests themselves are chosen from a small menu of structural invariants and tiny finite magmas. The structural tests are cheap, local, and operationally reliable. The finite magmas are more expressive but more execution-sensitive, so they must be carefully ordered and guarded. This design is not equivalent to a complete decision procedure. Rather, it is a deliberately asymmetric recognition system: prioritize safety on TRUE pairs, and attack FALSE pairs using witnesses that are mathematically meaningful but simple enough for a language model to execute.
+
+The empirical results are best interpreted as a case study rather than a universal claim of state-of-the-art performance. On local GPT-OSS-120B evaluations, v28d reaches 96.7% accuracy on a normal gate, 83.3% on hard3, 50.0% on a competition-hard slice, and 43.3% on hard2. These numbers matter, but the more durable contribution lies in the design lessons extracted from the version lineage. Across the repo history, one repeatedly sees mathematically correct ideas fail in practice because the model cannot execute them reliably. Ungated multi-element lookup tables destroy TRUE recall. Clever shortcuts collapse. Too many marginal tests exhaust the attention budget. Conversely, a smaller number of crisp structural invariants and operationally simple algebraic witnesses can outperform more ambitious but brittle designs.
+
+This paper advances four main claims. First, prompt-only mathematical reasoning under strict size limits should be understood as compressed theorem search, not generic chain-of-thought. Second, in this domain, the mathematics that matters most is not necessarily the most sophisticated mathematics, but the mathematics that balances algebraic validity with execution stability. Third, small finite magmas are valuable not merely as external countermodels but as prompt-embedded witnesses, provided they are guarded against false separations. Fourth, failure analysis is mathematically informative: it reveals an important distinction between formal soundness and model-executability soundness. A rule may be correct in algebra and still be a bad prompt instruction.
+
+2. Background: Equational Implication, Teorth, and the SAIR Setting
+
+An equational law over magmas is an identity between two binary terms built from variables and one binary operation. Typical examples include the trivial law x = x, the singleton law x = y, commutativity x ◇ y = y ◇ x, and associativity x ◇ (y ◇ z) = (x ◇ y) ◇ z. For two equations E1 and E2, the implication E1 => E2 means that every magma satisfying E1 also satisfies E2. This implication relation organizes equations into a partially ordered structure with equivalence classes, cover relations, and a large body of known and conjectured results.
+
+The Equational Theories Project provides the modern reference environment for this space [ETP]. The project’s stated goal is to map the relations between different equational theories of magmas. It combines human theorem proving, machine support, Lean formalization, proof metadata, and interactive web tooling. The project website exposes an Equation Explorer, a Finite Magma Explorer, a dashboard, documentation, and a downloadable implication graph. The GitHub repository includes equation lists, dual maps, smallest finite magma witnesses, proof metadata, scripts for implication extraction, and a paper/blueprint ecosystem.
+
+For the present work, the project is important in two ways. First, it supplies the mathematical universe in which the SAIR task lives. Second, it shapes the style of reasoning that the cheatsheet can plausibly compress. The local repo’s Teorth fetch pipeline downloads five assets: equations.txt, duals.json, smallest_magma.txt, graph.json, and full_entries.json. On the refresh performed for this draft, equations.txt contained 4,694 entries, graph.json decoded to a 4694 x 4694 implication matrix with 1,415 equivalence classes, and full_entries.json contained 12,373 proof metadata records. The upstream commit SHA at refresh time was d69afe6eee96801b1cbfad2bfca18eb48a74fc2e. These are publication-grade assets because they come directly from the project and its published infrastructure.
+
+The SAIR Stage 1 challenge uses this broader ecosystem but changes the optimization target. The goal is not to extend the implication database directly, nor to produce Lean proofs, nor to publish new universal algebra theorems in the first instance. Instead, the challenge asks competitors to distill enough reasoning into a short prompt that a fixed set of frontier models can answer held-out implication questions. Official evaluation is prompt-only, no-tools, offline, and based on three models of equal weight: GPT-OSS-120B, Llama 3.3 70B Instruct, and Gemma 4 31B IT [SAIR-JUDGE]. The task is binary classification. Unparseable outputs count as wrong. The evaluation set is balanced 50% TRUE and 50% FALSE, but public hard benchmarks are skewed toward FALSE, which creates a known tendency for weak prompts to drift toward trivial FALSE defaults.
+
+This context motivates the design decisions in the present paper. The Equational Theories Project offers rich mathematical structure and many possible tools. The SAIR interface strips away nearly all of them and asks what can survive in 10 kilobytes of natural language. The interesting question is therefore not simply whether a model can reason about magmas, but what mathematical content remains effective after compression.
+
+3. Competition Rules as a Design Constraint
+
+The competition rules are not incidental. They define the feasible hypothesis class. The most important constraints are as follows.
+
+First, the submission artifact is one plain-text file of at most 10,240 bytes. This is a hard on-disk budget, not a soft token preference. In the local repo, byte measurement is treated in a CRLF-aware, on-disk sense because that is what matters operationally for the artifact. Second, the cheatsheet is the entire prompt. There is no hidden system prompt wrapping the prompt into a richer scaffold. Third, only two substitutions are allowed: {{equation1}} and {{equation2}}. Fourth, the model has no browser or tool access during evaluation. Fifth, verdict extraction follows a strict three-tier priority: boxed verdicts first, labeled verdicts second, bare-line verdicts third, with the last occurrence winning within a tier [SAIR-JUDGE]. A mathematically correct argument with an unparsable conclusion is therefore scored as a failure.
+
+This matters for mathematical system design. A conventional theorem prover can separate correctness from presentation. A prompt-only competition cannot. Formatting is part of the semantics. So is refusal to overrun the parser. So is the decision to avoid clever but opaque abbreviations that the model may garble. The cheatsheet must jointly solve a mathematical problem and an output-interface problem.
+
+The three official models also matter. They are not identical interpreters. Historically, different prompt versions in this repo showed large model-specific variation. Some prompts that were coherent on one model failed catastrophically on another. As a result, the local design philosophy gradually shifted toward a more conservative core: fewer tests, clearer gates, less hidden branching, more direct examples, and stronger emphasis on output stability. The final v28d prompt was tested primarily on GPT-OSS-120B, which is a limitation we will discuss later, but the entire version lineage was shaped by the broader multi-model threat model.
+
+The rules also imply a kind of algorithmic asymmetry. If FALSE answers require witnesses while TRUE answers do not, then one can bias the system toward default TRUE and only incur risk when there is a positive reason to separate. This is not a universal theorem about all tasks. It is specific to a setting where false separation is more harmful than missed negative evidence, where parse stability matters, and where execution-heavy tests can destroy recall on true implications. The rule environment therefore rewards risk-sensitive proof search.
+
+4. Prompt Programs as Compressed Decision Procedures
+
+The v28d cheatsheet is best understood as a prompt program. It has a task declaration, a default action, a decision tree, a strict output format, and worked examples. It does not contain executable code, yet it is meant to induce code-like behavior in the model. The program begins by placing the problem in the standard implication form. It then sets DEFAULT: TRUE and instructs the model to say FALSE only when a specific test proves separation. This single line encodes the system’s central risk policy.
+
+The rest of the prompt is organized as a sequence of tests. The model first splits each equation around the equality sign. It then applies six structural tests. After each test it consults a decision table with exactly one separating row: E1 = HOLD and E2 = FAIL. If that row occurs, the system stops and returns FALSE. Otherwise it continues. If no structural separation is found, the prompt permits a spine-depth check and then a finite list of small magma witnesses. The output format at the end is rigid and easy to parse.
+
+There are several reasons to call this a compressed decision procedure rather than a loose heuristic prompt. The tests are explicit and ordered. The separation condition is explicit. The halting condition is explicit. The prompt forbids unsupported FALSE answers. The examples are not flavor text; they are operational traces. They train the model’s interpreter, not just its verbal style.
+
+Compression pressure changes what counts as a good mathematical device. In a traditional proof system, one might prefer the strongest lemma or the most general countermodel. In a prompt program, one prefers the device that is easiest to state, easiest to execute, hardest to misread, and most robust against transcription errors. That preference shaped nearly every successful choice in the version history.
+
+5. The Mathematics Used Most Heavily
+
+The question “what math did we use the most?” has two different answers. One answer is historical: which ideas survived repeated prompt evolution and kept delivering value. The other is operational: which ideas are actually carrying the classification burden in the final system. In both senses, the answer is the same. The dominant mathematics is not exotic universal algebra. It is a carefully chosen layer of structural invariants, followed by a tiny set of finite witnesses.
+
+5.1. Endpoint and support invariants
+
+The first two tests in v28d are LP and RP: compare the first variable on the left and right sides, and compare the last variable on the left and right sides. These tests look almost trivial, but they are fundamental. They are cheap to compute, naturally aligned with the syntax of binary terms, and easy for a language model to execute. They survive because they give high value per byte.
+
+The third and fourth tests, C0 and VARS, refine the same intuition. C0 asks only whether each side contains the binary operation symbol. It is deliberately coarse. VARS asks whether the variable support on each side matches, with a special case for bare-variable equations. Both tests exploit low-cost syntactic facts that often correspond to genuine algebraic obstructions. Their usefulness was visible early in the project and remained stable through multiple prompt generations.
+
+These four tests do more than prune easy negatives. They establish a prompt discipline: the model learns that it must inspect term structure before it reaches for more complex algebraic reasoning. The worked examples in v28d reinforce this by showing fast FALSE verdicts through LP, RP, C0, and COUNT2 before any magma witness is invoked.
+
+5.2. Parity and depth
+
+The fifth and sixth structural tests, COUNT2 and LDEPTH, are more delicate. Early versions of the project repeatedly found that parity-like tests could be mathematically attractive but operationally dangerous. A model that miscounts introduces false separations. This happened in earlier XOR-style prompt experiments and is explicitly documented in the failure taxonomy. COUNT2 survives in v28d not because parity is always safe, but because it is carefully constrained: counts are taken modulo 2, the examples are concrete, the decision rule remains one-sided, and the rest of the prompt is already organized around conservative control flow.
+
+LDEPTH measures the parity of left-spine depth. Again, the choice is not “all depth information.” Earlier depth-mod-3 tests and other more ambitious depth heuristics performed poorly. The successful form is the simplest one that still captures useful algebraic structure: follow the left spine, count binary-operation nodes, and reduce modulo 2. This is one of the clearest examples of a broader principle: the prompt uses only the portion of a mathematical invariant that the model can reliably execute.
+
+5.3. Spine divisibility
+
+After the six structural tests, v28d applies a spine-depth divisibility check to a highly restricted shape class: both equations must present as pure left spines and must begin with the left-hand-side variable. If these conditions hold, then the system compares the two depths and asks whether one divides the other. This is a remarkable design point because it adds genuine mathematical power at very low execution cost. There is no lookup table, no branching arithmetic, and no large witness. The model only counts parentheses and compares divisibility.
+
+In the repo history, this kind of test was a breakthrough because it expanded coverage without demanding a large increase in execution complexity. It is precisely the kind of mathematical idea that thrives under prompt compression.
+
+5.4. Guarded finite magmas
+
+The structural layer alone is not enough. Earlier structural-only systems reached a ceiling on hard false cases. The second major mathematical layer is therefore a small family of 3-element magma witnesses.
+
+T3R uses the rule a * b = next(b), where next cycles 0 -> 1 -> 2 -> 0. T3L uses a * b = next(a). T5B uses a table equivalent to a + 2b modulo 3. NL1 uses a fixed nonlinear 3 x 3 table. These witnesses are not meant to approximate the entire space of finite magmas. They are chosen because they are small, interpretable, and reusable across many pairs.
+
+The key design lesson is that a witness must be judged both algebraically and operationally. T3L is a good example of an operationally strong witness. It is simple to state, easy to compute, and empirically sound in the repo’s internal analysis. T3R is more subtle. It has real separating power, but it also exhibited unsoundness on some four-variable equations due to variable recycling under the 0-1-2 assignment scheme. T5B is stronger as a separator but required an all-ones guard after an unsoundness analysis showed that a single assignment was insufficient. NL1 likewise has value but must be handled carefully.
+
+This leads to one of the paper’s central methodological claims: a prompt-embedded countermodel witness should be treated as a guarded test, not a free oracle. The witness is allowed to separate only after the prompt has verified that E1 genuinely holds under the relevant assignments. The all-zeros and all-ones guards are therefore not cosmetic. They are part of the soundness envelope.
+
+6. Experimental Setting and Main Results
+
+All results reported here come from the local evaluation loop built around the repo’s canonical evaluator and paid-model tooling. The active prompt mode is raw: the cheatsheet is the complete prompt. The main v28d results discussed in this draft are GPT-OSS-120B runs, because those are the complete and current v28d measurements available at the time of writing.
+
+Table 1. Main v28d results on local 30-problem slices
+
+Setting                  N   Accuracy   F1      TRUE Acc   FALSE Acc   Parse Rate
+----------------------------------------------------------------------------------
+Normal r23              30   96.7%      96.8%   100.0%     93.3%       100.0%
+Competition hard r23    30   50.0%      59.5%    73.3%     26.7%       100.0%
+Hard3 r24               30   83.3%      85.7%   100.0%     66.7%       100.0%
+Hard2 r24               30   43.3%      51.4%    60.0%     26.7%       100.0%
+
+Several observations matter.
+
+First, the normal gate result is excellent for a prompt-only artifact. A 96.7% score with 100% TRUE recall means the system almost never rejects a true implication on the normal slice. This is the most important safety result in the repo’s current state, because the development policy always treated normal-set safety as the gating criterion for promotion.
+
+Second, the hard3 result is strong and has the same safety signature: 100% TRUE recall with 66.7% FALSE accuracy. This means that on the hard3 slice, the system captured every TRUE case while still finding a substantial fraction of FALSE separations. In practice, this is evidence that the two-layer design works: the structural tests protect recall, and the guarded witness layer captures a useful share of difficult negatives.
+
+Third, the competition-hard and hard2 results remain far from a full solution. This is important to say plainly. The present paper is not about achieving complete dominance on the hardest public pools. It is about documenting what kind of mathematical compression works under the prompt interface and what kind fails. A 50.0% competition-hard score and a 43.3% hard2 score show that many false implications still evade the available witness family, and some true implications remain vulnerable to execution errors or witness unsoundness.
+
+Fourth, parse rate is 100% in all four runs. This should not be ignored. In this competition, formatting is part of performance. The consistent parse rate indicates that the output template and worked examples are functioning as intended.
+
+The competition-hard result also improved directly over the immediately previous version, v28c. The only intended change between v28c and v28d was a T5B all-ones guard. On the tracked competition-hard slice, accuracy rose from 43.3% to 50.0%, with two previously incorrect T5B-related cases flipping to correct. This is a particularly clean example of a mathematically motivated and operationally successful guard.
+
+7. Failure Analysis Across the Version Lineage
+
+The repo’s failures are unusually informative. Unlike a single successful prompt with no history, this project records many broken designs, near misses, regressions, and rollbacks. The failures reveal what kinds of mathematics survive prompt compression.
+
+The earliest class of failure is underpowered simplicity. A pure-magma prompt with no structural tests performed reasonably on tiny tests but lacked the cheap syntactic filters needed to catch obvious false cases. Structural-only prompts performed much better on normal slices but hit a clear ceiling on hard false cases. This established the need for a two-layer system.
+
+The next class of failure is the addition of mathematically valid but operationally brittle tests. Early parity-based XOR variants and mod-3 depth tests often looked appealing. In theory they refined the structural picture. In practice they asked the model to count or recurse in ways that it handled unreliably. The result was false separations on true pairs. The lesson is stark: if a model cannot execute a test consistently, the test is worse than absent, even if the underlying mathematics is fine.
+
+A third class of failure comes from overfitting simplification. Several v23 and v24 variants had a strong structural core and excellent normal performance but no pathway through the hard false ceiling. These versions were not “wrong”; they were incomplete. They demonstrate the limit of structure without finite witnesses.
+
+A fourth class is the near-miss architecture. Versions such as v24i and v26a had the right broad shape: structural pre-screening plus algebraic rescue. Yet they still failed because the rescue instructions were too terse or too unclear. The model had enough information to in principle execute the witness, but not enough scaffolding to do so reliably. This is a purely prompt-level form of error: the mathematics is present, but the interpreter fails.
+
+The fifth and most revealing class is the kitchen-sink collapse. Several versions added more tests, more tables, more magmas, or more clever shortcuts. The result was usually worse, not better. Ungated multi-element magmas are the clearest example. They are mathematically legitimate and, in external Python evaluators, often perfectly sound. But inside the prompt they force the model into many-step arithmetic or lookup execution on both true and false pairs. TRUE accuracy collapses. This is the central distinction that emerged from the project: mathematical soundness is not the same as model-executability soundness.
+
+The v27 line is the strongest cautionary example. It combined a solid structural core with ungated multi-element magma tests intended as a safety net before returning TRUE. The effect was catastrophic. TRUE accuracy cratered because the model dutifully executed hard arithmetic on true pairs and got the calculations wrong. This is not a story about bad math. It is a story about a prompt system failing to respect the computational habits of its interpreter.
+
+8. Original Ideas and Approaches
+
+This paper does not claim new universal-algebra theorems. Its originality lies in methodology. I highlight four ideas that emerged from the work and appear publishable as systems-and-math contributions.
+
+8.1. Soundness per byte
+
+A prompt under a hard byte budget should be optimized by soundness per byte, not merely raw coverage. A mathematically sophisticated test may be too expensive if its instructions and examples displace more reliable tests. This viewpoint treats prompt design as a compression problem over mathematical procedures. The right question is not “does this witness separate more pairs in theory?” but “does this witness improve reliable separation after paying for description length, examples, and execution risk?”
+
+8.2. Executability-aware algebra
+
+Finite-magma witnesses should be chosen for interpreter compatibility as well as algebraic relevance. Rules like next(a) and next(b) are especially effective because they can be described procedurally without a full lookup table. Arbitrary 3 x 3 or 5 x 5 tables often degrade performance even when they are mathematically defensible, because the model loses track of repeated lookups. This suggests a new selection principle for prompt-level algebraic witnesses: prefer operation laws with short algorithmic descriptions over dense tabulations.
+
+8.3. Asymmetric safety optimization
+
+The choice to default to TRUE and require explicit separation before saying FALSE is more than a heuristic. It is a risk-sensitive policy aligned with the structure of the task. On normal gates and hard3 slices, the policy produced perfect TRUE recall. That does not make it universally optimal, but it demonstrates that prompt-level theorem search can be shaped by asymmetric loss. In systems terms, this is a conservative classifier. In mathematical terms, it is a witness-first philosophy: do not deny an implication unless a structural obstruction or countermodel can be exhibited.
+
+8.4. Guarded witnesses as a middle layer
+
+Formal theorem proving and free-form language-model reasoning are often presented as opposites. The present work suggests a middle layer: guarded witness systems. These are not full proofs and not raw guesses. They are compact families of low-order algebraic structures embedded in the prompt with explicit validation checks on E1. The all-zeros and all-ones checks in v28d are small examples of this broader pattern. The guard does not increase expressive power by itself; it increases trustworthiness. In this sense, guarded witnesses are a form of prompt-internal certification.
+
+9. What the Project Learned About Mathematics Under Prompt Pressure
+
+The prompt budget forces a mathematical prioritization that is unusual from a traditional universal-algebra perspective. The mathematics that matters most is the mathematics that can be compressed into short, reusable, robust tests.
+
+The first clear lesson is that low-level structural invariants are indispensable. They are not embarrassing approximations of “real mathematics.” They are the real mathematics of this prompt regime. They capture genuine constraints on term behavior while staying within the model’s reliable execution range.
+
+The second lesson is that finite magmas are extraordinarily valuable, but only when the witness family is small, interpretable, and guarded. The repo’s empirical analysis is consistent with the broader Equational Theories Project observation that finite magmas refute a large share of false implications. But prompt-level use of finite magmas is more delicate than offline use. A witness family that is sufficient for programmatic evaluation may still be unusable inside a prompt if the model cannot execute it.
+
+The third lesson is that the distinction between true and false implications should shape the entire architecture. True implications are fragile under overactive heuristics. False implications are fragile under underpowered witnesses. The successful system handles this by having a wide safe front end and a narrow, carefully guarded witness back end.
+
+The fourth lesson is negative. Sophisticated symbolic tricks do not automatically survive language-model interpretation. The repo repeatedly discovered that shortcuts, compressed tables, or too many marginal refinements create confusion rather than power. If a test cannot be explained cleanly enough to be executed by the model under pressure, then from the standpoint of this interface it is not yet a good test.
+
+10. Relation to Prior Automated Reasoning Ideas
+
+This project sits at an unusual intersection of universal algebra, finite model search, proof assistant databases, and language-model prompting. It is useful to compare it to adjacent traditions, while being careful not to overclaim.
+
+The Equational Theories Project supplies the mathematical substrate and an explicit large-scale collaboration environment [ETP]. Equality saturation work such as egg [EGG] and guided equality saturation [GUIDED-EQSAT] provides a different but relevant example of symbolic search compressed into rewrite-level representations. Classical automated reasoning tools such as Knuth-Bendix completion, Prover9, Mace4, Vampire, E, Z3, and Twee all pursue stronger forms of proof or countermodel automation than a 10 KB prompt can plausibly encode.
+
+The present work is not a replacement for these systems. Instead, it can be read as a study in what fragments of their logic survive when forced through an extremely narrow natural-language channel. From equality saturation we inherit the idea that rewrite structure matters. From finite model search we inherit the value of tiny countermodels. From proof assistants we inherit the importance of provenance and explicit implication structure. The novelty lies in combining these under an interpreter that is neither sound nor complete, and in making the interaction constraints part of the object of study.
+
+11. Limitations and Threats to Validity
+
+The clearest limitation is model coverage. The current v28d headline results are GPT-OSS-120B runs. The official competition will weight three models equally. Historical versions such as v24j showed encouraging cross-model normal performance, but v28d itself has not yet received the same level of cross-model validation in this repo. Any claim about v28d as a multi-model artifact should therefore be regarded as provisional.
+
+The second limitation is rotation variance. The repo documents very large variance across some hard3 rotations for earlier versions. The hard3 r24 result reported here is strong, but one should not mistake one rotation for a complete population estimate. The right scientific response is to disclose the variance and, in future work, average across multiple rotations with confidence intervals.
+
+The third limitation is benchmark mismatch. Normal, hard, hard2, hard3, and competition-hard are not interchangeable. They were curated for different roles. A prompt that is excellent on one may not dominate another. This is not noise; it reflects differences in the distribution of separable false pairs and execution-sensitive true pairs.
+
+The fourth limitation is that the system is not a full decision procedure. When the prompt returns TRUE after failing to separate, it is not certifying the implication by proof. It is reporting that the current collection of structural tests and guarded witnesses found no counterexample. This is a design choice aligned with the competition, but the logical interpretation should be stated carefully.
+
+The fifth limitation concerns Teorth proof scraping. For this draft we refreshed the core Teorth assets and also ran a small live proof-page scrape of twelve pairs. All twelve pages returned successfully, which confirms that the scraping pipeline remains operational. However, the sampled pages did not expose rich theorem-link structure in the parser output, and the extracted titles remained templated. For that reason, we treat local HTML scrape output as exploratory background rather than primary citation evidence. The citable evidence remains the upstream Teorth project assets.
+
+12. Reproducibility and Data Provenance
+
+The paper’s external mathematical claims should be reproducible from the refreshed Teorth snapshot. On 2026-04-17, the local repo ran a force refresh through fetch_teorth_data.py. The refresh restored equations.txt, duals.json, and smallest_magma.txt, and re-fetched graph.json and full_entries.json. The decode checks reported 4,694 equations, a 4694 x 4694 matrix with 1,415 equivalence classes, and 12,373 full_entries records. The upstream commit SHA recorded at refresh time was d69afe6eee96801b1cbfad2bfca18eb48a74fc2e.
+
+A separate bounded run of proof_scraping_lab.py refreshed twelve live proof pages from full_entries seeds into results/proof_lab. All twelve requests succeeded. This confirms live availability of the proof-page endpoint at draft time, but, as just noted, the scrape is not the primary publication artifact.
+
+The local evaluation claims are reproducible from the committed result JSON files for v28d. The normal gate, competition-hard slice, hard3 rotation, and hard2 rotation each contain per-problem predictions, raw responses, timings, and usage counts. This makes it possible to audit not only aggregate accuracy but also the actual model behaviors that led to success or failure.
+
+One further reproducibility lesson from the repo is that development artifacts should be separated by evidentiary status. Refreshed Teorth assets are citable. Official judge behavior is citable. Local result JSONs are auditable internal evidence. Cached HTML proof pages and exploratory distillation scripts are useful for working understanding but should not be confused with primary scholarly sources.
+
+13. Conclusion
+
+The SAIR Stage 1 prompt interface forces a clean and difficult question: how much mathematical reasoning about equational implication can be compressed into a single 10 KB prompt and still survive execution by large language models? The v28d system offers one concrete answer. A surprisingly strong and stable core emerges when the prompt is treated as a compressed theorem-search policy rather than as generic chain-of-thought advice. The mathematical devices that endure are crisp structural invariants, simple divisibility checks, and tiny guarded finite witnesses. The devices that fail are usually not “bad mathematics,” but mathematics that demands too much executional precision from the interpreter.
+
+This leads to a broader thesis. Prompted mathematical reasoning under hard interface constraints should be studied as a joint problem in algebra, compression, and interpreter design. The formal object may be an implication between equations, but the practical object is a natural-language decision procedure executed by a model with known failure modes. In that setting, robustness comes from guard design, asymmetric safety policy, and relentless attention to executability.
+
+The resulting system does not solve the full equational-implication problem. It does, however, identify a viable middle layer between theorem provers and unguided language models. That middle layer is built from compact witness families, structural invariants, and explicit separation logic. It is mathematically grounded, empirically auditable, and, in the context of SAIR Stage 1, competitive enough to justify deeper study.
+
+Appendix A. Snapshot of the Final Prompt Architecture
+
+The final prompt, v28d, has the following layers.
+
+1. Task framing and default policy.
+2. Equation splitting around equality.
+3. Six structural tests: LP, RP, C0, VARS, COUNT2, LDEPTH.
+4. A four-row decision table with exactly one separating row.
+5. A restricted spine-depth divisibility test.
+6. Four small magma witnesses: T3R, T3L, T5B, NL1.
+7. A rigid parse-safe output format.
+8. Worked examples for LP, RP, C0, COUNT2, T3R, and T5B.
+
+The design principle is to spend bytes only where they simultaneously improve mathematical discrimination and operational reliability.
+
+Appendix B. Internal Result Summary
+
+v28d main local results:
+- Normal r23: 29/30 correct, 96.7% accuracy, 100% TRUE accuracy, 93.3% FALSE accuracy, parse rate 100%.
+- Competition hard r23: 15/30 correct, 50.0% accuracy, 73.3% TRUE accuracy, 26.7% FALSE accuracy, parse rate 100%.
+- Hard3 r24: 25/30 correct, 83.3% accuracy, 100% TRUE accuracy, 66.7% FALSE accuracy, parse rate 100%.
+- Hard2 r24: 13/30 correct, 43.3% accuracy, 60.0% TRUE accuracy, 26.7% FALSE accuracy, parse rate 100%.
+
+Version-line insight:
+- v28c to v28d changed only the T5B guard.
+- That change improved the competition-hard slice from 43.3% to 50.0%.
+- The normal gate remained safely high at 96.7%.
+
+Appendix C. References
+
+[ETP]
+The Equational Theories Project.
+Main web page: https://teorth.github.io/equational_theories/
+Repository: https://github.com/teorth/equational_theories
+Refreshed in this draft at commit d69afe6eee96801b1cbfad2bfca18eb48a74fc2e.
+
+[SAIR-JUDGE]
+SAIRcompetition.
+Stage 1 Judge for the Mathematics Distillation Challenge: Equational Theories.
+https://github.com/SAIRcompetition/equational-theories-stage1-judge
+Accessed 2026-04-17.
+
+[SAIR-OVERVIEW]
+SAIR Foundation.
+Mathematics Distillation Challenge: Equational Theories Stage 1 Overview.
+https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage1/overview
+Accessed 2026-04-17.
+
+[EGG]
+Max Willsey, Chandrakana Nandi, Yisu Remy Wang, Oliver Flatt, Zachary Tatlock, and Pavel Panchekha.
+egg: Fast and extensible equality saturation.
+Proceedings of the ACM on Programming Languages, POPL 2021.
+
+[GUIDED-EQSAT]
+Thomas Koehler, Andres Goens, Siddharth Bhat, Tobias Grosser, Phil Trinder, and Michel Steuwer.
+Guided Equality Saturation.
+Proceedings of the ACM on Programming Languages, POPL 2024.
+
+Appendix D. Notes for Conversion to LaTeX
+
+1. This draft is intentionally prose-first and can be moved into the existing paper/main.tex scaffold later.
+2. The most important tables to preserve in LaTeX are the main result table and the architecture/failure-mode summaries.
+3. The strongest optional next step before LaTeX finalization is light cross-model validation of v28d on one normal and one hard3 slice.
+4. The proof-scrape sample should remain a background note unless a richer and cleaner scrape is collected.

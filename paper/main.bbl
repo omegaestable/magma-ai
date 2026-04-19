@@ -1,0 +1,520 @@
+\begin{thebibliography}{10}
+
+\bibitem{tensorflow2015-whitepaper}
+Mart\'{i}n Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen,
+  Craig Citro, Greg~S. Corrado, Andy Davis, Jeffrey Dean, Matthieu Devin,
+  Sanjay Ghemawat, Ian Goodfellow, Andrew Harp, Geoffrey Irving, Michael Isard,
+  Yangqing Jia, Rafal Jozefowicz, Lukasz Kaiser, Manjunath Kudlur, Josh
+  Levenberg, Dandelion Man\'{e}, Rajat Monga, Sherry Moore, Derek Murray, Chris
+  Olah, Mike Schuster, Jonathon Shlens, Benoit Steiner, Ilya Sutskever, Kunal
+  Talwar, Paul Tucker, Vincent Vanhoucke, Vijay Vasudevan, Fernanda Vi\'{e}gas,
+  Oriol Vinyals, Pete Warden, Martin Wattenberg, Martin Wicke, Yuan Yu, and
+  Xiaoqiang Zheng.
+\newblock {TensorFlow}: Large-scale machine learning on heterogeneous systems,
+  2015.
+\newblock Software available from \url{https://www.tensorflow.org}.
+
+\bibitem{LPAR2024:Prover9_Unleashed_Automated_Configuration}
+Kristina Aleksandrova, Jan Jakubuv, and Cezary Kaliszyk.
+\newblock {Prover9} unleashed: Automated configuration for enhanced proof
+  discovery.
+\newblock In Nikolaj Bjørner, Marijn Heule, and Andrei Voronkov, editors, {\em
+  Proceedings of 25th Conference on Logic for Programming, Artificial
+  Intelligence and Reasoning}, volume 100 of {\em EPiC Series in Computing},
+  pages 360--369. EasyChair, 2024.
+\newblock URL: \url{https://easychair.org/publications/paper/tGgl}, \href
+  {https://doi.org/10.29007/sd6t} {\path{doi:10.29007/sd6t}}.
+
+\bibitem{DBLP:conf/ijcai/AudemardS09}
+Gilles Audemard and Laurent Simon.
+\newblock Predicting learnt clauses quality in modern {SAT} solvers.
+\newblock In {\em Proceedings of the 21st International Joint Conference on
+  Artificial Intelligence, {IJCAI} 2009}, pages 399--404, 2009.
+\newblock URL: \url{https://www.ijcai.org/Proceedings/09/Papers/074.pdf}.
+
+\bibitem{DBLP:conf/cp/AudemardS12}
+Gilles Audemard and Laurent Simon.
+\newblock Refining restarts strategies for {SAT} and {UNSAT}.
+\newblock In Michela Milano, editor, {\em Principles and Practice of Constraint
+  Programming - 18th International Conference, {CP} 2012, {Q}u{\'{e}}bec
+  {C}ity, {QC}, {C}anada, {O}ctober 8-12, 2012. Proceedings}, volume 7514 of
+  {\em Lecture Notes in Computer Science}, pages 118--126. Springer, 2012.
+\newblock \href {https://doi.org/10.1007/978-3-642-33558-7\_11}
+  {\path{doi:10.1007/978-3-642-33558-7\_11}}.
+
+\bibitem{austin}
+A.~K. Austin.
+\newblock A note on models of identities.
+\newblock {\em Proc. Amer. Math. Soc.}, 16:522--523, 1965.
+\newblock \href {https://doi.org/10.2307/2034688} {\path{doi:10.2307/2034688}}.
+
+\bibitem{austin_finite}
+A.~K. Austin.
+\newblock Finite models for laws in two variables.
+\newblock {\em Proc. Amer. Math. Soc.}, 17:1410--1412, 1966.
+\newblock \href {https://doi.org/10.2307/2035753} {\path{doi:10.2307/2035753}}.
+
+\bibitem{term-rewriting}
+Franz Baader and Tobias Nipkow.
+\newblock {\em Term rewriting and all that}.
+\newblock Cambridge University Press, Cambridge, 1998.
+\newblock \href {https://doi.org/10.1017/CBO9781139172752}
+  {\path{doi:10.1017/CBO9781139172752}}.
+
+\bibitem{TheVampireDiary}
+Filip B{\'a}rtek, Ahmed Bhayat, Robin Coutelier, M{\'a}rton Hajdu, Matthias
+  Hetzenberger, Petra Hozzov{\'a}, Laura Kov{\'a}cs, Jakob Rath, Michael
+  Rawson, Giles Reger, Martin Suda, Johannes Schoisswohl, and Andrei Voronkov.
+\newblock The {Vampire} diary.
+\newblock In Ruzica Piskac and Zvonimir Rakamari{\'{c}}, editors, {\em Computer
+  Aided Verification}, pages 57--71, Cham, 2025. Springer Nature Switzerland.
+\newblock \href {https://doi.org/10.1007/978-3-031-98682-6_4}
+  {\path{doi:10.1007/978-3-031-98682-6_4}}.
+
+\bibitem{DBLP:journals/cacm/BentkampBNTVW23}
+Alexander Bentkamp, Jasmin Blanchette, Visa Nummelin, Sophie Tourret, Petar
+  Vukmirovic, and Uwe Waldmann.
+\newblock Mechanical mathematicians.
+\newblock {\em Commun. {ACM}}, 66(4):80--90, 2023.
+\newblock \href {https://doi.org/10.1145/3557998} {\path{doi:10.1145/3557998}}.
+
+\bibitem{diamond-lemma}
+George~M Bergman.
+\newblock The diamond lemma for ring theory.
+\newblock {\em Advances in Mathematics}, 29(2):178--218, 1978.
+\newblock \href {https://doi.org/10.1016/0001-8708(78)90010-5}
+  {\path{doi:10.1016/0001-8708(78)90010-5}}.
+
+\bibitem{berman-burris}
+Joel Berman and Stanley Burris.
+\newblock A computer study of 3-element groupoids.
+\newblock In {\em Logic and algebra}, pages 379--429. Routledge, 2017.
+
+\bibitem{BiereFazekasFleuryHeisinger-SAT-Competition-2020-solvers}
+Armin Biere, Katalin Fazekas, Mathias Fleury, and Maximillian Heisinger.
+\newblock {CaDiCaL}, {Kissat}, {Paracooba}, {Plingeling} and {Treengeling}
+  entering the {SAT} competition 2020.
+\newblock In Tomas Balyo, Nils Froleyks, Marijn Heule, Markus Iser, Matti
+  J{\"a}rvisalo, and Martin Suda, editors, {\em Proc.~of {SAT} Competition 2020
+  -- Solver and Benchmark Descriptions}, volume B-2020-1 of {\em Department of
+  Computer Science Report Series B}, pages 51--53. University of Helsinki,
+  2020.
+
+\bibitem{The_Equational_Theories_repository}
+Matthew Bolan, Joachim Breitner, Jose Brox, Nicholas Carlini, Mario Carneiro,
+  Floris van Doorn, Martin Dvorak, Andr{\'e}s Goens, Aaron Hill, Harald Husum,
+  Hern{\'a}n Ibarra~Mejia, Zoltan~A. Kocsis, Bruno Le~Floch, Amir Livne Bar-on,
+  Lorenzo Luccioli, Douglas McNeil, Alex Meiburg, Pietro Monticone, Pace~P.
+  Nielsen, Emmanuel~Osalotioman Osazuwa, Giovanni Paolini, Marco Petracci,
+  Bernhard Reinke, David Renshaw, Marcus Rossel, Cody Roux, J{\'e}r{\'e}my
+  Scanvic, Shreyas Srinivas, Anand~Rao Tadipatri, Terence Tao, Vlad
+  Tsyrklevich, Fernando Vaquerizo-Villar, Daniel Weber, and Fan Zheng.
+\newblock The {E}quational {T}heories project, September 2024.
+\newblock URL: \url{https://github.com/teorth/equational_theories}.
+
+\bibitem{burris}
+Stanley Burris and H.~P. Sankappanavar.
+\newblock {\em A course in universal algebra}, volume~78 of {\em Grad. Texts
+  Math.}
+\newblock Springer, Cham, 1981.
+
+\bibitem{FLT_Lean}
+Kevin Buzzard and Richard Taylor.
+\newblock {FLT}: An ongoing {Lean} formalization of {F}ermat's last theorem,
+  2025.
+\newblock URL: \url{https://github.com/ImperialCollegeLondon/FLT}.
+
+\bibitem{lean4lean}
+Mario Carneiro.
+\newblock {Lean4Lean}: Verifying a typechecker for {Lean}, in {Lean}, 2025.
+\newblock \href {https://arxiv.org/abs/2403.14064} {\path{arXiv:2403.14064}}.
+
+\bibitem{DBLP:conf/itp/CluneQBA24}
+Joshua Clune, Yicheng Qian, Alexander Bentkamp, and Jeremy Avigad.
+\newblock Duper: A proof-producing superposition theorem prover for dependent
+  type theory.
+\newblock In Yves Bertot, Temur Kutsia, and Michael Norrish, editors, {\em 15th
+  International Conference on Interactive Theorem Proving, {ITP} 2024,
+  {S}eptember 9-14, 2024, {T}bilisi, {G}eorgia}, volume 309 of {\em LIPIcs},
+  pages 10:1--10:20. Schloss Dagstuhl - Leibniz-Zentrum f{\"{u}}r Informatik,
+  2024.
+\newblock \href {https://doi.org/10.4230/LIPICS.ITP.2024.10}
+  {\path{doi:10.4230/LIPICS.ITP.2024.10}}.
+
+\bibitem{bbchallenge_bb5}
+The~{bbchallenge} Collaboration, Justin Blanchard, Daniel Briggs, Konrad Deka,
+  Nathan Fenner, Yannick Forster, Georgi~Georgiev ({Skelet}), Matthew~L. House,
+  Rachel Hunter, {Iijil}, Maja K\k{a}dzio{\l}ka, Pavel Kropitz, Shawn Ligocki,
+  {mxdys}, Mateusz Na\'{s}ciszewski, {savask}, Tristan St\'{e}rin, Chris Xu,
+  Jason Yuen, and Th\'{e}o Zimmermann.
+\newblock Determination of the fifth {B}usy {B}eaver value, 2025.
+\newblock See \url{https://bbchallenge.org/}.
+\newblock URL: \url{https://github.com/bbchallenge/bbchallenge-paper}, \href
+  {https://arxiv.org/abs/2509.12337} {\path{arXiv:2509.12337}}.
+
+\bibitem{deMoura-Bjorner-2009}
+Leonardo de~Moura and Nikolaj Bj{\o}rner.
+\newblock Satisfiability modulo theories: An appetizer.
+\newblock In Marcel Vin{\'i}cius~Medeiros Oliveira and Jim Woodcock, editors,
+  {\em Formal Methods: Foundations and Applications}, pages 23--36, Berlin,
+  Heidelberg, 2009. Springer Berlin Heidelberg.
+
+\bibitem{DBLP:conf/cade/MouraB07}
+Leonardo~Mendon{\c{c}}a de~Moura and Nikolaj~S. Bj{\o}rner.
+\newblock Efficient e-matching for {SMT} solvers.
+\newblock In Frank Pfenning, editor, {\em Automated Deduction - {CADE}-21, 21st
+  International Conference on Automated Deduction, {B}remen, {G}ermany, {J}uly
+  17-20, 2007, Proceedings}, volume 4603 of {\em Lecture Notes in Computer
+  Science}, pages 183--198. Springer, 2007.
+\newblock \href {https://doi.org/10.1007/978-3-540-73595-3\_13}
+  {\path{doi:10.1007/978-3-540-73595-3\_13}}.
+
+\bibitem{DBLP:conf/tacas/MouraB08}
+Leonardo~Mendon{\c{c}}a de~Moura and Nikolaj~S. Bj{\o}rner.
+\newblock {Z3:} an efficient {SMT} solver.
+\newblock In C.~R. Ramakrishnan and Jakob Rehof, editors, {\em Tools and
+  Algorithms for the Construction and Analysis of Systems, 14th International
+  Conference, {TACAS} 2008, Held as Part of the Joint {E}uropean Conferences on
+  Theory and Practice of Software, {ETAPS} 2008, {B}udapest, {H}ungary, {M}arch
+  29-{A}pril 6, 2008. Proceedings}, volume 4963 of {\em Lecture Notes in
+  Computer Science}, pages 337--340. Springer, 2008.
+\newblock \href {https://doi.org/10.1007/978-3-540-78800-3\_24}
+  {\path{doi:10.1007/978-3-540-78800-3\_24}}.
+
+\bibitem{PFR_Tao_Dilles_2023}
+Yael Dillies and Terence Tao.
+\newblock Formalization of the {P}olynomial {F}reiman-{R}uzsa conjecture of
+  {M}arton, November 2023.
+\newblock URL: \url{https://github.com/teorth/pfr}.
+
+\bibitem{dolev}
+D.~Dolev and A.~C. Yao.
+\newblock On the security of public key protocols.
+\newblock {\em IEEE Transactions on Information Theory}, 29(2):198--208, 1983.
+\newblock \href {https://doi.org/10.1109/TIT.1983.1056650}
+  {\path{doi:10.1109/TIT.1983.1056650}}.
+
+\bibitem{DBLP:journals/pacmpl/EbnerURAM17}
+Gabriel Ebner, Sebastian Ullrich, Jared Roesch, Jeremy Avigad, and Leonardo
+  de~Moura.
+\newblock A metaprogramming framework for formal verification.
+\newblock {\em Proc. {ACM} Program. Lang.}, 1({ICFP}):34:1--34:29, 2017.
+\newblock \href {https://doi.org/10.1145/3110278} {\path{doi:10.1145/3110278}}.
+
+\bibitem{DBLP:conf/sat/EenS03}
+Niklas E{\'{e}}n and Niklas S{\"{o}}rensson.
+\newblock An extensible {SAT}-solver.
+\newblock In Enrico Giunchiglia and Armando Tacchella, editors, {\em Theory and
+  Applications of Satisfiability Testing, 6th International Conference, {SAT}
+  2003. {S}anta {M}argherita {L}igure, {I}taly, {M}ay 5-8, 2003 Selected
+  Revised Papers}, volume 2919 of {\em Lecture Notes in Computer Science},
+  pages 502--518. Springer, 2003.
+\newblock \href {https://doi.org/10.1007/978-3-540-24605-3\_37}
+  {\path{doi:10.1007/978-3-540-24605-3\_37}}.
+
+\bibitem{evans}
+Trevor Evans.
+\newblock Products of points---some simple algebras and their identities.
+\newblock {\em Amer. Math. Monthly}, 74:362--372, 1967.
+\newblock \href {https://doi.org/10.2307/2314563} {\path{doi:10.2307/2314563}}.
+
+\bibitem{Goodfellow-et-al-2016}
+Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
+\newblock {\em Deep Learning}.
+\newblock MIT Press, 2016.
+\newblock URL: \url{http://www.deeplearningbook.org}.
+
+\bibitem{Gowers2009}
+Timothy Gowers and Michael Nielsen.
+\newblock Massively collaborative mathematics.
+\newblock {\em Nature}, 461(7266):879–881, October 2009.
+\newblock \href {https://doi.org/10.1038/461879a} {\path{doi:10.1038/461879a}}.
+
+\bibitem{higman-neumann}
+Graham Higman and B.~H. Neumann.
+\newblock Groups as groupoids with one law.
+\newblock {\em Publ. Math. Debrecen}, 2:215--221, 1952.
+\newblock \href {https://doi.org/10.5486/pmd.1952.2.3-4.10}
+  {\path{doi:10.5486/pmd.1952.2.3-4.10}}.
+
+\bibitem{imms-sat18}
+Alexey Ignatiev, Antonio Morgado, and Jo{\~{a}}o Marques{-}Silva.
+\newblock {PySAT}: A {P}ython toolkit for prototyping with {SAT} oracles.
+\newblock In {\em SAT}, pages 428--437, 2018.
+\newblock \href {https://doi.org/10.1007/978-3-319-94144-8_26}
+  {\path{doi:10.1007/978-3-319-94144-8_26}}.
+
+\bibitem{itk-sat24}
+Alexey Ignatiev, Zi~Li Tan, and Christos Karamanos.
+\newblock Towards universally accessible {SAT} technology.
+\newblock In {\em SAT}, pages 4:1--4:11, 2024.
+\newblock \href {https://doi.org/10.4230/LIPICS.SAT.2024.16}
+  {\path{doi:10.4230/LIPICS.SAT.2024.16}}.
+
+\bibitem{janota2025experimentalresultsvampireequational}
+Mikoláš Janota.
+\newblock Experimental results for {Vampire} on the {E}quational {T}heories
+  project, 2025.
+\newblock \href {https://arxiv.org/abs/2508.15856} {\path{arXiv:2508.15856}}.
+
+\bibitem{Kisielewicz}
+Andrzej Kisielewicz.
+\newblock Varieties of algebras with no nontrivial finite members.
+\newblock In {\em Lattices, semigroups, and universal algebra ({L}isbon,
+  1988)}, pages 129--136. Plenum, New York, 1990.
+
+\bibitem{Kisielewicz2}
+Andrzej Kisielewicz.
+\newblock Austin identities.
+\newblock {\em Algebra Universalis}, 38(3):324--328, 1997.
+\newblock \href {https://doi.org/10.1007/s000120050057}
+  {\path{doi:10.1007/s000120050057}}.
+
+\bibitem{knuth}
+Donald~E. Knuth.
+\newblock Notes on central groupoids.
+\newblock {\em J. Combinatorial Theory}, 8:376--390, 1970.
+
+\bibitem{knuth-bendix}
+Donald~E. Knuth and Peter~B. Bendix.
+\newblock Simple word problems in universal algebras.
+\newblock In {\em Computational Problems in Abstract Algebra ({P}roc. {C}onf.,
+  {O}xford, 1967)}, pages 263--297. Pergamon, Oxford-New York-Toronto, Ont.,
+  1970.
+
+\bibitem{DBLP:journals/pacmpl/KoehlerGBGTS24}
+Thomas Koehler, Andr{\'{e}}s Goens, Siddharth Bhat, Tobias Grosser, Phil
+  Trinder, and Michel Steuwer.
+\newblock Guided equality saturation.
+\newblock {\em Proc. {ACM} Program. Lang.}, 8({POPL}):1727--1758, 2024.
+\newblock \href {https://doi.org/10.1145/3632900} {\path{doi:10.1145/3632900}}.
+
+\bibitem{DBLP:conf/cav/KovacsV13}
+Laura Kov{\'{a}}cs and Andrei Voronkov.
+\newblock First-order theorem proving and {Vampire}.
+\newblock In Natasha Sharygina and Helmut Veith, editors, {\em Computer Aided
+  Verification - 25th International Conference, {CAV} 2013, {S}aint
+  {P}etersburg, {R}ussia, {J}uly 13-19, 2013. Proceedings}, volume 8044 of {\em
+  Lecture Notes in Computer Science}, pages 1--35. Springer, 2013.
+\newblock \href {https://doi.org/10.1007/978-3-642-39799-8\_1}
+  {\path{doi:10.1007/978-3-642-39799-8\_1}}.
+
+\bibitem{DBLP:series/txtcs/KroeningS16}
+Daniel Kroening and Ofer Strichman.
+\newblock {\em Decision Procedures - An Algorithmic Point of View, Second
+  Edition}.
+\newblock Texts in Theoretical Computer Science. An {EATCS} Series. Springer,
+  2016.
+\newblock \href {https://doi.org/10.1007/978-3-662-50497-0}
+  {\path{doi:10.1007/978-3-662-50497-0}}.
+
+\bibitem{klt}
+Andr\'e{} K\"undgen, Gregor Leander, and Carsten Thomassen.
+\newblock Switchings, extensions, and reductions in central digraphs.
+\newblock {\em J. Combin. Theory Ser. A}, 118(7):2025--2034, 2011.
+\newblock \href {https://doi.org/10.1016/j.jcta.2011.03.009}
+  {\path{doi:10.1016/j.jcta.2011.03.009}}.
+
+\bibitem{DBLP:conf/cpp/LimpergF23}
+Jannis Limperg and Asta~Halkj{\ae}r From.
+\newblock {Aesop}: White-box best-first proof search for {Lean}.
+\newblock In Robbert Krebbers, Dmitriy Traytel, Brigitte Pientka, and Steve
+  Zdancewic, editors, {\em Proceedings of the 12th {ACM} {SIGPLAN}
+  International Conference on Certified Programs and Proofs, {CPP} 2023,
+  {B}oston, {MA}, {USA}, {J}anuary 16-17, 2023}, pages 253--266. {ACM}, 2023.
+\newblock \href {https://doi.org/10.1145/3573105.3575671}
+  {\path{doi:10.1145/3573105.3575671}}.
+
+\bibitem{leanblueprint}
+Patrick Massot.
+\newblock {leanblueprint}: {plasTeX} plugin to build formalization blueprints.
+\newblock URL: \url{https://github.com/PatrickMassot/leanblueprint}.
+
+\bibitem{prover9-mace4}
+W.~McCune.
+\newblock {Prover9} and {Mace4}, 2005--2010.
+\newblock URL: \url{http://www.cs.unm.edu/~mccune/prover9/}.
+
+\bibitem{robbins}
+William McCune.
+\newblock Solution of the {R}obbins problem.
+\newblock {\em J. Automat. Reason.}, 19(3):263--276, 1997.
+\newblock \href {https://doi.org/10.1023/A:1005843212881}
+  {\path{doi:10.1023/A:1005843212881}}.
+
+\bibitem{mccune-survey}
+William McCune.
+\newblock Single axioms: with and without computers.
+\newblock In {\em Computer mathematics ({C}hiang {M}ai, 2000)}, volume~8 of
+  {\em Lecture Notes Ser. Comput.}, pages 83--89. World Sci. Publ., River Edge,
+  NJ, 2000.
+
+\bibitem{mccune-webpage-gtsax}
+William McCune and Michael Kinyon.
+\newblock Yet another paper on group theory single axioms.
+\newblock [Accessed in 2025].
+\newblock URL: \url{https://www.cs.unm.edu/~mccune/projects/gtsax/#division}.
+
+\bibitem{mccune_et_al}
+William McCune, Robert Veroff, Branden Fitelson, Kenneth Harris, Andrew Feist,
+  and Larry Wos.
+\newblock Short single axioms for {B}oolean algebra.
+\newblock {\em J. Automat. Reason.}, 29(1):1--16, 2002.
+\newblock \href {https://doi.org/10.1023/A:1020542009983}
+  {\path{doi:10.1023/A:1020542009983}}.
+
+\bibitem{mccune1993single}
+William~W McCune.
+\newblock Single axioms for groups and {A}belian groups with various
+  operations.
+\newblock {\em Journal of Automated Reasoning}, 10(1):1--13, 1993.
+
+\bibitem{mckenzie}
+Ralph McKenzie.
+\newblock On spectra, and the negative solution of the decision problem for
+  identities having a finite nontrivial model.
+\newblock {\em J. Symbolic Logic}, 40:186--196, 1975.
+\newblock \href {https://doi.org/10.2307/2271899} {\path{doi:10.2307/2271899}}.
+
+\bibitem{mendelsohn-padmanabhan}
+N.~S. Mendelsohn and R.~Padmanabhan.
+\newblock Minimal identities for {B}oolean groups.
+\newblock {\em J. Algebra}, 34:451--457, 1975.
+\newblock \href {https://doi.org/10.1016/0021-8693(75)90169-6}
+  {\path{doi:10.1016/0021-8693(75)90169-6}}.
+
+\bibitem{meredith-prior}
+C.~A. Meredith and A.~N. Prior.
+\newblock Equational logic.
+\newblock {\em Notre Dame J. Formal Logic}, 9:212--226, 1968.
+\newblock URL: \url{http://projecteuclid.org/euclid.ndjfl/1093893457}.
+
+\bibitem{Monticone_LeanProject_2025}
+Pietro Monticone.
+\newblock {LeanProject}: A template for blueprint-driven formalization projects
+  in {Lean}, 2025.
+\newblock URL: \url{https://github.com/pitmonticone/LeanProject}.
+
+\bibitem{the_lean4_paper}
+Leonardo~de Moura and Sebastian Ullrich.
+\newblock The {Lean} 4 theorem prover and programming language.
+\newblock In {\em Automated Deduction – {CADE} 28: 28th International
+  Conference on Automated Deduction, Virtual Event, {J}uly 12–15, 2021,
+  Proceedings}, page 625–635, Berlin, Heidelberg, 2021. Springer-Verlag.
+\newblock \href {https://doi.org/10.1007/978-3-030-79876-5_37}
+  {\path{doi:10.1007/978-3-030-79876-5_37}}.
+
+\bibitem{murskii-1}
+V.~L. Murski\u{\i}.
+\newblock The existence in the three-valued logic of a closed class with a
+  finite basis having no finite complete system of identities.
+\newblock {\em Dokl. Akad. Nauk SSSR}, 163:815--818, 1965.
+
+\bibitem{murskii-2}
+V.~L. Murski\u{\i}.
+\newblock The existence of a finite basis of identities, and other properties
+  of ``almost all'' finite algebras.
+\newblock {\em Problemy Kibernet.}, 30:43--56, 1975.
+
+\bibitem{nieuwenhuis2005proof}
+Robert Nieuwenhuis and Albert Oliveras.
+\newblock Proof-producing congruence closure.
+\newblock In {\em International Conference on Rewriting Techniques and
+  Applications}, pages 453--468. Springer, 2005.
+
+\bibitem{Padmanabhan_1969}
+R~Padmanabhan.
+\newblock On single equational-axiom systems for {A}belian groups.
+\newblock {\em Journal of the Australian Mathematical Society},
+  9(1–2):143–152, 1969.
+\newblock \href {https://doi.org/10.1017/S144678870000570X}
+  {\path{doi:10.1017/S144678870000570X}}.
+
+\bibitem{Padmanabhan}
+R.~Padmanabhan and R.~W. Quackenbush.
+\newblock Equational theories of algebras with distributive congruences.
+\newblock {\em Proc. Amer. Math. Soc.}, 41:373--377, 1973.
+\newblock \href {https://doi.org/10.2307/2039097} {\path{doi:10.2307/2039097}}.
+
+\bibitem{phillips-vojtechovsky}
+J.~D. Phillips and Petr Vojt\v{e}chovsk\'y.
+\newblock The varieties of loops of {B}ol-{M}oufang type.
+\newblock {\em Algebra Universalis}, 54(3):259--271, 2005.
+\newblock \href {https://doi.org/10.1007/s00012-005-1941-1}
+  {\path{doi:10.1007/s00012-005-1941-1}}.
+
+\bibitem{egg_tactic}
+Marcus Rossel, Rudi Schneider, Thomas Koehler, Michel Steuwer, and Andr{\'e}s
+  Goens.
+\newblock Towards pen-and-paper-style equational reasoning in interactive
+  theorem provers by equality saturation.
+\newblock {\em Proc. {ACM} Program. Lang.}, 2026.
+\newblock {POPL}.
+\newblock \href {https://doi.org/10.1145/3776667} {\path{doi:10.1145/3776667}}.
+
+\bibitem{sheffer}
+Henry~Maurice Sheffer.
+\newblock A set of five independent postulates for {B}oolean algebras, with
+  application to logical constants.
+\newblock {\em Trans. Amer. Math. Soc.}, 14(4):481--488, 1913.
+\newblock \href {https://doi.org/10.2307/1988701} {\path{doi:10.2307/1988701}}.
+
+\bibitem{Sholander01021959}
+Marlow Sholander.
+\newblock Postulates for commutative groups.
+\newblock {\em The American Mathematical Monthly}, 66(2):93--95, 1959.
+\newblock \href {https://doi.org/10.1080/00029890.1959.11989250}
+  {\path{doi:10.1080/00029890.1959.11989250}}.
+
+\bibitem{skolem}
+Th. Skolem.
+\newblock {L}ogisch-kombinatorische {U}ntersuchungen {\"u}ber die
+  {E}rf{\"u}llbarkeit oder {B}eweisbarkeit mathematischer {S}{\"a}tze nebst
+  einem {T}heoreme {\"u}ber dichte {M}engen.
+\newblock Krist. {Vid}. {Selsk}. {Skr}. {I}, 1920, {Nr}. 4, 36 {S}. (1922).,
+  1922.
+
+\bibitem{EMS_code_of_practice}
+European~Mathematical Society.
+\newblock {EMS} code of practice for mathematical publication, 19 March 2025.
+\newblock URL: \url{https://euromathsoc.org/code-of-practice}.
+
+\bibitem{Tao_blog_Sep_2024}
+Terence Tao.
+\newblock A pilot project in universal algebra to explore new ways to
+  collaborate and use machine assistance?, September 2024.
+\newblock URL: \url{https://terrytao.wordpress.com/2024/09/25/a}.
+
+\bibitem{Tarski1938}
+Alfred Tarski.
+\newblock Ein {B}eitrag zur {A}xiomatik der {A}belschen {G}ruppen.
+\newblock {\em Fundamenta Mathematicae}, 30(1):253--256, 1938.
+\newblock URL: \url{http://eudml.org/doc/213009}.
+
+\bibitem{taylor}
+Walter Taylor.
+\newblock The fine spectrum of a variety.
+\newblock {\em Algebra Univers.}, 5:263--303, 1975.
+\newblock \href {https://doi.org/10.1007/BF02485261}
+  {\path{doi:10.1007/BF02485261}}.
+
+\bibitem{the_coq_development_team_2024_14542673}
+The Coq~Development Team.
+\newblock The {C}oq proof assistant 8.20.0, December 2024.
+\newblock \href {https://doi.org/10.5281/zenodo.14542673}
+  {\path{doi:10.5281/zenodo.14542673}}.
+
+\bibitem{DBLP:journals/pacmpl/WillseyNWFTP21}
+Max Willsey, Chandrakana Nandi, Yisu~Remy Wang, Oliver Flatt, Zachary Tatlock,
+  and Pavel Panchekha.
+\newblock {egg}: Fast and extensible equality saturation.
+\newblock {\em Proc. {ACM} Program. Lang.}, 5({POPL}):1--29, 2021.
+\newblock \href {https://doi.org/10.1145/3434304} {\path{doi:10.1145/3434304}}.
+
+\bibitem{Wolfram_2022}
+Stephen Wolfram.
+\newblock The physicalization of metamathematics and its implications for the
+  foundations of mathematics, March 2022.
+\newblock \href {https://arxiv.org/abs/2204.05123} {\path{arXiv:2204.05123}}.
+
+\end{thebibliography}
