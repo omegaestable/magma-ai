@@ -4,11 +4,11 @@ This file is the repo-wide navigation contract for coding agents.
 
 ## Mission
 
-Build, evaluate, and promote a single competition-ready cheatsheet for SAIR Equational Theories Stage 1.
+Build, evaluate, and promote a Stage 2 `solver.py` for SAIR Equational Theories. The solver must produce Lean 4 proof certificates accepted by the official judge.
 
-The submission artifact is one text file in `cheatsheets/`.
+Stage 1 prompt-cheatsheet work is archived under `stage1/` and is not the active workflow.
 
-## Read Order On Cold Start
+## Cold-Start Read Order
 
 Follow this order exactly:
 
@@ -19,100 +19,113 @@ Follow this order exactly:
 5. `RESTART_CHECKLIST.md`
 6. `EVAL_WORKFLOW.md`
 7. `BENCHMARK_MANIFEST.md`
-8. Only then inspect scripts or candidate files.
+8. `stage2/README.md`
+9. `theory/README.md`
+10. Only then inspect solver code, theory tools, or archived Stage 1 files.
 
 ## Current Operating Model
 
-- **Active candidate: `cheatsheets/v28d.txt`** (9,081 bytes — v28c + T5B all-ones guard fix)
-- Previous champion: v28c (8,911 bytes), historical: v24j (8,955 bytes)
-- Next design document: `V25A_MASTER_PROMPT.md`
-- Canonical evaluator: `sim_lab.py` (aligned with official judge 2026-04-11)
-- Canonical quick wrapper: `run_paid_eval.ps1`
-- Smoke/gate protocol: `run_smoke_gate.ps1`
-- Spine classifier: `spine_classify.py`
-- Canonical failure loop: `analyze_seed_failures.py` then `distill.py`
-- **Prompt mode: `raw`** (cheatsheet IS the complete prompt, no template wrapping)
-- **3 official eval models: GPT-OSS-120B, Llama 3.3 70B, Gemma 4 31B IT** (equal weight)
-- **Deadline: April 20, 2026**
+- Active artifact: `stage2/solver/solver.py`.
+- Packaged output: `stage2/submissions/solver.py`.
+- Official harness: `vendor/stage2-official/`.
+- Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
+- Strategy: Marathon-first, deterministic certificates first, LLM calls second.
+- Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
+- Stage 1 archive: `stage1/`.
 
 ## Banned Approaches
 
-1. No Jinja2 logic in cheatsheets.
-2. No benchmark-pair memorization as policy.
-3. No promotion on hard-set uplift if normal safety regresses.
-4. No guessing about proofs or counterexamples when result artifacts disagree.
+1. Do not treat Stage 1 prompt accuracy as Stage 2 evidence.
+2. Do not submit speculative Lean code as a solved case without judge acceptance.
+3. Do not hardcode private or benchmark-specific answers as policy.
+4. Do not rely on network, local secrets, or repo-local imports from the submitted solver.
+5. Do not import Teorth theorem names in official certificates unless upstream allowlists them.
+6. Do not edit vendored official harness files casually; document any local patch.
 
 ## Canonical Workflow
 
-1. Evaluate current cheatsheet on normal smoke (20/20) across all 3 models.
-2. Run hard3 smoke (20/20) across all 3 models.
-3. Distill failures.
-4. Patch cheatsheet conservatively.
-5. Re-run normal smoke gates.
-6. Run full gate (50/50 normal + 50/50 hard) only after safety is stable.
-7. Use `run_smoke_gate.ps1 -Cheatsheet <name> -Mode smoke` for standard protocol.
-8. Use `run_smoke_gate.ps1 -Cheatsheet <name> -Mode gate` for promotion gate.
+1. Read the official Stage 2 docs in `vendor/stage2-official/docs/` and examples tutorials.
+2. Package the local solver with `stage2/solver/package_solver.ps1`.
+3. Validate syntax and size of `stage2/submissions/solver.py`.
+4. Run official Solo samples for fast certificate debugging.
+5. Run official Marathon samples for pacing, triage, and append-only output behavior.
+6. Distill failures into certificate-template fixes, not prompt folklore.
+7. Red-team candidate behavior before promotion.
 
 ## Primary Roles
 
-### Eval Runner
+### Harness Runner
 
-Use when the task is benchmark execution, scoring, or promotion evidence.
-
-Primary files:
-
-- `sim_lab.py`
-- `run_paid_eval.ps1`
-- `scoreboard.py`
-- `results/`
-
-### Distiller
-
-Use when the task is understanding failures and translating them into safe edits.
+Use when the task is official setup, runner invocation, result collection, or config drift checks.
 
 Primary files:
 
-- `analyze_seed_failures.py`
-- `distill.py`
-- `v22_coverage_analysis.py`
-- `v22_mine_sound_rules.py`
+- `vendor/stage2-official/`
+- `EVAL_WORKFLOW.md`
+- `BENCHMARK_MANIFEST.md`
 
-### Proof Auditor
+### Solver Engineer
 
-Use when the task is provenance, theorem grounding, or proof-page mining.
+Use when the task is `solver.py`, packaging, Marathon/Solo I/O, budgeting, caching, or no-secret/no-network constraints.
 
 Primary files:
 
-- `fetch_teorth_data.py`
-- `teorth_true_proof_agent.py`
-- `proof_scraping_lab.py`
-- `v21_data_infrastructure.py`
+- `stage2/solver/solver.py`
+- `stage2/solver/package_solver.ps1`
+- `stage2/README.md`
 
-## Active Versus Optional Paths
+### Lean Certificate Engineer
+
+Use when the task is Lean proof code, judge statuses, proof dependency policy, or true-certificate templates.
+
+Primary files:
+
+- `vendor/stage2-official/judge/`
+- `vendor/stage2-official/docs/solo_mode.md`
+- `vendor/stage2-official/docs/marathon_mode.md`
+
+### Counterexample Miner
+
+Use when the task is finite magma search, false certificates, witness tables, or `decideFin!` proof generation.
+
+Primary files:
+
+- `data/teorth_cache/smallest_magma.txt`
+- `data/teorth_cache/proof_page_cache/`
+- `theory/tools/`
+
+### Graph Explorer
+
+Use when the task is Teorth implication graph navigation, random equation dives, proof provenance, shortest paths, or theory cards.
+
+Primary files:
+
+- `data/exports/export_raw_implications_14_3_2026.csv`
+- `data/exports/equations.txt`
+- `data/teorth_cache/graph.json`
+- `data/teorth_cache/full_entries.json`
+
+### Red-Team Reviewer
+
+Use before a candidate is promoted. Focus on malformed I/O, forbidden imports/tokens, budget failures, local-vs-official drift, and Lean dependency policy.
+
+## Active Versus Archive Paths
 
 Active starting points:
 
 - `README.md`
-- `EVAL_WORKFLOW.md`
-- `cheatsheets/v24j.txt`
-- `V25A_MASTER_PROMPT.md`
-- `sim_lab.py`
-- `spine_classify.py`
-- `run_smoke_gate.ps1`
+- `CURRENT_STATE.md`
+- `stage2/solver/solver.py`
+- `vendor/stage2-official/README.md`
+- `vendor/stage2-official/examples/solo/TUTORIAL.md`
+- `vendor/stage2-official/examples/marathon/TUTORIAL.md`
+- `theory/README.md`
 
-Optional or research-only paths:
+Archive paths:
 
-- `vnext_search_v2.py`
-- `proof_atlas.py`
-- `atlas_public_dev.py`
-- `invoke_copilot_candidate.py`
+- `stage1/cheatsheets/`
+- `stage1/eval/`
+- `stage1/analysis/`
+- `stage1/results/`
 
-Do not start from optional paths unless the user explicitly asks for them.
-
-## Expected Agent Behavior
-
-1. Prefer the simplest sound workflow.
-2. Keep edits local and reversible.
-3. Preserve math-grounded reasoning over prompt cleverness.
-4. Surface whether a miss is a coverage gap or an execution error.
-5. Use result files as evidence, not impressions from one run.
+Do not start from archive paths unless the task explicitly asks for Stage 1 archaeology.

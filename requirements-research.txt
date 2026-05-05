@@ -1,0 +1,9 @@
+-r requirements-dev.txt
+
+arxiv>=2.1
+beautifulsoup4>=4.12
+lxml>=5.2
+networkx>=3.2
+pandas>=2.2
+pymupdf>=1.24
+pypdf>=4.2

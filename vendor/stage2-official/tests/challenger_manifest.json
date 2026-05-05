@@ -1,0 +1,611 @@
+{
+  "public_attack_cases": [
+    {
+      "name": "duplicate_proof_key_hides_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/duplicate_proof_key_hides_sorry.answer.txt",
+      "expected_status": "malformed",
+      "expected_error_code": "DUPLICATE_JSON_KEYS"
+    },
+    {
+      "name": "wrapped_disallowed_theorem_reference",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/challenger/answers/wrapped_disallowed_theorem_reference.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_DECLARATIONS"
+    },
+    {
+      "name": "challenger_axiom_smuggling_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/challenger_axiom_smuggling_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS"
+    },
+    {
+      "name": "challenger_decl_smuggling_alias_true",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/fixtures/answers/challenger_decl_smuggling_alias_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_DECLARATIONS"
+    },
+    {
+      "name": "challenger_decl_smuggling_have_true",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/fixtures/answers/challenger_decl_smuggling_have_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_DECLARATIONS"
+    },
+    {
+      "name": "sorryAx_bypass",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/sorryAx_bypass.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "trace_sorryAx_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/trace_sorryAx_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_false",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_false.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_hide_native_decide",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_hide_native_decide.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_decl_policy",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_decl_policy.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_local_alias",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_local_alias.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_wrong_table_sorryAx",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_wrong_table_sorryAx.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "trace_sorryAx_false",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/trace_sorryAx_false.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "set_option_dbg_trace_sorryAx",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/set_option_dbg_trace_sorryAx.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_dev_stderr_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_dev_stderr_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_proc_fd2_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_proc_fd2_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_stderr_spawn_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_stderr_spawn_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_async_stdout_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_async_stdout_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_full_evasion_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_full_evasion_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_namestr_devstderr_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_namestr_devstderr_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_spawn_stderr_false",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r2_spawn_stderr_false.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_macro_in_by",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_macro_in_by.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_native_decide_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_native_decide_true.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_let_rec_diverge",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_let_rec_diverge.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_section_axiom_inject",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_section_axiom_inject.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_elab_rules_in_by",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_elab_rules_in_by.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_unsafeCast",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_unsafeCast.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_lcProof",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_lcProof.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_cr_injection",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_cr_injection.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_unterminated_comment",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_unterminated_comment.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_panic_inhabited",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_panic_inhabited.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r5_admitGoal_evasion",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_admitGoal_evasion.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: Lean.Elab.admitGoal evades \\badmit\\b regex but is TacticM type, not a proof term"
+    },
+    {
+      "name": "r5_mkSorryProof_evasion",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_mkSorryProof_evasion.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: Lean.Meta.mkSorryProof evades \\bmkSorry\\b regex but identifier does not exist"
+    },
+    {
+      "name": "r5_letrec_nonterminate",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_letrec_nonterminate.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: Non-terminating let rec with fake well-founded proof; omega correctly rejects"
+    },
+    {
+      "name": "r5_native_decide_false",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_native_decide_false.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: native_decide correctly evaluates False as false; kernel-sound"
+    },
+    {
+      "name": "r5_stop_tactic",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_stop_tactic.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: stop tactic causes Lean parse error on #judge_report; returncode non-zero"
+    },
+    {
+      "name": "r5_grind_unsound",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_grind_unsound.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS",
+      "notes": "R5: grind succeeds but pulls Classical.choice/Quot.sound/propext, which are disallowed under the default (empty) axiom policy of p_true_basic.json"
+    },
+    {
+      "name": "r5_set_option_kernel",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_set_option_kernel.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: No set_option exists to disable kernel type checking"
+    },
+    {
+      "name": "r5_eval_command_inject",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_eval_command_inject.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: eval_command is not a tactic; rejected by Lean parser in by blocks"
+    },
+    {
+      "name": "r5_null_byte",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_null_byte.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: Null bytes cause Lean parse error; cannot be used to split banned tokens"
+    },
+    {
+      "name": "r5_ofReduceBool",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_ofReduceBool.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R5: Lean.ofReduceBool requires kernel-verified reduction; cannot be forged"
+    },
+    {
+      "name": "r6_trace_fake_report",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_trace_fake_report.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r6_trace_wrong_proof",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_trace_wrong_proof.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_show_term_stdout",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_show_term_stdout.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_instance_shadow_haveI",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_instance_shadow_haveI.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_change_instance",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_change_instance.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_control_char_cr_escape",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_control_char_cr_escape.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_unicode_linesep_escape",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_unicode_linesep_escape.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_block_comment_inject",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_block_comment_inject.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_panic_inhabited",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_panic_inhabited.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_opaque_in_by",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_opaque_in_by.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_suffices_false",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_suffices_false.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_set_option_hygienic_false",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_set_option_hygienic_false.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_false_cert_wrong_table",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r6_false_cert_wrong_table.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r7_conjectureAx_direct",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_conjectureAx_direct.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS",
+      "notes": "R7: Conjecture.conjectureAx proves any Prop but is caught by axiom allowlist"
+    },
+    {
+      "name": "r7_conjectureAx_false_cert",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r7_conjectureAx_false_cert.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS",
+      "notes": "R7: conjectureAx on false certificate path also caught by axiom allowlist"
+    },
+    {
+      "name": "r7_trace_stdout_injection",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_trace_stdout_injection.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "R7: trace outputs to stdout but cannot forge JUDGE_REPORT due to nonce; proof is correct so accepted"
+    },
+    {
+      "name": "r7_cyrillic_sorry_homoglyph",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_cyrillic_sorry_homoglyph.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R7: Cyrillic o in sorry evades text ban but Lean does not recognize it as sorry keyword"
+    },
+    {
+      "name": "r7_rlo_sorry_bidi",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_rlo_sorry_bidi.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R7: RTL Override + reversed sorry evades text ban but Lean rejects invalid Unicode"
+    },
+    {
+      "name": "r7_lcProof_direct",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_lcProof_direct.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R7: lcProof not text-banned but kernel rejects unsafe declarations"
+    },
+    {
+      "name": "r7_ofReduceBool_forge",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_ofReduceBool_forge.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R7: Lean.ofReduceBool requires kernel-verified reduction; type mismatch"
+    },
+    {
+      "name": "r7_haveI_magma_shadow",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_haveI_magma_shadow.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED",
+      "notes": "R7: haveI + change to shadow Magma instance fails because change requires definitional equality"
+    },
+    {
+      "name": "r9_minimal_nonce_steal",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r9_minimal_nonce_steal.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_nonce_steal_axiom_bypass",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r9_nonce_steal_axiom_bypass.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_nonce_steal_false_cert",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r9_nonce_steal_false_cert.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_nonce_steal_decl_policy",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/challenger/answers/r9_nonce_steal_decl_policy.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_spawn_forge_report",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r9_spawn_forge_report.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_smuggle_disallowed_decl",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/challenger/answers/r9_smuggle_disallowed_decl.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_persistent_attack",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r9_persistent_attack.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r8_fn_have_letFun_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_have_letFun.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative. Policy now allows letFun; regression guards the fix."
+    },
+    {
+      "name": "r8_fn_suffices_letFun_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_suffices_letFun.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative. suffices tactic's letFun is now allowed."
+    },
+    {
+      "name": "r8_fn_show_letFun_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_show_letFun.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative. show tactic's letFun is now allowed."
+    },
+    {
+      "name": "r8_fn_calc_trans_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_calc_trans.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative. Trans.trans from calc blocks is now allowed."
+    },
+    {
+      "name": "r8_fn_trans_tactic_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_trans_tactic.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative. trans tactic's Trans.simple is now allowed."
+    },
+    {
+      "name": "r8_fn_by_contra_axioms_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic_with_policy.json",
+      "answer_path": "tests/challenger/answers/r8_fn_by_contra_axioms.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "by_contra proof accepted when problem policy allows Classical.choice."
+    },
+    {
+      "name": "r8_fn_replace_letFun_accepted",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_replace_letFun.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative. replace tactic's letFun is now allowed."
+    },
+    {
+      "name": "r8_fn_false_cert_suffices_accepted",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r8_fn_false_cert_suffices.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative on false-cert path. letFun now allowed for both true and false certificates."
+    },
+    {
+      "name": "r8_fn_false_cert_have_parts_accepted",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r8_fn_false_cert_have_parts.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED",
+      "notes": "Was R8 false negative on false-cert path with multi-have decomposition."
+    }
+  ],
+  "infra_attack_cases": [
+    {
+      "name": "invalid_problem_configuration_is_harness_failure",
+      "problem_path": "tests/challenger/problems/invalid_problem_extra_key.json",
+      "answer_path": "tests/fixtures/answers/accepted_true_basic.answer.json",
+      "expected_exception": "JudgeConfigurationError"
+    },
+    {
+      "name": "invalid_problem_missing_required_key_raises",
+      "problem_path": "tests/challenger/problems/invalid_problem_missing_eq1_id.json",
+      "answer_path": "tests/fixtures/answers/accepted_true_basic.answer.json",
+      "expected_exception": "JudgeConfigurationError"
+    },
+    {
+      "name": "invalid_problem_wrong_type_raises",
+      "problem_path": "tests/challenger/problems/invalid_problem_wrong_type_eq1_id.json",
+      "answer_path": "tests/fixtures/answers/accepted_true_basic.answer.json",
+      "expected_exception": "JudgeConfigurationError"
+    },
+    {
+      "name": "invalid_problem_empty_equation_raises",
+      "problem_path": "tests/challenger/problems/invalid_problem_empty_equation.json",
+      "answer_path": "tests/fixtures/answers/accepted_true_basic.answer.json",
+      "expected_exception": "JudgeConfigurationError"
+    }
+  ],
+  "false_negative_cases": []
+}

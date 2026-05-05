@@ -1,0 +1,1 @@
+{"verdict": "false", "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\n\ndef submission : Goal := by\n  exact \u27e8Fin 1, \u27e8fun _ _ => 0\u27e9, fun x y => rfl, fun h => absurd (h 0 0) (by decide)\u27e9\n"}

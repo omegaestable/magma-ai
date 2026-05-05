@@ -1,0 +1,7 @@
+{
+  "id": "p_true_basic",
+  "eq1_id": 38,
+  "eq2_id": 42,
+  "equation1": "x ◇ x = x ◇ y",
+  "equation2": "x ◇ y = x ◇ z"
+}

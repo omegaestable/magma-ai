@@ -1,87 +1,62 @@
 # Benchmark Manifest
 
-This file explains the naming scheme and intended use of benchmark files under `data/benchmark/`.
+Stage 2 benchmarks are proof-certificate problem sets consumed by the official harness. The old Stage 1 normal/hard/hard3 prompt-evaluation files are archived under `stage1/data/`.
 
-## Naming Pattern
+## Official Development Problems
 
-Most files follow this pattern:
+The vendored official repository includes public development problem files under:
 
-`<family>_balanced<N>_true<T>_false<F>_seed<seed>[...].jsonl`
-
-Meaning:
-
-- `family`: difficulty family such as `normal`, `hard1`, `hard2`, `hard3`, or `control`
-- `balanced<N>`: total number of problems
-- `true<T>`: number of TRUE cases
-- `false<F>`: number of FALSE cases
-- `seed<seed>`: sampling seed used to build the dataset
-
-## Canonical Tiers
-
-### Warmup Normal
-
-Use these first when validating a candidate:
-
-- `normal_balanced10_true5_false5_seed0.jsonl`
-- `normal_balanced10_true5_false5_seed1.jsonl`
-
-### Full Normal Gate
-
-Use these before promotion:
-
-- `normal_balanced20_true10_false10_seed0.jsonl`
-- `normal_balanced20_true10_false10_seed1.jsonl`
-- `normal_balanced20_true10_false10_seed2.jsonl`
-
-### Randomized Or Additional Normal Sets
-
-Useful for variance and robustness checks:
-
-- `normal_balanced20_true10_false10_seed3.jsonl`
-- `normal_balanced20_true10_false10_seed61760.jsonl`
-- `normal_balanced20_true10_false10_seed694.jsonl`
-- `normal_balanced20_true10_false10_seed92229.jsonl`
-
-### Rotating Official-Like Bundles
-
-Use only after the normal gate is stable.
-
-These are not fixed benchmark files anymore. Regenerate them from the official Hugging Face pools each time:
-
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
+```text
+vendor/stage2-official/examples/problems/
 ```
 
-The generator writes:
+Expected files include sample sets and public mirrored subsets such as `sample_20.json`, `sample_200.json`, `normal.jsonl`, and hard-family JSONL files. Treat the official repo docs and current directory contents as canonical if upstream changes names.
 
-- `normal` 30 TRUE / 30 FALSE
-- `hard` 20 TRUE / 20 FALSE
-- `hard3` 10 TRUE / 10 FALSE
+## Problem Shape
 
-Use `data/benchmark/rotating_official_latest.json` as the canonical pointer to the current bundle.
+Each problem contains at least:
 
-### Hard Sets
+1. problem id
+2. `eq1_id`
+3. `eq2_id`
+4. `equation1`
+5. `equation2`
 
-Use for stress after normal safety:
+Some public files may also include an answer field for development. The private evaluation set is separate and TBD upstream.
 
-- `hard1_balanced6_true3_false3_seed0.jsonl`
-- `hard1_balanced14_true7_false7_seed0.jsonl`
-- `hard2_balanced14_true7_false7_seed0.jsonl`
-- `hard3_balanced26_true13_false13_seed0.jsonl`
+## Solo Mode
 
-### Control Sets
+Solo runs one problem per solver subprocess through stdin/stdout JSON. Use it for fast certificate debugging.
 
-Use only when explicitly testing control behavior:
+Canonical docs:
 
-- `control_balanced100_25x4_seed17.jsonl`
-- `control_balanced_normal100_hard20_seed17.jsonl`
-- `control_hard20_seed17.jsonl`
+```text
+vendor/stage2-official/docs/solo_mode.md
+vendor/stage2-official/examples/solo/TUTORIAL.md
+```
 
-## Recommended Default Sequence
+## Marathon Mode
 
-1. warmup normal seed0 and seed1
-2. full normal seed0, seed1, seed2
-3. regenerate the rotating official-like bundle from Hugging Face
-4. evaluate the current `normal`, `hard`, and `hard3` rotation files listed in `data/benchmark/rotating_official_latest.json`
+Marathon runs many problems per solver subprocess with a shared budget. Use it for competition strategy, triage, and cache reuse.
 
-If a candidate fails early in that sequence, stop and distill before running more benchmarks.
+Canonical docs:
+
+```text
+vendor/stage2-official/docs/marathon_mode.md
+vendor/stage2-official/examples/marathon/TUTORIAL.md
+```
+
+## Local Result Storage
+
+Use `stage2/results/` for Stage 2 summaries, failure ledgers, and promotion evidence. Do not mix new Stage 2 results into archived Stage 1 result directories.
+
+## Stage 1 Archive
+
+Archived Stage 1 benchmark data lives at:
+
+```text
+stage1/data/benchmark/
+stage1/data/hf_cache/
+```
+
+Use those only for historical analysis.

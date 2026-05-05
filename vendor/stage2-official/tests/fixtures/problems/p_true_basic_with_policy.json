@@ -1,0 +1,24 @@
+{
+  "id": "p_true_basic_with_policy",
+  "eq1_id": 38,
+  "eq2_id": 42,
+  "equation1": "x ◇ x = x ◇ y",
+  "equation2": "x ◇ y = x ◇ z",
+  "proof_policy": {
+    "allowed_axioms": ["propext", "Quot.sound", "Classical.choice"],
+    "allowed_declarations": ["Goal", "letFun"],
+    "allowed_declaration_prefixes": [
+      "And.", "Bool.", "Classical.", "Decidable.", "Eq.", "Equation",
+      "Exists.", "False.",
+      "Fin.", "Fintype.", "Function.", "HEq.", "Iff.", "Init.", "Int.", "Lean.",
+      "List.", "Magma.", "Mathlib.", "MemoFinOp.", "Nat.", "Nonempty.", "Not.",
+      "NthRewrites.", "OfNat.", "Option.", "Or.", "Prod.", "PUnit.",
+      "RewriteCombinations.", "RewriteGoal.", "RewriteHypothesis.",
+      "RewriteHypothesisAndGoal.", "SimpleRewrites.",
+      "Std.", "Subgraph.", "Subtype.", "Sum.",
+      "Trans.", "True.", "Unit.", "equational_theories.", "inst", "of_decide_", "submission.",
+      "congrArg", "congr_arg", "eq_self", "of_eq_true", "id",
+      "eq_comm", "eq_mp", "eq_mpr", "rfl", "absurd"
+    ]
+  }
+}

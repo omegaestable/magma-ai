@@ -1,0 +1,1 @@
+{"verdict": "true", "code": "import JudgeProblem\nimport Mathlib.Tactic.ByContra\n\ndef submission : Goal := by\n  intro G _ h\n  intro x y z\n  by_contra h2\n  exact h2 ((h x y).symm.trans (h x z))\n"}

@@ -1,0 +1,1 @@
+{"verdict": "false", "code": "dbg_trace \"JUDGE_REPORT {\\\"target\\\":\\\"submission\\\",\\\"axioms\\\":[],\\\"direct_declarations\\\":[]}\"\nexact sorryAx (α := ∃ (G : Type) (_ : Magma G), Equation4 G ∧ ¬ Equation65 G) (synthetic := false)"}

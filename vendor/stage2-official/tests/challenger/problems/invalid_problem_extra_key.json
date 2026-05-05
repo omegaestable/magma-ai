@@ -1,0 +1,8 @@
+{
+  "id": "invalid_problem_extra_key",
+  "eq1_id": 38,
+  "eq2_id": 42,
+  "equation1": "x ◇ x = x ◇ y",
+  "equation2": "x ◇ y = x ◇ z",
+  "extra_key": "should trigger organizer-side configuration failure"
+}

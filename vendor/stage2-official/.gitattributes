@@ -1,0 +1,20 @@
+# Keep line endings stable across Windows / macOS / Linux clones.
+# Without this, a Windows clone with ``core.autocrlf=true`` would rewrite
+# shell scripts and the Dockerfile with CRLF, breaking their execution
+# inside Linux containers (``bash^M`` errors, misparsed shebangs).
+
+* text=auto
+
+# Always LF — these run inside Linux containers or POSIX shells
+*.sh        text eol=lf
+*.py        text eol=lf
+Dockerfile* text eol=lf
+
+# Always CRLF — Windows-native shells expect these
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Binary
+*.png       binary
+*.olean     binary
+*.ilean     binary

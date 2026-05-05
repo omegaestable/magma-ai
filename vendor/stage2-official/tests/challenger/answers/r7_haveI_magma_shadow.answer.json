@@ -1,0 +1,1 @@
+{"verdict": "true", "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  intro x y z\n  haveI inst2 : Magma G := { op := fun a b => a }\n  change @Magma.op G inst2 x y = @Magma.op G inst2 x z\n  exact rfl\n"}

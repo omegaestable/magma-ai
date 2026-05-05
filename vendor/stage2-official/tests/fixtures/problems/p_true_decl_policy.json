@@ -1,0 +1,45 @@
+{
+  "id": "p_true_decl_policy",
+  "eq1_id": 43,
+  "eq2_id": 43,
+  "equation1": "x \u25c7 y = y \u25c7 x",
+  "equation2": "x \u25c7 y = y \u25c7 x",
+  "proof_policy": {
+    "allowed_axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "allowed_declarations": [],
+    "allowed_declaration_prefixes": [
+      "And.",
+      "Bool.",
+      "Classical.",
+      "Decidable.",
+      "Eq.",
+      "Exists.",
+      "False.",
+      "Fin.",
+      "Fintype.",
+      "Function.",
+      "HEq.",
+      "Iff.",
+      "Init.",
+      "Int.",
+      "Lean.",
+      "List.",
+      "Mathlib.",
+      "Nat.",
+      "Not.",
+      "Option.",
+      "Or.",
+      "Prod.",
+      "PUnit.",
+      "Std.",
+      "Subtype.",
+      "Sum.",
+      "True.",
+      "Unit."
+    ]
+  }
+}

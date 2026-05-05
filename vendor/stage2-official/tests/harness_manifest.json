@@ -1,0 +1,474 @@
+{
+  "cases": [
+    {
+      "name": "accepted_true_basic",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/accepted_true_basic.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "accepted_false_witness",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/fixtures/answers/accepted_false_witness.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "unparsed_invalid_json",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/unparsed_invalid_json.answer.txt",
+      "expected_status": "unparsed",
+      "expected_error_code": "UNPARSED_JSON"
+    },
+    {
+      "name": "malformed_missing_proof",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/malformed_missing_proof.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "ANSWER_SCHEMA_ERROR"
+    },
+    {
+      "name": "malformed_not_object",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/malformed_not_object.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "ANSWER_NOT_OBJECT"
+    },
+    {
+      "name": "malformed_invalid_verdict",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/malformed_invalid_verdict.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "INVALID_VERDICT"
+    },
+    {
+      "name": "malformed_empty_code",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/malformed_empty_code.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "INVALID_CODE_FIELD"
+    },
+    {
+      "name": "malformed_code_not_string",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/malformed_code_not_string.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "INVALID_CODE_FIELD"
+    },
+    {
+      "name": "malformed_code_too_long",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/malformed_code_too_long.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "CODE_TOO_LONG"
+    },
+    {
+      "name": "malformed_false_cert_too_large",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/fixtures/answers/malformed_false_cert_too_large.answer.json",
+      "expected_status": "malformed",
+      "expected_error_code": "FALSE_CERT_TOO_LARGE"
+    },
+    {
+      "name": "incomplete_placeholder",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/incomplete_placeholder.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "incomplete_trusted_axiom",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/fixtures/answers/incomplete_trusted_axiom.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS"
+    },
+    {
+      "name": "incomplete_disallowed_declaration",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/fixtures/answers/incomplete_disallowed_declaration.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_DECLARATIONS"
+    },
+    {
+      "name": "incorrect_wrong_proof",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/incorrect_wrong_proof.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "incorrect_wrong_false_witness",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/fixtures/answers/incorrect_wrong_false_witness.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "challenger_axiom_smuggling_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/fixtures/answers/challenger_axiom_smuggling_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS"
+    },
+    {
+      "name": "challenger_decl_smuggling_alias_true",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/fixtures/answers/challenger_decl_smuggling_alias_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_DECLARATIONS"
+    },
+    {
+      "name": "challenger_decl_smuggling_have_true",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/fixtures/answers/challenger_decl_smuggling_have_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_DECLARATIONS"
+    },
+    {
+      "name": "sorryAx_bypass",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/sorryAx_bypass.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "trace_sorryAx_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/trace_sorryAx_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_false",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_false.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_hide_native_decide",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_hide_native_decide.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_decl_policy",
+      "problem_path": "tests/fixtures/problems/p_true_decl_policy.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_decl_policy.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_sorryAx_local_alias",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_sorryAx_local_alias.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "dbg_trace_wrong_table_sorryAx",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/dbg_trace_wrong_table_sorryAx.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "trace_sorryAx_false",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/trace_sorryAx_false.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "set_option_dbg_trace_sorryAx",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/set_option_dbg_trace_sorryAx.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    }
+    ,
+    {
+      "name": "r2_dev_stderr_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_dev_stderr_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_proc_fd2_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_proc_fd2_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_stderr_spawn_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_stderr_spawn_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_async_stdout_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_async_stdout_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_full_evasion_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_full_evasion_true.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_namestr_devstderr_sorry",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r2_namestr_devstderr_sorry.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r2_spawn_stderr_false",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r2_spawn_stderr_false.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_macro_in_by",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_macro_in_by.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_native_decide_true",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_native_decide_true.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_unsafeCast",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_unsafeCast.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r4_lcProof",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_lcProof.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r4_unterminated_comment",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r4_unterminated_comment.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r5_null_byte",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_null_byte.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r5_ofReduceBool",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_ofReduceBool.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r5_native_decide_false",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_native_decide_false.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r5_stop_tactic",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_stop_tactic.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r5_eval_command_inject",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r5_eval_command_inject.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_trace_fake_report",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_trace_fake_report.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r6_trace_wrong_proof",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_trace_wrong_proof.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_instance_shadow_haveI",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_instance_shadow_haveI.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_control_char_cr_escape",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_control_char_cr_escape.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_block_comment_inject",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r6_block_comment_inject.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r6_false_cert_wrong_table",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r6_false_cert_wrong_table.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r7_conjectureAx_direct",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_conjectureAx_direct.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS"
+    },
+    {
+      "name": "r7_conjectureAx_false_cert",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r7_conjectureAx_false_cert.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "DISALLOWED_AXIOMS"
+    },
+    {
+      "name": "r7_trace_stdout_injection",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_trace_stdout_injection.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r7_cyrillic_sorry_homoglyph",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_cyrillic_sorry_homoglyph.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r7_rlo_sorry_bidi",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_rlo_sorry_bidi.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r7_lcProof_direct",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_lcProof_direct.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r7_ofReduceBool_forge",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_ofReduceBool_forge.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r7_haveI_magma_shadow",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r7_haveI_magma_shadow.answer.json",
+      "expected_status": "incorrect",
+      "expected_error_code": "LEAN_REJECTED"
+    },
+    {
+      "name": "r8_fn_have_letFun",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_have_letFun.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r8_fn_calc_trans",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r8_fn_calc_trans.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r8_fn_false_cert_have_parts",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r8_fn_false_cert_have_parts.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r8_fn_by_contra_axioms",
+      "problem_path": "tests/fixtures/problems/p_true_basic_with_policy.json",
+      "answer_path": "tests/challenger/answers/r8_fn_by_contra_axioms.answer.json",
+      "expected_status": "accepted",
+      "expected_error_code": "ACCEPTED"
+    },
+    {
+      "name": "r9_minimal_nonce_steal",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r9_minimal_nonce_steal.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_nonce_steal_false_cert",
+      "problem_path": "tests/fixtures/problems/p_false_witness.json",
+      "answer_path": "tests/challenger/answers/r9_nonce_steal_false_cert.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    },
+    {
+      "name": "r9_spawn_forge_report",
+      "problem_path": "tests/fixtures/problems/p_true_basic.json",
+      "answer_path": "tests/challenger/answers/r9_spawn_forge_report.answer.json",
+      "expected_status": "incomplete_proof",
+      "expected_error_code": "BANNED_PLACEHOLDER"
+    }
+  ],
+  "repeatability_cases": [
+    "accepted_true_basic",
+    "accepted_false_witness",
+    "incorrect_wrong_proof",
+    "incomplete_disallowed_declaration"
+  ],
+  "repeatability_runs": 3
+}

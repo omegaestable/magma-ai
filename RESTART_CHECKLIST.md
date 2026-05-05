@@ -4,7 +4,7 @@ Use this file when returning to the repo after time away or when a new agent sta
 
 ## 1. Orient
 
-Read these files first:
+Read these first:
 
 1. `README.md`
 2. `CURRENT_STATE.md`
@@ -12,69 +12,84 @@ Read these files first:
 4. `.github/copilot-instructions.md`
 5. `EVAL_WORKFLOW.md`
 6. `BENCHMARK_MANIFEST.md`
+7. `stage2/README.md`
+8. `theory/README.md`
 
 ## 2. Confirm Current Artifacts
 
-1. **Champion: `cheatsheets/v24j.txt`** (8,955 bytes, 87.4% of cap)
-2. Previous champion: `cheatsheets/v21f_structural.txt` (historical)
-3. Canonical evaluator: `sim_lab.py`
-4. Canonical wrapper: `run_paid_eval.ps1`
-5. Next design doc: `V25A_MASTER_PROMPT.md`
+1. Active solver scaffold: `stage2/solver/solver.py`
+2. Packaged output target: `stage2/submissions/solver.py`
+3. Official harness: `vendor/stage2-official/`
+4. Shared Teorth data: `data/exports/` and `data/teorth_cache/`
+5. Stage 1 archive: `stage1/`
 
-## 3. Confirm Environment
+## 3. Confirm Python Environment
 
-1. Activate `.venv`
-2. Set `OPENROUTER_API_KEY`
-3. Verify cheatsheet size if editing candidates
-
-Example:
+From PowerShell:
 
 ```powershell
-$env:OPENROUTER_API_KEY = "<your_key>"
-(Get-Item "cheatsheets\v24j.txt").Length
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
 ```
 
-## 4. Run One Smoke Eval
+## 4. Confirm Official Lean Environment
 
-Purpose: verify that the evaluator, OpenRouter access, and repo wiring work before you spend tokens on a full candidate gate.
+Use WSL 2, Linux, or macOS for the official Lean setup:
 
-Run the champion on one warmup benchmark:
+```bash
+cd /mnt/c/Users/nacho/Documents/GitHub/magma-ai/vendor/stage2-official
+bash scripts/setup.sh
+source .env.judge
+python3 scripts/run_harness.py
+python3 scripts/run_marathon_harness.py
+```
+
+If setup fails, fix the official harness environment before changing solver logic.
+
+Current Windows-native blocker notes:
+
+1. `lean`, `lake`, `elan`, `bash`, and `docker` are absent on the host.
+2. `wsl.exe` exists, but no WSL distro is installed/configured yet.
+3. The official Marathon runner uses POSIX process groups, so native Windows runs are not faithful without a documented local harness patch.
+
+## 5. Package The Local Solver
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v24j
+.\stage2\solver\package_solver.ps1
 ```
 
-Expected result: about 90% on this smoke test. If this fails badly, fix environment or provider issues before testing candidates.
+Expected output: `stage2/submissions/solver.py` with size below 500 KB.
 
-Or run directly with `sim_lab.py`:
+Before official Solo runs, confirm the generated submission directory contains only `solver.py`:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --errors
+Get-ChildItem -Force stage2/submissions
 ```
 
-## 5. If You Need To Iterate
+## 6. First Smoke Runs
 
-Follow this order:
+After official setup, run official demos first, then the local scaffold.
 
-1. Evaluate
-2. Read result JSON
-3. Run `analyze_seed_failures.py`
-4. Run `distill.py`
-5. Patch conservatively
-6. Re-run normal gates
+Solo demo:
 
-## 6. Do Not Start Here
+```bash
+cd vendor/stage2-official
+source .env.judge
+python3 -m pipeline.runner --submission examples/solo/demos/baseline --problems examples/problems/sample_20.json
+```
 
-Avoid starting from these unless the user asks for them:
+Marathon harness:
 
-- `vnext_search_v2.py`
-- `proof_atlas.py`
-- `atlas_public_dev.py`
-- historical planning files as the source of truth
+```bash
+python3 scripts/run_marathon_harness.py
+```
 
 ## 7. Common Traps
 
-1. Reintroducing Jinja2 logic into cheatsheets
-2. Overfitting to one benchmark file
-3. Treating a coverage gap like an execution bug, or the reverse
-4. Promoting hard uplift with hidden normal regression
+1. Treating archived Stage 1 prompt results as Stage 2 proof evidence.
+2. Submitting Lean code before checking it with the official judge.
+3. Forgetting that official solver subprocesses do not inherit local secrets.
+4. Relying on local repo imports from a single-file submission.
+5. Editing `vendor/stage2-official/` without documenting upstream drift.
+6. Leaving `.gitkeep`, `__pycache__`, or other extras in `stage2/submissions/`; the official Solo runner rejects the directory before executing the solver.

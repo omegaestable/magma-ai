@@ -28,3 +28,26 @@ results/vnext_search_v2/status.md
 
 # Notebook / editor outputs
 .ipynb_checkpoints/
+
+# Local environment files
+.env
+
+# Stage 2 generated submissions and result payloads
+stage2/submissions/*.py
+stage2/submissions/__pycache__/
+stage2/results/*.json
+stage2/results/*.jsonl
+stage2/results/*.log
+stage2/experiments/tmp*/
+
+# Vendored official harness local build/runtime artifacts
+vendor/stage2-official/.env.judge
+vendor/stage2-official/.lake/
+vendor/stage2-official/lake-packages/
+vendor/stage2-official/pipeline/results/
+vendor/stage2-official/**/__pycache__/
+vendor/stage2-official/**/*.pyc
+
+# Lean/Lake artifacts if created outside the vendor tree
+.lake/
+lake-packages/

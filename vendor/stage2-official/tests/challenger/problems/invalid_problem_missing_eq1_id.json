@@ -1,0 +1,6 @@
+{
+  "id": "invalid_problem_missing_eq1_id",
+  "eq2_id": 42,
+  "equation1": "x ◇ x = x ◇ y",
+  "equation2": "x ◇ y = x ◇ z"
+}

@@ -1,0 +1,319 @@
+{
+  "_doc": "Marathon-mode harness manifest. Each case launches the marathon runner against a fixture solver + manifest, then asserts on the run + score result. See scripts/run_marathon_harness.py.",
+  "cases": [
+    {
+      "name": "baseline_smoke",
+      "submission_path": "examples/marathon/demos/baseline",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 60,
+      "budget_tokens": 1000,
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "min_score_with_lean": 1
+      }
+    },
+    {
+      "name": "skip_path",
+      "submission_path": "tests/marathon_fixtures/solvers/skip",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "score": 0,
+        "not_attempted": 5
+      }
+    },
+    {
+      "name": "partial_path",
+      "submission_path": "tests/marathon_fixtures/solvers/partial",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "assertions": {
+        "exit_code_in": [0],
+        "by_status_min": {"malformed": 3, "not_attempted": 1},
+        "min_score_with_lean": 1
+      }
+    },
+    {
+      "name": "budget_kill",
+      "submission_path": "tests/marathon_fixtures/solvers/sleep",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 3,
+      "budget_tokens": 100,
+      "assertions": {
+        "sigterm_fired": true,
+        "sigterm_reason": "wall",
+        "max_wall_seconds": 12.0
+      }
+    },
+    {
+      "name": "token_kill",
+      "submission_path": "tests/marathon_fixtures/solvers/token_burner",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 30,
+      "budget_tokens": 100,
+      "preseed_settled_tokens": 200,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "sigterm_fired": true,
+        "sigterm_reason": "tokens",
+        "tokens_exhausted": true
+      }
+    },
+    {
+      "name": "token_tamper_inert",
+      "submission_path": "tests/marathon_fixtures/solvers/token_tamper_inert",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "tokens_exhausted": false
+      }
+    },
+    {
+      "name": "over_budget_call_rejected",
+      "submission_path": "tests/marathon_fixtures/solvers/over_budget_call",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 15,
+      "budget_tokens": 100,
+      "preseed_settled_tokens": 95,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "over_budget_pre_check_holds": true
+      }
+    },
+    {
+      "name": "upstream_failure_bills_reservation",
+      "submission_path": "tests/marathon_fixtures/solvers/upstream_fail_probe",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 60,
+      "budget_tokens": 100000,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK",
+        "OPENAI_BASE_URL": "http://127.0.0.1:1/v1"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "min_settled_tokens": 50
+      }
+    },
+    {
+      "name": "multipart_prompt_charged_correctly",
+      "submission_path": "tests/marathon_fixtures/solvers/multipart_prompt_probe",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 15,
+      "budget_tokens": 100,
+      "preseed_settled_tokens": 95,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "multipart_prompt_holds": true
+      }
+    },
+    {
+      "name": "watchdog_uses_settled_only",
+      "submission_path": "tests/marathon_fixtures/solvers/quiet_sleeper",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "preseed_reserved_tokens": 200,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "tokens_exhausted": false
+      }
+    },
+    {
+      "name": "zero_token_budget_rejects_llm",
+      "submission_path": "tests/marathon_fixtures/solvers/zero_budget_probe",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 0,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "zero_budget_holds": true
+      }
+    },
+    {
+      "name": "oversized_solver_rejected",
+      "synthesize_oversized_solver": true,
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 5,
+      "budget_tokens": 100,
+      "assertions": {
+        "expect_run_marathon_raises": "exceeds the"
+      }
+    },
+    {
+      "name": "oversized_manifest_rejected",
+      "synthesize_oversized_manifest": true,
+      "submission_path": "examples/marathon/demos/baseline",
+      "budget_seconds": 5,
+      "budget_tokens": 100,
+      "assertions": {
+        "expect_run_marathon_raises": "manifest limit"
+      }
+    },
+    {
+      "name": "stderr_flood_bounded",
+      "submission_path": "tests/marathon_fixtures/solvers/stderr_flood",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 60,
+      "budget_tokens": 100,
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "max_stderr_tail_bytes": 65536
+      }
+    },
+    {
+      "name": "stderr_no_newline_bounded",
+      "submission_path": "tests/marathon_fixtures/solvers/stderr_no_newline",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 60,
+      "budget_tokens": 100,
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "max_stderr_tail_bytes": 65536
+      }
+    },
+    {
+      "name": "proxy_slowloris_bounded",
+      "submission_path": "tests/marathon_fixtures/solvers/proxy_slowloris",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 30,
+      "budget_tokens": 100,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "sigterm_fired": false,
+        "max_wall_seconds": 25.0
+      }
+    },
+    {
+      "name": "output_flood_killed",
+      "submission_path": "tests/marathon_fixtures/solvers/output_flood",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 60,
+      "budget_tokens": 100,
+      "assertions": {
+        "sigterm_fired": true,
+        "sigterm_reason": "output"
+      }
+    },
+    {
+      "name": "output_grace_overrun_truncated",
+      "submission_path": "tests/marathon_fixtures/solvers/output_grace_overrun",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 60,
+      "budget_tokens": 100,
+      "assertions": {
+        "sigterm_fired": true,
+        "sigterm_reason": "output",
+        "max_output_bytes_after_run": 52428800
+      }
+    },
+    {
+      "name": "determinism",
+      "submission_path": "examples/marathon/demos/baseline",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 30,
+      "budget_tokens": 100,
+      "repeat": 2,
+      "assertions": {
+        "exit_code_in": [0],
+        "scores_must_match_across_runs": true
+      }
+    },
+    {
+      "name": "anti_persist",
+      "submission_path": "tests/marathon_fixtures/solvers/anti_persist",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "scratch_pre_populate": ["leftover_from_prior_run.bin"],
+      "assertions": {
+        "exit_code_in": [0],
+        "scratch_was_empty": true
+      }
+    },
+    {
+      "name": "late_write",
+      "submission_path": "tests/marathon_fixtures/solvers/late_writer",
+      "manifest": "tests/marathon_fixtures/manifests/normal_2_brutable.jsonl",
+      "budget_seconds": 3,
+      "budget_tokens": 100,
+      "assertions": {
+        "sigterm_fired": true,
+        "output_contains_post_sigterm_line": true,
+        "score_uses_last_write": true
+      }
+    },
+    {
+      "name": "duplicate_id",
+      "submission_path": "tests/marathon_fixtures/solvers/duplicate_id",
+      "manifest": "tests/marathon_fixtures/manifests/normal_2_brutable.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "assertions": {
+        "exit_code_in": [0],
+        "score_used_last_line_only": true,
+        "min_score_with_lean": 1
+      }
+    },
+    {
+      "name": "manifest_mutation",
+      "submission_path": "tests/marathon_fixtures/solvers/manifest_mutator",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "assertions": {
+        "exit_code_in": [0],
+        "score_uses_original_manifest": true
+      }
+    },
+    {
+      "name": "key_isolation",
+      "submission_path": "tests/marathon_fixtures/solvers/key_isolation_probe",
+      "manifest": "tests/marathon_fixtures/manifests/normal_5.jsonl",
+      "budget_seconds": 10,
+      "budget_tokens": 100,
+      "inject_runner_env": {
+        "OPENROUTER_API_KEY": "harness-fake-upstream-key-DO-NOT-LEAK"
+      },
+      "assertions": {
+        "exit_code_in": [0],
+        "key_isolation_holds": true
+      }
+    }
+  ]
+}

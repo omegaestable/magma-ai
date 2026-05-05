@@ -1,156 +1,106 @@
 # Eval Workflow
 
-This is the canonical benchmark and promotion workflow for cheatsheet development.
+This is the canonical Stage 2 evaluation and promotion workflow.
 
 ## Goal
 
-Promote a candidate only when it is normal-safe and backed by reproducible evidence.
+Promote a `solver.py` candidate only when it is reproducible, accepted by the official judge on local samples, robust under Solo and Marathon I/O, and reviewed adversarially.
 
-## Canonical Loop
+## Official Harness
 
-1. Run warmup normal benchmarks.
-2. Run full normal gates.
-3. If any full normal seed regresses, stop and distill that failing seed first.
-4. Patch the cheatsheet only after the failure type is clear.
-5. Re-run the failing normal seed, then return to the full normal gate set.
-5. Safety holds only when all full normal seeds meet or beat the champion with no regression.
-6. Run unseen and hard stress only after safety holds.
+The official Stage 2 harness is vendored at `vendor/stage2-official/`.
 
-## Standard Benchmark Tiers
+Use upstream docs as the source of truth:
 
-### Warmup
+- `vendor/stage2-official/README.md`
+- `vendor/stage2-official/docs/solo_mode.md`
+- `vendor/stage2-official/docs/marathon_mode.md`
+- `vendor/stage2-official/examples/solo/TUTORIAL.md`
+- `vendor/stage2-official/examples/marathon/TUTORIAL.md`
+- `vendor/stage2-official/pipeline/config.json`
 
-Purpose: catch obvious regressions quickly.
+## Setup Gate
 
-- `data/benchmark/normal_balanced10_true5_false5_seed0.jsonl`
-- `data/benchmark/normal_balanced10_true5_false5_seed1.jsonl`
+Run inside WSL 2, Linux, or macOS:
 
-### Full Normal Gate
-
-Purpose: promotion-quality normal safety check.
-
-- `data/benchmark/normal_balanced20_true10_false10_seed0.jsonl`
-- `data/benchmark/normal_balanced20_true10_false10_seed1.jsonl`
-- `data/benchmark/normal_balanced20_true10_false10_seed2.jsonl`
-
-Operational rule: the candidate should meet or beat the current champion across all three of these files before hard-set uplift matters.
-
-### Stress And Unseen
-
-Use after normal is stable:
-
-- regenerate the rotating official-like bundle with `make_unseen_30_30_sets.py`
-- evaluate the `normal`, `hard`, and `hard3` files listed in `data/benchmark/rotating_official_latest.json`
-- for hard FALSE rescue, run the failure-conditioned family analyzer on the resulting hard and hard3 payloads before editing the cheatsheet
-
-Recommended refresh command:
-
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
+```bash
+cd vendor/stage2-official
+bash scripts/setup.sh
+source .env.judge
+python3 scripts/run_harness.py
+python3 scripts/run_marathon_harness.py
 ```
 
-Failure-conditioned hard-false report:
+Do not diagnose local solver performance until the official harness is green.
+
+Native Windows is useful for Python-only smoke tests, but it is not currently a faithful official harness environment here: Lean/Lake/elan/bash/docker are absent, WSL has no installed distro, and the Marathon runner uses POSIX process groups. Prefer WSL 2 or Linux/macOS for judge evidence.
+
+## Packaging Gate
+
+From PowerShell:
 
 ```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe analyze_hard_false_families.py --result-files results/<hard_run>.json,results/<hard3_run>.json --out-prefix results/proof_lab/rotating_hard_false_report
+.\stage2\solver\package_solver.ps1
 ```
 
-This report ranks likely witness families for the actual false positives using equation-level facts provenance plus verified canned witnesses, so the next conservative v23 edit can target projection, compact finite witnesses, 4x4 tables, or a rarer hard lane with evidence.
+Check:
 
-## Canonical Commands
+1. `stage2/submissions/solver.py` exists.
+2. File size is below 500 KB.
+3. `stage2/submissions/` contains no extra files or directories.
+4. It uses no repo-local imports.
+5. It does not read local secrets.
 
-Quick wrapper:
+## Solo Debug Loop
 
-```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v24j
-```
+Use Solo for fast proof debugging and judge feedback.
 
-Direct evaluator (wrapped mode — matches playground):
+For the pinned harness snapshot, `pipeline/proxy.py` and the official Solo demos use `{"call":"judge","verdict":...,"code":...}`. If prose docs mention a terminal `type: submit` shape, verify against the proxy before changing solver I/O.
 
-```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --errors
-```
+1. Pick a small public problem file from `vendor/stage2-official/examples/problems/`.
+2. Run the official baseline to confirm harness health.
+3. Run the local packaged solver.
+4. Inspect judge statuses: `accepted`, `unparsed`, `malformed`, `incomplete_proof`, `incorrect`.
+5. Fix the certificate generator, not only the prompt.
 
-Direct evaluator (complete mode — legacy, cheatsheet is the full prompt):
+## Marathon Loop
 
-```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v24j.txt --openrouter --prompt-mode complete --parser lenient --errors
-```
+Use Marathon for competition-relevant triage and budget behavior.
 
-Diagnostic (compare wrapped vs complete to identify playground parity):
+1. Read the manifest once.
+2. Rank problems by deterministic solve probability and expected token cost.
+3. Submit deterministic certificates first.
+4. Spend LLM budget only on unresolved high-value cases.
+5. Respect append-only JSONL output and last-write-wins semantics.
+6. Track tokens, wall-clock, accepted count, and failure class.
 
-```powershell
-python diagnose_parity.py --cheatsheet cheatsheets/v24j.txt --n 10 --openrouter
-```
+## Certificate Distillation
 
-## What To Inspect
+For each failed certificate attempt, record:
 
-Primary outputs:
-
-- `results/sim_*.json`
-- `results/scoreboard.md`
-- `results/scoreboard.csv`
-
-Retention guidance:
-
-1. `results/sim_*.json` are working payloads for immediate analysis and are ignored by git.
-2. After you have distilled or summarized a run, prefer keeping the scoreboard outputs instead of a pile of raw payloads.
-3. If you need durable evidence for a decision, capture it in the scoreboard, current-state notes, or a reviewed ledger rather than relying on many local raw files.
-
-From each run, inspect:
-
-1. accuracy
-2. true accuracy
-3. false accuracy
-4. parse rate
-5. quality score
-6. error list
-
-## Failure Triage
-
-After a failed run:
-
-1. Use `analyze_seed_failures.py` to build the fail ledger.
-2. Use `distill.py` to classify patterns.
-3. Decide whether misses are:
-   - execution errors
-   - coverage gaps
-   - formatting collapse
-   - provenance mismatches
-
-### Failure Categories
-
-- execution error: the model reasons incorrectly about a rule that should have worked, or produces malformed analysis
-- coverage gap: the current structural lane has no sound separator for the pair, so default behavior stays wrong
-- formatting collapse: the model abandons the required output contract or drifts into prose that the parser cannot trust
-- provenance mismatch: benchmark truth and source-backed evidence disagree and the pair needs audit before policy changes
-
-If the failure type is unclear, do not patch the cheatsheet first. Build the ledger and classify before editing.
-
-### Distillation Scope
-
-Default practice:
-
-1. Distill every failure on warmup and full normal gates.
-2. For larger hard or unseen runs, start with all failures if count is manageable; otherwise begin with the highest-frequency or repeated patterns.
-3. Do not generalize from one isolated miss when the ledger suggests a broader coverage pattern.
+1. problem id, equation ids, and verdict attempted
+2. generated Lean code hash or path
+3. judge status
+4. relevant stderr excerpt
+5. expected proof family or witness family
+6. root cause: syntax, type mismatch, dependency policy, bad witness, bad proof idea, timeout, or unsupported import
 
 ## Promotion Rule
 
-Promote only if all of the following hold:
+A candidate can be called a Stage 2 champion only if:
 
-1. No normal regression against the current champion.
-2. Hard or unseen performance is not worse.
-3. Quality and parse behavior remain acceptable.
-4. The change is explainable in mathematical terms.
-
-Operational definition of "safety holds": all three full normal seeds meet or beat the current champion with no regression.
-
-If those conditions do not hold, keep the old champion.
+1. Official harness tests pass locally.
+2. Packaged solver is <= 500 KB.
+3. Solo sample runs are reproducible.
+4. Marathon sample runs are reproducible.
+5. Deterministic certificates are judge-accepted on their fixture set.
+6. Red-team review finds no blocker.
+7. The candidate has a result summary under `stage2/results/`.
 
 ## Banned Shortcuts
 
-1. No benchmark-pair hardcoding.
-2. No Jinja2 logic in cheatsheets.
-3. No promotion from one lucky run.
-4. No ignoring quality/parse failures just because raw accuracy looks better.
+1. No benchmark-pair memorization as solver policy.
+2. No hidden dependency on local files outside the submitted `solver.py`.
+3. No hidden dependency on local API keys or environment variables.
+4. No proof template promotion without accepted Lean evidence.
+5. No changing official reference config and calling the result official.

@@ -1,0 +1,57 @@
+{
+  "id": "p_false_witness",
+  "eq1_id": 4,
+  "eq2_id": 65,
+  "equation1": "x = x ◇ y",
+  "equation2": "x = y ◇ (x ◇ (y ◇ x))",
+  "proof_policy": {
+    "allowed_axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "allowed_declarations": [
+      "Goal",
+      "id",
+      "letFun"
+    ],
+    "allowed_declaration_prefixes": [
+      "And.",
+      "Bool.",
+      "Classical.",
+      "Decidable.",
+      "Eq.",
+      "Equation",
+      "Exists.",
+      "False.",
+      "Fin.",
+      "Fintype.",
+      "Function.",
+      "HEq.",
+      "Iff.",
+      "Init.",
+      "Int.",
+      "Lean.",
+      "List.",
+      "Magma.",
+      "Mathlib.",
+      "MemoFinOp.",
+      "Nat.",
+      "Nonempty.",
+      "Not.",
+      "OfNat.",
+      "Option.",
+      "Or.",
+      "Prod.",
+      "PUnit.",
+      "Std.",
+      "Subtype.",
+      "Sum.",
+      "True.",
+      "Unit.",
+      "inst",
+      "of_decide_",
+      "submission."
+    ]
+  }
+}

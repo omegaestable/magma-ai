@@ -1,45 +1,34 @@
 # magma-ai
 
-Cheatsheet-first tooling for SAIR Equational Theories Stage 1.
+Stage 2 lab for the SAIR Mathematics Distillation Challenge on equational theories.
 
-This repo exists to produce one competition-ready text cheatsheet under 10,240 bytes that answers:
+The Stage 1 prompt-cheatsheet work is archived under `stage1/`. This top-level workspace is now for building a single-file Python solver that emits Lean 4 proof certificates for Stage 2.
 
-"Does equation1 imply equation2 over all magmas?"
+## Mission
 
-The operating priority is:
+Build a competition-ready `solver.py` for Stage 2, with a Marathon-first architecture and Solo compatibility.
 
-1. Math and rule soundness first.
-2. Normal-set safety before any hard-set uplift.
-3. Reproducible paid-model evidence before promotion.
+The solver must decide implications between magma equations by producing certificates accepted by the official Lean judge:
 
-Paid OpenRouter evaluation is the supported inference path in this repo.
+1. TRUE: a Lean proof that the hypothesis equation implies the goal equation.
+2. FALSE: a Lean proof of a finite magma satisfying the hypothesis but not the goal.
 
-## Current State
+The submission artifact is one Python file, `solver.py`, with a size limit of 500 KB.
 
-- **Champion: `cheatsheets/v28d.txt`** (9,081 bytes, 88.7% of cap)
-- Previous champion: `cheatsheets/v28c.txt` (8,911 bytes)
-- Historical champion: `cheatsheets/v24j.txt` (8,955 bytes)
-- Canonical evaluator: `sim_lab.py`
-- Canonical quick-run wrapper: `run_paid_eval.ps1`
-- Smoke/gate runner: `run_smoke_gate.ps1`
-- Current strategy: pure natural-language cheatsheet with 6 structural tests (LP, RP, C0, VARS, COUNT2, LDEPTH) + Spine Depth + T3R/T3L/T5B/NL1 algebraic rescue magma tests
-- Prompt mode: **raw** (cheatsheet IS the complete prompt, no template wrapping)
-- 3 official eval models: GPT-OSS-120B, Llama 3.3 70B, Gemma 4 31B IT
+## Current Direction
 
-## Hard Constraints
+- Stage 2 officially started: May 1, 2026.
+- Deadline: August 31, 2026, 23:59 AoE.
+- Strategy: Marathon-first solver with shared Solo/Marathon core.
+- Official harness: vendored at `vendor/stage2-official/`.
+- Official harness snapshot: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
+- Local solver scaffold: `stage2/solver/solver.py`.
 
-1. Submission artifact is one file in `cheatsheets/`.
-2. Cheatsheet must stay at or below 10,240 bytes on disk.
-3. Only `{{equation1}}` and `{{equation2}}` substitution is allowed.
-4. Jinja2 logic is banned. No `set`, `if`, `for`, macros, gap tables, or computed lookup logic in the cheatsheet.
-5. Do not hardcode benchmark pairs as policy.
-6. Do not promote a candidate with normal-set regression.
+Scoring, final model routing, and final private problem-set composition are still TBD upstream. Keep those as configuration assumptions, not hardcoded policy.
 
 ## Start Here
 
-## Canonical Cold-Start Read Order
-
-Follow this order exactly:
+Cold-start read order:
 
 1. `README.md`
 2. `CURRENT_STATE.md`
@@ -48,148 +37,78 @@ Follow this order exactly:
 5. `RESTART_CHECKLIST.md`
 6. `EVAL_WORKFLOW.md`
 7. `BENCHMARK_MANIFEST.md`
-8. `TUTORIAL_CHEATSHEET_PLAYBOOK.md`
-9. `TUTORIAL_SCRIPT_SKILLS.md`
+8. `stage2/README.md`
+9. `theory/README.md`
 
-For humans:
+## Repository Layout
 
-1. Read this file.
-2. Read `CURRENT_STATE.md`.
-3. Read `RULESET.md`.
-4. Read `EVAL_WORKFLOW.md`.
-5. Read `TUTORIAL_CHEATSHEET_PLAYBOOK.md`.
-
-For agents:
-
-1. Follow the canonical cold-start read order above.
-2. Use `AGENTS.md` and `.github/copilot-instructions.md` as the repo-specific operating contract.
+- `vendor/stage2-official/`: vendored official Stage 2 judge, pipeline, docs, tutorials, examples, and Lean package.
+- `stage2/`: local Stage 2 solver work, submissions, docs, experiments, and results.
+- `theory/`: reusable Teorth data/proof/witness tools and theory workflow notes.
+- `paper/`: math papers, TeX sources, figures, and theory reading material.
+- `data/exports/`: shared implication matrix and equation exports.
+- `data/teorth_cache/`: shared Teorth graph, proof-page cache, and witness/provenance data.
+- `stage1/`: complete Stage 1 archive, including cheatsheets, benchmark artifacts, eval scripts, old docs, and results.
 
 ## Quick Start
 
-Activate the repo venv and set your OpenRouter key:
+Create or activate the Python environment from PowerShell:
 
 ```powershell
-$env:OPENROUTER_API_KEY = "<your_key>"
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
 ```
 
-Run a quick baseline check:
+Set local LLM credentials only for local experiments. Do not assume these exist in the official solver subprocess.
 
 ```powershell
-.\run_paid_eval.ps1 -Benchmark normal_balanced10_true5_false5_seed0 -Cheatsheet v28d
+Copy-Item .env.example .env
 ```
 
-Run the champion directly:
+Official Lean setup should run inside WSL 2 or Linux/macOS:
+
+```bash
+cd /mnt/c/Users/nacho/Documents/GitHub/magma-ai/vendor/stage2-official
+bash scripts/setup.sh
+source .env.judge
+python3 scripts/run_harness.py
+python3 scripts/run_marathon_harness.py
+```
+
+Run the official demo solver after setup:
+
+```bash
+python3 -m pipeline.runner \
+  --submission examples/solo/demos/baseline \
+  --problems examples/problems/sample_20.json
+```
+
+Package the local scaffold from PowerShell:
 
 ```powershell
-python sim_lab.py --data data/benchmark/normal_balanced10_true5_false5_seed0.jsonl --cheatsheet cheatsheets/v28d.txt --prompt-mode raw --errors
+.\stage2\solver\package_solver.ps1
 ```
 
-Check cheatsheet size on disk:
+## Development Loop
 
-```powershell
-(Get-Item "cheatsheets\v24j.txt").Length
-```
+1. Improve deterministic certificate generation first.
+2. Validate generated Lean certificates with the official judge.
+3. Add LLM calls only when deterministic methods leave useful budget gaps.
+4. Run Solo samples for quick proof debugging.
+5. Run Marathon samples for budget, triage, cache, and append-only output behavior.
+6. Red-team every candidate before calling it a champion.
 
-Refresh the rotating official-like evaluation bundle:
+## Stage 1 Archive
 
-```powershell
-C:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe make_unseen_30_30_sets.py --purge-legacy-unseen
-```
+Stage 1 ended with a prompt-cheatsheet system and the active candidate `v28d`. The historical code and results are under `stage1/`; they are reference material only. Do not start new Stage 2 work by editing archived cheatsheets or running Stage 1 gates.
 
-That command regenerates fresh balanced slices from the official Hugging Face `normal`, `hard`, and `hard3` subsets and records the latest file paths in `data/benchmark/rotating_official_latest.json`.
+## Useful External Resources
 
-## Canonical Workflow
-
-The repo should be approached through one loop only:
-
-1. Evaluate candidate on normal safety gates.
-2. Distill failures into a ledger and pattern summary.
-3. Patch cheatsheet conservatively.
-4. Re-run normal gates.
-5. Run full and stress benchmarks only after normal safety holds.
-6. Promote only with explicit evidence.
-
-If you are not inside that loop, you are probably in a research or historical path.
-
-## Core Files
-
-### Evaluate and Gate
-
-- `sim_lab.py`: canonical paid evaluator, strict parsing, result JSON output
-- `run_paid_eval.ps1`: convenience wrapper for standard paid runs
-- `scoreboard.py`: summarizes run payloads into leaderboard-style outputs
-
-### Distill and Forensics
-
-- `distill.py`: converts failures into patterns and candidate edits
-- `analyze_seed_failures.py`: builds fail ledgers with corrected certificates
-- `v22_coverage_analysis.py`: measures which lanes cover false cases
-- `v22_mine_sound_rules.py`: mines globally sound structural rules
-
-### Data and Proof Grounding
-
-- `fetch_teorth_data.py`: fetches and refreshes Teorth assets
-- `teorth_true_proof_agent.py`: attaches source-backed proof metadata
-- `proof_scraping_lab.py`: bulk proof-page scraper and cached archival crawler
-- `proof_construction_atlas.py`: second-pass family extractor for cached proof crawls
-- `v21_data_infrastructure.py`: matrix, equation, and witness utilities
-- `v21_verify_structural_rules.py`: authoritative rule verification helpers
-
-### Research and Optional Paths
-
-- `vnext_search_v2.py`: search/orchestration path, not the canonical starting point
-- `proof_atlas.py`, `atlas_public_dev.py`: research helpers, not required for the standard cheatsheet loop
-- `invoke_copilot_candidate.py`: helper script, not a primary entrypoint
-
-## Documentation Map
-
-- `CURRENT_STATE.md`: short-lived operational truth for the current phase
-- `EVAL_WORKFLOW.md`: canonical benchmark and promotion flow
-- `RESTART_CHECKLIST.md`: cold-start checklist for humans and agents
-- `BENCHMARK_MANIFEST.md`: benchmark naming legend and dataset roles
-- `TUTORIAL_CHEATSHEET_PLAYBOOK.md`: end-to-end operator tutorial
-- `TUTORIAL_SCRIPT_SKILLS.md`: role-based script map
-- `RULESET.md`: competition constraints and scoring
-- `V23_PLAN.md`: historical planning context
-- `V24_MASTER_PROMPT.md`: historical v24 design document
-- `V25A_MASTER_PROMPT.md`: next-generation design document
-
-## Benchmarks and Data
-
-- Benchmarks: `data/benchmark/`
-- Rotating benchmark manifest: `data/benchmark/rotating_official_latest.json`
-- Teorth cache: `data/teorth_cache/`
-- Dense implications matrix: `data/exports/export_raw_implications_14_3_2026.csv`
-- Equation catalog: `data/exports/equations.txt`
-- Results: `results/sim_*.json`
-- Scoreboards: `results/scoreboard.md`, `results/scoreboard.csv`
-
-## Local Artifact Hygiene
-
-Treat these as local, disposable artifacts unless a task explicitly needs them:
-
-1. `results/sim_*.json` raw simulator payloads
-2. `tmp*/` transient root temp directories
-3. intermediate distill temp folders under `results/manual_distill/`
-
-Retention rule:
-
-1. Keep `results/scoreboard.md` and `results/scoreboard.csv` as the human-readable summary layer.
-2. Keep raw `results/sim_*.json` only while you are actively diagnosing a run.
-3. Delete raw ignored artifacts after summarizing or distilling them.
-4. Treat frozen `*_unseen_*.jsonl` benchmark files as deprecated local artifacts; regenerate rotating bundles from the official Hugging Face subsets instead.
-
-## Promotion Rules
-
-1. Normal safety gates must pass before hard-set runs matter.
-2. Every FALSE decision path should remain mathematically defensible.
-3. Results, ledgers, and provenance must agree before promotion.
-4. If a candidate is better on hard but weaker on normal, keep the old champion.
-
-## Anti-Regression Guardrails
-
-1. Do not reintroduce Jinja2 logic into cheatsheets.
-2. Do not optimize against one benchmark file at the expense of general rules.
-3. Prefer compact, sound structural reasoning over brittle heuristics.
-4. Treat run artifacts and failure ledgers as the source of truth.
-5. When in doubt, revert to the simpler, safer cheatsheet.
+- Stage 2 competition overview: https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage2/overview
+- Stage 2 evaluation setup: https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage2/evaluation-setup
+- Official Stage 2 repository: https://github.com/SAIRcompetition/equational-theories-lean-stage2
+- Teorth Equational Theories Project: https://teorth.github.io/equational_theories/
+- Teorth implication explorer: https://teorth.github.io/equational_theories/implications/

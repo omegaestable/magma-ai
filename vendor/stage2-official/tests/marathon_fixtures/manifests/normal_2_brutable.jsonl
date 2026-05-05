@@ -1,0 +1,2 @@
+{"id": "normal_0003", "index": 3, "difficulty": "normal", "eq1_id": 649, "eq2_id": 2608, "equation1": "x = x ◇ (y ◇ ((z ◇ x) ◇ x))", "equation2": "x = (y ◇ ((z ◇ z) ◇ y)) ◇ w", "answer": false}
+{"id": "normal_0006", "index": 6, "difficulty": "normal", "eq1_id": 4263, "eq2_id": 837, "equation1": "x ◇ y = ((z ◇ w) ◇ u) ◇ y", "equation2": "x = x ◇ ((y ◇ x) ◇ (y ◇ z))", "answer": false}

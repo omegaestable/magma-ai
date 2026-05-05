@@ -1,0 +1,1 @@
+{"verdict": "false", "code": "import JudgeProblem\n\n-- User-declared axiom that isn't on the policy allowlist.\naxiom fakeWitness :\n  \u2203 (G : Type) (_ : Magma G), EquationLHS G \u2227 \u00ac EquationRHS G\n\ndef submission : Goal := fakeWitness\n"}

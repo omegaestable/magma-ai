@@ -1,0 +1,1 @@
+{"verdict": "true", "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  classical\n  let witness : Nonempty (EquationRHS G) := by\n    refine \u27e8?_\u27e9\n    intro x y z\n    rw [\u2190 h, h]\n  exact Classical.choice witness\n"}

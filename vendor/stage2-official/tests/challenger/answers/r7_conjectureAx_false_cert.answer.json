@@ -1,0 +1,1 @@
+{"verdict": "false", "code": "import JudgeProblem\n\n-- R7 attack: declare a user axiom whose name isn't on the policy allowlist.\n-- The judge's axiom inspector must catch `Conjecture.conjectureAx` and reject.\naxiom Conjecture.conjectureAx :\n  \u2203 (G : Type) (_ : Magma G), EquationLHS G \u2227 \u00ac EquationRHS G\n\ndef submission : Goal := Conjecture.conjectureAx\n"}

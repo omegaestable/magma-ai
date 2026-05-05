@@ -1,0 +1,78 @@
+# Build artifacts
+.artifacts/
+.lake/
+__pycache__/
+*.pyc
+*.olean
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+*.egg-info/
+
+# Pipeline results (auto-generated)
+pipeline/results/
+
+# Large dependencies (download locally, don't commit). `deps` is
+# matched without a trailing slash so it also catches a symlink-to-dir
+# (used in dev worktrees that share a single equational_theories checkout).
+deps
+tools/
+downloads/
+
+# Local sweep / process logs (dev-only, never published)
+logs/
+
+# OS metadata
+.DS_Store
+__MACOSX/
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Editor swap / backup files
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+*.rej
+
+# API keys and secrets — playground wrappers persist OpenRouter / OpenAI
+# keys to repo-root .env, so any .env* file is treated as secret by default.
+# Tracked example: add via `git add -f .env.example` if you need one.
+keys/
+.env
+.env.*
+!.env.example
+
+# Agent instructions (not for contestants)
+CLAUDE.md
+.claude/
+
+# Competition rules (managed separately) — only Stage 2 files are published
+rules/*
+!rules/overview.md
+!rules/evaluation.md
+
+# Local mining runs (baseline outputs, LLM win catalogs)
+runs/
+
+# IDE
+.vscode/
+.idea/
+
+# Personal scratch: dev-only old solver versions and experiments,
+# kept locally for reference but never published
+archive/
+
+# In-progress eval set held back from public release.
+examples/problems/final_evaluation/
+
+# Playground (held back from initial public release)
+playground/
+scripts/playground_server.py
+scripts/run_job.py
+scripts/build_equation_index.py

@@ -1,0 +1,1 @@
+{"verdict": "true", "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  change @EquationLHS G (Magma.mk (fun x _ => x))\n  intro x y z\n  rfl\n"}
