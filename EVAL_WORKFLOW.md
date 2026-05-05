@@ -21,7 +21,20 @@ Use upstream docs as the source of truth:
 
 ## Setup Gate
 
-Run inside WSL 2, Linux, or macOS:
+Native Windows gate:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+lake update
+lake exe cache get
+lake build JudgeMagma.Magma JudgeDecide.DecideBang JudgeFinOp.MemoFinOp JudgeSupport.Inspect
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_harness.py
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
+Pop-Location
+```
+
+WSL 2, Linux, or macOS comparison gate:
 
 ```bash
 cd vendor/stage2-official
@@ -33,7 +46,7 @@ python3 scripts/run_marathon_harness.py
 
 Do not diagnose local solver performance until the official harness is green.
 
-Native Windows is useful for Python-only smoke tests, but it is not currently a faithful official harness environment here: Lean/Lake/elan/bash/docker are absent, WSL has no installed distro, and the Marathon runner uses POSIX process groups. Prefer WSL 2 or Linux/macOS for judge evidence.
+The vendored harness has documented local Windows compatibility patches in `vendor/stage2-official/UPSTREAM.md`. Treat those patches as local drift from the upstream snapshot, and rerun both official harnesses after any upstream sync.
 
 ## Packaging Gate
 

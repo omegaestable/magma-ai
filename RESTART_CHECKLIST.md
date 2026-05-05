@@ -35,7 +35,38 @@ python -m pip install -r requirements-dev.txt
 
 ## 4. Confirm Official Lean Environment
 
-Use WSL 2, Linux, or macOS for the official Lean setup:
+Native Windows setup, from PowerShell:
+
+```powershell
+winget install --id Lean.Elan -e --accept-source-agreements --accept-package-agreements
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+elan toolchain install leanprover/lean4:v4.30.0-rc2
+elan default leanprover/lean4:v4.30.0-rc2
+```
+
+Build the pinned Lean project:
+
+```powershell
+Push-Location vendor/stage2-official
+lake update
+lake exe cache get
+lake build JudgeMagma.Magma JudgeDecide.DecideBang JudgeFinOp.MemoFinOp JudgeSupport.Inspect
+Pop-Location
+```
+
+Then run the official gates:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_harness.py
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
+Pop-Location
+```
+
+The vendored harness has documented local Windows compatibility patches in `vendor/stage2-official/UPSTREAM.md`. Re-check that file before syncing upstream.
+
+WSL 2, Linux, or macOS setup remains useful for comparison:
 
 ```bash
 cd /mnt/c/Users/nacho/Documents/GitHub/magma-ai/vendor/stage2-official
@@ -46,12 +77,6 @@ python3 scripts/run_marathon_harness.py
 ```
 
 If setup fails, fix the official harness environment before changing solver logic.
-
-Current Windows-native blocker notes:
-
-1. `lean`, `lake`, `elan`, `bash`, and `docker` are absent on the host.
-2. `wsl.exe` exists, but no WSL distro is installed/configured yet.
-3. The official Marathon runner uses POSIX process groups, so native Windows runs are not faithful without a documented local harness patch.
 
 ## 5. Package The Local Solver
 
@@ -81,8 +106,10 @@ python3 -m pipeline.runner --submission examples/solo/demos/baseline --problems 
 
 Marathon harness:
 
-```bash
-python3 scripts/run_marathon_harness.py
+```powershell
+Push-Location vendor/stage2-official
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
+Pop-Location
 ```
 
 ## 7. Common Traps

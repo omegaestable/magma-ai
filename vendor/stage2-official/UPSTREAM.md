@@ -17,6 +17,16 @@ These changes are local compatibility patches on top of the upstream snapshot:
 1. `judge/verify.py` decodes Lean subprocess output as UTF-8 with replacement and uses `cmd /C echo %LEAN_PATH%` for `lake env` on Windows instead of requiring `bash`.
 2. `scripts/run_harness.py` treats the symlink-layout regression as skipped when Windows denies symlink creation with `WinError 1314`.
 3. `pipeline/marathon_runner.py` uses Windows process groups, Ctrl-Break/terminate, and `taskkill /T /F` instead of POSIX-only `os.killpg` when running on Windows.
+4. `judge/verify.py` strips judge artifact paths using both POSIX and Windows separators.
+5. `scripts/run_harness.py` uses explicit fake TTY/non-TTY streams for submit CLI color assertions so the tests do not depend on the host terminal.
+6. `pipeline/proxy.py` and `pipeline/marathon_runner.py` preserve non-secret Windows runtime environment variables such as `SYSTEMROOT`, `WINDIR`, `TEMP`, `TMP`, and `USERPROFILE` for solver subprocesses.
+7. `pipeline/marathon_proxy.py` treats Windows `ConnectionAbortedError` as an expected broken-client condition when rejecting slowloris-style requests.
+8. `tests/marathon_fixtures/solvers/late_writer/solver.py` also registers a `SIGBREAK` handler when available, and `scripts/run_marathon_harness.py` skips the POSIX-only post-SIGTERM duplicate-write assertion on Windows where Python child processes do not receive catchable `SIGTERM` semantics.
+
+Current local evidence:
+
+1. `scripts/run_harness.py`: green on native Windows with Lean available and no failing buckets.
+2. `scripts/run_marathon_harness.py`: green on native Windows, 25/25 checks with Lean available.
 
 To sync upstream later:
 

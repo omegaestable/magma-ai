@@ -33,28 +33,47 @@ c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe -m pipeline.ru
 Observed after cleaning `stage2/submissions/`:
 
 - Runner launches the packaged local solver.
-- Reflexive fixture reaches `judge_calls=1`.
-- Failure is currently `missing lean binary: lean`.
+- Reflexive fixture is solved by the official Lean judge: `1/1 solved`, `llm:0`, `judge:1`.
+- Packaged solver remains 3473 bytes and the submission directory contains only `solver.py`.
 
 Protocol note:
 
 - Current `pipeline/proxy.py` and the official Solo demo solvers use `{"call":"judge","verdict":...,"code":...}` and finish when the judge accepts.
 - `docs/solo_mode.md` also describes a terminal `type: submit` shape. Treat the proxy and examples as the executable truth for this harness snapshot unless upstream changes the proxy.
 
-## Current Blockers
+## Native Windows Lean Setup
 
-Windows native state on this machine:
+Installed and validated locally:
 
-- `lean`, `lake`, `elan`, `bash`, and `docker` are not installed.
-- `wsl.exe` exists, but no WSL distro is installed/configured.
-- Official Marathon runner currently uses POSIX process-group behavior (`os.killpg`), so native Windows execution is not a faithful Marathon environment without a local harness patch.
+- Elan: `4.2.1`
+- Lean: `4.30.0-rc2`, `x86_64-w64-windows-gnu`
+- Lake: `5.0.0-src+3dc1a08`
 
-Recommended next setup path:
+Setup commands:
 
-```bash
-cd /mnt/c/Users/nacho/Documents/GitHub/magma-ai/vendor/stage2-official
-bash scripts/setup.sh
-source .env.judge
-python3 scripts/run_harness.py
-python3 scripts/run_marathon_harness.py
+```powershell
+winget install --id Lean.Elan -e --accept-source-agreements --accept-package-agreements
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+elan toolchain install leanprover/lean4:v4.30.0-rc2
+elan default leanprover/lean4:v4.30.0-rc2
+Push-Location vendor/stage2-official
+lake update
+lake exe cache get
+lake build JudgeMagma.Magma JudgeDecide.DecideBang JudgeFinOp.MemoFinOp JudgeSupport.Inspect
+Pop-Location
 ```
+
+Official harness evidence on native Windows, after local patches documented in `vendor/stage2-official/UPSTREAM.md`:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_harness.py
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
+Pop-Location
+```
+
+Observed:
+
+- Solo/Lean harness: no failing buckets; 66/66 judge cases, 79/79 public attacks, 55/55 pipeline regressions.
+- Marathon harness: 25/25 passed with Lean available.
