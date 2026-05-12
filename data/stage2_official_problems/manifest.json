@@ -1,0 +1,54 @@
+{
+  "mirrored_at": "2026-05-12T14:04:55.875421+00:00",
+  "source": "vendor/stage2-official/examples/problems",
+  "files": [
+    {
+      "path": "data/stage2_official_problems/eq_size5.txt",
+      "bytes": 2114004,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/eq_size5.txt"
+    },
+    {
+      "path": "data/stage2_official_problems/hard1.jsonl",
+      "bytes": 14183,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/hard1.jsonl"
+    },
+    {
+      "path": "data/stage2_official_problems/hard2.jsonl",
+      "bytes": 41510,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/hard2.jsonl"
+    },
+    {
+      "path": "data/stage2_official_problems/hard3.jsonl",
+      "bytes": 82473,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/hard3.jsonl"
+    },
+    {
+      "path": "data/stage2_official_problems/marathon/normal_100.jsonl",
+      "bytes": 20914,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/marathon/normal_100.jsonl"
+    },
+    {
+      "path": "data/stage2_official_problems/normal.jsonl",
+      "bytes": 210158,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/normal.jsonl"
+    },
+    {
+      "path": "data/stage2_official_problems/sample_20.json",
+      "bytes": 3778,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/sample_20.json"
+    },
+    {
+      "path": "data/stage2_official_problems/sample_200.json",
+      "bytes": 42529,
+      "status": "copied",
+      "source": "vendor/stage2-official/examples/problems/sample_200.json"
+    }
+  ]
+}

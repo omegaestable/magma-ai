@@ -50,7 +50,8 @@ ASSET_FALLBACKS: dict[str, list[str]] = {
     ],
 }
 
-CACHE_DIR = Path(__file__).resolve().parent / "data" / "teorth_cache"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CACHE_DIR = REPO_ROOT / "data" / "teorth_cache"
 TIMEOUT_S = 30
 
 

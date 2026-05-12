@@ -13,15 +13,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+TOOL_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = TOOL_ROOT.parents[1]
+STAGE1_EVAL_DIR = REPO_ROOT / "stage1" / "eval"
+if str(STAGE1_EVAL_DIR) not in sys.path:
+    sys.path.insert(0, str(STAGE1_EVAL_DIR))
+
 import scoreboard
 
-ROOT = Path(__file__).resolve().parent
-EXPORT_DIR = ROOT / "data" / "exports"
-MANUAL_DISTILL_DIR = ROOT / "results" / "manual_distill"
-DEFAULT_OUT_DIR = ROOT / "results" / "proof_atlas"
-DEFAULT_CHEATSHEET_PATH = ROOT / "cheatsheets" / "generated_v2" / "cheatsheet_competition_v1.txt"
-RULESET_PATH = ROOT / "RULESET.md"
-CURRENT_MANIFEST_PATH = ROOT / "results" / "vnext_search_v2" / "champions" / "current.json"
+ROOT = REPO_ROOT
+EXPORT_DIR = REPO_ROOT / "data" / "exports"
+MANUAL_DISTILL_DIR = REPO_ROOT / "stage1" / "results" / "manual_distill"
+DEFAULT_OUT_DIR = REPO_ROOT / "theory" / "results" / "proof_atlas"
+DEFAULT_CHEATSHEET_PATH = REPO_ROOT / "theory" / "cheatsheets" / "generated_v2" / "cheatsheet_competition_v1.txt"
+RULESET_PATH = REPO_ROOT / "stage1" / "docs" / "RULESET.md"
+CURRENT_MANIFEST_PATH = REPO_ROOT / "stage1" / "results" / "vnext_search_v2" / "champions" / "current.json"
 EQUATION_RE = re.compile(r"Equation(\d+)")
 VAR_RE = re.compile(r"\b([a-z])\b")
 

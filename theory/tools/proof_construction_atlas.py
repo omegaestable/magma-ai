@@ -21,7 +21,7 @@ from pathlib import Path
 from fetch_teorth_data import load_full_entries
 from proof_atlas import FAMILY_TEMPLATES, classify_entry
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2] / "theory"
 
 TEXT_FAMILY_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("linear_translation", re.compile(r"linear|translation|shift operator|affine|finite field|z/pz|mod \d+", re.IGNORECASE)),
@@ -252,7 +252,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Build a machine-readable construction atlas from cached proof crawl artifacts")
     parser.add_argument("--crawl-jsonl", default="", help="JSONL output from proof_scraping_lab.py")
     parser.add_argument("--packed-pairs", default="", help="Packed JSONL index from proof_scraping_lab.py --pack-cache")
-    parser.add_argument("--out-prefix", default="results/proof_lab/construction_atlas")
+    parser.add_argument("--out-prefix", default=str(ROOT / "results" / "proof_lab" / "construction_atlas"))
     args = parser.parse_args()
 
     packed = Path(args.packed_pairs) if args.packed_pairs else None

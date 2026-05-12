@@ -22,13 +22,15 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from problem_set_catalog import CORE_HF_SUBSETS, load_hf_problem_corpus
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 EQUATIONS_FILE = ROOT / "data" / "exports" / "equations.txt"
 CSV_FILE = ROOT / "data" / "exports" / "export_raw_implications_14_3_2026.csv"
-BENCHMARK_DIR = ROOT / "data" / "benchmark"
+BENCHMARK_SUBSETS = CORE_HF_SUBSETS
 
 # ---------------------------------------------------------------------------
 # Witness library (identical to sim_lab.py EXTENDED_WITNESS_LIBRARY)
@@ -204,15 +206,8 @@ def implication_answer(matrix: list[list[int]], eq1_id: int, eq2_id: int) -> boo
 # Step 4: Benchmark mapping
 # ---------------------------------------------------------------------------
 def load_all_benchmarks() -> list[dict]:
-    """Load all benchmark JSONL files, return flat list of problems."""
-    problems = []
-    for path in sorted(BENCHMARK_DIR.glob("*.jsonl")):
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                obj = json.loads(line)
-                obj["_benchmark_file"] = path.name
-                problems.append(obj)
-    return problems
+    """Load the active root-cache benchmark problem subsets."""
+    return load_hf_problem_corpus(include_analysis_only=False)
 
 
 def map_benchmark_to_ids(
@@ -298,6 +293,7 @@ def main():
     print("\n[Step 4] Mapping benchmark problems to equation IDs ...")
     all_problems = load_all_benchmarks()
     print(f"  Loaded {len(all_problems)} total problems from {len(set(p['_benchmark_file'] for p in all_problems))} files")
+    print(f"  Active subsets: {', '.join(BENCHMARK_SUBSETS)}")
     mapped, unmapped = map_benchmark_to_ids(all_problems, eq_map)
     print(f"  Mapped: {len(mapped)}, Unmapped: {len(unmapped)}")
     if unmapped:

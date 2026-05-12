@@ -11,11 +11,19 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Optional
 
+TOOL_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = TOOL_ROOT.parents[1]
+STAGE1_ANALYSIS_DIR = REPO_ROOT / "stage1" / "analysis"
+if str(STAGE1_ANALYSIS_DIR) not in sys.path:
+    sys.path.insert(0, str(STAGE1_ANALYSIS_DIR))
+if str(TOOL_ROOT) not in sys.path:
+    sys.path.insert(0, str(TOOL_ROOT))
+
 import distill
 import proof_atlas
+from problem_set_catalog import HF_CACHE_DIR
 
-ROOT = Path(__file__).resolve().parent
-HF_CACHE_DIR = ROOT / "data" / "hf_cache"
+ROOT = REPO_ROOT / "theory"
 DEFAULT_OUT_DIR = ROOT / "results" / "proof_atlas_public"
 DEFAULT_VARIANT_DIR = ROOT / "cheatsheets" / "generated_v2" / "atlas_public"
 MODEL = "meta-llama/llama-3.3-70b-instruct"

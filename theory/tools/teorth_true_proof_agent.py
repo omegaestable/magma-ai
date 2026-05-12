@@ -25,7 +25,7 @@ from typing import Iterable
 
 from v21_data_infrastructure import build_equation_map, load_equations, normalize_eq
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 CACHE_DIR = ROOT / "data" / "teorth_cache"
 GRAPH_PATH = CACHE_DIR / "graph.json"
 ENTRIES_PATH = CACHE_DIR / "full_entries.json"

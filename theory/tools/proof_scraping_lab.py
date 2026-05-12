@@ -23,7 +23,7 @@ Examples:
   python proof_scraping_lab.py --pairs "310,118;118,310" --out-prefix results/proof_lab/smoke
 
   python proof_scraping_lab.py \
-    --from-jsonl data/benchmark/<current_hard3_rotation>.jsonl \
+    --from-jsonl data/hf_cache/hard3.jsonl \
     --only-false --limit 40 --out-prefix results/proof_lab/hard3_rotation
 
   python proof_scraping_lab.py \
@@ -53,7 +53,8 @@ from v21_data_infrastructure import build_equation_map, load_equations, normaliz
 
 BASE = "https://teorth.github.io/equational_theories/implications/"
 PROOF_PATH = "show_proof.html?pair={a},{b}"
-DEFAULT_CACHE_DIR = Path(__file__).resolve().parent / "data" / "teorth_cache" / "proof_page_cache"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CACHE_DIR = REPO_ROOT / "data" / "teorth_cache" / "proof_page_cache"
 
 H1_RE = re.compile(r"<h1[^>]*>(.*?)</h1>", re.IGNORECASE | re.DOTALL)
 A_RE = re.compile(r"<a[^>]*href=\"([^\"]+)\"[^>]*>(.*?)</a>", re.IGNORECASE | re.DOTALL)

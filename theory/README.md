@@ -6,10 +6,18 @@ This directory is for reusable mathematical assets that survive the Stage 1 to S
 
 - `data/exports/equations.txt`: equation catalog.
 - `data/exports/export_raw_implications_14_3_2026.csv`: implication data.
+- `data/hf_cache/`: canonical local mirror of Hugging Face problem subsets.
+- `data/stage2_official_problems/`: canonical local mirror of vendored Stage 2 public problem files.
 - `data/teorth_cache/graph.json`: Teorth implication graph cache.
 - `data/teorth_cache/full_entries.json`: proof/provenance entry cache.
 - `data/teorth_cache/proof_page_cache/`: cached proof pages.
 - `data/teorth_cache/smallest_magma.txt`: finite magma witness hints.
+
+## Problem Set Policy
+
+- `data/hf_cache/normal|hard|hard1|hard2|hard3` are active root-cache problem corpora for theory analysis.
+- `data/hf_cache/evaluation_*` subsets are imported and validated, but treated as analysis-only until explicitly promoted into a benchmark or evaluation workflow.
+- `data/stage2_official_problems/` is the runner-facing mirror for official Stage 2 public fixtures and should remain aligned with `vendor/stage2-official/examples/problems/`.
 
 ## Tools
 

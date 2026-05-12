@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Callable, Dict, List, Tuple
 
+from problem_set_catalog import HF_CACHE_DIR
 from v21_data_infrastructure import (
     load_equations,
     load_implications_csv,
@@ -18,6 +19,8 @@ from v21_data_infrastructure import (
     normalize_eq,
     build_equation_map,
 )
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def split_eq(eq: str) -> Tuple[str, str]:
@@ -158,13 +161,18 @@ def main() -> None:
         if ok:
             survivors.append((name, inv, sep))
 
-    hard3 = Path("data/hf_cache/hard3.jsonl")
-    normal_seed = Path("data/benchmark/normal_balanced20_true10_false10_seed0.jsonl")
+    dataset_paths = {
+        "hard3": HF_CACHE_DIR / "hard3.jsonl",
+        "normal": HF_CACHE_DIR / "normal.jsonl",
+        "evaluation_normal": HF_CACHE_DIR / "evaluation_normal.jsonl",
+    }
     print("\nCoverage on datasets (FALSE pairs only):")
     for name, inv, _ in survivors:
-        hc, ht = coverage_on_dataset(inv, eq_map, hard3)
-        nc, nt = coverage_on_dataset(inv, eq_map, normal_seed)
-        print(f"  {name:12s} hard3={hc}/{ht}  normal={nc}/{nt}")
+        coverage_bits = []
+        for dataset_name, dataset_path in dataset_paths.items():
+            caught, total = coverage_on_dataset(inv, eq_map, dataset_path)
+            coverage_bits.append(f"{dataset_name}={caught}/{total}")
+        print(f"  {name:12s} " + "  ".join(coverage_bits))
 
 
 if __name__ == "__main__":
