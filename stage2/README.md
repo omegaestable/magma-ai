@@ -20,9 +20,9 @@ The initial architecture is Marathon-first:
 4. Append accepted-looking certificates to output JSONL.
 5. Keep Solo compatibility for fast single-problem proof debugging.
 
-## Solver Scaffold
+## Solver
 
-The current `solver/solver.py` is deliberately small. It solves only reflexive implications (`eq1_id == eq2_id`) and skips everything else. This is useful for testing the packaging and I/O surface before we add real certificate engines.
+The current `solver/solver.py` is deliberately conservative. It solves reflexive TRUE implications (`eq1_id == eq2_id`) and deterministic FALSE implications when a small finite magma countermodel is found. Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; unresolved problems are skipped.
 
 Package it with:
 
@@ -36,7 +36,7 @@ See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and 
 
 ## Next Engines
 
-1. False certificate generator for finite magma tables.
+1. Benchmark and tune finite-magma counterexample coverage on public problem sets.
 2. Teorth-backed triage index for known true/false implications.
 3. True proof template generator for standalone Lean proofs.
 4. Marathon budget manager and problem ordering.
