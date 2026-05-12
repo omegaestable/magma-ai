@@ -76,6 +76,10 @@ For the pinned harness snapshot, `pipeline/proxy.py` and the official Solo demos
 4. Inspect judge statuses: `accepted`, `unparsed`, `malformed`, `incomplete_proof`, `incorrect`.
 5. Fix the certificate generator, not only the prompt.
 
+Operational reminder: the judge answer schema is exact. The submitted JSON must
+contain only `verdict` and `code`. Route labels and solver-family notes belong
+in stderr/log-derived summaries, not in the answer payload.
+
 ## Marathon Loop
 
 Use Marathon for competition-relevant triage and budget behavior.
@@ -87,6 +91,11 @@ Use Marathon for competition-relevant triage and budget behavior.
 5. Respect append-only JSONL output and last-write-wins semantics.
 6. Track tokens, wall-clock, accepted count, and failure class.
 
+The local solver now also supports a repo-local knob
+`MAGMA_MARATHON_REF_SECONDS_PER_PROBLEM` so the same Marathon triage can be
+tested against both current upstream budget interpretations (`600` vs `3600`
+seconds per reference problem).
+
 ## Certificate Distillation
 
 For each failed certificate attempt, record:
@@ -97,6 +106,15 @@ For each failed certificate attempt, record:
 4. relevant stderr excerpt
 5. expected proof family or witness family
 6. root cause: syntax, type mismatch, dependency policy, bad witness, bad proof idea, timeout, or unsupported import
+
+After any meaningful public benchmark run, regenerate:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
+.\.venv\Scripts\python.exe stage2\experiments\competition_preflight.py
+```
+
+These are now part of the team-memory chain, not optional extras.
 
 ## Promotion Rule
 

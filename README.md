@@ -39,6 +39,27 @@ Cold-start read order:
 7. `BENCHMARK_MANIFEST.md`
 8. `stage2/README.md`
 9. `theory/README.md`
+10. `stage2/docs/LATEST_HANDOFF.md`
+
+## Current Evidence
+
+Latest public benchmark snapshot from the packaged deterministic solver:
+
+- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`
+- `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`, `llm:0`
+- `hard1`: `17/69` solved, all `FALSE`, `llm:0`
+- `hard2`: `52/200` solved, all `FALSE`, `llm:0`
+- `hard3`: `186/400` solved, `3 TRUE + 183 FALSE`, `llm:0`
+
+Current public total: `998/1669` solved.
+
+The full generated evidence lives in:
+
+- `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
+- `stage2/results/2026-05-12-public-failure-ledger.jsonl`
+- `stage2/results/2026-05-12-competition-preflight.md`
+
+Most important current lesson: the solver is no longer false-only, but the remaining public gap is still dominated by TRUE templates (`571` public TRUE misses versus `100` public FALSE misses).
 
 ## Repository Layout
 
@@ -99,7 +120,8 @@ Package the local scaffold from PowerShell:
 3. Add LLM calls only when deterministic methods leave useful budget gaps.
 4. Run Solo samples for quick proof debugging.
 5. Run Marathon samples for budget, triage, cache, and append-only output behavior.
-6. Red-team every candidate before calling it a champion.
+6. Regenerate `stage2/results/` summaries and preflight notes after meaningful solver changes.
+7. Red-team every candidate before calling it a champion.
 
 ## Stage 1 Archive
 

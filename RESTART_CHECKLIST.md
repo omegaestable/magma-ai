@@ -14,6 +14,12 @@ Read these first:
 6. `BENCHMARK_MANIFEST.md`
 7. `stage2/README.md`
 8. `theory/README.md`
+9. `stage2/docs/LATEST_HANDOFF.md`
+
+If present, also glance at the latest generated evidence before touching the solver:
+
+- `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
+- `stage2/results/2026-05-12-competition-preflight.md`
 
 ## 2. Confirm Current Artifacts
 
@@ -92,6 +98,9 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
+Current expected packaged size ballpark after the 2026-05-12 solver upgrade:
+roughly `20 KB`, not the old `8.7 KB`.
+
 ## 6. First Smoke Runs
 
 After official setup, run official demos first, then the local scaffold.
@@ -112,6 +121,21 @@ c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_ma
 Pop-Location
 ```
 
+Public benchmark refresh and team-memory regeneration:
+
+```powershell
+$env:PYTHONUTF8='1'
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\2026-05-12-normal-finite-countermodels.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\2026-05-12-hard1-finite-countermodels.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\2026-05-12-hard2-finite-countermodels.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\2026-05-12-hard3-finite-countermodels.json
+Pop-Location
+.\.venv\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
+.\.venv\Scripts\python.exe stage2\experiments\competition_preflight.py
+```
+
 ## 7. Common Traps
 
 1. Treating archived Stage 1 prompt results as Stage 2 proof evidence.
@@ -120,3 +144,4 @@ Pop-Location
 4. Relying on local repo imports from a single-file submission.
 5. Editing `vendor/stage2-official/` without documenting upstream drift.
 6. Leaving `.gitkeep`, `__pycache__`, or other extras in `stage2/submissions/`; the official Solo runner rejects the directory before executing the solver.
+7. Forgetting that route labels cannot be added to the judge answer JSON; the judge accepts exactly `verdict` and `code`, so route labels must live in stderr/log-derived summaries.

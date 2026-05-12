@@ -33,6 +33,22 @@ Create these as work proceeds:
 4. Literature notes from papers and the Teorth blueprint.
 5. Random equation dive logs that feed the solver, not just chat history.
 
+## Current Learned Families
+
+What the 2026-05-12 public readiness pass taught us:
+
+- `singleton/collapse` is the first genuinely high-yield deterministic TRUE family.
+- exact substitution rewrites are safe and valuable, but much rarer than singleton collapse on the current public trail.
+- `LP`, `RP`, and `C0` remain the strongest compact FALSE witnesses.
+- affine/linear finite families over small `z3` and `z5` tables already explain a nontrivial slice of hard FALSE cases.
+- the remaining frontier is still mostly TRUE-template mining, not brute-force FALSE expansion.
+
+That means theory work should now prefer:
+
+1. reusable TRUE motifs with explicit Lean renderings
+2. structured finite witness families that explain many pairs at once
+3. route compression over pair-by-pair anecdote collecting
+
 ## Guardrail
 
 The official Stage 2 judge is self-contained. Teorth data can guide proof generation, but submitted certificates must compile in the official judge environment.

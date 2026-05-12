@@ -21,7 +21,8 @@ Follow this order exactly:
 7. `BENCHMARK_MANIFEST.md`
 8. `stage2/README.md`
 9. `theory/README.md`
-10. Only then inspect solver code, theory tools, or archived Stage 1 files.
+10. `stage2/docs/LATEST_HANDOFF.md`
+11. Only then inspect solver code, theory tools, or archived Stage 1 files.
 
 ## Current Operating Model
 
@@ -30,8 +31,21 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
+- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, and short bridge rewrites.
+- Active deterministic FALSE routes: named compact witnesses, affine/linear finite families, and bounded `Fin 2..3` search.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
+
+Latest public benchmark snapshot:
+
+- `normal`: `743/1000`
+- `hard1`: `17/69`
+- `hard2`: `52/200`
+- `hard3`: `186/400`
+
+Use `stage2/results/2026-05-12-public-finite-countermodels-summary.md` and
+`stage2/docs/LATEST_HANDOFF.md` as the current team-memory bridge before
+starting new solver work.
 
 ## Banned Approaches
 
@@ -51,6 +65,12 @@ Follow this order exactly:
 5. Run official Marathon samples for pacing, triage, and append-only output behavior.
 6. Distill failures into certificate-template fixes, not prompt folklore.
 7. Red-team candidate behavior before promotion.
+
+Important operational lesson:
+
+- Judge answer JSON must contain exactly `verdict` and `code`. Route labels,
+  strategy annotations, and team-memory breadcrumbs belong in solver stderr,
+  benchmark summaries, or handoff docs, not in the submitted answer payload.
 
 ## Primary Roles
 

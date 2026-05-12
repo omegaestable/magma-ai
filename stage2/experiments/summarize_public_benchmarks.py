@@ -2,7 +2,7 @@
 """Summarize Stage 2 public benchmark runner outputs.
 
 This script joins official problem manifests with pipeline.runner JSON outputs,
-then writes a markdown summary and an unsolved-problem ledger.
+then writes a markdown summary and an unsolved-problem ledger with route labels.
 """
 
 from __future__ import annotations
@@ -33,6 +33,7 @@ WITNESS_TABLES = {
     "T3L": [[0, 0, 0], [0, 0, 0], [0, 1, 0]],
     "T3R": [[0, 0, 0], [0, 0, 0], [0, 0, 1]],
 }
+AFFINE_SIZES = (2, 3, 5)
 
 
 def load_manifest(name: str) -> list[dict[str, Any]]:
@@ -62,10 +63,53 @@ def code_table(code: str) -> tuple[int | None, list[list[int]] | None]:
     return size, table
 
 
+def stderr_route(result: dict[str, Any]) -> str | None:
+    for item in reversed(result.get("log", [])):
+        if item.get("type") != "solver_stderr":
+            continue
+        tail = item.get("tail")
+        if not isinstance(tail, str):
+            continue
+        try:
+            payload = json.loads(tail.strip())
+        except json.JSONDecodeError:
+            continue
+        route = payload.get("route")
+        if isinstance(route, str) and route:
+            return route
+    return None
+
+
+def affine_route(table: list[list[int]]) -> str | None:
+    n = len(table)
+    if n not in AFFINE_SIZES:
+        return None
+    for a in range(n):
+        for b in range(n):
+            for c in range(n):
+                candidate = [[(a * x + b * y + c) % n for y in range(n)] for x in range(n)]
+                if candidate == table:
+                    if c == 0:
+                        return f"false:linear:z{n}:{a},{b}"
+                    return f"false:affine:z{n}:{a},{b},{c}"
+    return None
+
+
 def route_label(problem: dict[str, Any], result: dict[str, Any]) -> str:
+    routed = stderr_route(result)
+    if routed:
+        return routed
+
     verdict = result.get("verdict")
     if verdict == "true" and problem.get("eq1_id") == problem.get("eq2_id"):
         return "true:reflexive"
+    if verdict == "true":
+        code = str(result.get("code", ""))
+        if "have hall : ∀ a b : G, a = b" in code:
+            return "true:singleton"
+        if ".trans" in code:
+            return "true:bridge_or_rewrite"
+        return "true:rewrite_or_template"
     if verdict != "false":
         return f"{verdict or 'unknown'}:unlabeled"
 
@@ -75,6 +119,9 @@ def route_label(problem: dict[str, Any], result: dict[str, Any]) -> str:
     for name, witness in WITNESS_TABLES.items():
         if table == witness:
             return f"false:witness:{name}"
+    affine = affine_route(table)
+    if affine:
+        return affine
     return f"false:enum_fin{size or len(table)}"
 
 
@@ -92,6 +139,7 @@ def next_family(problem: dict[str, Any]) -> str:
 def summarize(date: str, sets: tuple[str, ...], summary_path: Path, ledger_path: Path) -> None:
     set_rows = []
     route_counts: Counter[str] = Counter()
+    next_family_counts: Counter[str] = Counter()
     total = Counter()
     ledger_rows = []
 
@@ -103,7 +151,6 @@ def summarize(date: str, sets: tuple[str, ...], summary_path: Path, ledger_path:
         for problem in problems:
             expected = problem.get("answer")
             row[f"expected_{str(expected).lower()}"] += 1
-            total[f"expected_{str(expected).lower()}"] += 1
             result = results.get(problem["id"])
             if not result:
                 row["missing_result"] += 1
@@ -123,12 +170,14 @@ def summarize(date: str, sets: tuple[str, ...], summary_path: Path, ledger_path:
                 row["llm_calls"] += int(result.get("llm_calls", 0) or 0)
                 row["judge_calls"] += int(result.get("judge_calls", 0) or 0)
                 row["elapsed_seconds"] += float(result.get("elapsed_seconds", 0) or 0)
-                ledger_rows.append(ledger_entry(name, problem, result, "failed"))
+                ledger = ledger_entry(name, problem, result, "failed")
+                next_family_counts[ledger["next_suspected_family"]] += 1
+                ledger_rows.append(ledger)
 
         set_rows.append((name, row))
         total.update(row)
 
-    write_summary(summary_path, date, set_rows, total, route_counts)
+    write_summary(summary_path, date, set_rows, total, route_counts, next_family_counts)
     with ledger_path.open("w", encoding="utf-8") as handle:
         for row in ledger_rows:
             handle.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
@@ -144,15 +193,20 @@ def ledger_entry(
     judge_status = None
     if result:
         judge_status = result.get("judge_status") or result.get("status")
+    attempted = "deterministic_skip"
+    if result and result.get("judge_calls"):
+        attempted = route_label(problem, result)
     return {
         "id": problem["id"],
         "source_set": source_set,
         "eq1_id": problem.get("eq1_id"),
         "eq2_id": problem.get("eq2_id"),
         "expected_public_answer": problem.get("answer"),
-        "attempted_route": "deterministic_skip" if not result or not result.get("judge_calls") else "deterministic_candidate",
+        "attempted_route": attempted,
         "runner_status": status,
         "judge_status": judge_status,
+        "judge_calls": int(result.get("judge_calls", 0) or 0) if result else 0,
+        "llm_calls": int(result.get("llm_calls", 0) or 0) if result else 0,
         "elapsed_seconds": result.get("elapsed_seconds") if result else None,
         "next_suspected_family": next_family(problem),
     }
@@ -164,6 +218,7 @@ def write_summary(
     set_rows: list[tuple[str, Counter[str]]],
     total: Counter[str],
     route_counts: Counter[str],
+    next_family_counts: Counter[str],
 ) -> None:
     lines = [
         "# Public Finite Countermodels Summary",
@@ -210,8 +265,16 @@ def write_summary(
             "- Failed rows with zero judge calls are deterministic skips, not rejected Lean certificates.",
             "- The paired failure ledger is `stage2/results/2026-05-12-public-failure-ledger.jsonl`.",
             "",
+            "## Next Families",
+            "",
         ]
     )
+    if next_family_counts:
+        for family, count in next_family_counts.most_common():
+            lines.append(f"- `{family}`: {count}")
+    else:
+        lines.append("- None")
+    lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 
 

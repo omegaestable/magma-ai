@@ -17,6 +17,7 @@ Last updated: 2026-05-12.
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Local solver scaffold: `stage2/solver/solver.py`.
 - Packaged submission target: `stage2/submissions/solver.py`.
+- Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Stage 1 archive: `stage1/`.
 - Shared theory cache: `data/exports/` and `data/teorth_cache/`.
 
@@ -27,9 +28,11 @@ The active solver is still conservative, but no longer reflexivity-only:
 1. Detects Marathon mode from official environment variables.
 2. Detects Solo mode from stdin JSON.
 3. Emits a TRUE certificate for the trivial case `eq1_id == eq2_id`.
-4. Searches small finite magmas for FALSE witnesses using a canned table pass plus bounded `Fin 2..3` enumeration.
-5. Emits FALSE certificates with `finOpTable` and `decideFin!`.
-6. Skips unresolved problems rather than submitting speculative certificates.
+4. Emits TRUE certificates for singleton/collapse implications where `eq1` forces one-element models.
+5. Emits TRUE certificates for exact substitution instances and short two-instance rewrite chains.
+6. Searches finite FALSE witnesses using a named witness pass, affine/linear magma families, and bounded `Fin 2..3` enumeration.
+7. Emits FALSE certificates with `finOpTable` and `decideFin!`.
+8. Skips unresolved problems rather than submitting speculative certificates.
 
 ## Current Smoke Status
 
@@ -41,8 +44,16 @@ Current Windows evidence, after documented local compatibility patches under `ve
 
 1. `scripts/run_harness.py`: green, with 66/66 judge cases, 79/79 public attacks, 55/55 pipeline regressions, 32/32 judge internals, 11/11 submit CLI checks, and no failing buckets.
 2. `scripts/run_marathon_harness.py`: green, 25/25 checks with Lean available.
-3. Packaged local solver: `stage2/submissions/solver.py` at 8712 bytes.
-4. Official Solo runner on `examples/problems/sample_20.json`: 10/20 solved, all FALSE certificates, `llm:0`.
+3. Packaged local solver: `stage2/submissions/solver.py` at 19990 bytes.
+4. Official Solo runner on `examples/problems/sample_20.json`: 14/20 solved, with 4 TRUE + 10 FALSE certificates, `llm:0`.
+5. Public `normal.jsonl`: 743/1000 solved, with 245 TRUE + 498 FALSE, `llm:0`.
+6. Public `hard1.jsonl`: 17/69 solved, all FALSE, `llm:0`.
+7. Public `hard2.jsonl`: 52/200 solved, all FALSE, `llm:0`.
+8. Public `hard3.jsonl`: 186/400 solved, with 3 TRUE + 183 FALSE, `llm:0`.
+9. Generated team-memory artifacts:
+   - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
+   - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
+   - `stage2/results/2026-05-12-competition-preflight.md`
 
 ## Upstream TBDs
 
@@ -56,10 +67,10 @@ Keep these configurable:
 
 ## Immediate Next Work
 
-1. Add result summaries under `stage2/results/` before promoting any solver candidate.
-2. Benchmark deterministic false certificates on `normal`, `hard1`, `hard2`, and `hard3`.
-3. Build a Teorth graph index for proof/witness triage.
-4. Add true-proof templates for singleton/collapse and short rewrite motifs.
+1. Attack the 571 remaining public TRUE gaps with additional safe rewrite templates and closure-backed short derivations.
+2. Expand deterministic FALSE routes for the 100 remaining public FALSE gaps, prioritizing reusable formulaic families over brute-force bound increases.
+3. Mine the new route histogram and failure ledger in `stage2/results/` into solver-facing route labels and witness families.
+4. Keep Marathon triage parameterized for the 600s-vs-3600s reference-budget doc ambiguity.
 5. Keep Windows vendor patches documented and rerun both official harnesses after upstream syncs.
 
 ## Non-Goals

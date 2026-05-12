@@ -32,6 +32,7 @@ On a cold start, read in this order:
 6. `BENCHMARK_MANIFEST.md`
 7. `stage2/README.md`
 8. `theory/README.md`
+9. `stage2/docs/LATEST_HANDOFF.md`
 
 ## Editing Priorities
 
@@ -46,6 +47,8 @@ On a cold start, read in this order:
 - Active solver scaffold: `stage2/solver/solver.py`
 - Packaged output: `stage2/submissions/solver.py`
 - Official harness: `vendor/stage2-official/`
+- Latest public benchmark summary: `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
+- Latest competition preflight: `stage2/results/2026-05-12-competition-preflight.md`
 - Stage 1 archive: `stage1/`
 - Theory tools: `theory/tools/`
 - Shared implication data: `data/exports/`
@@ -59,6 +62,7 @@ On a cold start, read in this order:
 4. True certificates that depend on unavailable Teorth theorem names.
 5. Solver logic that works locally only because it reads files or secrets unavailable in the official subprocess.
 6. Marathon strategies that solve easy cases but waste the shared budget.
+7. Attempting to include route labels or metadata in the judge answer JSON; the judge expects exactly `verdict` and `code`.
 
 ## Desired Outcome
 

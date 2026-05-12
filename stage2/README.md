@@ -22,7 +22,33 @@ The initial architecture is Marathon-first:
 
 ## Solver
 
-The current `solver/solver.py` is deliberately conservative. It solves reflexive TRUE implications (`eq1_id == eq2_id`) and deterministic FALSE implications when a small finite magma countermodel is found. Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; unresolved problems are skipped.
+The current `solver/solver.py` is still deliberately conservative, but it now has multiple deterministic proof lanes:
+
+1. reflexive TRUE implications (`eq1_id == eq2_id`)
+2. singleton/collapse TRUE implications
+3. exact substitution and short rewrite-chain TRUE implications
+4. deterministic FALSE implications from named witnesses, affine/linear families, and bounded finite search
+
+Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; unresolved problems are skipped.
+
+## Current Public Snapshot
+
+As of the 2026-05-12 readiness pass:
+
+- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`
+- `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`
+- `hard1`: `17/69` solved, all `FALSE`
+- `hard2`: `52/200` solved, all `FALSE`
+- `hard3`: `186/400` solved, `3 TRUE + 183 FALSE`
+
+Total public score: `998/1669`, with `0` LLM calls.
+
+Current best route learnings:
+
+- `true:singleton` is the dominant new TRUE lane.
+- `LP`, `RP`, and `C0` still dominate the compact FALSE lane.
+- affine and linear finite families are already paying rent and should be expanded.
+- the remaining public gap is mostly TRUE-template work (`571` public TRUE misses versus `100` FALSE misses).
 
 Package it with:
 
@@ -36,8 +62,10 @@ See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and 
 
 ## Next Engines
 
-1. Benchmark and tune finite-magma counterexample coverage on public problem sets.
-2. Teorth-backed triage index for known true/false implications.
-3. True proof template generator for standalone Lean proofs.
-4. Marathon budget manager and problem ordering.
-5. LLM repair loop for unresolved proof attempts.
+1. Benchmark and tune the upgraded deterministic solver on all public problem sets.
+2. Teorth-backed route mining for reusable proof and witness families.
+3. More formulaic FALSE families beyond the current affine/linear lane.
+4. Marathon budget manager and problem ordering under both 600s and 3600s reference interpretations.
+5. LLM repair loop only for the small unresolved tail.
+
+For the latest compressed handoff, read `docs/LATEST_HANDOFF.md`.
