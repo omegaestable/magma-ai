@@ -1,0 +1,59 @@
+\begin{figure*}[t]
+\centering
+\begin{tcolorbox}[title=Cheat Sheet for Disambiguation QA (1/2), colback=gray!10, colframe=black!70, boxrule=0.5pt, top=0pt, bottom=0pt, left=0pt, right=0pt, arc=0.8mm, width=1.0\textwidth]
+\scriptsize
+\begin{lstlisting}
+---
+
+# Pronoun Antecedent Cheat Sheet (for Difficult Cases)
+
+## 1. **General Reasoning Steps**
+- **Identify all possible antecedents** for the pronoun.
+- **Substitute each antecedent** into the sentence to see if it makes sense.
+- **Consider the context and logic** of the sentence: Who is likely to perform the action or possess the attribute?
+- **Check for grammatical cues**: number (singular/plural), gender, and role in the sentence.
+- **If both options are equally plausible and the sentence gives no extra clues, mark as ambiguous.**
+
+---
+
+## 2. **Common Patterns and How to Resolve Them**
+
+### A. **"X told Y that [pronoun]..."**
+- Usually, the pronoun refers to **Y** if the information is about Y (e.g., advice, diagnosis, payment).
+- If the information is about X's own actions or status, it refers to **X**.
+- **Tip:** Would it make sense for X to inform Y about Y's own actions? Usually not, unless it's advice or a warning.
+
+### B. **"X did something to Y because [pronoun]..."**
+- The pronoun can refer to either X or Y.
+- **Test both:** Substitute both and see which makes more logical sense.
+- If both are plausible, **mark as ambiguous**.
+
+### C. **"X and Y discuss [pronoun]'s Z"**
+- If both X and Y could logically possess Z, and the sentence gives no further context, **mark as ambiguous**.
+- If only one is likely to possess Z (e.g., "culinary training" is more likely the chef's), pick that one.
+
+### D. **"X called Y and asked [pronoun] to do Z"**
+- The pronoun usually refers to **Y** (the person being asked to do something).
+- If it would be odd for X to ask themselves, it's almost always Y.
+
+### E. **"X met with Y at [pronoun]'s office"**
+- If both X and Y could be the owner of the office, and the sentence gives no clue, **mark as ambiguous**.
+- If only one is plausible (e.g., meeting a director at the director's office), pick that one.
+
+### F. **"X did something with Y because [pronoun] [verb/attribute]"**
+- If the verb/attribute fits both X and Y, and both are plausible, **mark as ambiguous**.
+- If only one makes sense (e.g., "focuses on code" fits developer, not writer), pick that one.
+
+### G. **Possessive Constructions ("the writer and [pronoun] friends")**
+- The possessive pronoun almost always refers to the first noun ("the writer and her friends" = the writer's friends).
+- If the pronoun could refer to more than one noun, but only one makes sense, pick that one.
+
+---
+\end{lstlisting}
+\end{tcolorbox}
+\caption{
+An example of cheat sheet generated for Disambiguation QA.
+This is the first half of the cheat sheet.
+}
+\label{fig:cheat_sheet_disamb_1}
+\end{figure*}

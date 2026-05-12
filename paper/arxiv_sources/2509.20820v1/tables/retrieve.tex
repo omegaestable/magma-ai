@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\begin{adjustbox}{max width=1.0\columnwidth}
+\begin{tabular}{lcc}
+\toprule
+ & \textbf{Accuracy} $\uparrow$ & \textbf{Input Token Length} $\downarrow$ \\
+\midrule
+8-shot & 87.1 & 2,334 \\
+(150 or 100)-shot & \textbf{91.0} & 42,461 \\
+\midrule
+BM25 & 86.9 & \textbf{2,024} \\
+Cosine & 89.1 & 2,294 \\
+Set-BSR & 89.0 & 2,329 \\
+\midrule
+Cheat-sheet & \underline{90.0} & \underline{2,036} \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{
+Comparison with demonstration retrieval.
+The scores are averaged across the eight BBH tasks.
+\textbf{Bold} and \underline{underline} denote the best and second-best.
+}
+\label{tab:retrieve}
+\end{table}

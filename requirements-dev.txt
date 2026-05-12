@@ -1,5 +1,6 @@
 -r requirements.txt
 
 mypy>=1.10
+pypdf>=4.2
 pytest>=8.0
 ruff>=0.4

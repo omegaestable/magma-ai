@@ -1,0 +1,25 @@
+% High-fidelity source import from the local Teorth equational_theories checkout.
+% Source commit: 0bc9d6188b47eeed9670da2c054eb3d4eabcb13a
+\documentclass[a4paper]{report}
+
+\usepackage{geometry}
+\usepackage{expl3}
+\usepackage{amssymb, amsthm, mathtools}
+\usepackage[unicode,colorlinks=true,linkcolor=blue,urlcolor=magenta,citecolor=blue]{hyperref}
+\usepackage{cleveref}
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+
+\makeatletter
+\def\input@path{{blueprint_source/}}
+\makeatother
+
+\input{blueprint_source/macros/common}
+\input{blueprint_source/macros/print}
+
+\title{Equational Theories}
+\author{Contributors of the Equational Theories Project}
+
+\begin{document}
+\maketitle
+\input{blueprint_source/content}
+\end{document}

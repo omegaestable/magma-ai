@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\begin{adjustbox}{max width=1.0\textwidth}
+\begin{tabular}{lcccccccc}
+\toprule
+ & \textbf{Bool} & \textbf{Causal} & \textbf{DisambQA} & \textbf{Geo} & \textbf{Movie} & \textbf{Translation} & \textbf{Sports} & \textbf{Word} \\
+\midrule
+8-shot & 0.00 & 1.33 & 1.15 & 1.53 & 0.58 & 2.31 & 1.00 & 1.53 \\
+(150 or 100)-shot & 0.00 & 0.66 & 0.58 & 0.58 & 0.00 & 1.53 & 0.58 & 2.65 \\
+Cheat-sheet & 0.00 & 1.33 & 1.00 & 1.53 & 1.15 & 1.53 & 0.58 & 2.89 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{
+Standard deviation of GPT-4.1 performance on BBH with a fixed random seed.
+Task names are abbreviated; each value is the standard deviation computed over three runs with the same seed.
+}
+\label{tab:proprietary_var}
+\end{table*}

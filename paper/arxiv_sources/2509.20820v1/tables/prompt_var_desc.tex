@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\begin{adjustbox}{max width=0.98\textwidth}
+\begin{tabular}{P{1.0\textwidth}}
+    \toprule
+
+    \PromptPair{\textbf{\textsc{Textbook}:} A prompt to produce a detailed, textbook-style overview. Similar in spirit to a cheat sheet, but aimed at covering broader task-relevant knowledge.}
+    {Create a textbook based on the examples below. You will be asked to answer questions similar to these examples during the test, without being allowed to refer to the examples at that time. Your task here is to make a textbook that will help you answer such problems correctly. First, carefully read the examples below and identify the knowledge or reasoning steps required to answer similar questions correctly.\string\n\string\n\{$\hat{\D}_n$\}\string\n\string\nNow, create a textbook that thoroughly describes the knowledge or reasoning steps needed to answer similar questions correctly.} \\
+    \midrule
+
+    \PromptPair{\textbf{\textsc{Textual Summary}:} A variation of the cheat-sheet prompt that replaces only the term ``cheat sheet'' with ``textual summary''.}
+    {Create a textual summary based on the examples below. You will be asked to answer questions similar to these examples during the test, without being allowed to refer to the examples at that time. Your task here is to make a textual summary that will help you answer such problems correctly. First, carefully read the examples below and identify which ones you find most difficult to answer.\string\n\string\n\{$\hat{\D}_n$\}\string\n\string\nNow, create a textual summary to help you solve the difficult examples. Exclude any content that is easy for you, and only include specific, detailed points to address the challenging ones.} \\
+    \midrule
+
+    \PromptPair{\textbf{\textsc{Concise Instruction}:} A more concise version of the cheat-sheet prompt.}
+    {You will be asked to answer questions similar to the examples below, but you will not be allowed to refer to the examples during the test. First, carefully read the examples below and identify which ones you find most difficult to answer correctly.\string\n\string\n\{$\hat{\D}_n$\}\string\n\string\nNow, create a cheat sheet to help you address the difficult ones. Exclude any content that is easy for you, and include only specific, detailed points to address the difficult ones.} \\
+    \midrule
+
+    \PromptPair{\textbf{\textsc{More Format Examples}:} The prompt is unchanged; only the number of format examples appended to the output cheat sheet increases from two to eight.}
+    {No change to the cheat-sheet prompt; simply increase $\hat{\D}_2$ in Eq.~\eqref{eq:cs-icl} to $\hat{\D}_8$.} \\
+
+    \bottomrule
+  \end{tabular}
+\end{adjustbox}
+\caption{Descriptions of tested prompt variants and complete prompt text.}
+\label{tab:prompt_var_desc}
+\end{table*}

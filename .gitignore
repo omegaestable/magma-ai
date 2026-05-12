@@ -7,6 +7,10 @@ __pycache__/
 *.log
 tmp*/
 
+# Paper LaTeX build outputs
+paper/build/
+paper/arxiv_sources/**/build/
+
 # Generated cheatsheet candidates
 cheatsheets/generated/
 cheatsheets/generated_v2/

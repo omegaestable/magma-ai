@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\begin{adjustbox}{max width=1.0\columnwidth}
+\begin{tabular}{lccc}
+\toprule
+ & \textbf{MATH500} & \textbf{GSM8K} & \textbf{GPQA} \\
+\midrule
+8-shot & 86.3 & 94.5 & 57.1 \\
+(400 or 250)-shot & 82.3 & 95.1 & 56.7 \\
+\midrule
+Cheat-sheet & 88.0 & 94.5 & 60.4 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{
+Performance of \texttt{gemini-1.5-pro-002} on academic tasks.
+400-shot denotes using all available demonstrations on MATH500 and GSM8K, whereas 250-shot denotes the same on GPQA.
+Scores are accuracies averaged over three runs.
+The input token lengths match those shown in Figure~\ref{fig:acad}.
+}
+\label{tab:gemini_academic}
+\end{table}

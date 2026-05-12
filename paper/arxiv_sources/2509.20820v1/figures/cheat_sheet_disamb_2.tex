@@ -1,0 +1,49 @@
+\begin{figure*}[t]
+\centering
+\begin{tcolorbox}[title=Cheat Sheet for Disambiguation QA (2/2), colback=gray!10, colframe=black!70, boxrule=0.5pt, top=0pt, bottom=0pt, left=0pt, right=0pt, arc=0.8mm, width=1.0\textwidth]
+\scriptsize
+\begin{lstlisting}
+## 3. **Ambiguity Triggers**
+- If both antecedents are equally plausible and the sentence gives no further context, **choose "Ambiguous"**.
+- Watch for sentences where both X and Y could have performed the action, received the attribute, or owned the object.
+
+---
+
+## 4. **Special Cues**
+- **Gender/Number Agreement:** Make sure the pronoun matches the possible antecedent in gender and number.
+- **Role/Profession:** Sometimes, the profession or role makes one antecedent more likely (e.g., only a scientist needs a lab assistant).
+- **Typical Scenarios:** Use real-world logic (e.g., a mechanic calls a customer about the customer's car, not their own).
+
+---
+
+## 5. **Quick Reference Table**
+
+| Structure                                      | Most Likely Antecedent | When Ambiguous?                |
+|------------------------------------------------|-----------------------|-------------------------------|
+| X told Y that [pronoun]...                     | Y (if advice/info)    | If both could be true         |
+| X did Y because [pronoun]...                   | X or Y (test both)    | If both make sense            |
+| X and Y discuss [pronoun]'s Z                  | Context-dependent     | If both could own Z           |
+| X called Y and asked [pronoun] to do Z         | Y                     | If both could be asked        |
+| X met with Y at [pronoun]'s office             | Context-dependent     | If both could own office      |
+| X did Y because [pronoun] [verb/attribute]     | Context-dependent     | If both fit                   |
+| The writer and [pronoun] friends               | The writer            | If only one makes sense       |
+
+---
+
+## 6. **Ambiguity Checklist**
+- Both antecedents are grammatically possible.
+- Both antecedents are logically possible.
+- No context or world knowledge tips the scale.
+- If all above are true, **choose "Ambiguous"**.
+
+---
+
+**Use this sheet to reason through each step, especially when both antecedents seem possible!**
+\end{lstlisting}
+\end{tcolorbox}
+\caption{
+An example of cheat sheet generated for Disambiguation QA.
+This is the second half of the cheat sheet.
+}
+\label{fig:cheat_sheet_disamb_2}
+\end{figure*}

@@ -1,0 +1,12 @@
+{
+  "source": "local adjacent repository",
+  "repository": "../equational_theories",
+  "source_path": "blueprint/src",
+  "commit": "0bc9d6188b47eeed9670da2c054eb3d4eabcb13a",
+  "entrypoint": "paper/blueprint.tex",
+  "local_adjustments": [
+    "Copied ../equational_theories/images/subgraph.png to blueprint_source/images/subgraph.png.",
+    "Adjusted chapter/general_implications.tex to use the copied local image path."
+  ],
+  "note": "Imported to replace the low-fidelity PDF text-layer scaffold with high-fidelity upstream blueprint TeX source."
+}

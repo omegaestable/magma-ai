@@ -1,0 +1,82 @@
+\begin{figure*}[t]
+\centering
+\begin{tcolorbox}[title=Cheat Sheet for Causal Judgement (1/2), colback=gray!10, colframe=black!70, boxrule=0.5pt, top=0pt, bottom=0pt, left=0pt, right=0pt, arc=0.8mm, width=1.0\textwidth]
+\scriptsize
+\begin{lstlisting}
+- Multiple necessary conditions (e.g., two gardeners/fertilizers, two wires, two people logging in, etc.)
+- Overdetermination (multiple sufficient causes)
+- Policy/Norm violations vs. permitted actions
+- Side effects and intention
+- Chains of causation (proximate vs. remote causes)
+- "Because" questions with multiple sufficient conditions
+
+---
+
+## CHEAT SHEET: CAUSATION & INTENTION
+
+### 1. **Multiple Necessary Conditions (Joint Causation)**
+- **If an outcome only happens when two (or more) actions/conditions occur together,** each action is *necessary* but not *sufficient* alone.
+    - **Typical person:** Usually says *No* to "Did X cause Y?" if X alone is not sufficient, unless X is the abnormal or rule-breaking action.
+    - **Exception:** If X is the abnormal/forbidden action (e.g., red wire not supposed to touch battery), people may attribute causation to X.
+
+#### **Example: Two Wires**
+- Machine shorts only if both black and red wires touch battery.
+    - Black wire is supposed to touch; red is not.
+    - **Did black wire cause short?** -> **No** (normal/expected action)
+    - **Did red wire cause short?** -> **Yes** (abnormal/unexpected action)
+
+#### **Example: Two Gardeners/Fertilizers**
+- Plants dry out only where both fertilizers are applied.
+    - **Did Alex (A X200R) cause drying?** -> **No** (if only A X200R is used, no drying)
+    - **Did Benni (B Y33R) cause drying?** -> **No** (if only B Y33R is used, no drying)
+    - **Did Alex cause drying in beds with both?** -> **Yes** (if question is about the *combination* and Alex's action was necessary for the harmful combo)
+    - **If Benni's action is abnormal (e.g., used wrong fertilizer), more likely to attribute causation to Benni.**
+
+#### **Example: Two People Logging In**
+- Deletion/email only happens if both are logged in.
+    - **If one is violating policy and the other is not:**
+        - **Violator:** *Yes*, caused the outcome.
+        - **Permitted user:** *No*, did not cause the outcome.
+
+---
+
+### 2. **Overdetermination (Multiple Sufficient Causes)**
+- **If either of two actions is sufficient to cause the outcome, and both occur:**
+    - **Typical person:** Each action is seen as a cause.
+    - **"Did X cause Y?"** -> **Yes** (if X alone would have been enough)
+    - **"Did X cause Y because of Z?"** -> **No** (if Y would have happened anyway due to another sufficient cause)
+
+#### **Example: Bridge Collapse**
+- If either train alone is enough to collapse the bridge:
+    - **Did Billy cause collapse?** -> **Yes**
+- If both trains are needed:
+    - **Did Billy cause collapse?** -> **No**
+
+#### **Example: Coffee Shop**
+- If any one customer is enough for profit, and several order:
+    - **Did Drew cause profit?**
+        - If others would have ordered anyway: **No**
+        - If Drew was the only one: **Yes**
+
+---
+
+### 3. **Policy/Norm Violations vs. Permitted Actions**
+- **If two people act, but only one violates a rule:**
+    - **Violator:** *Yes*, caused the outcome.
+    - **Permitted actor:** *No*, did not cause the outcome.
+
+#### **Example: Computer Crash**
+- Jane (permitted) logs in, Lauren (violator) logs in, crash occurs.
+    - **Did Jane cause crash?** -> **No**
+    - **Did Lauren cause crash?** -> **Yes**
+
+---
+\end{lstlisting}
+\end{tcolorbox}
+\caption{
+An example of cheat sheet generated for Causal Judgement.
+This is the first half of the cheat sheet.
+% replaced → with ->
+}
+\label{fig:cheat_sheet_causal_1}
+\end{figure*}

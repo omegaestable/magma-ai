@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\begin{adjustbox}{max width=1.0\textwidth}
+\begin{tabular}{lccccccccc}
+\toprule
+ & \textbf{Bool} & \textbf{Causal} & \textbf{DisambQA} & \textbf{Geo} & \textbf{Movie} & \textbf{Translation} & \textbf{Sports} & \textbf{Word} & \textbf{Avg.} \\
+\midrule
+\textsc{Textbook} & 100.0 & 66.3 & 86.0 & 95.3 & 90.0 & 77.0 & 99.0 & 97.3 & 88.9 \\
+\textsc{Textual Summary} & 100.0 & 70.9 & 84.7 & 94.7 & 92.3 & 74.7 & 98.0 & 97.0 & 89.0 \\
+\textsc{Concise Instruction} & 100.0 & 65.5 & 88.0 & 92.3 & 91.7 & 77.0 & 97.3 & 97.3 & 88.7 \\
+\textsc{More Format Examples} & 100.0 & 67.4 & 88.7 & 93.3 & 93.3 & 75.7 & 99.7 & 98.7 & 89.6 \\
+\textsc{Cheat Sheet} & 100.0 & 70.9 & 87.0 & 95.3 & 93.7 & 76.3 & 98.7 & 98.0 & 90.0 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{
+Performance of GPT-4.1 on BBH for each prompt variant.
+Task names are abbreviated; scores are accuracies averaged over three runs.
+}
+\label{tab:prompt_var_results}
+\end{table*}

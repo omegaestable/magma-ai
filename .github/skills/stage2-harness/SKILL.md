@@ -21,9 +21,16 @@ python3 scripts/run_harness.py
 python3 scripts/run_marathon_harness.py
 ```
 
-4. For Solo debugging, prefer a small public problem file from `examples/problems/`.
-5. For Marathon debugging, verify append-only JSONL behavior, last-write-wins scoring, token budget, and timeout behavior.
-6. Do not edit official harness files unless the local patch is explicitly documented.
+4. On native Windows (PowerShell), prepend the Elan toolchain to PATH **before** any runner invocation, otherwise the Solo runner reports `missing lean binary: lean` even though the solver and judge call succeed:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+python vendor/stage2-official/scripts/submit.py --submission stage2/submissions --problems tmp_stage2_smoke/reflexive_problem.json
+```
+
+5. For Solo debugging, prefer a small public problem file from `examples/problems/` or `tmp_stage2_smoke/reflexive_problem.json`.
+6. For Marathon debugging, verify append-only JSONL behavior, last-write-wins scoring, token budget, and timeout behavior.
+7. Do not edit official harness files unless the local patch is explicitly documented.
 
 ## Outputs
 

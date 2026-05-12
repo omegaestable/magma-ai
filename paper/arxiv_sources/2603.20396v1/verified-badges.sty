@@ -1,0 +1,69 @@
+% verified-badges.sty — Inline badges for formally verified theorems
+% https://github.com/YOURNAME/verified-badges
+%
+% Usage:
+%   \usepackage{verified-badges}
+%   \begin{theorem}[Confluence \leanproof{https://github.com/you/repo/Confluence.lean}]
+%
+% Each command takes one argument: the URL to the proof source.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{verified-badges}[2025/02/12 Inline badges for formally verified theorems]
+
+\RequirePackage{hyperref}
+\RequirePackage{graphicx}
+
+% ---------------------------------------------------------------
+% Badge height and vertical offset (tweak to taste)
+% ---------------------------------------------------------------
+\newlength{\badgeheight}
+\setlength{\badgeheight}{1.2em}
+
+\newlength{\badgeraise}
+\setlength{\badgeraise}{-2pt}
+
+% ---------------------------------------------------------------
+% Generic command: \verifiedproof[badge-file]{url}
+% ---------------------------------------------------------------
+\newcommand{\verifiedproof}[2][lean]{%
+  \href{#2}{\raisebox{\badgeraise}{\includegraphics[height=\badgeheight]{#1}}}%
+}
+
+% ---------------------------------------------------------------
+% Generic command: \formalizedstmt[badge-file]{url}
+% For definitions, lemmas, and theorems whose statements are formalized
+% but whose proofs are not (yet).
+% ---------------------------------------------------------------
+\newcommand{\formalizedstmt}[2][lean-formalized]{%
+  \href{#2}{\raisebox{\badgeraise}{\includegraphics[height=\badgeheight]{#1}}}%
+}
+
+% ---------------------------------------------------------------
+% Prover-specific shorthands  (verified — full proof)
+% ---------------------------------------------------------------
+\newcommand{\leanproof}[1]{\verifiedproof[lean]{#1}}
+\newcommand{\coqproof}[1]{\verifiedproof[coq]{#1}}
+\newcommand{\rocqproof}[1]{\verifiedproof[rocq]{#1}}
+\newcommand{\isabelleproof}[1]{\verifiedproof[isabelle]{#1}}
+\newcommand{\agdaproof}[1]{\verifiedproof[agda]{#1}}
+\newcommand{\holproof}[1]{\verifiedproof[hol4]{#1}}
+\newcommand{\dafnyproof}[1]{\verifiedproof[dafny]{#1}}
+\newcommand{\fstarproof}[1]{\verifiedproof[fstar]{#1}}
+\newcommand{\tlaproof}[1]{\verifiedproof[tla]{#1}}
+\newcommand{\idrisproof}[1]{\verifiedproof[idris]{#1}}
+\newcommand{\pvsproof}[1]{\verifiedproof[pvs]{#1}}
+
+% ---------------------------------------------------------------
+% Prover-specific shorthands  (formalized — statement only)
+% ---------------------------------------------------------------
+\newcommand{\leanformalized}[1]{\formalizedstmt[lean-formalized]{#1}}
+\newcommand{\coqformalized}[1]{\formalizedstmt[coq-formalized]{#1}}
+\newcommand{\rocqformalized}[1]{\formalizedstmt[rocq-formalized]{#1}}
+\newcommand{\isabelleformalized}[1]{\formalizedstmt[isabelle-formalized]{#1}}
+\newcommand{\agdaformalized}[1]{\formalizedstmt[agda-formalized]{#1}}
+\newcommand{\holformalized}[1]{\formalizedstmt[hol4-formalized]{#1}}
+\newcommand{\dafnyformalized}[1]{\formalizedstmt[dafny-formalized]{#1}}
+\newcommand{\fstarformalized}[1]{\formalizedstmt[fstar-formalized]{#1}}
+\newcommand{\tlaformalized}[1]{\formalizedstmt[tla-formalized]{#1}}
+\newcommand{\idrisformalized}[1]{\formalizedstmt[idris-formalized]{#1}}
+\newcommand{\pvsformalized}[1]{\formalizedstmt[pvs-formalized]{#1}}

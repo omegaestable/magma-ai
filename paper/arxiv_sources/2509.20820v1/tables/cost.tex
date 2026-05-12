@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering
+\begin{adjustbox}{max width=1.0\textwidth}
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Avg. Token Length}} & \textbf{Cost for Input} & \textbf{Wall-Clock Time} \\
+  & Input & Output & (USD) & (s) \\
+\midrule
+8-shot & 1,277 & 153 & 0.064 & 158.42 \\
+150-shot & 23,921 & 144 & 1.196 & 287.52 \\
+\midrule
+Cheat-sheet & 1,306 & 155 & 0.065 & 158.71 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{
+Monetary cost and wall-clock time for processing the test set of the Boolean Expressions task.
+}
+\label{tab:costs}
+\end{table*}
