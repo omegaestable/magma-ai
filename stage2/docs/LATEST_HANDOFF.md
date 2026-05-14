@@ -41,8 +41,8 @@ Latest local smoke-only evidence from 2026-05-13:
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`
 - `sample_200`: `165/200` solved; all remaining sample misses are TRUE
 - Marathon `normal_100`, zero token budget: `70/100` accepted, `0` tokens
-- packaged solver size: `52098` bytes
-- focused hard3 TRUE probe: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` reached the LLM path and failed locally because no upstream key was set
+- packaged solver size: `52284` bytes
+- hard3 TRUE done-fix smoke: `hard3_0001` accepted via `true:projection:right`; all 179 local no-key hard3 TRUE misses emitted the terminal `done` marker instead of silently exiting
 
 Canonical generated evidence:
 
@@ -75,7 +75,7 @@ Canonical generated evidence:
 1. The official judge answer JSON must contain exactly `verdict` and `code`.
    Do not try to include route labels or metadata in the submitted payload.
    Put those in solver stderr and result summaries instead.
-2. The current packaged solver is `52098` bytes, still far below the `500 KB`
+2. The current packaged solver is `52284` bytes, still far below the `500 KB`
    limit.
 3. The official docs currently disagree on Marathon wall-clock reference:
    `docs/marathon_mode.md` uses `600 s/problem`, while

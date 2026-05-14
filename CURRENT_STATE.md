@@ -47,11 +47,12 @@ Current Windows evidence, after documented local compatibility patches under `ve
 
 1. `scripts/run_harness.py`: green, with 66/66 judge cases, 79/79 public attacks, 55/55 pipeline regressions, 32/32 judge internals, 11/11 submit CLI checks, and no failing buckets.
 2. `scripts/run_marathon_harness.py`: green, 25/25 checks with Lean available.
-3. Packaged local solver: `stage2/submissions/solver.py` at 52098 bytes, with `stage2/submissions/` containing only `solver.py`.
+3. Packaged local solver: `stage2/submissions/solver.py` at 52284 bytes, with `stage2/submissions/` containing only `solver.py`.
 4. Official Solo runner on `examples/problems/sample_20.json`: 14/20 solved, with 4 TRUE + 10 FALSE certificates. In the current no-key local run, the 6 unresolved TRUE rows each made one LLM call and failed with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
 5. Official Solo runner on `examples/problems/sample_200.json`: 165/200 solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` witnesses; the remaining 35 smoke misses are all TRUE cases.
 6. Official Marathon runner on `examples/problems/marathon/normal_100.jsonl` with zero token budget: 70/100 accepted, with 70 attempted and no rejected certificates.
-7. Focused hard3 TRUE probe on `tmp_stage2_smoke/hard3_true2.jsonl`: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` made one LLM call and failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
+7. Focused hard3 TRUE probe on `tmp_stage2_smoke/hard3_true2.jsonl`: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` made one LLM call, failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, then emitted `{"call":"done","reason":"no accepted certificate"}`.
+8. Hard3 TRUE-only done-fix smoke on `tmp_stage2_smoke/hard3_true_all_donefix.jsonl`: 195 TRUE rows, 16 solved locally without LLM, 179 local no-key misses, and 179/179 failed rows emitted the terminal `done` marker.
 8. Canonical full public benchmark totals remain from the 2026-05-12 generated evidence until the full public suite is rerun:
    - `normal.jsonl`: 743/1000 solved, with 245 TRUE + 498 FALSE, `llm:0`.
    - `hard1.jsonl`: 17/69 solved, all FALSE, `llm:0`.

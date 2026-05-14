@@ -48,8 +48,8 @@ Latest local smoke-only evidence from the 2026-05-13 housekeeping run:
 - `sample_20`: `14/20` solved
 - `sample_200`: `165/200` solved; `S4A` and `S5A` close the remaining sample FALSE gaps, so the residual sample misses are all TRUE
 - Marathon `normal_100` with zero token budget: `70/100` accepted
-- packaged solver size: `52098` bytes
-- focused hard3 TRUE probe: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` reached the LLM path and failed locally because no upstream API key was set
+- packaged solver size: `52284` bytes
+- hard3 TRUE done-fix smoke: `hard3_0001` accepted via `true:projection:right`; all 179 local no-key hard3 TRUE misses emitted the terminal `done` marker instead of silently exiting
 
 Do not replace the full public snapshot above with smoke-only numbers. Regenerate `stage2/results/` summaries first if the full public suite is rerun.
 

@@ -103,7 +103,7 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current expected packaged size after the 2026-05-13 hard3 projection smoke pass: `52098` bytes, still far below the 500 KB limit.
+Current expected packaged size after the 2026-05-13 hard3 done-marker smoke pass: `52284` bytes, still far below the 500 KB limit.
 
 For playground/upload readiness, run the checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
 

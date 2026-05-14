@@ -975,6 +975,10 @@ def send_proxy_call(message: dict[str, Any]) -> dict[str, Any] | None:
     return load_json_line(sys.stdin)
 
 
+def notify_solo_done(reason: str) -> None:
+    print(json.dumps({"call": "done", "reason": reason}, separators=(",", ":")), flush=True)
+
+
 def judge_via_solo_proxy(answer: dict[str, Any]) -> dict[str, Any] | None:
     request = dict(answer)
     request.pop("id", None)
@@ -1303,6 +1307,7 @@ def run_solo() -> int:
             )
             if judge_response.get("status") == "accepted":
                 return 0
+    notify_solo_done("no accepted certificate")
     return 0
 
 

@@ -56,7 +56,7 @@ Latest smoke-only housekeeping evidence, not a full public benchmark refresh:
 - `sample_20`: `14/20`
 - `sample_200`: `165/200`, with all remaining misses TRUE
 - Marathon `normal_100` with zero tokens: `70/100` accepted
-- Packaged solver size: `52098` bytes
+- Packaged solver size: `52284` bytes
 
 ## Banned Approaches
 

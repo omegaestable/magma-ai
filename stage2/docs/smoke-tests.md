@@ -15,7 +15,7 @@ PowerShell with `.venv` Python 3.14.3:
 
 Observed:
 
-- Packaged `stage2/submissions/solver.py` at 52098 bytes.
+- Packaged `stage2/submissions/solver.py` at 52284 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -40,7 +40,7 @@ Observed after cleaning and packaging `stage2/submissions/`:
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`. In the current no-key local run, the 6 unresolved TRUE rows each made one LLM call and failed with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
 - `sample_200`: `165/200` solved, with all remaining `35` misses classified as TRUE gaps.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver remains 52098 bytes and the submission directory contains only `solver.py`.
+- Packaged solver remains 52284 bytes and the submission directory contains only `solver.py`.
 
 Recent certificate lessons:
 
@@ -121,7 +121,8 @@ Pop-Location
 Observed:
 
 - `hard3_0001`: accepted as TRUE via `true:projection:right`, `llm:0`, `judge:1`.
-- `hard3_0002`: unresolved deterministically, made one LLM call, and failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
+- `hard3_0002`: unresolved deterministically, made one LLM call, failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, and emitted `{"call":"done","reason":"no accepted certificate"}`.
+- Hard3 TRUE-only done-fix smoke on `tmp_stage2_smoke/hard3_true_all_donefix.jsonl`: 195 TRUE rows, 16 solved locally without LLM, 179 local no-key misses, and 179/179 failed rows emitted the terminal `done` marker.
 
 ## Evidence Boundary
 

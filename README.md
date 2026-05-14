@@ -58,11 +58,11 @@ Current public total: `998/1669` solved.
 
 Latest local smoke evidence from the 2026-05-13 housekeeping run, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `52098` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `52284` bytes, single-file submission directory.
 - Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
 - Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; the remaining `35` sample misses are all TRUE cases.
 - Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `70/100` accepted, `0` tokens.
-- Focused hard3 TRUE probe: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` reached the LLM path and failed locally because no upstream API key was set.
+- Focused hard3 TRUE probes: `hard3_0001` accepted via `true:projection:right`; unresolved TRUE rows reach the LLM path, fail locally without an upstream key, and now emit a terminal `done` marker instead of triggering playground `SOLVER_ERROR`.
 
 The full generated evidence lives in:
 
