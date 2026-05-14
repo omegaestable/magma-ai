@@ -20,9 +20,9 @@ It must satisfy the official submission contract:
 4. The solver does not require local secrets or direct network access.
 5. Judge answers contain exactly `verdict` and `code`; route labels stay in stderr and result summaries.
 6. LLM escalation goes only through the official Solo or Marathon proxy.
-7. Unsolved Solo runs send a terminal `{"call":"done"}` message before exiting, so the playground can distinguish a clean miss from a solver crash.
+7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 
-Current packaged state from the latest smoke pass: `52284` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest smoke pass: `52629` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -90,7 +90,7 @@ Push-Location vendor\stage2-official
 Pop-Location
 ```
 
-Expected current behavior: `hard3_0001` is accepted deterministically by `true:projection:right`; `hard3_0002` reaches the LLM call path, fails locally without an upstream key, then emits `{"call":"done","reason":"no accepted certificate"}`. The vendored local proxy currently logs that terminal marker as an unknown call, while the playground uses it to avoid `SOLVER_ERROR` on clean misses.
+Expected current behavior: `hard3_0001` is accepted deterministically by `true:projection:right`; `hard3_0002` reaches the LLM call path, fails locally without an upstream key, then makes a final fallback judge call with a valid `verdict` and `code`. Locally this fallback certificate is rejected as `incorrect`, which is a clean miss rather than a protocol collapse.
 
 ## Ready Criteria
 
@@ -102,7 +102,7 @@ A candidate is playground-ready when:
 4. Official Solo samples run under the vendored runner.
 5. Official Marathon zero-token smoke accepts deterministic submissions without rejected certificates.
 6. Any LLM failure is clearly classified as either local missing-key setup or candidate protocol breakage.
-7. Unsolved Solo paths emit the terminal `done` marker instead of silently exiting.
+7. Unsolved Solo paths make a final schema-valid judge call instead of silently exiting or emitting verdict-less terminal markers.
 8. Public benchmark totals are not updated from smoke-only evidence.
 
 For the current solver, deterministic playground readiness is green under this checklist. LLM success in the playground depends on the organizer proxy being enabled and configured, but the solver uses the documented proxy protocol.

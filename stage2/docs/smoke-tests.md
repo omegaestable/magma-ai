@@ -121,8 +121,8 @@ Pop-Location
 Observed:
 
 - `hard3_0001`: accepted as TRUE via `true:projection:right`, `llm:0`, `judge:1`.
-- `hard3_0002`: unresolved deterministically, made one LLM call, failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, and emitted `{"call":"done","reason":"no accepted certificate"}`.
-- Hard3 TRUE-only done-fix smoke on `tmp_stage2_smoke/hard3_true_all_donefix.jsonl`: 195 TRUE rows, 16 solved locally without LLM, 179 local no-key misses, and 179/179 failed rows emitted the terminal `done` marker.
+- `hard3_0002`: unresolved deterministically, made one LLM call, failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, and made a final fallback judge call that returned `incorrect` instead of collapsing the solver protocol.
+- Hard3 TRUE-only final-judge smoke on `tmp_stage2_smoke/hard3_true_all_finaljudge.jsonl`: 195 TRUE rows were queued; the local run reached row 102 before a local `KeyboardInterrupt` inside Lean subprocess handling. Every unresolved row observed before interruption showed `llm:1, judge:1`, matching the focused protocol fix.
 
 ## Evidence Boundary
 

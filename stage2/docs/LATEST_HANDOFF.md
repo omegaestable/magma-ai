@@ -41,8 +41,8 @@ Latest local smoke-only evidence from 2026-05-13:
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`
 - `sample_200`: `165/200` solved; all remaining sample misses are TRUE
 - Marathon `normal_100`, zero token budget: `70/100` accepted, `0` tokens
-- packaged solver size: `52284` bytes
-- hard3 TRUE done-fix smoke: `hard3_0001` accepted via `true:projection:right`; all 179 local no-key hard3 TRUE misses emitted the terminal `done` marker instead of silently exiting
+- packaged solver size: `52629` bytes
+- hard3 TRUE final-judge smoke: `hard3_0001` accepted via `true:projection:right`; unresolved local no-key hard3 TRUE misses make a final schema-valid judge call instead of silently exiting or emitting a verdict-less `done` marker
 
 Canonical generated evidence:
 
