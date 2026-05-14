@@ -54,10 +54,16 @@ short proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
-AFFINE_SIZES = (2, 3, 5, 7)
+AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
+AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
 STRUCTURED_MAX_N = 7
 REWRITE_CHAIN_MAX_DEPTH = 2
+ABSORPTION_CHAIN_MAX_DEPTH = 3
+ABSORPTION_POOL_LIMIT = 10
+ABSORPTION_FRONTIER_LIMIT = 220
+ABSORPTION_MAX_FILLS = 180
+ABSORPTION_TERM_SLACK = 6
 LLM_MAX_ROUNDS = 2
 MARATHON_LLM_MAX_CALLS = 24
 MARATHON_REF_SECONDS_DEFAULT = 600.0
@@ -294,6 +300,18 @@ def term_vars(term: Term) -> set[str]:
     return term_vars(term[1]) | term_vars(term[2])
 
 
+def term_size(term: Term) -> int:
+    if term[0] == "var":
+        return 1
+    return 1 + term_size(term[1]) + term_size(term[2])
+
+
+def term_depth(term: Term) -> int:
+    if term[0] == "var":
+        return 0
+    return 1 + max(term_depth(term[1]), term_depth(term[2]))
+
+
 def term_to_lean(term: Term) -> str:
     if term[0] == "var":
         return str(term[1])
@@ -499,7 +517,7 @@ def structured_family_tables(max_n: int = STRUCTURED_MAX_N):
 
 def affine_family_tables(max_n: int = 5):
     seen: set[str] = set()
-    for n in AFFINE_SIZES:
+    for n in AFFINE_LINEAR_SIZES:
         if n > max_n:
             continue
         for a in range(n):
@@ -519,7 +537,7 @@ def affine_family_tables(max_n: int = 5):
 
 def quadratic_family_tables(max_n: int = STRUCTURED_MAX_N):
     seen: set[str] = set()
-    for n in AFFINE_SIZES:
+    for n in AFFINE_QUADRATIC_SIZES:
         if n > max_n:
             continue
         coeffs = tuple(range(n)) if n <= 3 else tuple(dict.fromkeys((0, 1, 2 % n, n - 1)))
@@ -777,6 +795,206 @@ def find_rewrite_chain(
     return None
 
 
+def absorption_hypothesis(eq1: dict[str, Any]) -> bool:
+    lhs = eq1["lhs"]
+    rhs = eq1["rhs"]
+    if lhs[0] == "var" and lhs[1] in term_vars(rhs):
+        return True
+    if rhs[0] == "var" and rhs[1] in term_vars(lhs):
+        return True
+    return False
+
+
+def absorption_term_pool(eq1: dict[str, Any], eq2: dict[str, Any]) -> list[Term]:
+    allowed_vars = set(eq2["variables"])
+    seen: set[Term] = set()
+    pool: list[Term] = []
+
+    def add(term: Term) -> None:
+        if term in seen or not term_vars(term).issubset(allowed_vars):
+            return
+        seen.add(term)
+        pool.append(term)
+
+    for var in eq2["variables"]:
+        add(("var", var))
+    for term in [eq2["lhs"], eq2["rhs"], *term_subterms(eq2["lhs"]), *term_subterms(eq2["rhs"])]:
+        add(term)
+    for term in [eq1["lhs"], eq1["rhs"], *term_subterms(eq1["lhs"]), *term_subterms(eq1["rhs"])]:
+        add(term)
+
+    small = list(pool)
+    for left in small:
+        for right in small:
+            candidate = ("op", left, right)
+            if term_size(candidate) <= 7 and term_depth(candidate) <= 3:
+                add(candidate)
+
+    pool.sort(key=lambda term: (term_size(term), term_depth(term), term_to_lean(term)))
+    return pool[:ABSORPTION_POOL_LIMIT]
+
+
+def filled_absorption_steps(
+    eq1: dict[str, Any],
+    term: Term,
+    pool: list[Term],
+    *,
+    max_size: int,
+    max_depth: int,
+) -> list[tuple[Term, str, str]]:
+    if not pool:
+        return []
+
+    steps: list[tuple[Term, str, str]] = []
+    seen_terms: set[Term] = set()
+    sides = (eq1["lhs"], eq1["rhs"])
+    default_term = pool[0]
+
+    for path in subterm_paths(term):
+        subterm = term_at_path(term, path)
+        for source_idx in (0, 1):
+            subst: dict[str, Term] = {}
+            if not match_term(sides[source_idx], subterm, subst):
+                continue
+
+            replacement_pattern = sides[1 - source_idx]
+            replacement_vars = term_vars(replacement_pattern)
+            needed = [var for var in eq1["variables"] if var not in subst and var in replacement_vars]
+            if len(needed) > 3:
+                continue
+
+            fill_count = 0
+            fill_iter = product(pool, repeat=len(needed)) if needed else ((),)
+            for fills in fill_iter:
+                fill_count += 1
+                if fill_count > ABSORPTION_MAX_FILLS:
+                    break
+
+                subst_full = dict(subst)
+                for var, value in zip(needed, fills):
+                    subst_full[var] = value
+                for var in eq1["variables"]:
+                    if var not in subst_full:
+                        subst_full[var] = default_term
+
+                replacement = instantiate_term(replacement_pattern, subst_full)
+                new_term = replace_subterm(term, path, replacement)
+                if new_term == term or new_term in seen_terms:
+                    continue
+                if term_size(new_term) > max_size or term_depth(new_term) > max_depth:
+                    continue
+
+                call = call_expression(eq1["variables"], subst_full)
+                proof = call if source_idx == 0 else f"({call}).symm"
+                if path:
+                    context = context_to_lean(term, path, "t")
+                    proof = f"congrArg (fun t => {context}) ({proof})"
+                seen_terms.add(new_term)
+                steps.append((new_term, proof, f"absorb:{source_idx}:{len(path)}:{len(needed)}"))
+
+    steps.sort(key=lambda item: (term_size(item[0]), term_depth(item[0]), item[2], term_to_lean(item[0])))
+    return steps
+
+
+def chain_trans(prefix: str | None, proof: str) -> str:
+    if prefix is None:
+        return proof
+    return f"({prefix}).trans ({proof})"
+
+
+def combine_meeting_proofs(left_proof: str | None, right_proof: str | None) -> str:
+    if left_proof is None and right_proof is None:
+        return "rfl"
+    if left_proof is None:
+        return f"({right_proof}).symm"
+    if right_proof is None:
+        return left_proof
+    return f"({left_proof}).trans ({right_proof}).symm"
+
+
+def absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    if not absorption_hypothesis(eq1):
+        return None
+
+    pool = absorption_term_pool(eq1, eq2)
+    if not pool:
+        return None
+
+    max_size = max(
+        term_size(eq1["lhs"]),
+        term_size(eq1["rhs"]),
+        term_size(eq2["lhs"]),
+        term_size(eq2["rhs"]),
+    ) + ABSORPTION_TERM_SLACK
+    max_depth = max(
+        term_depth(eq1["lhs"]),
+        term_depth(eq1["rhs"]),
+        term_depth(eq2["lhs"]),
+        term_depth(eq2["rhs"]),
+    ) + 2
+
+    left_start = eq2["lhs"]
+    right_start = eq2["rhs"]
+    left_seen: dict[Term, str | None] = {left_start: None}
+    right_seen: dict[Term, str | None] = {right_start: None}
+    left_frontier = [left_start]
+    right_frontier = [right_start]
+
+    for _depth in range(ABSORPTION_CHAIN_MAX_DEPTH):
+        next_left: list[Term] = []
+        for term in left_frontier:
+            prefix = left_seen[term]
+            for new_term, proof, _route in filled_absorption_steps(
+                eq1,
+                term,
+                pool,
+                max_size=max_size,
+                max_depth=max_depth,
+            ):
+                if new_term in left_seen:
+                    continue
+                new_proof = chain_trans(prefix, proof)
+                if new_term in right_seen:
+                    proof_expr = combine_meeting_proofs(new_proof, right_seen[new_term])
+                    return "true:absorption_closure", substitution_true_certificate(eq2["variables"], proof_expr)
+                left_seen[new_term] = new_proof
+                next_left.append(new_term)
+                if len(left_seen) >= ABSORPTION_FRONTIER_LIMIT:
+                    break
+            if len(left_seen) >= ABSORPTION_FRONTIER_LIMIT:
+                break
+        left_frontier = next_left[:ABSORPTION_FRONTIER_LIMIT]
+
+        next_right: list[Term] = []
+        for term in right_frontier:
+            prefix = right_seen[term]
+            for new_term, proof, _route in filled_absorption_steps(
+                eq1,
+                term,
+                pool,
+                max_size=max_size,
+                max_depth=max_depth,
+            ):
+                if new_term in right_seen:
+                    continue
+                new_proof = chain_trans(prefix, proof)
+                if new_term in left_seen:
+                    proof_expr = combine_meeting_proofs(left_seen[new_term], new_proof)
+                    return "true:absorption_closure", substitution_true_certificate(eq2["variables"], proof_expr)
+                right_seen[new_term] = new_proof
+                next_right.append(new_term)
+                if len(right_seen) >= ABSORPTION_FRONTIER_LIMIT:
+                    break
+            if len(right_seen) >= ABSORPTION_FRONTIER_LIMIT:
+                break
+        right_frontier = next_right[:ABSORPTION_FRONTIER_LIMIT]
+
+        if not left_frontier and not right_frontier:
+            break
+
+    return None
+
+
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
     eq2_left, eq2_right = boundary_vars(eq2["rhs"])
@@ -794,7 +1012,9 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (3, len(eq2["text"]), "true:bridge")
     if projection_cue(eq1, eq2):
         return (4, len(eq2["text"]), "false:projection_cue")
-    return (5, len(eq1["text"]) + len(eq2["text"]), "false:finite_search")
+    if absorption_hypothesis(eq1):
+        return (5, len(eq1["text"]) + len(eq2["text"]), "true:absorption")
+    return (6, len(eq1["text"]) + len(eq2["text"]), "false:finite_search")
 
 
 def find_counterexample(
@@ -819,7 +1039,7 @@ def find_counterexample(
         if table_is_counterexample(eq1, eq2, table):
             return len(table), table, route
 
-    for route, table in affine_family_tables(max_n=max(max_n, max(AFFINE_SIZES))):
+    for route, table in affine_family_tables(max_n=max(max_n, max(AFFINE_LINEAR_SIZES))):
         if deadline is not None and time.monotonic() >= deadline:
             return None
         if table_is_counterexample(eq1, eq2, table):
@@ -949,6 +1169,15 @@ def solve_problem(
         return {
             "answer": make_true_answer(problem, substitution_true_certificate(eq2["variables"], proof_expr)),
             "route": "true:rewrite_chain:" + ",".join(routes),
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    absorption = absorption_closure_route(eq1, eq2)
+    if absorption is not None:
+        route, code = absorption
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
             "priority": problem_priority(problem, eq1, eq2),
         }
 
