@@ -2,7 +2,7 @@
 
 This file is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-05-13.
+Last updated: 2026-05-14.
 
 ## Stage
 
@@ -32,8 +32,8 @@ The active solver is still conservative, but no longer reflexivity-only:
 2. Detects Solo mode from stdin JSON.
 3. Emits a TRUE certificate for the trivial case `eq1_id == eq2_id`.
 4. Emits TRUE certificates for singleton/collapse implications where `eq1` forces one-element models.
-5. Emits TRUE certificates for exact substitution instances, projection-boundary laws, short bridge/constancy chains, and bounded subterm rewrite chains.
-6. Searches finite FALSE witnesses using named compact witnesses, structured table families, affine/quadratic finite families, dualized witnesses, and bounded `Fin 2..3` enumeration.
+5. Emits TRUE certificates for exact substitution instances, projection-boundary laws, short bridge/constancy chains, bounded subterm rewrite chains, and bounded absorption-closure derivations.
+6. Searches finite FALSE witnesses using named compact witnesses, structured table families, expanded linear/affine finite families, bounded quadratic families, dualized witnesses, and bounded `Fin 2..3` enumeration.
 7. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables get `set_option maxRecDepth 20000` to avoid Lean recursion-depth failures.
 8. Skips unresolved problems rather than submitting speculative certificates.
 
@@ -47,18 +47,25 @@ Current Windows evidence, after documented local compatibility patches under `ve
 
 1. `scripts/run_harness.py`: green, with 66/66 judge cases, 79/79 public attacks, 55/55 pipeline regressions, 32/32 judge internals, 11/11 submit CLI checks, and no failing buckets.
 2. `scripts/run_marathon_harness.py`: green, 25/25 checks with Lean available.
-3. Packaged local solver: `stage2/submissions/solver.py` at 52629 bytes, with `stage2/submissions/` containing only `solver.py`.
-4. Official Solo runner on `examples/problems/sample_20.json`: 14/20 solved, with 4 TRUE + 10 FALSE certificates. In the current no-key local run, the 6 unresolved TRUE rows each made one LLM call and failed with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
+3. Packaged local solver: `stage2/submissions/solver.py` at 60614 bytes, with `stage2/submissions/` containing only `solver.py`.
+4. Official Solo runner on `examples/problems/sample_20.json`: 14/20 solved, with 4 TRUE + 10 FALSE accepted certificates in the canonical sample accounting. In local no-key runs, unresolved rows reach the proxy LLM path and fail with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
 5. Official Solo runner on `examples/problems/sample_200.json`: 165/200 solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` witnesses; the remaining 35 smoke misses are all TRUE cases.
 6. Official Marathon runner on `examples/problems/marathon/normal_100.jsonl` with zero token budget: 70/100 accepted, with 70 attempted and no rejected certificates.
-7. Focused hard3 TRUE final-judge probe on `tmp_stage2_smoke/hard3_true2.jsonl`: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` made one LLM call, failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, then made a final fallback judge call that returned `incorrect` instead of collapsing the solver protocol.
-8. Hard3 TRUE-only final-judge smoke on `tmp_stage2_smoke/hard3_true_all_finaljudge.jsonl`: 195 TRUE rows were queued; the local run reached row 102 before a local `KeyboardInterrupt` inside Lean subprocess handling. Every unresolved row observed before interruption showed `llm:1, judge:1`, matching the focused protocol fix.
-9. Canonical full public benchmark totals remain from the 2026-05-12 generated evidence until the full public suite is rerun:
+7. The old focused hard3 TRUE probe is no longer a good LLM-path check: `hard3_0002` is now accepted deterministically via `true:absorption_closure`. Use a currently unresolved TRUE row from the latest hard-mix or hard-only result when checking the local no-key LLM path.
+8. The final-judge protocol fix remains in place: unresolved Solo rows make a final schema-valid judge call rather than silently exiting or emitting a verdict-less marker.
+9. Latest 2026-05-14 hard-mix distillation evidence, from official Solo runner artifacts under `tmp_stage2_smoke/`, is not a full public refresh but is runner-equivalent for the tested rows:
+   - Composite-affine public candidates: 14/14 accepted.
+   - Same 150-row hard mix, seed `20260514`: 73/150 accepted, up from 68/150, with no regressions.
+   - New hard-mix wins: 2 TRUE via `true:absorption_closure`, 2 expanded linear witnesses over `z8`/`z9`, and 1 affine witness over `z4`.
+   - Full hard-only reruns after the patch: `hard1` 24/69, `hard2` 64/200, `hard3` 211/400, with no regressions versus the 2026-05-12 hard artifacts.
+   - Combined hard-only status after the patch: 299/669 accepted, with 27/319 TRUE and 272/350 FALSE. Remaining hard-only misses are still TRUE-heavy: 292 TRUE and 78 FALSE.
+10. Canonical full public benchmark totals remain from the 2026-05-12 generated evidence until `normal`, `hard1`, `hard2`, and `hard3` are rerun together:
    - `normal.jsonl`: 743/1000 solved, with 245 TRUE + 498 FALSE, `llm:0`.
    - `hard1.jsonl`: 17/69 solved, all FALSE, `llm:0`.
    - `hard2.jsonl`: 52/200 solved, all FALSE, `llm:0`.
    - `hard3.jsonl`: 186/400 solved, with 3 TRUE + 183 FALSE, `llm:0`.
-10. Generated team-memory artifacts:
+11. Generated team-memory artifacts:
+   - `stage2/results/2026-05-14-hard-affine-absorption-summary.md`
    - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
    - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
    - `stage2/results/2026-05-12-competition-preflight.md`
@@ -69,6 +76,7 @@ Recent operational lessons:
 2. Custom local Solo environment knobs can be stripped by the official proxy environment; do not rely on them for official-run behavior.
 3. Local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` errors mean the runner proxy lacked an upstream local key. They do not imply a bad submitted solver if the LLM request reached the official proxy shape.
 4. `tmp_stage2_smoke/` files are temporary smoke/debug artifacts. Promote evidence to `stage2/results/` with a date-stamped name before treating it as team memory.
+5. The 2026-05-14 solver has two new deterministic levers: expanded composite affine FALSE search and a bounded TRUE `true:absorption_closure` proof graph. The affine side is low risk and validated across 14 known public candidates; the absorption side is promising but still deliberately bounded.
 
 ## Upstream TBDs
 
@@ -82,9 +90,9 @@ Keep these configurable:
 
 ## Immediate Next Work
 
-1. Attack the 571 remaining public TRUE gaps with additional safe rewrite templates, closure-backed short derivations, and Teorth-guided motif cards.
-2. Expand deterministic FALSE routes for the 100 remaining public FALSE gaps, prioritizing reusable formulaic families and named compact witnesses over brute-force bound increases.
-3. Mine the route histogram, failure ledger, Teorth implication graph, proof pages, and paper notes into solver-facing route labels and witness/proof families.
+1. Extend the TRUE proof graph around absorption/projection hypotheses. The latest hard-only rerun still leaves 292 TRUE misses versus 78 FALSE misses.
+2. Mine the remaining hard FALSE gaps for reusable formulaic families, but avoid broad brute-force bound increases unless a bounded family is validated first.
+3. Use `stage2/results/2026-05-14-hard-affine-absorption-summary.md` for the latest hard-only local evidence; do not replace canonical totals without rerunning `normal`.
 4. Keep Marathon triage parameterized for the 600s-vs-3600s reference-budget doc ambiguity.
 5. Keep Windows vendor patches documented and rerun both official harnesses after upstream syncs.
 

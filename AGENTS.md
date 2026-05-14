@@ -34,8 +34,8 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
-- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, and bounded subterm rewrite chains.
-- Active deterministic FALSE routes: named compact witnesses, structured finite families, affine/quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
+- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, bounded subterm rewrite chains, and bounded absorption closure.
+- Active deterministic FALSE routes: named compact witnesses, structured finite families, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
 
@@ -51,12 +51,14 @@ Use `stage2/results/2026-05-12-public-finite-countermodels-summary.md` and
 starting new solver work. Use `stage2/docs/playground-preflight.md` before any
 upload/playground check.
 
-Latest smoke-only housekeeping evidence, not a full public benchmark refresh:
+Latest local candidate evidence, not a full public benchmark refresh:
 
 - `sample_20`: `14/20`
 - `sample_200`: `165/200`, with all remaining misses TRUE
 - Marathon `normal_100` with zero tokens: `70/100` accepted
-- Packaged solver size: `52284` bytes
+- Hard mix, 150 rows from `hard1|hard2|hard3`, seed `20260514`: `73/150`, up from `68/150`, no regressions
+- Full hard-only reruns: `hard1 24/69`, `hard2 64/200`, `hard3 211/400`, no regressions versus 2026-05-12 hard artifacts
+- Packaged solver size: `60614` bytes
 
 ## Banned Approaches
 

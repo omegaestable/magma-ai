@@ -26,8 +26,8 @@ The current `solver/solver.py` is still deliberately conservative, but it now ha
 
 1. reflexive TRUE implications (`eq1_id == eq2_id`)
 2. singleton/collapse TRUE implications
-3. exact substitution, projection-boundary laws, short bridge/constancy chains, and bounded subterm rewrite-chain TRUE implications
-4. deterministic FALSE implications from named witnesses, structured tables, affine/quadratic families, dualized witnesses, and bounded finite search
+3. exact substitution, projection-boundary laws, short bridge/constancy chains, bounded subterm rewrite chains, and bounded absorption-closure TRUE implications
+4. deterministic FALSE implications from named witnesses, structured tables, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded finite search
 
 Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped.
 
@@ -43,24 +43,28 @@ As of the 2026-05-12 readiness pass:
 
 Total public score: `998/1669`, with `0` LLM calls.
 
-Latest local smoke-only evidence from the 2026-05-13 housekeeping run:
+Latest local candidate evidence from the 2026-05-14 hard-mix session:
 
 - `sample_20`: `14/20` solved
 - `sample_200`: `165/200` solved; `S4A` and `S5A` close the remaining sample FALSE gaps, so the residual sample misses are all TRUE
 - Marathon `normal_100` with zero token budget: `70/100` accepted
-- packaged solver size: `52629` bytes
-- hard3 TRUE final-judge smoke: `hard3_0001` accepted via `true:projection:right`; unresolved local no-key hard3 TRUE misses make a final schema-valid judge call instead of silently exiting or emitting a verdict-less `done` marker
+- packaged solver size: `60614` bytes
+- composite-affine focused fixture: `14/14` accepted
+- same 150-row hard mix, seed `20260514`: `73/150` accepted, up from `68/150`, with no regressions
+- full hard-only reruns: `hard1 24/69`, `hard2 64/200`, `hard3 211/400`, with no regressions versus the 2026-05-12 hard artifacts
 
 Do not replace the full public snapshot above with smoke-only numbers. Regenerate `stage2/results/` summaries first if the full public suite is rerun.
+The latest hard-only local evidence is summarized in `results/2026-05-14-hard-affine-absorption-summary.md`.
 
 Current best route learnings:
 
 - `true:singleton` is the dominant new TRUE lane.
 - `LP`, `RP`, and `C0` still dominate the compact FALSE lane.
-- affine and linear finite families are already paying rent and should be expanded.
+- affine and linear finite families are paying rent; the current split keeps linear/affine sizes at `2,3,4,5,7,8,9` while leaving quadratic search on the tighter older sizes.
+- `true:absorption_closure` produced accepted hard TRUE certificates, but the remaining hard-only gap is still TRUE-heavy: `292` TRUE misses versus `78` FALSE misses.
 - `Fin 7` false certificates may need `set_option maxRecDepth 20000` before `decideFin!`.
 - runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
-- the remaining public gap is mostly TRUE-template work (`571` public TRUE misses versus `100` FALSE misses).
+- canonical full public gap counts remain the 2026-05-12 numbers until `normal|hard1|hard2|hard3` are refreshed together.
 
 Package it with:
 
@@ -77,9 +81,9 @@ Use `../theory/TEORTH_WORKFLOW.md` and `../theory/tools/README.md` for graph/pro
 
 ## Next Engines
 
-1. Benchmark and tune the upgraded deterministic solver on all public problem sets.
+1. Refresh the full public suite, including `normal`, before updating canonical `stage2/results/` totals.
 2. Teorth-backed route mining for reusable proof and witness families.
-3. More formulaic FALSE families beyond the current affine/linear lane.
+3. Extend the absorption/projection TRUE proof graph before spending time on broad brute-force FALSE search.
 4. Marathon budget manager and problem ordering under both 600s and 3600s reference interpretations.
 5. LLM repair loop only for the small unresolved tail.
 

@@ -10,14 +10,15 @@ Read these first:
 2. `CURRENT_STATE.md`
 3. `AGENTS.md`
 4. `.github/copilot-instructions.md`
-5. `EVAL_WORKFLOW.md`
-6. `BENCHMARK_MANIFEST.md`
-7. `stage2/README.md`
-8. `stage2/docs/playground-preflight.md`
-9. `theory/README.md`
-10. `theory/TEORTH_WORKFLOW.md`
-11. `theory/tools/README.md`
-12. `stage2/docs/LATEST_HANDOFF.md`
+5. `RESTART_CHECKLIST.md`
+6. `EVAL_WORKFLOW.md`
+7. `BENCHMARK_MANIFEST.md`
+8. `stage2/README.md`
+9. `stage2/docs/playground-preflight.md`
+10. `theory/README.md`
+11. `theory/TEORTH_WORKFLOW.md`
+12. `theory/tools/README.md`
+13. `stage2/docs/LATEST_HANDOFF.md`
 
 If present, also glance at the latest generated evidence before touching the solver:
 
@@ -103,7 +104,7 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current expected packaged size after the 2026-05-13 hard3 done-marker smoke pass: `52284` bytes, still far below the 500 KB limit.
+Current expected packaged size after the 2026-05-14 affine/absorption patch: `60614` bytes, still far below the 500 KB limit.
 
 For playground/upload readiness, run the checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
 
@@ -131,6 +132,7 @@ Current fast local smoke probes:
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+$env:PYTHONUTF8='1'
 .\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
 .\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
 .\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
@@ -141,7 +143,7 @@ Push-Location vendor/stage2-official
 Pop-Location
 ```
 
-Latest smoke-only outcomes: `sample_20 = 14/20`, `sample_200 = 165/200` with all remaining misses TRUE, and Marathon `normal_100 = 70/100` accepted with zero tokens.
+Latest smoke-only outcomes: `sample_20 = 14/20`, `sample_200 = 165/200`, and Marathon `normal_100 = 70/100` accepted with zero tokens. Latest 2026-05-14 hard-only runner evidence after the affine/absorption patch: hard mix `73/150`, composite-affine fixture `14/14`, `hard1 = 24/69`, `hard2 = 64/200`, `hard3 = 211/400`, with no regressions versus the 2026-05-12 hard artifacts.
 
 Public benchmark refresh and team-memory regeneration:
 
@@ -149,10 +151,10 @@ Public benchmark refresh and team-memory regeneration:
 $env:PYTHONUTF8='1'
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\2026-05-12-normal-finite-countermodels.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\2026-05-12-hard1-finite-countermodels.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\2026-05-12-hard2-finite-countermodels.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\2026-05-12-hard3-finite-countermodels.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\YYYY-MM-DD-normal.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard1.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard2.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard3.json
 Pop-Location
 .\.venv\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
 .\.venv\Scripts\python.exe stage2\experiments\competition_preflight.py

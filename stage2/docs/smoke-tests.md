@@ -1,6 +1,6 @@
 # Stage 2 Smoke Tests
 
-Last smoke run: 2026-05-13.
+Last smoke run: 2026-05-14.
 
 ## Passing Locally
 
@@ -15,7 +15,8 @@ PowerShell with `.venv` Python 3.14.3:
 
 Observed:
 
-- Packaged `stage2/submissions/solver.py` at 52284 bytes.
+- Set `$env:PYTHONUTF8='1'` and `$env:PATH="$env:USERPROFILE\.elan\bin;$env:PATH"` for official runner checks.
+- Packaged `stage2/submissions/solver.py` at 60614 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -28,6 +29,7 @@ Command shape from `vendor/stage2-official/`:
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+$env:PYTHONUTF8='1'
 Push-Location vendor/stage2-official
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json
@@ -37,10 +39,10 @@ Pop-Location
 Observed after cleaning and packaging `stage2/submissions/`:
 
 - Runner launches the packaged local solver.
-- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`. In the current no-key local run, the 6 unresolved TRUE rows each made one LLM call and failed with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
-- `sample_200`: `165/200` solved, with all remaining `35` misses classified as TRUE gaps.
+- `sample_20`: `14/20` solved.
+- `sample_200`: `165/200` solved.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver remains 52284 bytes and the submission directory contains only `solver.py`.
+- Packaged solver remains 60614 bytes and the submission directory contains only `solver.py`.
 
 Recent certificate lessons:
 
@@ -107,23 +109,27 @@ Observed:
 - All attempted certificates were accepted.
 - Treat this as pacing/smoke evidence, not a replacement for the full `normal.jsonl` benchmark.
 
-## Focused Hard3 TRUE Probe
+## Focused Hard TRUE And Hard-Mix Probes
 
-Command shape from `vendor/stage2-official/` against `tmp_stage2_smoke/hard3_true2.jsonl`:
+The old `tmp_stage2_smoke/hard3_true2.jsonl` probe is now stale as an LLM-path check because `hard3_0002` is accepted deterministically by `true:absorption_closure`. Use a currently unresolved TRUE fixture when testing local no-key LLM behavior.
+
+Command shape from `vendor/stage2-official/` for recorded hard probes:
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+$env:PYTHONUTF8='1'
 Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\hard3_true2.jsonl --output ..\..\tmp_stage2_smoke\hard3_true2_result.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\2026-05-14-hard-mix-150.jsonl --output ..\..\tmp_stage2_smoke\2026-05-14-hard-mix-150-result-after-affine-absorption.json
 Pop-Location
 ```
 
 Observed:
 
-- `hard3_0001`: accepted as TRUE via `true:projection:right`, `llm:0`, `judge:1`.
-- `hard3_0002`: unresolved deterministically, made one LLM call, failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, and made a final fallback judge call that returned `incorrect` instead of collapsing the solver protocol.
-- Hard3 TRUE-only final-judge smoke on `tmp_stage2_smoke/hard3_true_all_finaljudge.jsonl`: 195 TRUE rows were queued; the local run reached row 102 before a local `KeyboardInterrupt` inside Lean subprocess handling. Every unresolved row observed before interruption showed `llm:1, judge:1`, matching the focused protocol fix.
+- Same 150-row hard mix, seed `20260514`: `73/150`, up from `68/150`, no regressions.
+- New hard-mix TRUE wins: `hard3_0212` and `hard3_0002`, both via `true:absorption_closure`.
+- New hard-mix FALSE wins: `hard2_0169`, `hard1_0024`, and `hard3_0035` via expanded linear/affine search.
+- Full hard-only reruns after the patch: `hard1 24/69`, `hard2 64/200`, `hard3 211/400`, with no regressions versus the 2026-05-12 hard artifacts.
 
 ## Evidence Boundary
 
-The canonical full public benchmark summary remains `stage2/results/2026-05-12-public-finite-countermodels-summary.md` until the full public suite is rerun. Smoke-only files under `tmp_stage2_smoke/` are local debugging artifacts; promote durable evidence to `stage2/results/` before citing it as benchmark proof.
+The canonical full public benchmark summary remains `stage2/results/2026-05-12-public-finite-countermodels-summary.md` until the full public suite, including `normal`, is rerun. The latest hard-only local evidence is summarized in `stage2/results/2026-05-14-hard-affine-absorption-summary.md`; raw smoke files under `tmp_stage2_smoke/` are local debugging artifacts.

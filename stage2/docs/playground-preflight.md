@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-13
+Updated: 2026-05-14
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -22,7 +22,7 @@ It must satisfy the official submission contract:
 6. LLM escalation goes only through the official Solo or Marathon proxy.
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 
-Current packaged state from the latest smoke pass: `52629` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest smoke pass: `60614` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -53,6 +53,7 @@ Run from the repository root in PowerShell:
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\.venv\Scripts\Activate.ps1
+$env:PYTHONUTF8='1'
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 .\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
 .\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
@@ -70,6 +71,7 @@ Then run official smokes from `vendor/stage2-official/`:
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+$env:PYTHONUTF8='1'
 Push-Location vendor\stage2-official
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json --output ..\..\tmp_stage2_smoke\sample20_playground_preflight.json
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json --output ..\..\tmp_stage2_smoke\sample200_playground_preflight.json
@@ -81,16 +83,16 @@ Use explicit Solo output paths when recording smoke evidence. The runner's
 default `pipeline/results/submissions.json` is easy to confuse with earlier
 local smoke rows.
 
-Optional focused LLM-path check when no local key is available:
+Optional focused LLM-path check when no local key is available. First create or select a tiny fixture containing a currently unresolved TRUE row from the latest hard-mix or hard-only run:
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 Push-Location vendor\stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\hard3_true2.jsonl --output ..\..\tmp_stage2_smoke\hard3_true2_result.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\unresolved_true_probe.jsonl --output ..\..\tmp_stage2_smoke\unresolved_true_probe_result.json
 Pop-Location
 ```
 
-Expected current behavior: `hard3_0001` is accepted deterministically by `true:projection:right`; `hard3_0002` reaches the LLM call path, fails locally without an upstream key, then makes a final fallback judge call with a valid `verdict` and `code`. Locally this fallback certificate is rejected as `incorrect`, which is a clean miss rather than a protocol collapse.
+The old `hard3_true2.jsonl` probe is no longer a good LLM-path check because `hard3_0002` is now accepted deterministically by `true:absorption_closure`. For LLM-path testing, use a currently unresolved TRUE fixture from the latest hard-mix or hard-only run. Expected local no-key behavior is still: the row reaches the LLM proxy, reports `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, then makes a final fallback judge call with a valid `verdict` and `code`. A rejected fallback certificate is a clean miss, not a protocol collapse.
 
 ## Ready Criteria
 

@@ -1,32 +1,22 @@
 # Latest Handoff
 
-Updated: 2026-05-13
+Updated: 2026-05-14
 
 This is the compressed team-memory note for the current Stage 2 solver state.
 
 ## What Changed
 
-- The solver is no longer false-only.
-- New accepted deterministic TRUE routes exist for:
-  - `true:reflexive`
-  - `true:singleton`
-  - `true:rewrite`
-  - `true:rewrite:symm`
-  - `true:bridge:11`
-   - `true:projection:right`
-- The FALSE lane still keeps named compact witnesses first, but now also tries
-   structured tables, affine/quadratic finite families, dualized witnesses, and
-   bounded brute-force enumeration.
-- Larger named compact witnesses are allowed independently of the brute-force
-   `Fin 2..3` bound. Recent additions include `S4A` and `S5A`.
-- `Fin 7+` false certificates set `maxRecDepth 20000` so `decideFin!` can
-   finish under the official runner.
-- Marathon ordering is now route-aware and has a local budget-interpretation
-  knob: `MAGMA_MARATHON_REF_SECONDS_PER_PROBLEM`.
+- The solver now has two new deterministic levers:
+  - expanded linear/affine FALSE search over sizes `2,3,4,5,7,8,9`
+  - bounded TRUE proof search via `true:absorption_closure`
+- Quadratic search intentionally stays on the tighter older size policy to avoid a broad runtime jump.
+- `true:absorption_closure` triggers only on non-singleton absorption hypotheses such as `x = T` or `T = x` where `x` occurs inside `T`. It reconstructs Lean with instantiated `h`, `congrArg`, `.trans`, and `.symm`.
+- The answer payload contract is unchanged: submitted answers contain exactly `verdict` and `code`; route labels remain in stderr/logs.
+- Packaged solver size is now `60614` bytes, still far below the 500 KB cap.
 
 ## Best Public Evidence
 
-Canonical full public benchmark evidence remains the 2026-05-12 generated run:
+Canonical full public benchmark evidence still remains the 2026-05-12 generated run because `normal` has not been rerun after the 2026-05-14 patch:
 
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`
 - `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`, `llm:0`
@@ -34,94 +24,63 @@ Canonical full public benchmark evidence remains the 2026-05-12 generated run:
 - `hard2`: `52/200` solved, all `FALSE`, `llm:0`
 - `hard3`: `186/400` solved, `3 TRUE + 183 FALSE`, `llm:0`
 
-Public total: `998/1669` solved, `248 TRUE + 750 FALSE`, `llm:0`.
+Public total remains `998/1669` until `normal|hard1|hard2|hard3` are refreshed together.
 
-Latest local smoke-only evidence from 2026-05-13:
+Latest 2026-05-14 local runner-equivalent evidence:
 
-- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`
-- `sample_200`: `165/200` solved; all remaining sample misses are TRUE
-- Marathon `normal_100`, zero token budget: `70/100` accepted, `0` tokens
-- packaged solver size: `52629` bytes
-- hard3 TRUE final-judge smoke: `hard3_0001` accepted via `true:projection:right`; unresolved local no-key hard3 TRUE misses make a final schema-valid judge call instead of silently exiting or emitting a verdict-less `done` marker
-
-Canonical generated evidence:
-
-- `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
-- `stage2/results/2026-05-12-public-failure-ledger.jsonl`
-- `stage2/results/2026-05-12-competition-preflight.md`
+- composite-affine focused fixture: `14/14` accepted
+- same 150-row hard mix, seed `20260514`: `73/150`, up from `68/150`
+- hard-mix deltas: 2 TRUE wins via `true:absorption_closure`, 3 FALSE wins via expanded affine/linear search, no regressions
+- `sample_20`: `14/20`, unchanged
+- `sample_200`: `165/200`, unchanged
+- full hard-only reruns:
+  - `hard1`: `24/69`, up from `17/69`
+  - `hard2`: `64/200`, up from `52/200`
+  - `hard3`: `211/400`, up from `186/400`
+- combined hard-only status after the patch: `299/669`, with `27/319` TRUE and `272/350` FALSE
+- hard-only remaining misses: `292` TRUE and `78` FALSE
 
 ## Highest-Value Learnings
 
-1. `true:singleton` is the current dominant TRUE lane by a mile.
-2. `LP`, `RP`, and `C0` still dominate the compact FALSE route inventory.
-3. Small affine/linear families are already contributing on harder FALSE sets,
-   especially over `z3` and `z5`; this lane is worth expanding.
-4. `Fin 7` table certificates can fail with Lean max recursion depth unless
-   the emitted certificate includes `set_option maxRecDepth 20000` before
-   `decideFin!`.
-5. Direct `judge.verify.verify_answer(problem, ...)` is not runner-equivalent
-   because it omits the pipeline default proof policy. Use the official runner
-   or `verify_answer(_to_judge_problem(problem), raw_answer)` for certificate
-   debugging.
-6. The remaining public frontier is mostly TRUE work:
-   - `571` `true_template_gap`
-   - `100` `finite_countermodel_gap`
-7. `hard1` stayed flat while `normal` jumped sharply. That means the current
-   TRUE gain is real but concentrated; we still need stronger proof families
-   and more structured hard FALSE witnesses.
+1. Expanded composite affine search is validated and low risk. It closed all 14 known public composite-affine candidates in the focused fixture.
+2. `true:absorption_closure` is real, not speculative: it produced accepted official-runner certificates on hard TRUE rows.
+3. The hard frontier is still TRUE-heavy. The next solver work should extend absorption/projection proof search before chasing broad brute-force finite search.
+4. The current absorption graph is deliberately bounded. It should skip silently when it cannot certify the goal rather than emit speculative Lean.
+5. Local no-key LLM failures still mean the runner proxy lacks `OPENAI_API_KEY` or `OPENROUTER_API_KEY`; they are setup noise if deterministic paths and final judge-call behavior remain clean.
+6. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`, not direct `verify_answer(problem, ...)`.
 
 ## Operational Cautions
 
-1. The official judge answer JSON must contain exactly `verdict` and `code`.
-   Do not try to include route labels or metadata in the submitted payload.
-   Put those in solver stderr and result summaries instead.
-2. The current packaged solver is `52284` bytes, still far below the `500 KB`
-   limit.
-3. The official docs currently disagree on Marathon wall-clock reference:
-   `docs/marathon_mode.md` uses `600 s/problem`, while
-   `rules/evaluation.md` describes `3600 s/problem`-derived budgeting.
-   Keep local tests parameterized for both.
-4. The imported Hugging Face `evaluation_*` subsets remain analysis-only until
-   explicitly promoted into an official workflow.
-5. Custom local Solo knobs may be stripped by the official proxy environment.
-   Treat proxy/runner behavior as authoritative.
-6. Local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` errors mean the local
-   runner proxy lacks an upstream credential, not that the submitted solver has
-   access to missing secrets.
-7. `tmp_stage2_smoke/` is for local debugging. Promote durable evidence into
-   `stage2/results/` before citing it as benchmark proof.
+1. Do not update canonical public totals from the 2026-05-14 hard-only evidence. Rerun `normal` too.
+2. `tmp_stage2_smoke/` is local scratch space. The 2026-05-14 hard-only run is summarized in `stage2/results/2026-05-14-hard-affine-absorption-summary.md`.
+3. The official judge answer JSON must contain exactly `verdict` and `code`.
+4. The current packaged solver is `60614` bytes, with `stage2/submissions/` containing only `solver.py`.
+5. The official docs still disagree on Marathon wall-clock reference: `docs/marathon_mode.md` uses `600 s/problem`, while `rules/evaluation.md` describes `3600 s/problem`-derived budgeting. Keep local tests parameterized.
+6. The imported Hugging Face `evaluation_*` subsets remain analysis-only until explicitly promoted into an official workflow.
+7. Custom local Solo knobs may be stripped by the official proxy environment. Treat proxy/runner behavior as authoritative.
 
 ## Playground Readiness
 
-Use `stage2/docs/playground-preflight.md` before upload or playground checks.
-The current packaged solver is deterministic-ready under the official
-single-file and proxy contracts: `stage2/submissions/` contains only
-`solver.py`, the file is below the 500 KB cap, deterministic certificates have
-official runner evidence, and unresolved cases use the proxy LLM protocol. Full
-LLM success still depends on the playground proxy being enabled and configured.
+Use `stage2/docs/playground-preflight.md` before upload or playground checks. The current packaged solver is deterministic-ready under the official single-file and proxy contracts: `stage2/submissions/` contains only `solver.py`, the file is below the 500 KB cap, deterministic certificates have official runner evidence, and unresolved cases use the proxy LLM protocol. Full LLM success still depends on the playground proxy being enabled and configured.
 
 ## Recommended Next Steps
 
-1. Mine the failure ledger for reusable TRUE motifs before touching LLMs.
-2. Use `theory/TEORTH_WORKFLOW.md` to move from Teorth graph/proof-page/paper
-   evidence into small motif cards with Lean rendering sketches.
-3. Add more safe rewrite/closure templates that render as explicit Lean proofs.
-4. Expand the affine/linear and other structured finite witness families before
-   increasing brute-force search bounds.
-5. Rerun `scripts/run_harness.py` and `scripts/run_marathon_harness.py` before
-   calling the upgraded solver a promotion candidate.
-6. Run `stage2/docs/playground-preflight.md` before upload/playground testing.
-7. After major solver changes, rerun:
+1. Extend the absorption/projection TRUE proof graph with focused fixtures first, then run the hard mix again.
+2. Use `stage2/results/2026-05-14-hard-affine-absorption-summary.md` as the durable local note for the hard-only patch evidence.
+3. Rerun the full public suite, including `normal`, before updating canonical public totals.
+4. Mine remaining hard FALSE gaps for reusable formulaic families, but prefer validated families over brute-force bound increases.
+5. Rerun official harnesses before calling the upgraded solver a promotion candidate.
+
+Useful refresh skeleton:
 
 ```powershell
+$env:PYTHONUTF8='1'
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 .\stage2\solver\package_solver.ps1
-.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
-Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\2026-05-12-normal-finite-countermodels.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\2026-05-12-hard1-finite-countermodels.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\2026-05-12-hard2-finite-countermodels.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\2026-05-12-hard3-finite-countermodels.json
+Push-Location vendor\stage2-official
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\YYYY-MM-DD-normal.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard1.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard2.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard3.json
 Pop-Location
-.\.venv\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
-.\.venv\Scripts\python.exe stage2\experiments\competition_preflight.py
 ```
