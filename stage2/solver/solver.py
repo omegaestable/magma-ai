@@ -3,16 +3,19 @@
 The deterministic core now handles:
 1. reflexive TRUE implications;
 2. singleton/collapse TRUE implications;
-3. direct substitution and short two-instance rewrite TRUE implications;
-4. finite FALSE witnesses from named small magmas, affine families, and
-   bounded Fin n search.
+3. direct substitution, bounded rewrite chains, and subterm congruence
+   TRUE implications;
+4. finite FALSE witnesses from named small magmas, structured table
+   families, affine/quadratic families, and bounded Fin n search.
 
-Unsupported cases are skipped rather than answered speculatively.
+LLM escalation is available only through the official Solo/Marathon
+proxies. Unsupported cases are skipped rather than answered speculatively.
 """
 
 from __future__ import annotations
 
 import json
+import importlib
 import os
 import re
 import sys
@@ -22,14 +25,69 @@ from typing import Any
 
 
 PROMPT = """You are helping produce Lean 4 certificates for magma equation implications.
-Problem: {problem.equation1} implies {problem.equation2}?
-Return only JSON with a verdict and Lean code candidate.
+
+Return only one JSON object. Prefer the solver-owned DSL over raw Lean.
+
+Problem {problem.id}: does Equation{problem.eq1_id} imply Equation{problem.eq2_id}?
+Hypothesis: {problem.equation1}
+Goal: {problem.equation2}
+
+Deterministic analysis:
+{solver.analysis}
+
+Previous judge attempts:
+{history.attempts}
+
+Accepted JSON shapes:
+1. TRUE rewrite chain, checked and rendered by the solver:
+   {"verdict":"true","proof_kind":"rewrite_chain","chain":["<goal lhs>","<middle>","<goal rhs>"]}
+2. TRUE Lean body fallback, checked by the judge after sanitizer checks:
+   {"verdict":"true","proof":"intro x y\n  exact ..."}
+3. TRUE full Lean fallback, checked by the judge after sanitizer checks:
+   {"verdict":"true","code":"import JudgeProblem\n\ndef submission : Goal := by\n  ..."}
+4. FALSE finite countermodel, verified locally before Lean is emitted:
+   {"verdict":"false","counterexample_table":[[0,1],[1,0]]}
+
+Do not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,
+or Teorth theorem names. If you are unsure, return the finite table DSL or a
+short proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
-AFFINE_SIZES = (2, 3, 5)
+AFFINE_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
+STRUCTURED_MAX_N = 7
+REWRITE_CHAIN_MAX_DEPTH = 2
+LLM_MAX_ROUNDS = 2
+MARATHON_LLM_MAX_CALLS = 24
 MARATHON_REF_SECONDS_DEFAULT = 600.0
+LLM_MAX_TABLE_N = 8
+
+LLM_CONFIG = {
+    "model": "openai/gpt-oss-120b",
+    "provider": "deepinfra/bf16",
+    "max_output_tokens": 8192,
+    "temperature": 0.0,
+    "reasoning_effort": "low",
+    "use_seed": True,
+    "seed": 0,
+    "http_timeout_seconds": 600.0,
+}
+
+ALLOWED_IMPORTS = {
+    "JudgeProblem",
+    "JudgeDecide.DecideBang",
+    "JudgeFinOp.MemoFinOp",
+    "JudgeMagma.Magma",
+}
+
+BANNED_LEAN_RE = re.compile(
+    r"\b(?:sorry|admit|sorryAx|dbg_trace|dbgTrace|run_tac|mkSorry|"
+    r"initialize|builtin_initialize|axiom|unsafe|opaque|macro|elab|syntax)\b"
+    r"|#(?:eval|check|print|reduce)|\b(?:Teorth|teorth|EquationalTheories)\b"
+    r"|\bEquation(?!LHS\b|RHS\b)\d+\b",
+    re.IGNORECASE,
+)
 
 WITNESS_TABLES = (
     ("LP", [[0, 0], [1, 1]]),
@@ -39,10 +97,17 @@ WITNESS_TABLES = (
     ("AND", [[0, 0], [0, 1]]),
     ("OR", [[0, 1], [1, 1]]),
     ("XNOR", [[1, 0], [0, 1]]),
+    ("NAND", [[1, 1], [1, 0]]),
+    ("NOR", [[1, 0], [0, 0]]),
+    ("IMP", [[1, 0], [1, 1]]),
+    ("NIMP", [[0, 1], [0, 0]]),
     ("A2", [[0, 0], [1, 0]]),
     ("Z3A", [[0, 1, 2], [1, 2, 0], [2, 0, 1]]),
+    ("Z3B", [[0, 2, 1], [2, 1, 0], [1, 0, 2]]),
     ("T3L", [[0, 0, 0], [0, 0, 0], [0, 1, 0]]),
     ("T3R", [[0, 0, 0], [0, 0, 0], [0, 0, 1]]),
+    ("S4A", [[3, 1, 1, 3], [0, 3, 2, 3], [3, 1, 3, 3], [0, 1, 2, 3]]),
+    ("S5A", [[1, 2, 3, 4, 0], [0, 4, 3, 4, 1], [4, 2, 2, 1, 0], [2, 0, 2, 3, 2], [3, 1, 3, 0, 4]]),
 )
 
 
@@ -57,11 +122,13 @@ def submission : Goal := by
 
 def false_certificate(n: int, table: list[list[int]]) -> str:
     table_str = json.dumps(table, separators=(",", ":"))
+    max_rec_depth = "set_option maxRecDepth 20000\n" if n >= 7 else ""
     return (
         "import JudgeProblem\n"
         "import JudgeDecide.DecideBang\n"
         "import JudgeFinOp.MemoFinOp\n"
-        "open MemoFinOp\n\n"
+        "open MemoFinOp\n"
+        f"{max_rec_depth}\n"
         "def submission : Goal := by\n"
         f"  let m : Magma (Fin {n}) := {{\n"
         f"    op := finOpTable \"{table_str}\"\n"
@@ -221,6 +288,71 @@ def term_to_lean(term: Term) -> str:
     return f"({term_to_lean(term[1])} ◇ {term_to_lean(term[2])})"
 
 
+def dual_term(term: Term) -> Term:
+    if term[0] == "var":
+        return term
+    return ("op", dual_term(term[2]), dual_term(term[1]))
+
+
+def dual_equation(equation: dict[str, Any]) -> dict[str, Any]:
+    out = dict(equation)
+    out["lhs"] = dual_term(equation["lhs"])
+    out["rhs"] = dual_term(equation["rhs"])
+    out["lhs_text"] = term_to_lean(out["lhs"])
+    out["rhs_text"] = term_to_lean(out["rhs"])
+    out["text"] = f"{out['lhs_text']} = {out['rhs_text']}"
+    return out
+
+
+def term_subterms(term: Term) -> list[Term]:
+    out = [term]
+    if term[0] == "op":
+        out.extend(term_subterms(term[1]))
+        out.extend(term_subterms(term[2]))
+    return out
+
+
+def subterm_paths(term: Term, prefix: tuple[int, ...] = ()) -> list[tuple[int, ...]]:
+    paths = [prefix]
+    if term[0] == "op":
+        paths.extend(subterm_paths(term[1], prefix + (0,)))
+        paths.extend(subterm_paths(term[2], prefix + (1,)))
+    return paths
+
+
+def term_at_path(term: Term, path: tuple[int, ...]) -> Term:
+    cur = term
+    for part in path:
+        cur = cur[1] if part == 0 else cur[2]
+    return cur
+
+
+def replace_subterm(term: Term, path: tuple[int, ...], replacement: Term) -> Term:
+    if not path:
+        return replacement
+    if term[0] != "op":
+        return term
+    head, tail = path[0], path[1:]
+    if head == 0:
+        return ("op", replace_subterm(term[1], tail, replacement), term[2])
+    return ("op", term[1], replace_subterm(term[2], tail, replacement))
+
+
+def context_to_lean(term: Term, path: tuple[int, ...], placeholder: str = "t") -> str:
+    if not path:
+        return placeholder
+    if term[0] == "var":
+        return term_to_lean(term)
+    head, tail = path[0], path[1:]
+    if head == 0:
+        left = context_to_lean(term[1], tail, placeholder)
+        right = term_to_lean(term[2])
+    else:
+        left = term_to_lean(term[1])
+        right = context_to_lean(term[2], tail, placeholder)
+    return f"({left} ◇ {right})"
+
+
 def eval_term(term: Term, env: dict[str, Any]) -> int:
     if term[0] == "var":
         return env[term[1]]
@@ -265,7 +397,7 @@ def equation_holds(equation: dict[str, Any], table: list[list[int]]) -> bool:
         return table[a][b]
 
     for values in product(range(n), repeat=len(equation["variables"])):
-        env = {"op": op}
+        env: dict[str, Any] = {"op": op}
         env.update(zip(equation["variables"], values))
         if eval_term(equation["lhs"], env) != eval_term(equation["rhs"], env):
             return False
@@ -286,6 +418,65 @@ def enumerate_tables(n: int):
         yield [[(encoding // (n ** (row * n + col))) % n for col in range(n)] for row in range(n)]
 
 
+def table_key(table: list[list[int]]) -> str:
+    return json.dumps(table, separators=(",", ":"))
+
+
+def transpose_table(table: list[list[int]]) -> list[list[int]]:
+    n = len(table)
+    return [[table[y][x] for y in range(n)] for x in range(n)]
+
+
+def structured_family_tables(max_n: int = STRUCTURED_MAX_N):
+    seen: set[str] = set()
+
+    def emit(route: str, table: list[list[int]]):
+        if not table or len(table) > max_n:
+            return None
+        key = table_key(table)
+        if key in seen:
+            return None
+        seen.add(key)
+        return route, table
+
+    for n in range(2, max_n + 1):
+        candidates: list[tuple[str, list[list[int]]]] = [
+            (f"false:semilattice:min:z{n}", [[min(x, y) for y in range(n)] for x in range(n)]),
+            (f"false:semilattice:max:z{n}", [[max(x, y) for y in range(n)] for x in range(n)]),
+            (f"false:spine:leftsucc:z{n}", [[(x + 1) % n for _y in range(n)] for x in range(n)]),
+            (f"false:spine:rightsucc:z{n}", [[(y + 1) % n for y in range(n)] for _x in range(n)]),
+            (f"false:spine:ifleft0:z{n}", [[y if x == 0 else x for y in range(n)] for x in range(n)]),
+            (f"false:spine:ifright0:z{n}", [[x if y == 0 else y for y in range(n)] for x in range(n)]),
+            (f"false:central:neg_sum:z{n}", [[(-x - y) % n for y in range(n)] for x in range(n)]),
+            (f"false:central:one_neg_sum:z{n}", [[(1 - x - y) % n for y in range(n)] for x in range(n)]),
+        ]
+        for route, table in candidates:
+            item = emit(route, table)
+            if item is not None:
+                yield item
+
+    for rows in range(2, max_n + 1):
+        for cols in range(2, max_n + 1):
+            n = rows * cols
+            if n > max_n:
+                continue
+
+            def idx(row: int, col: int) -> int:
+                return row * cols + col
+
+            table = []
+            for a in range(n):
+                ar, _ac = divmod(a, cols)
+                row = []
+                for b in range(n):
+                    _br, bc = divmod(b, cols)
+                    row.append(idx(ar, bc))
+                table.append(row)
+            item = emit(f"false:rectband:{rows}x{cols}", table)
+            if item is not None:
+                yield item
+
+
 def affine_family_tables(max_n: int = 5):
     seen: set[str] = set()
     for n in AFFINE_SIZES:
@@ -304,6 +495,40 @@ def affine_family_tables(max_n: int = 5):
                     else:
                         route = f"false:affine:z{n}:{a},{b},{c}"
                     yield route, table
+
+
+def quadratic_family_tables(max_n: int = STRUCTURED_MAX_N):
+    seen: set[str] = set()
+    for n in AFFINE_SIZES:
+        if n > max_n:
+            continue
+        coeffs = tuple(range(n)) if n <= 3 else tuple(dict.fromkeys((0, 1, 2 % n, n - 1)))
+        nonzero = tuple(c for c in coeffs if c % n != 0) or (1,)
+
+        for a in coeffs:
+            for b in coeffs:
+                for c in nonzero:
+                    for d in coeffs:
+                        table = [[(a * x + b * y + c * x * y + d) % n for y in range(n)] for x in range(n)]
+                        key = table_key(table)
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        yield f"false:quadratic_xy:z{n}:{a},{b},{c},{d}", table
+
+        for a in coeffs:
+            for b in coeffs:
+                for c in nonzero:
+                    table_x = [[(a * x + b * y + c * x * x) % n for y in range(n)] for x in range(n)]
+                    key_x = table_key(table_x)
+                    if key_x not in seen:
+                        seen.add(key_x)
+                        yield f"false:quadratic_x2:z{n}:{a},{b},{c}", table_x
+                    table_y = [[(a * x + b * y + c * y * y) % n for y in range(n)] for x in range(n)]
+                    key_y = table_key(table_y)
+                    if key_y not in seen:
+                        seen.add(key_y)
+                        yield f"false:quadratic_y2:z{n}:{a},{b},{c}", table_y
 
 
 def singleton_route(eq1: dict[str, Any]) -> tuple[str, bool] | None:
@@ -348,9 +573,133 @@ def bridge_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, dict[st
     return None
 
 
+def goal_term_pool(eq2: dict[str, Any]) -> list[Term]:
+    pool: list[Term] = []
+    seen: set[Term] = set()
+    for term in [eq2["lhs"], eq2["rhs"], *term_subterms(eq2["lhs"]), *term_subterms(eq2["rhs"])]:
+        if term not in seen:
+            seen.add(term)
+            pool.append(term)
+    for var in eq2["variables"]:
+        term = ("var", var)
+        if term not in seen:
+            seen.add(term)
+            pool.append(term)
+    return pool or [("var", "x")]
+
+
+def completed_bridge_route(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    max_trials: int = 2500,
+) -> tuple[str, dict[str, Term], dict[str, Term]] | None:
+    eq1_sides = (eq1["lhs"], eq1["rhs"])
+    pool = goal_term_pool(eq2)
+    for left_source in (0, 1):
+        left_subst_base: dict[str, Term] = {}
+        if not match_term(eq1_sides[left_source], eq2["lhs"], left_subst_base):
+            continue
+        for right_source in (0, 1):
+            right_subst_base: dict[str, Term] = {}
+            if not match_term(eq1_sides[right_source], eq2["rhs"], right_subst_base):
+                continue
+            missing: list[tuple[str, str]] = []
+            for var in eq1["variables"]:
+                if var not in left_subst_base:
+                    missing.append(("L", var))
+                if var not in right_subst_base:
+                    missing.append(("R", var))
+            if not missing:
+                continue
+            trials = 0
+            for fills in product(pool, repeat=len(missing)):
+                trials += 1
+                if trials > max_trials:
+                    break
+                left_subst = dict(left_subst_base)
+                right_subst = dict(right_subst_base)
+                for (side, var), value in zip(missing, fills):
+                    if side == "L":
+                        left_subst[var] = value
+                    else:
+                        right_subst[var] = value
+                left_other = instantiate_term(eq1_sides[1 - left_source], left_subst)
+                right_other = instantiate_term(eq1_sides[1 - right_source], right_subst)
+                if left_other == right_other:
+                    return (f"true:constancy:{left_source}{right_source}", left_subst, right_subst)
+    return None
+
+
 def call_expression(eq1_vars: list[str], subst: dict[str, Term]) -> str:
     args = [term_to_lean(subst[var]) for var in eq1_vars]
     return "h" if not args else "h " + " ".join(args)
+
+
+def rewrite_steps_from_term(eq1: dict[str, Any], term: Term) -> list[tuple[Term, str, str]]:
+    steps: list[tuple[Term, str, str]] = []
+    sides = (eq1["lhs"], eq1["rhs"])
+    for path in subterm_paths(term):
+        subterm = term_at_path(term, path)
+        for source_idx in (0, 1):
+            subst: dict[str, Term] = {}
+            if not match_term(sides[source_idx], subterm, subst):
+                continue
+            replacement = instantiate_term_if_bound(sides[1 - source_idx], subst)
+            if replacement is None:
+                continue
+            new_term = replace_subterm(term, path, replacement)
+            if new_term == term:
+                continue
+            call = call_expression(eq1["variables"], subst)
+            proof = call if source_idx == 0 else f"({call}).symm"
+            if path:
+                context = context_to_lean(term, path, "t")
+                proof = f"congrArg (fun t => {context}) ({proof})"
+            steps.append((new_term, proof, f"rewrite:{source_idx}:{len(path)}"))
+    return steps
+
+
+def proof_between_terms(eq1: dict[str, Any], src: Term, dst: Term) -> tuple[str, str] | None:
+    sides = (eq1["lhs"], eq1["rhs"])
+    for source_idx in (0, 1):
+        subst: dict[str, Term] = {}
+        if match_term(sides[source_idx], src, subst) and match_term(sides[1 - source_idx], dst, subst):
+            call = call_expression(eq1["variables"], subst)
+            proof = call if source_idx == 0 else f"({call}).symm"
+            return proof, f"rewrite_whole:{source_idx}"
+    for new_term, proof, route in rewrite_steps_from_term(eq1, src):
+        if new_term == dst:
+            return proof, route
+    return None
+
+
+def find_rewrite_chain(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    max_depth: int = REWRITE_CHAIN_MAX_DEPTH,
+) -> tuple[list[str], str] | None:
+    target = eq2["rhs"]
+    queue: list[tuple[Term, list[str], list[str]]] = [(eq2["lhs"], [], [])]
+    seen: set[Term] = {eq2["lhs"]}
+    for _depth in range(max_depth):
+        next_queue: list[tuple[Term, list[str], list[str]]] = []
+        for term, proofs, routes in queue:
+            for new_term, proof, route in rewrite_steps_from_term(eq1, term):
+                if new_term in seen:
+                    continue
+                new_proofs = proofs + [proof]
+                new_routes = routes + [route]
+                if new_term == target:
+                    expr = new_proofs[0]
+                    for later in new_proofs[1:]:
+                        expr = f"({expr}).trans ({later})"
+                    return new_routes, expr
+                seen.add(new_term)
+                next_queue.append((new_term, new_proofs, new_routes))
+        queue = next_queue
+    return None
 
 
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
@@ -386,14 +735,29 @@ def find_counterexample(
     *,
     max_n: int = ENUMERATION_MAX_N,
     time_budget: float | None = None,
+    allow_dual: bool = True,
 ) -> tuple[int, list[list[int]], str] | None:
     deadline = time.monotonic() + time_budget if time_budget else None
+    named_max = max(max_n, STRUCTURED_MAX_N)
 
     for name, table in WITNESS_TABLES:
-        if len(table) <= max_n and table_is_counterexample(eq1, eq2, table):
+        if len(table) <= named_max and table_is_counterexample(eq1, eq2, table):
             return len(table), table, f"false:witness:{name}"
 
+    family_max = max(max_n, STRUCTURED_MAX_N)
+    for route, table in structured_family_tables(max_n=family_max):
+        if deadline is not None and time.monotonic() >= deadline:
+            return None
+        if table_is_counterexample(eq1, eq2, table):
+            return len(table), table, route
+
     for route, table in affine_family_tables(max_n=max(max_n, max(AFFINE_SIZES))):
+        if deadline is not None and time.monotonic() >= deadline:
+            return None
+        if table_is_counterexample(eq1, eq2, table):
+            return len(table), table, route
+
+    for route, table in quadratic_family_tables(max_n=family_max):
         if deadline is not None and time.monotonic() >= deadline:
             return None
         if table_is_counterexample(eq1, eq2, table):
@@ -405,6 +769,22 @@ def find_counterexample(
                 return None
             if table_is_counterexample(eq1, eq2, table):
                 return n, table, f"false:enum_fin{n}"
+    if allow_dual:
+        remaining_budget = None
+        if deadline is not None:
+            remaining_budget = max(0.0, deadline - time.monotonic())
+            if remaining_budget <= 0:
+                return None
+        dual = find_counterexample(
+            dual_equation(eq1),
+            dual_equation(eq2),
+            max_n=max_n,
+            time_budget=remaining_budget,
+            allow_dual=False,
+        )
+        if dual is not None:
+            n, table, route = dual
+            return n, transpose_table(table), f"false:dual:{route}"
     return None
 
 
@@ -468,6 +848,33 @@ def solve_problem(
             "priority": problem_priority(problem, eq1, eq2),
         }
 
+    completed_bridge = completed_bridge_route(eq1, eq2)
+    if completed_bridge is not None:
+        bridge_name, left_subst, right_subst = completed_bridge
+        left_call = call_expression(eq1["variables"], left_subst)
+        right_call = call_expression(eq1["variables"], right_subst)
+        left_source = int(bridge_name[-2])
+        right_source = int(bridge_name[-1])
+        left_to_mid = left_call if left_source == 0 else f"({left_call}).symm"
+        mid_to_right = f"({right_call}).symm" if right_source == 0 else right_call
+        return {
+            "answer": make_true_answer(
+                problem,
+                substitution_true_certificate(eq2["variables"], f"({left_to_mid}).trans ({mid_to_right})"),
+            ),
+            "route": bridge_name,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    chain = find_rewrite_chain(eq1, eq2)
+    if chain is not None:
+        routes, proof_expr = chain
+        return {
+            "answer": make_true_answer(problem, substitution_true_certificate(eq2["variables"], proof_expr)),
+            "route": "true:rewrite_chain:" + ",".join(routes),
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
     counterexample = find_counterexample(eq1, eq2, time_budget=false_time_budget)
     if counterexample is None:
         return None
@@ -486,6 +893,253 @@ def load_json_line(stream: Any) -> dict[str, Any] | None:
     return json.loads(line)
 
 
+def send_proxy_call(message: dict[str, Any]) -> dict[str, Any] | None:
+    print(json.dumps(message, separators=(",", ":")), flush=True)
+    return load_json_line(sys.stdin)
+
+
+def judge_via_solo_proxy(answer: dict[str, Any]) -> dict[str, Any] | None:
+    request = dict(answer)
+    request.pop("id", None)
+    request["call"] = "judge"
+    return send_proxy_call(request)
+
+
+def extract_json_object(text: str) -> dict[str, Any] | None:
+    text = re.sub(r"<think>[\s\S]*?</think>", "", text or "").strip()
+    text = re.sub(r"^```(?:json)?\s*\n?", "", text)
+    text = re.sub(r"\n?```\s*$", "", text)
+    try:
+        obj = json.loads(text)
+        return obj if isinstance(obj, dict) else None
+    except json.JSONDecodeError:
+        pass
+    match = re.search(r"\{[\s\S]*\}", text)
+    if not match:
+        return None
+    try:
+        obj = json.loads(match.group())
+    except json.JSONDecodeError:
+        return None
+    return obj if isinstance(obj, dict) else None
+
+
+def sanitize_lean_code(code: str, *, verdict: str) -> bool:
+    if not isinstance(code, str) or not code.strip():
+        return False
+    if len(code.encode("utf-8")) > 100_000:
+        return False
+    if verdict == "false" and len(code.encode("utf-8")) > 20_000:
+        return False
+    if BANNED_LEAN_RE.search(code):
+        return False
+    has_submission = bool(re.search(r"\b(?:def|theorem)\s+submission\b", code))
+    if not has_submission:
+        return False
+    saw_judge_problem = False
+    for raw_line in code.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("--"):
+            continue
+        if line.startswith("import "):
+            modules = line.split()[1:]
+            if not modules:
+                return False
+            for module in modules:
+                if module not in ALLOWED_IMPORTS:
+                    return False
+                if module == "JudgeProblem":
+                    saw_judge_problem = True
+    return saw_judge_problem
+
+
+def clean_proof_body(proof: str) -> str:
+    proof = re.sub(r"<think>[\s\S]*?</think>", "", proof or "").strip()
+    proof = re.sub(r"^```(?:lean)?\s*\n?", "", proof)
+    proof = re.sub(r"\n?```\s*$", "", proof).strip()
+    proof = re.sub(r"^\s*import\s+.*\n?", "", proof, flags=re.MULTILINE)
+    match = re.search(r"\b(?:def|theorem)\s+submission\s*:\s*Goal\s*:=\s*by\s*(.*)", proof, re.DOTALL)
+    if match:
+        proof = match.group(1).strip()
+    proof = re.sub(r"^\s*by\s+", "", proof).strip()
+    proof = re.sub(r"^\s*intro\s+G\s+_\s+h\s*\n?", "", proof)
+    return proof.strip()
+
+
+def true_body_certificate(proof_body: str) -> str | None:
+    body = clean_proof_body(proof_body)
+    if not body or BANNED_LEAN_RE.search(body):
+        return None
+    indented = "\n".join(("  " + line if line.strip() else "") for line in body.splitlines())
+    code = "import JudgeProblem\n\n" "def submission : Goal := by\n" "  intro G _ h\n" f"{indented}\n"
+    if not sanitize_lean_code(code, verdict="true"):
+        return None
+    return code
+
+
+def normalize_table(value: Any) -> list[list[int]] | None:
+    if not isinstance(value, list) or not value:
+        return None
+    n = len(value)
+    if n < 1 or n > LLM_MAX_TABLE_N:
+        return None
+    table: list[list[int]] = []
+    for row in value:
+        if not isinstance(row, list) or len(row) != n:
+            return None
+        out_row: list[int] = []
+        for cell in row:
+            if type(cell) is not int or cell < 0 or cell >= n:
+                return None
+            out_row.append(cell)
+        table.append(out_row)
+    return table
+
+
+def parse_llm_chain_terms(chain: Any, variables: set[str]) -> list[Term] | None:
+    if not isinstance(chain, list) or len(chain) < 2:
+        return None
+    terms: list[Term] = []
+    for item in chain:
+        if not isinstance(item, str):
+            return None
+        try:
+            terms.append(parse_term(item, variables))
+        except ValueError:
+            return None
+    return terms
+
+
+def chain_certificate_from_terms(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    chain_terms: list[Term],
+) -> str | None:
+    if chain_terms[0] != eq2["lhs"] or chain_terms[-1] != eq2["rhs"]:
+        return None
+    proofs: list[str] = []
+    for src, dst in zip(chain_terms, chain_terms[1:]):
+        step = proof_between_terms(eq1, src, dst)
+        if step is None:
+            return None
+        proofs.append(step[0])
+    if not proofs:
+        return None
+    expr = proofs[0]
+    for proof in proofs[1:]:
+        expr = f"({expr}).trans ({proof})"
+    return substitution_true_certificate(eq2["variables"], expr)
+
+
+def candidate_from_llm_text(problem: dict[str, Any], text: str) -> dict[str, Any] | None:
+    obj = extract_json_object(text)
+    if obj is None:
+        return None
+    if isinstance(obj.get("answer"), dict):
+        obj = obj["answer"]
+    verdict = str(obj.get("verdict", "")).lower()
+    if verdict not in {"true", "false"}:
+        return None
+    try:
+        eq1 = parse_equation(str(problem["equation1"]))
+        eq2 = parse_equation(str(problem["equation2"]))
+    except (KeyError, ValueError):
+        return None
+
+    if verdict == "false":
+        raw_table = obj.get("counterexample_table", obj.get("table"))
+        table = normalize_table(raw_table)
+        if table is None or not table_is_counterexample(eq1, eq2, table):
+            return None
+        return {
+            "answer": make_false_answer(problem, len(table), table),
+            "route": "llm:false:table",
+        }
+
+    chain = obj.get("chain")
+    if chain is None and isinstance(obj.get("steps"), list):
+        steps = obj["steps"]
+        if steps and all(isinstance(step, dict) for step in steps):
+            chain = [steps[0].get("from")]
+            chain.extend(step.get("to") for step in steps)
+    if chain is not None:
+        variables = set(eq1["variables"]) | set(eq2["variables"])
+        chain_terms = parse_llm_chain_terms(chain, variables)
+        if chain_terms is not None:
+            code = chain_certificate_from_terms(eq1, eq2, chain_terms)
+            if code is not None:
+                return {
+                    "answer": make_true_answer(problem, code),
+                    "route": "llm:true:rewrite_chain",
+                }
+
+    code = obj.get("code", obj.get("lean"))
+    if isinstance(code, str) and sanitize_lean_code(code, verdict="true"):
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": "llm:true:raw_code",
+        }
+
+    proof = obj.get("proof", obj.get("proof_body"))
+    if isinstance(proof, str):
+        code = true_body_certificate(proof)
+        if code is not None:
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": "llm:true:proof_body",
+            }
+    return None
+
+
+def solver_analysis(problem: dict[str, Any]) -> str:
+    try:
+        eq1 = parse_equation(str(problem["equation1"]))
+        eq2 = parse_equation(str(problem["equation2"]))
+    except (KeyError, ValueError):
+        return "Could not parse one of the equations; prefer a finite-table DSL only if certain."
+    cues: list[str] = [
+        f"hypothesis variables: {' '.join(eq1['variables']) or '(none)'}",
+        f"goal variables: {' '.join(eq2['variables']) or '(none)'}",
+        f"goal lhs: {eq2['lhs_text']}",
+        f"goal rhs: {eq2['rhs_text']}",
+    ]
+    if singleton_route(eq1):
+        cues.append("singleton/collapse cue was present but should already have been attempted deterministically.")
+    if direct_substitution_route(eq1, eq2):
+        cues.append("direct substitution cue was present but should already have been attempted deterministically.")
+    if bridge_route(eq1, eq2) or completed_bridge_route(eq1, eq2, max_trials=300):
+        cues.append("two-instance bridge/constancy cue was present but should already have been attempted deterministically.")
+    cues.append("For TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.")
+    cues.append("For FALSE, provide a square finite table; the solver will test it before emitting Lean.")
+    return "\n".join(cues)
+
+
+def render_marathon_prompt(problem: dict[str, Any], analysis: str) -> str:
+    replacements = {
+        "problem.id": str(problem.get("id", "")),
+        "problem.eq1_id": str(problem.get("eq1_id", "")),
+        "problem.eq2_id": str(problem.get("eq2_id", "")),
+        "problem.equation1": str(problem.get("equation1", "")),
+        "problem.equation2": str(problem.get("equation2", "")),
+        "solver.analysis": analysis,
+        "history.attempts": "",
+    }
+    prompt = PROMPT
+    for key, value in replacements.items():
+        prompt = prompt.replace("{" + key + "}", value)
+    return re.sub(r"\{(?:problem|solver|history)\.[a-zA-Z_]+\}", "", prompt)
+
+
+def solo_llm_rounds() -> int:
+    raw = os.environ.get("MAGMA_SOLO_LLM_ROUNDS")
+    if raw is None:
+        return LLM_MAX_ROUNDS
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return LLM_MAX_ROUNDS
+
+
 def run_solo() -> int:
     payload = load_json_line(sys.stdin)
     if not payload:
@@ -495,36 +1149,83 @@ def run_solo() -> int:
     if not isinstance(problem, dict):
         return 0
 
+    attempted: set[tuple[str, str]] = set()
     solved = solve_problem(problem)
+    if solved is not None:
+        answer = dict(solved["answer"])
+        attempted.add((str(answer.get("verdict")), str(answer.get("code"))))
+        response = judge_via_solo_proxy(answer)
+        if response:
+            print(
+                json.dumps(
+                    {
+                        "judge_status": response.get("status"),
+                        "route": solved["route"],
+                    }
+                ),
+                file=sys.stderr,
+            )
+            if response.get("status") == "accepted":
+                return 0
+
+    analysis = solver_analysis(problem)
     if solved is None:
         print(
             json.dumps(
                 {
-                    "route": "skip:none",
-                    "reason": "No deterministic certificate available for this problem.",
+                    "route": "skip:deterministic",
+                    "reason": "No deterministic certificate available; escalating through proxy LLM.",
                 }
             ),
             file=sys.stderr,
         )
-        return 0
 
-    answer = dict(solved["answer"])
-    request = dict(answer)
-    request.pop("id", None)
-    request["call"] = "judge"
-    print(json.dumps(request, separators=(",", ":")), flush=True)
-
-    response = load_json_line(sys.stdin)
-    if response:
-        print(
-            json.dumps(
-                {
-                    "judge_status": response.get("status"),
-                    "route": solved["route"],
-                }
-            ),
-            file=sys.stderr,
+    for round_idx in range(solo_llm_rounds()):
+        llm_response = send_proxy_call(
+            {
+                "call": "llm",
+                "context": {
+                    "round": str(round_idx),
+                    "analysis": analysis,
+                },
+            }
         )
+        if not llm_response or "error" in llm_response:
+            print(
+                json.dumps(
+                    {
+                        "route": "llm:skip",
+                        "round": round_idx,
+                        "error": (llm_response or {}).get("error", "no response"),
+                    }
+                ),
+                file=sys.stderr,
+            )
+            break
+        candidate = candidate_from_llm_text(problem, str(llm_response.get("response", "")))
+        if candidate is None:
+            print(json.dumps({"route": "llm:reject", "round": round_idx}), file=sys.stderr)
+            continue
+        answer = dict(candidate["answer"])
+        key = (str(answer.get("verdict")), str(answer.get("code")))
+        if key in attempted:
+            print(json.dumps({"route": "llm:duplicate", "round": round_idx}), file=sys.stderr)
+            continue
+        attempted.add(key)
+        judge_response = judge_via_solo_proxy(answer)
+        if judge_response:
+            print(
+                json.dumps(
+                    {
+                        "judge_status": judge_response.get("status"),
+                        "route": candidate["route"],
+                        "round": round_idx,
+                    }
+                ),
+                file=sys.stderr,
+            )
+            if judge_response.get("status") == "accepted":
+                return 0
     return 0
 
 
@@ -564,6 +1265,19 @@ def marathon_per_problem_budget(total_budget: float, problem_count: int, ref_sec
     return max(0.2, min(4.0, 0.5 + 5.0 * compression))
 
 
+def load_marathon_llm() -> tuple[Any | None, Any | None, Any | None]:
+    lib_dir = os.environ.get("JUDGE_MARATHON_LIB_DIR")
+    if not lib_dir:
+        return None, None, None
+    if lib_dir not in sys.path:
+        sys.path.insert(0, lib_dir)
+    try:
+        marathon_llm = importlib.import_module("marathon_llm")
+    except Exception:  # noqa: BLE001
+        return None, None, None
+    return marathon_llm.call_llm, marathon_llm.tokens_used, marathon_llm.budget_remaining
+
+
 def run_marathon() -> int:
     manifest_path = os.environ.get("JUDGE_MARATHON_MANIFEST")
     output_path = os.environ.get("JUDGE_MARATHON_OUTPUT")
@@ -573,6 +1287,8 @@ def run_marathon() -> int:
 
     problems = iter_manifest(manifest_path)
     budget_seconds = float(os.environ.get("JUDGE_MARATHON_BUDGET_SECONDS", "3600"))
+    budget_tokens = int(os.environ.get("JUDGE_MARATHON_BUDGET_TOKENS", "0"))
+    deadline = time.monotonic() + budget_seconds
     ref_seconds = marathon_reference_seconds()
     per_problem_budget = marathon_per_problem_budget(budget_seconds, len(problems), ref_seconds)
 
@@ -589,7 +1305,11 @@ def run_marathon() -> int:
 
     route_counts: dict[str, int] = {}
     solved = 0
+    deterministic_submitted = 0
+    solved_ids: set[str] = set()
     for priority, problem in prioritized:
+        if time.monotonic() + 5.0 >= deadline:
+            break
         answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
         if answer_record is None:
             continue
@@ -597,12 +1317,57 @@ def run_marathon() -> int:
         route = str(answer_record["route"])
         route_counts[route] = route_counts.get(route, 0) + 1
         solved += 1
+        deterministic_submitted += 1
+        solved_ids.add(str(problem.get("id")))
+
+    llm_calls = 0
+    call_llm, tokens_used, budget_remaining = load_marathon_llm()
+    if call_llm is not None and budget_tokens != 0:
+        for priority, problem in prioritized:
+            if llm_calls >= MARATHON_LLM_MAX_CALLS:
+                break
+            if time.monotonic() + 20.0 >= deadline:
+                break
+            pid = str(problem.get("id"))
+            if pid in solved_ids:
+                continue
+            if budget_tokens > 0 and tokens_used is not None and tokens_used() >= budget_tokens:
+                break
+            if budget_tokens > 0 and budget_remaining is not None and budget_remaining() < LLM_CONFIG["max_output_tokens"] // 2:
+                break
+            analysis = solver_analysis(problem)
+            prompt = render_marathon_prompt(problem, analysis)
+            max_seconds = max(1.0, deadline - time.monotonic() - 5.0)
+            try:
+                response = call_llm(prompt, config=LLM_CONFIG, max_seconds=max_seconds)
+            except Exception as exc:  # noqa: BLE001
+                print(json.dumps({"route": "llm:error", "id": pid, "error": str(exc)}), file=sys.stderr)
+                continue
+            llm_calls += 1
+            if "error" in response:
+                error = str(response.get("error", ""))
+                print(json.dumps({"route": "llm:error", "id": pid, "error": error}), file=sys.stderr)
+                if "exhausted" in error or "budget" in error:
+                    break
+                continue
+            candidate = candidate_from_llm_text(problem, str(response.get("response", "")))
+            if candidate is None:
+                print(json.dumps({"route": "llm:reject", "id": pid}), file=sys.stderr)
+                continue
+            append_answer(output_path, candidate["answer"])
+            route = str(candidate["route"])
+            route_counts[route] = route_counts.get(route, 0) + 1
+            solved += 1
+            solved_ids.add(pid)
 
     print(
         json.dumps(
             {
-                "submitted_deterministic": solved,
+                "submitted_deterministic": deterministic_submitted,
+                "submitted_total": solved,
+                "llm_calls": llm_calls,
                 "budget_seconds": budget_seconds,
+                "budget_tokens": budget_tokens,
                 "reference_seconds_per_problem": ref_seconds,
                 "per_problem_false_budget": round(per_problem_budget, 3),
                 "routes": route_counts,
