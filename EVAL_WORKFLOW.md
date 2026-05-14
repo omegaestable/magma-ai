@@ -64,6 +64,8 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
+The current packaged smoke size is `49483` bytes. Re-check this after every package step instead of carrying old size notes forward.
+
 ## Solo Debug Loop
 
 Use Solo for fast proof debugging and judge feedback.
@@ -80,6 +82,10 @@ Operational reminder: the judge answer schema is exact. The submitted JSON must
 contain only `verdict` and `code`. Route labels and solver-family notes belong
 in stderr/log-derived summaries, not in the answer payload.
 
+For runner-equivalent certificate debugging, prefer the official runner. If a direct Python check is needed inside the harness code, convert the public problem row with `_to_judge_problem(problem)` before calling `verify_answer(_to_judge_problem(problem), raw_answer)`. A plain `verify_answer(problem, ...)` omits the pipeline default proof policy and can report dependency-policy failures that the runner does not report.
+
+Recent FALSE-certificate lesson: larger `Fin 7+` tables may need `set_option maxRecDepth 20000` before `decideFin!`. This is a certificate-generation detail, not a harness patch.
+
 ## Marathon Loop
 
 Use Marathon for competition-relevant triage and budget behavior.
@@ -95,6 +101,8 @@ The local solver now also supports a repo-local knob
 `MAGMA_MARATHON_REF_SECONDS_PER_PROBLEM` so the same Marathon triage can be
 tested against both current upstream budget interpretations (`600` vs `3600`
 seconds per reference problem).
+
+Custom local Solo environment knobs are not reliable official behavior because the proxy sanitizes the solver subprocess environment. Treat runner/proxy behavior as authoritative.
 
 ## Certificate Distillation
 
@@ -116,6 +124,8 @@ After any meaningful public benchmark run, regenerate:
 
 These are now part of the team-memory chain, not optional extras.
 
+Keep smoke evidence separate from full benchmark evidence. `sample_20`, `sample_200`, targeted fixtures, and Marathon slices are useful for debugging and pacing, but top-level public totals should only change after the full public suite is rerun and summarized under `stage2/results/`.
+
 ## Promotion Rule
 
 A candidate can be called a Stage 2 champion only if:
@@ -135,3 +145,4 @@ A candidate can be called a Stage 2 champion only if:
 3. No hidden dependency on local API keys or environment variables.
 4. No proof template promotion without accepted Lean evidence.
 5. No changing official reference config and calling the result official.
+6. No runtime dependence on Teorth caches, live scraping, or paper files from the submitted solver.

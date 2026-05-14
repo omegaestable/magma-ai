@@ -2,6 +2,8 @@
 
 This directory is for reusable mathematical assets that survive the Stage 1 to Stage 2 reset.
 
+Start with `TEORTH_WORKFLOW.md` for the end-to-end path from Teorth graph/proof-page evidence to solver motif cards. Use `tools/README.md` as the script index.
+
 ## Canonical Data
 
 - `data/exports/equations.txt`: equation catalog.
@@ -11,7 +13,14 @@ This directory is for reusable mathematical assets that survive the Stage 1 to S
 - `data/teorth_cache/graph.json`: Teorth implication graph cache.
 - `data/teorth_cache/full_entries.json`: proof/provenance entry cache.
 - `data/teorth_cache/proof_page_cache/`: cached proof pages.
+- `data/teorth_cache/duals.json`: dual equation map.
 - `data/teorth_cache/smallest_magma.txt`: finite magma witness hints.
+
+Live reference:
+
+- `https://teorth.github.io/equational_theories/implications/`: implication explorer with Equation Explorer, CSV/raw downloads, and upstream commit/timestamp.
+
+Use the live explorer for sync/manual exploration only. Submitted solver behavior must not require network access.
 
 ## Problem Set Policy
 
@@ -21,7 +30,15 @@ This directory is for reusable mathematical assets that survive the Stage 1 to S
 
 ## Tools
 
-Reusable theory and proof-mining scripts live under `theory/tools/`. Some scripts were migrated from the Stage 1 root and may still need import-path cleanup before direct execution.
+Reusable theory and proof-mining scripts live under `theory/tools/`. The current index is in `tools/README.md`.
+
+High-use paths:
+
+1. `fetch_teorth_data.py --check` to verify cache presence before a theory dive.
+2. `teorth_true_proof_agent.py` to label benchmark pairs from the graph and provenance cache.
+3. `proof_scraping_lab.py` for focused proof-page scrapes when cache/provenance is not enough.
+4. `proof_construction_atlas.py` to classify scraped pages into construction families.
+5. `smoke_problem_sets.py` to validate problem-set mirrors and analysis-only subset policy.
 
 ## Stage 2 Theory Products
 
@@ -32,6 +49,8 @@ Create these as work proceeds:
 3. True-proof motif cards with standalone Lean translation sketches.
 4. Literature notes from papers and the Teorth blueprint.
 5. Random equation dive logs that feed the solver, not just chat history.
+
+Use the motif-card convention in `TEORTH_WORKFLOW.md` for durable proof and witness ideas. Every card should include source pairs, Teorth/proof-page provenance, family trigger, Lean rendering sketch, local semantic check, official runner evidence, expected coverage, and blockers.
 
 ## Current Learned Families
 
@@ -51,4 +70,4 @@ That means theory work should now prefer:
 
 ## Guardrail
 
-The official Stage 2 judge is self-contained. Teorth data can guide proof generation, but submitted certificates must compile in the official judge environment.
+The official Stage 2 judge is self-contained. Teorth data can guide proof generation, but submitted certificates must compile in the official judge environment. Do not import Teorth theorem names in submitted certificates unless the official allowlist changes. FALSE witness tables and TRUE proof motifs only move into `stage2/solver/solver.py` after local semantic validation and runner-accepted Lean evidence.

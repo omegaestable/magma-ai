@@ -21,6 +21,8 @@ Current public development file sizes used in this repo:
 - `sample_20.json`: `20`
 - `sample_200.json`: `200`
 
+Treat `normal/hard1/hard2/hard3` as the full public benchmark refresh set. Treat `sample_20`, `sample_200`, targeted one-off JSON fixtures, and Marathon slices as smoke/debug evidence unless a document explicitly promotes a date-stamped run under `stage2/results/`.
+
 ## Problem Shape
 
 Each problem contains at least:
@@ -36,6 +38,8 @@ Some public files may also include an answer field for development. The private 
 The root cache also contains imported Hugging Face `evaluation_*` subsets, but
 those are analysis-only for now and are not part of the official runner-facing
 benchmark workflow unless explicitly promoted later.
+
+Current analysis-only root-cache files include `evaluation_normal.jsonl`, `evaluation_hard.jsonl`, `evaluation_extra_hard.jsonl`, and `evaluation_order5.jsonl`.
 
 ## Solo Mode
 
@@ -59,6 +63,8 @@ vendor/stage2-official/docs/marathon_mode.md
 vendor/stage2-official/examples/marathon/TUTORIAL.md
 ```
 
+Current local smoke slice: `examples/problems/marathon/normal_100.jsonl`. The latest smoke-only run accepted `70/100` with zero token budget. Do not fold this into the full public total.
+
 ## Local Result Storage
 
 Use `stage2/results/` for Stage 2 summaries, failure ledgers, and promotion evidence. Do not mix new Stage 2 results into archived Stage 1 result directories.
@@ -74,6 +80,12 @@ calls, but the ledger still shows the next frontier clearly:
 
 - `571` public `true_template_gap`
 - `100` public `finite_countermodel_gap`
+
+Latest smoke-only housekeeping evidence, separate from those public totals:
+
+- `sample_20`: `14/20`
+- `sample_200`: `165/200`, with all remaining misses TRUE
+- Marathon `normal_100`: `70/100`, zero tokens
 
 ## Stage 1 Archive
 

@@ -1,40 +1,51 @@
 # Stage 2 Smoke Tests
 
-Last smoke run: 2026-05-05.
+Last smoke run: 2026-05-13.
 
 ## Passing Locally
 
 PowerShell with `.venv` Python 3.14.3:
 
 ```powershell
-python -m py_compile stage2/solver/solver.py
-python -m compileall stage2 theory -q
-python -m ruff check stage2/solver
+.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
+.\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
+.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
 .\stage2\solver\package_solver.ps1
 ```
 
 Observed:
 
-- Packaged `stage2/submissions/solver.py` at 3473 bytes.
+- Packaged `stage2/submissions/solver.py` at 49483 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
-- Local Solo reflexive smoke emits a judge request.
-- Local Solo unsupported smoke exits without speculative output.
-- Local Marathon smoke wrote two reflexive JSONL answers from a three-problem manifest.
+- `smoke_llm_dsl.py` exercises fake LLM DSL parsing without network or model calls.
+- `smoke_problem_sets.py` verifies the official mirrors and analysis-only problem-set policy.
 
-## Official Solo Runner Probe
+## Official Solo Runner Probes
 
 Command shape from `vendor/stage2-official/`:
 
 ```powershell
-c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe -m pipeline.runner --submission ../../stage2/submissions --problems ../../tmp_stage2_smoke/reflexive_problem.json
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json
+Pop-Location
 ```
 
-Observed after cleaning `stage2/submissions/`:
+Observed after cleaning and packaging `stage2/submissions/`:
 
 - Runner launches the packaged local solver.
-- Reflexive fixture is solved by the official Lean judge: `1/1 solved`, `llm:0`, `judge:1`.
-- Packaged solver remains 3473 bytes and the submission directory contains only `solver.py`.
+- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`.
+- `sample_200`: `165/200` solved, with all remaining `35` misses classified as TRUE gaps.
+- Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
+- Packaged solver remains 49483 bytes and the submission directory contains only `solver.py`.
+
+Recent certificate lessons:
+
+- `false_907_2534` exposed a Lean recursion-depth failure for a `Fin 7` witness. Emitting `set_option maxRecDepth 20000` before `decideFin!` fixed the official-runner failure.
+- `false_1682_411` and `false_3145_3481` needed larger named compact witnesses (`S5A` and `S4A`) and a named-witness cap independent of the bounded brute-force search cap.
+- Direct `verify_answer(problem, ...)` is not runner-equivalent. Use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)` when debugging certificates inside the harness.
 
 Protocol note:
 
@@ -77,3 +88,24 @@ Observed:
 
 - Solo/Lean harness: no failing buckets; 66/66 judge cases, 79/79 public attacks, 55/55 pipeline regressions.
 - Marathon harness: 25/25 passed with Lean available.
+
+## Marathon Smoke
+
+Command shape from `vendor/stage2-official/`:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions --manifest examples\problems\marathon\normal_100.jsonl --budget-tokens 0
+Pop-Location
+```
+
+Observed:
+
+- `normal_100`: `70/100` accepted with zero token budget.
+- All attempted certificates were accepted.
+- Treat this as pacing/smoke evidence, not a replacement for the full `normal.jsonl` benchmark.
+
+## Evidence Boundary
+
+The canonical full public benchmark summary remains `stage2/results/2026-05-12-public-finite-countermodels-summary.md` until the full public suite is rerun. Smoke-only files under `tmp_stage2_smoke/` are local debugging artifacts; promote durable evidence to `stage2/results/` before citing it as benchmark proof.

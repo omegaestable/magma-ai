@@ -26,10 +26,10 @@ The current `solver/solver.py` is still deliberately conservative, but it now ha
 
 1. reflexive TRUE implications (`eq1_id == eq2_id`)
 2. singleton/collapse TRUE implications
-3. exact substitution and short rewrite-chain TRUE implications
-4. deterministic FALSE implications from named witnesses, affine/linear families, and bounded finite search
+3. exact substitution, short bridge/constancy chains, and bounded subterm rewrite-chain TRUE implications
+4. deterministic FALSE implications from named witnesses, structured tables, affine/quadratic families, dualized witnesses, and bounded finite search
 
-Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; unresolved problems are skipped.
+Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped.
 
 ## Current Public Snapshot
 
@@ -43,11 +43,22 @@ As of the 2026-05-12 readiness pass:
 
 Total public score: `998/1669`, with `0` LLM calls.
 
+Latest local smoke-only evidence from the 2026-05-13 housekeeping run:
+
+- `sample_20`: `14/20` solved
+- `sample_200`: `165/200` solved; `S4A` and `S5A` close the remaining sample FALSE gaps, so the residual sample misses are all TRUE
+- Marathon `normal_100` with zero token budget: `70/100` accepted
+- packaged solver size: `49483` bytes
+
+Do not replace the full public snapshot above with smoke-only numbers. Regenerate `stage2/results/` summaries first if the full public suite is rerun.
+
 Current best route learnings:
 
 - `true:singleton` is the dominant new TRUE lane.
 - `LP`, `RP`, and `C0` still dominate the compact FALSE lane.
 - affine and linear finite families are already paying rent and should be expanded.
+- `Fin 7` false certificates may need `set_option maxRecDepth 20000` before `decideFin!`.
+- runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 - the remaining public gap is mostly TRUE-template work (`571` public TRUE misses versus `100` FALSE misses).
 
 Package it with:
@@ -59,6 +70,7 @@ Package it with:
 The packaging script clears `stage2/submissions/` before copying `solver.py`, because the official Solo runner requires the submission directory to contain no extra files.
 
 See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and Windows harness status.
+Use `../theory/TEORTH_WORKFLOW.md` and `../theory/tools/README.md` for graph/proof-page/paper mining workflows.
 
 ## Next Engines
 

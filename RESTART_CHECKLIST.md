@@ -14,7 +14,9 @@ Read these first:
 6. `BENCHMARK_MANIFEST.md`
 7. `stage2/README.md`
 8. `theory/README.md`
-9. `stage2/docs/LATEST_HANDOFF.md`
+9. `theory/TEORTH_WORKFLOW.md`
+10. `theory/tools/README.md`
+11. `stage2/docs/LATEST_HANDOFF.md`
 
 If present, also glance at the latest generated evidence before touching the solver:
 
@@ -28,6 +30,7 @@ If present, also glance at the latest generated evidence before touching the sol
 3. Official harness: `vendor/stage2-official/`
 4. Shared Teorth data: `data/exports/` and `data/teorth_cache/`
 5. Stage 1 archive: `stage1/`
+6. Theory workflow: `theory/TEORTH_WORKFLOW.md` and `theory/tools/README.md`
 
 ## 3. Confirm Python Environment
 
@@ -98,8 +101,7 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current expected packaged size ballpark after the 2026-05-12 solver upgrade:
-roughly `20 KB`, not the old `8.7 KB`.
+Current expected packaged size after the 2026-05-13 smoke pass: `49483` bytes, still far below the 500 KB limit.
 
 ## 6. First Smoke Runs
 
@@ -120,6 +122,22 @@ Push-Location vendor/stage2-official
 c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
 Pop-Location
 ```
+
+Current fast local smoke probes:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
+.\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
+.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
+Push-Location vendor/stage2-official
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json
+..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions --manifest examples\problems\marathon\normal_100.jsonl --budget-tokens 0
+Pop-Location
+```
+
+Latest smoke-only outcomes: `sample_20 = 14/20`, `sample_200 = 165/200` with all remaining misses TRUE, and Marathon `normal_100 = 70/100` accepted with zero tokens.
 
 Public benchmark refresh and team-memory regeneration:
 
@@ -145,3 +163,5 @@ Pop-Location
 5. Editing `vendor/stage2-official/` without documenting upstream drift.
 6. Leaving `.gitkeep`, `__pycache__`, or other extras in `stage2/submissions/`; the official Solo runner rejects the directory before executing the solver.
 7. Forgetting that route labels cannot be added to the judge answer JSON; the judge accepts exactly `verdict` and `code`, so route labels must live in stderr/log-derived summaries.
+8. Debugging certificates with direct `verify_answer(problem, ...)` and forgetting the pipeline proof policy; use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
+9. Treating `tmp_stage2_smoke/` or live Teorth scrape output as durable evidence before promoting it to `stage2/results/`.

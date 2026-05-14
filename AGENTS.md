@@ -21,8 +21,10 @@ Follow this order exactly:
 7. `BENCHMARK_MANIFEST.md`
 8. `stage2/README.md`
 9. `theory/README.md`
-10. `stage2/docs/LATEST_HANDOFF.md`
-11. Only then inspect solver code, theory tools, or archived Stage 1 files.
+10. `theory/TEORTH_WORKFLOW.md`
+11. `theory/tools/README.md`
+12. `stage2/docs/LATEST_HANDOFF.md`
+13. Only then inspect solver code, theory tools, or archived Stage 1 files.
 
 ## Current Operating Model
 
@@ -31,8 +33,8 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
-- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, and short bridge rewrites.
-- Active deterministic FALSE routes: named compact witnesses, affine/linear finite families, and bounded `Fin 2..3` search.
+- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, short bridge/constancy rewrites, and bounded subterm rewrite chains.
+- Active deterministic FALSE routes: named compact witnesses, structured finite families, affine/quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
 
@@ -47,6 +49,13 @@ Use `stage2/results/2026-05-12-public-finite-countermodels-summary.md` and
 `stage2/docs/LATEST_HANDOFF.md` as the current team-memory bridge before
 starting new solver work.
 
+Latest smoke-only housekeeping evidence, not a full public benchmark refresh:
+
+- `sample_20`: `14/20`
+- `sample_200`: `165/200`, with all remaining misses TRUE
+- Marathon `normal_100` with zero tokens: `70/100` accepted
+- Packaged solver size: `49483` bytes
+
 ## Banned Approaches
 
 1. Do not treat Stage 1 prompt accuracy as Stage 2 evidence.
@@ -55,6 +64,7 @@ starting new solver work.
 4. Do not rely on network, local secrets, or repo-local imports from the submitted solver.
 5. Do not import Teorth theorem names in official certificates unless upstream allowlists them.
 6. Do not edit vendored official harness files casually; document any local patch.
+7. Do not treat live Teorth scraping, `tmp_stage2_smoke/`, or direct `verify_answer(problem, ...)` output as promotion evidence without runner-equivalent validation.
 
 ## Canonical Workflow
 
@@ -64,7 +74,8 @@ starting new solver work.
 4. Run official Solo samples for fast certificate debugging.
 5. Run official Marathon samples for pacing, triage, and append-only output behavior.
 6. Distill failures into certificate-template fixes, not prompt folklore.
-7. Red-team candidate behavior before promotion.
+7. For theory dives, use `theory/TEORTH_WORKFLOW.md` to move from graph/proof-page evidence to Lean motif cards.
+8. Red-team candidate behavior before promotion.
 
 Important operational lesson:
 
@@ -124,6 +135,8 @@ Primary files:
 - `data/exports/equations.txt`
 - `data/teorth_cache/graph.json`
 - `data/teorth_cache/full_entries.json`
+- `theory/TEORTH_WORKFLOW.md`
+- `theory/tools/README.md`
 
 ### Red-Team Reviewer
 

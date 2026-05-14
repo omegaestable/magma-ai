@@ -39,11 +39,13 @@ Cold-start read order:
 7. `BENCHMARK_MANIFEST.md`
 8. `stage2/README.md`
 9. `theory/README.md`
-10. `stage2/docs/LATEST_HANDOFF.md`
+10. `theory/TEORTH_WORKFLOW.md`
+11. `theory/tools/README.md`
+12. `stage2/docs/LATEST_HANDOFF.md`
 
 ## Current Evidence
 
-Latest public benchmark snapshot from the packaged deterministic solver:
+Canonical full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-12:
 
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`
 - `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`, `llm:0`
@@ -53,6 +55,13 @@ Latest public benchmark snapshot from the packaged deterministic solver:
 
 Current public total: `998/1669` solved.
 
+Latest local smoke evidence from the 2026-05-13 housekeeping run, not a replacement for the full public totals above:
+
+- Packaged `stage2/submissions/solver.py`: `49483` bytes, single-file submission directory.
+- Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
+- Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; the remaining `35` sample misses are all TRUE cases.
+- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `70/100` accepted, `0` tokens.
+
 The full generated evidence lives in:
 
 - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
@@ -60,6 +69,8 @@ The full generated evidence lives in:
 - `stage2/results/2026-05-12-competition-preflight.md`
 
 Most important current lesson: the solver is no longer false-only, but the remaining public gap is still dominated by TRUE templates (`571` public TRUE misses versus `100` public FALSE misses).
+
+For math extraction and Teorth provenance work, start from `theory/TEORTH_WORKFLOW.md`; it documents the cache-first path from implication graph and proof pages to solver motifs.
 
 ## Repository Layout
 
