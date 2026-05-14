@@ -31,7 +31,7 @@ The active solver is still conservative, but no longer reflexivity-only:
 2. Detects Solo mode from stdin JSON.
 3. Emits a TRUE certificate for the trivial case `eq1_id == eq2_id`.
 4. Emits TRUE certificates for singleton/collapse implications where `eq1` forces one-element models.
-5. Emits TRUE certificates for exact substitution instances, short bridge/constancy chains, and bounded subterm rewrite chains.
+5. Emits TRUE certificates for exact substitution instances, projection-boundary laws, short bridge/constancy chains, and bounded subterm rewrite chains.
 6. Searches finite FALSE witnesses using named compact witnesses, structured table families, affine/quadratic finite families, dualized witnesses, and bounded `Fin 2..3` enumeration.
 7. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables get `set_option maxRecDepth 20000` to avoid Lean recursion-depth failures.
 8. Skips unresolved problems rather than submitting speculative certificates.
@@ -46,16 +46,17 @@ Current Windows evidence, after documented local compatibility patches under `ve
 
 1. `scripts/run_harness.py`: green, with 66/66 judge cases, 79/79 public attacks, 55/55 pipeline regressions, 32/32 judge internals, 11/11 submit CLI checks, and no failing buckets.
 2. `scripts/run_marathon_harness.py`: green, 25/25 checks with Lean available.
-3. Packaged local solver: `stage2/submissions/solver.py` at 49483 bytes, with `stage2/submissions/` containing only `solver.py`.
-4. Official Solo runner on `examples/problems/sample_20.json`: 14/20 solved, with 4 TRUE + 10 FALSE certificates, `llm:0`.
+3. Packaged local solver: `stage2/submissions/solver.py` at 52098 bytes, with `stage2/submissions/` containing only `solver.py`.
+4. Official Solo runner on `examples/problems/sample_20.json`: 14/20 solved, with 4 TRUE + 10 FALSE certificates. In the current no-key local run, the 6 unresolved TRUE rows each made one LLM call and failed with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
 5. Official Solo runner on `examples/problems/sample_200.json`: 165/200 solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` witnesses; the remaining 35 smoke misses are all TRUE cases.
 6. Official Marathon runner on `examples/problems/marathon/normal_100.jsonl` with zero token budget: 70/100 accepted, with 70 attempted and no rejected certificates.
-7. Canonical full public benchmark totals remain from the 2026-05-12 generated evidence until the full public suite is rerun:
+7. Focused hard3 TRUE probe on `tmp_stage2_smoke/hard3_true2.jsonl`: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` made one LLM call and failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
+8. Canonical full public benchmark totals remain from the 2026-05-12 generated evidence until the full public suite is rerun:
    - `normal.jsonl`: 743/1000 solved, with 245 TRUE + 498 FALSE, `llm:0`.
    - `hard1.jsonl`: 17/69 solved, all FALSE, `llm:0`.
    - `hard2.jsonl`: 52/200 solved, all FALSE, `llm:0`.
    - `hard3.jsonl`: 186/400 solved, with 3 TRUE + 183 FALSE, `llm:0`.
-8. Generated team-memory artifacts:
+9. Generated team-memory artifacts:
    - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
    - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
    - `stage2/results/2026-05-12-competition-preflight.md`

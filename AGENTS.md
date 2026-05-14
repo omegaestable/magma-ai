@@ -33,7 +33,7 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
-- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, short bridge/constancy rewrites, and bounded subterm rewrite chains.
+- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, and bounded subterm rewrite chains.
 - Active deterministic FALSE routes: named compact witnesses, structured finite families, affine/quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
@@ -54,7 +54,7 @@ Latest smoke-only housekeeping evidence, not a full public benchmark refresh:
 - `sample_20`: `14/20`
 - `sample_200`: `165/200`, with all remaining misses TRUE
 - Marathon `normal_100` with zero tokens: `70/100` accepted
-- Packaged solver size: `49483` bytes
+- Packaged solver size: `52098` bytes
 
 ## Banned Approaches
 

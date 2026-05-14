@@ -194,6 +194,18 @@ def substitution_true_certificate(
     )
 
 
+def projection_true_certificate(eq2_vars: list[str], proof_expr: str) -> str:
+    intro_vars = " ".join(eq2_vars)
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    return (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+
+
 Term = tuple[Any, ...]
 
 
@@ -310,6 +322,14 @@ def term_subterms(term: Term) -> list[Term]:
         out.extend(term_subterms(term[1]))
         out.extend(term_subterms(term[2]))
     return out
+
+
+def boundary_vars(term: Term) -> tuple[str | None, str | None]:
+    if term[0] == "var":
+        return str(term[1]), str(term[1])
+    left = boundary_vars(term[1])
+    right = boundary_vars(term[2])
+    return left[0], right[1]
 
 
 def subterm_paths(term: Term, prefix: tuple[int, ...] = ()) -> list[tuple[int, ...]]:
@@ -573,6 +593,19 @@ def bridge_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, dict[st
     return None
 
 
+def projection_law_route(eq1: dict[str, Any]) -> str | None:
+    for variable_side, op_side in ((eq1["lhs"], eq1["rhs"]), (eq1["rhs"], eq1["lhs"])):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        projected = str(variable_side[1])
+        left, right = op_side[1], op_side[2]
+        if right == ("var", projected) and left[0] == "var" and left[1] != projected:
+            return "right"
+        if left == ("var", projected) and right[0] == "var" and right[1] != projected:
+            return "left"
+    return None
+
+
 def goal_term_pool(eq2: dict[str, Any]) -> list[Term]:
     pool: list[Term] = []
     seen: set[Term] = set()
@@ -674,6 +707,48 @@ def proof_between_terms(eq1: dict[str, Any], src: Term, dst: Term) -> tuple[str,
     return None
 
 
+def projection_term_proof(
+    eq1: dict[str, Any],
+    term: Term,
+    side: str,
+) -> tuple[str, str] | None:
+    if term[0] == "var":
+        return "rfl", str(term[1])
+    projected = term[2] if side == "right" else term[1]
+    immediate = proof_between_terms(eq1, term, projected)
+    if immediate is None:
+        return None
+    proof_expr = immediate[0]
+    rest = projection_term_proof(eq1, projected, side)
+    if rest is None:
+        return None
+    rest_proof, target_var = rest
+    if rest_proof != "rfl":
+        proof_expr = f"({proof_expr}).trans ({rest_proof})"
+    return proof_expr, target_var
+
+
+def projection_true_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    side = projection_law_route(eq1)
+    if side is None:
+        return None
+    left = projection_term_proof(eq1, eq2["lhs"], side)
+    right = projection_term_proof(eq1, eq2["rhs"], side)
+    if left is None or right is None:
+        return None
+    left_proof, left_target = left
+    right_proof, right_target = right
+    if left_target != right_target:
+        return None
+    if left_proof == "rfl":
+        proof_expr = f"({right_proof}).symm" if right_proof != "rfl" else "rfl"
+    elif right_proof == "rfl":
+        proof_expr = left_proof
+    else:
+        proof_expr = f"({left_proof}).trans ({right_proof}).symm"
+    return f"true:projection:{side}", projection_true_certificate(eq2["variables"], proof_expr)
+
+
 def find_rewrite_chain(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
@@ -703,13 +778,6 @@ def find_rewrite_chain(
 
 
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
-    def boundary_vars(term: Term) -> tuple[str | None, str | None]:
-        if term[0] == "var":
-            return str(term[1]), str(term[1])
-        left = boundary_vars(term[1])
-        right = boundary_vars(term[2])
-        return left[0], right[1]
-
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
     eq2_left, eq2_right = boundary_vars(eq2["rhs"])
     return eq1_left != eq2_left or eq1_right != eq2_right
@@ -863,6 +931,15 @@ def solve_problem(
                 substitution_true_certificate(eq2["variables"], f"({left_to_mid}).trans ({mid_to_right})"),
             ),
             "route": bridge_name,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    projection = projection_true_route(eq1, eq2)
+    if projection is not None:
+        route, code = projection
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
             "priority": problem_priority(problem, eq1, eq2),
         }
 

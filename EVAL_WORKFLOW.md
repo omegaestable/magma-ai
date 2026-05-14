@@ -64,7 +64,7 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
-The current packaged smoke size is `49483` bytes. Re-check this after every package step instead of carrying old size notes forward.
+The current packaged smoke size is `52098` bytes. Re-check this after every package step instead of carrying old size notes forward.
 
 ## Solo Debug Loop
 

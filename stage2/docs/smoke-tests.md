@@ -15,7 +15,7 @@ PowerShell with `.venv` Python 3.14.3:
 
 Observed:
 
-- Packaged `stage2/submissions/solver.py` at 49483 bytes.
+- Packaged `stage2/submissions/solver.py` at 52098 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - `smoke_llm_dsl.py` exercises fake LLM DSL parsing without network or model calls.
@@ -36,10 +36,10 @@ Pop-Location
 Observed after cleaning and packaging `stage2/submissions/`:
 
 - Runner launches the packaged local solver.
-- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`.
+- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`. In the current no-key local run, the 6 unresolved TRUE rows each made one LLM call and failed with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
 - `sample_200`: `165/200` solved, with all remaining `35` misses classified as TRUE gaps.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver remains 49483 bytes and the submission directory contains only `solver.py`.
+- Packaged solver remains 52098 bytes and the submission directory contains only `solver.py`.
 
 Recent certificate lessons:
 
@@ -105,6 +105,22 @@ Observed:
 - `normal_100`: `70/100` accepted with zero token budget.
 - All attempted certificates were accepted.
 - Treat this as pacing/smoke evidence, not a replacement for the full `normal.jsonl` benchmark.
+
+## Focused Hard3 TRUE Probe
+
+Command shape from `vendor/stage2-official/` against `tmp_stage2_smoke/hard3_true2.jsonl`:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
+Push-Location vendor/stage2-official
+..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\hard3_true2.jsonl --output ..\..\tmp_stage2_smoke\hard3_true2_result.json
+Pop-Location
+```
+
+Observed:
+
+- `hard3_0001`: accepted as TRUE via `true:projection:right`, `llm:0`, `judge:1`.
+- `hard3_0002`: unresolved deterministically, made one LLM call, and failed locally with `OPENAI_API_KEY or OPENROUTER_API_KEY not set`.
 
 ## Evidence Boundary
 

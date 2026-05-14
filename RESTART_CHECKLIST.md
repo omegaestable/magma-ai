@@ -101,7 +101,7 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current expected packaged size after the 2026-05-13 smoke pass: `49483` bytes, still far below the 500 KB limit.
+Current expected packaged size after the 2026-05-13 hard3 projection smoke pass: `52098` bytes, still far below the 500 KB limit.
 
 ## 6. First Smoke Runs
 
