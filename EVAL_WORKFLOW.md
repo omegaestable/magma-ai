@@ -66,6 +66,16 @@ Check:
 
 The current packaged smoke size is `52098` bytes. Re-check this after every package step instead of carrying old size notes forward.
 
+## Playground Preflight Gate
+
+Before upload or playground testing, run `stage2/docs/playground-preflight.md` as a focused gate. It exists to prevent three common mistakes:
+
+1. Submitting a directory with extra files instead of the single generated `solver.py`.
+2. Confusing a local runner proxy missing `OPENAI_API_KEY` or `OPENROUTER_API_KEY` with a solver-side protocol bug.
+3. Updating public benchmark claims from smoke-only evidence.
+
+The current solver is deterministic-ready for the playground under the official single-file and proxy contracts. LLM success depends on the playground proxy being enabled and configured; the solver should never carry local keys or call model APIs directly.
+
 ## Solo Debug Loop
 
 Use Solo for fast proof debugging and judge feedback.

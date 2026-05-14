@@ -15,12 +15,14 @@ Use this workflow before any solver candidate is promoted.
 3. No local API keys or unallowlisted environment variables are read.
 4. Solo JSON request/response flow is valid.
 5. Marathon manifest read and append-only output behavior are valid.
-6. Lean code avoids banned tokens and unsupported imports.
-7. False certificates use valid finite magma tables.
-8. True certificates compile in the official judge context.
-9. Timeout and token-exhaustion behavior is graceful.
-10. Results were produced with official reference config or documented local deviations.
+6. LLM escalation uses only official Solo/Marathon proxy paths; missing local upstream keys are classified separately from solver protocol failures.
+7. Lean code avoids banned tokens and unsupported imports.
+8. False certificates use valid finite magma tables.
+9. True certificates compile in the official judge context.
+10. Timeout and token-exhaustion behavior is graceful.
+11. Results were produced with official reference config or documented local deviations.
+12. Smoke-only evidence is not reported as a refreshed public benchmark total.
 
 ## Output
 
-Return blockers first, then risks, then non-blocking improvements. Do not summarize a candidate as ready if any blocker remains.
+Return blockers first, then risks, then non-blocking improvements. Include explicit playground readiness status. Do not summarize a candidate as ready if any blocker remains.

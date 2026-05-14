@@ -42,6 +42,7 @@ Latest local smoke-only evidence from 2026-05-13:
 - `sample_200`: `165/200` solved; all remaining sample misses are TRUE
 - Marathon `normal_100`, zero token budget: `70/100` accepted, `0` tokens
 - packaged solver size: `52098` bytes
+- focused hard3 TRUE probe: `hard3_0001` accepted via `true:projection:right`; `hard3_0002` reached the LLM path and failed locally because no upstream key was set
 
 Canonical generated evidence:
 
@@ -84,8 +85,20 @@ Canonical generated evidence:
    explicitly promoted into an official workflow.
 5. Custom local Solo knobs may be stripped by the official proxy environment.
    Treat proxy/runner behavior as authoritative.
-6. `tmp_stage2_smoke/` is for local debugging. Promote durable evidence into
+6. Local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` errors mean the local
+   runner proxy lacks an upstream credential, not that the submitted solver has
+   access to missing secrets.
+7. `tmp_stage2_smoke/` is for local debugging. Promote durable evidence into
    `stage2/results/` before citing it as benchmark proof.
+
+## Playground Readiness
+
+Use `stage2/docs/playground-preflight.md` before upload or playground checks.
+The current packaged solver is deterministic-ready under the official
+single-file and proxy contracts: `stage2/submissions/` contains only
+`solver.py`, the file is below the 500 KB cap, deterministic certificates have
+official runner evidence, and unresolved cases use the proxy LLM protocol. Full
+LLM success still depends on the playground proxy being enabled and configured.
 
 ## Recommended Next Steps
 
@@ -97,7 +110,8 @@ Canonical generated evidence:
    increasing brute-force search bounds.
 5. Rerun `scripts/run_harness.py` and `scripts/run_marathon_harness.py` before
    calling the upgraded solver a promotion candidate.
-6. After major solver changes, rerun:
+6. Run `stage2/docs/playground-preflight.md` before upload/playground testing.
+7. After major solver changes, rerun:
 
 ```powershell
 .\stage2\solver\package_solver.ps1

@@ -20,11 +20,12 @@ Follow this order exactly:
 6. `EVAL_WORKFLOW.md`
 7. `BENCHMARK_MANIFEST.md`
 8. `stage2/README.md`
-9. `theory/README.md`
-10. `theory/TEORTH_WORKFLOW.md`
-11. `theory/tools/README.md`
-12. `stage2/docs/LATEST_HANDOFF.md`
-13. Only then inspect solver code, theory tools, or archived Stage 1 files.
+9. `stage2/docs/playground-preflight.md`
+10. `theory/README.md`
+11. `theory/TEORTH_WORKFLOW.md`
+12. `theory/tools/README.md`
+13. `stage2/docs/LATEST_HANDOFF.md`
+14. Only then inspect solver code, theory tools, or archived Stage 1 files.
 
 ## Current Operating Model
 
@@ -47,7 +48,8 @@ Latest public benchmark snapshot:
 
 Use `stage2/results/2026-05-12-public-finite-countermodels-summary.md` and
 `stage2/docs/LATEST_HANDOFF.md` as the current team-memory bridge before
-starting new solver work.
+starting new solver work. Use `stage2/docs/playground-preflight.md` before any
+upload/playground check.
 
 Latest smoke-only housekeeping evidence, not a full public benchmark refresh:
 
@@ -71,11 +73,12 @@ Latest smoke-only housekeeping evidence, not a full public benchmark refresh:
 1. Read the official Stage 2 docs in `vendor/stage2-official/docs/` and examples tutorials.
 2. Package the local solver with `stage2/solver/package_solver.ps1`.
 3. Validate syntax and size of `stage2/submissions/solver.py`.
-4. Run official Solo samples for fast certificate debugging.
-5. Run official Marathon samples for pacing, triage, and append-only output behavior.
-6. Distill failures into certificate-template fixes, not prompt folklore.
-7. For theory dives, use `theory/TEORTH_WORKFLOW.md` to move from graph/proof-page evidence to Lean motif cards.
-8. Red-team candidate behavior before promotion.
+4. Run the playground preflight checks in `stage2/docs/playground-preflight.md`.
+5. Run official Solo samples for fast certificate debugging.
+6. Run official Marathon samples for pacing, triage, and append-only output behavior.
+7. Distill failures into certificate-template fixes, not prompt folklore.
+8. For theory dives, use `theory/TEORTH_WORKFLOW.md` to move from graph/proof-page evidence to Lean motif cards.
+9. Red-team candidate behavior before promotion.
 
 Important operational lesson:
 
@@ -94,6 +97,7 @@ Primary files:
 - `vendor/stage2-official/`
 - `EVAL_WORKFLOW.md`
 - `BENCHMARK_MANIFEST.md`
+- `stage2/docs/playground-preflight.md`
 
 ### Solver Engineer
 

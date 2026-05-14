@@ -16,6 +16,7 @@ Use this workflow to turn Teorth graph exploration into Stage 2 solver evidence.
 - `data/teorth_cache/full_entries.json`
 - `data/teorth_cache/proof_page_cache/`
 - `data/teorth_cache/smallest_magma.txt`
+- Live explorer: `https://teorth.github.io/equational_theories/implications/`
 
 ## Procedure
 
@@ -24,9 +25,11 @@ Use this workflow to turn Teorth graph exploration into Stage 2 solver evidence.
 3. Find direct proof provenance, graph paths, dual relationships, and witness hints.
 4. Classify as true-proof candidate, false-witness candidate, unknown, or data-conflict audit.
 5. Save useful findings as structured notes for later solver ingestion.
+6. Distill only reusable motifs or witness families into solver code; the submitted solver must not scrape or read Teorth caches at runtime.
 
 ## Guardrails
 
 - Teorth data guides generation; the official Lean judge decides acceptance.
 - Do not hardcode private benchmark pairs as policy.
 - Mark stale or conflicting data explicitly.
+- Keep live scraping as cache-sync or manual exploration, never as playground runtime behavior.

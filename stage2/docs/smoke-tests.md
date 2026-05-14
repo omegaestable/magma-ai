@@ -18,6 +18,7 @@ Observed:
 - Packaged `stage2/submissions/solver.py` at 52098 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
+- Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
 - `smoke_llm_dsl.py` exercises fake LLM DSL parsing without network or model calls.
 - `smoke_problem_sets.py` verifies the official mirrors and analysis-only problem-set policy.
 

@@ -16,9 +16,11 @@ Use this workflow for competition-relevant multi-problem solving under a shared 
 4. Submit deterministic certificates before exploratory LLM calls.
 5. Reuse proof attempts, witness tables, and error repairs across related equation families.
 6. Track accepted count, wall-clock, token use, and failure class.
+7. Run a zero-token Marathon smoke before spending budget so deterministic append-only behavior is known-good.
 
 ## Guardrails
 
 - Never assume every problem can receive Solo-level budget.
 - Do not let LLM repair loops starve deterministic solves.
 - Append JSONL answers only in the official output shape.
+- Treat missing local upstream LLM keys as runner/proxy setup, not as evidence that the packaged solver cannot run in a proxy-enabled playground.

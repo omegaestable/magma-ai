@@ -38,10 +38,11 @@ Cold-start read order:
 6. `EVAL_WORKFLOW.md`
 7. `BENCHMARK_MANIFEST.md`
 8. `stage2/README.md`
-9. `theory/README.md`
-10. `theory/TEORTH_WORKFLOW.md`
-11. `theory/tools/README.md`
-12. `stage2/docs/LATEST_HANDOFF.md`
+9. `stage2/docs/playground-preflight.md`
+10. `theory/README.md`
+11. `theory/TEORTH_WORKFLOW.md`
+12. `theory/tools/README.md`
+13. `stage2/docs/LATEST_HANDOFF.md`
 
 ## Current Evidence
 
@@ -68,6 +69,8 @@ The full generated evidence lives in:
 - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
 - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
 - `stage2/results/2026-05-12-competition-preflight.md`
+
+For upload/playground readiness, use `stage2/docs/playground-preflight.md`. It keeps the single-file packaging contract, proxy-mediated LLM behavior, local no-key caveat, and smoke/full-benchmark evidence boundary in one place.
 
 Most important current lesson: the solver is no longer false-only, but the remaining public gap is still dominated by TRUE templates (`571` public TRUE misses versus `100` public FALSE misses).
 

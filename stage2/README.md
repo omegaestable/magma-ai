@@ -70,6 +70,8 @@ Package it with:
 
 The packaging script clears `stage2/submissions/` before copying `solver.py`, because the official Solo runner requires the submission directory to contain no extra files.
 
+Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, official proxy LLM behavior, the local no-key caveat, and the smoke evidence boundary.
+
 See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and Windows harness status.
 Use `../theory/TEORTH_WORKFLOW.md` and `../theory/tools/README.md` for graph/proof-page/paper mining workflows.
 

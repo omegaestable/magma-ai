@@ -13,10 +13,11 @@ Read these first:
 5. `EVAL_WORKFLOW.md`
 6. `BENCHMARK_MANIFEST.md`
 7. `stage2/README.md`
-8. `theory/README.md`
-9. `theory/TEORTH_WORKFLOW.md`
-10. `theory/tools/README.md`
-11. `stage2/docs/LATEST_HANDOFF.md`
+8. `stage2/docs/playground-preflight.md`
+9. `theory/README.md`
+10. `theory/TEORTH_WORKFLOW.md`
+11. `theory/tools/README.md`
+12. `stage2/docs/LATEST_HANDOFF.md`
 
 If present, also glance at the latest generated evidence before touching the solver:
 
@@ -31,6 +32,7 @@ If present, also glance at the latest generated evidence before touching the sol
 4. Shared Teorth data: `data/exports/` and `data/teorth_cache/`
 5. Stage 1 archive: `stage1/`
 6. Theory workflow: `theory/TEORTH_WORKFLOW.md` and `theory/tools/README.md`
+7. Playground preflight: `stage2/docs/playground-preflight.md`
 
 ## 3. Confirm Python Environment
 
@@ -103,6 +105,8 @@ Get-ChildItem -Force stage2/submissions
 
 Current expected packaged size after the 2026-05-13 hard3 projection smoke pass: `52098` bytes, still far below the 500 KB limit.
 
+For playground/upload readiness, run the checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
+
 ## 6. First Smoke Runs
 
 After official setup, run official demos first, then the local scaffold.
@@ -165,3 +169,4 @@ Pop-Location
 7. Forgetting that route labels cannot be added to the judge answer JSON; the judge accepts exactly `verdict` and `code`, so route labels must live in stderr/log-derived summaries.
 8. Debugging certificates with direct `verify_answer(problem, ...)` and forgetting the pipeline proof policy; use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 9. Treating `tmp_stage2_smoke/` or live Teorth scrape output as durable evidence before promoting it to `stage2/results/`.
+10. Treating local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` as a solver protocol failure when the request reached the proxy LLM path.

@@ -17,9 +17,11 @@ Use this workflow when a certificate fails or when adding a new proof template.
 5. Classify failure status: `unparsed`, `malformed`, `incomplete_proof`, or `incorrect`.
 6. For true proofs, verify that the proof is standalone and does not assume Teorth theorem names.
 7. For false proofs, verify the magma table and equation evaluation before blaming Lean syntax.
+8. For direct harness checks, use the official runner or convert with `_to_judge_problem(problem)` before `verify_answer`; direct `verify_answer(problem, ...)` is not runner-equivalent.
 
 ## Guardrails
 
 - No template is promoted without `accepted` evidence.
 - Do not use `sorry`, `admit`, generated axioms, or unsafe initialization tricks.
 - Preserve stderr excerpts in `stage2/results/` when they teach a reusable fix.
+- Larger finite witnesses can need `set_option maxRecDepth 20000` before `decideFin!`; validate the emitted certificate through the runner.

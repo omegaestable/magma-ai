@@ -18,6 +18,7 @@ Last updated: 2026-05-13.
 - Local solver scaffold: `stage2/solver/solver.py`.
 - Packaged submission target: `stage2/submissions/solver.py`.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
+- Playground preflight checklist: `stage2/docs/playground-preflight.md`.
 - Theory extraction workflow: `theory/TEORTH_WORKFLOW.md`.
 - Theory tool index: `theory/tools/README.md`.
 - Stage 1 archive: `stage1/`.
@@ -65,7 +66,8 @@ Recent operational lessons:
 
 1. For runner-equivalent certificate debugging, use the official runner or call `verify_answer(_to_judge_problem(problem), raw_answer)`. A direct `verify_answer(problem, ...)` omits the pipeline default proof policy and can report disallowed `propext`, `Classical.choice`, or `Quot.sound` for certificates accepted by the runner.
 2. Custom local Solo environment knobs can be stripped by the official proxy environment; do not rely on them for official-run behavior.
-3. `tmp_stage2_smoke/` files are temporary smoke/debug artifacts. Promote evidence to `stage2/results/` with a date-stamped name before treating it as team memory.
+3. Local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` errors mean the runner proxy lacked an upstream local key. They do not imply a bad submitted solver if the LLM request reached the official proxy shape.
+4. `tmp_stage2_smoke/` files are temporary smoke/debug artifacts. Promote evidence to `stage2/results/` with a date-stamped name before treating it as team memory.
 
 ## Upstream TBDs
 
