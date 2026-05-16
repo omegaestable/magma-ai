@@ -1,18 +1,20 @@
 # Latest Handoff
 
-Updated: 2026-05-14
+Updated: 2026-05-15
 
 This is the compressed team-memory note for the current Stage 2 solver state.
 
 ## What Changed
 
-- The solver now has two new deterministic levers:
+- The solver now has three recent deterministic levers:
   - expanded linear/affine FALSE search over sizes `2,3,4,5,7,8,9`
   - bounded TRUE proof search via `true:absorption_closure`
+  - second-stage bounded TRUE proof search via `true:absorption_closure:deep`
 - Quadratic search intentionally stays on the tighter older size policy to avoid a broad runtime jump.
 - `true:absorption_closure` triggers only on non-singleton absorption hypotheses such as `x = T` or `T = x` where `x` occurs inside `T`. It reconstructs Lean with instantiated `h`, `congrArg`, `.trans`, and `.symm`.
+- `true:absorption_closure:deep` keeps the shallow route unchanged, then runs after finite counterexample search fails with its own small deadline and tighter stderr-only route label.
 - The answer payload contract is unchanged: submitted answers contain exactly `verdict` and `code`; route labels remain in stderr/logs.
-- Packaged solver size is now `60614` bytes, still far below the 500 KB cap.
+- Packaged solver size after the deep route is `62966` bytes, still far below the 500 KB cap.
 
 ## Best Public Evidence
 
@@ -26,35 +28,44 @@ Canonical full public benchmark evidence still remains the 2026-05-12 generated 
 
 Public total remains `998/1669` until `normal|hard1|hard2|hard3` are refreshed together.
 
-Latest 2026-05-14 local runner-equivalent evidence:
+Latest 2026-05-15 local runner-equivalent evidence:
 
-- composite-affine focused fixture: `14/14` accepted
-- same 150-row hard mix, seed `20260514`: `73/150`, up from `68/150`
-- hard-mix deltas: 2 TRUE wins via `true:absorption_closure`, 3 FALSE wins via expanded affine/linear search, no regressions
+- deep absorption focused fixture: `15/15` accepted
+- same 150-row hard mix, seed `20260514`: `75/150`, up from `73/150` on the 2026-05-14 artifact
+- hard-mix deltas from 2026-05-14: 2 more TRUE wins via `true:absorption_closure:deep`, no regressions
 - `sample_20`: `14/20`, unchanged
-- `sample_200`: `165/200`, unchanged
+- `sample_200`: `166/200`, up by 1 TRUE, no regressions
+- Marathon `normal_100` with zero tokens: `70/100`, unchanged
 - full hard-only reruns:
-  - `hard1`: `24/69`, up from `17/69`
-  - `hard2`: `64/200`, up from `52/200`
-  - `hard3`: `211/400`, up from `186/400`
-- combined hard-only status after the patch: `299/669`, with `27/319` TRUE and `272/350` FALSE
-- hard-only remaining misses: `292` TRUE and `78` FALSE
+  - `hard1`: `25/69`, up from `24/69`
+  - `hard2`: `70/200`, up from `64/200`
+  - `hard3`: `219/400`, up from `211/400`
+- combined hard-only status after the deep patch: `314/669`, with `42/319` TRUE and `272/350` FALSE
+- hard-only remaining misses: `277` TRUE and `78` FALSE
+- durable notes:
+  - `stage2/results/2026-05-15-deep-absorption-summary.md`
+  - `stage2/results/2026-05-15-theory-diagnosis.md`
+- local ledger files, ignored by git unless force-added:
+  - `stage2/results/2026-05-15-post-deep-hard-misses.jsonl`
+  - `stage2/results/2026-05-15-post-deep-hard-true-misses-teorth.jsonl`
 
 ## Highest-Value Learnings
 
 1. Expanded composite affine search is validated and low risk. It closed all 14 known public composite-affine candidates in the focused fixture.
 2. `true:absorption_closure` is real, not speculative: it produced accepted official-runner certificates on hard TRUE rows.
-3. The hard frontier is still TRUE-heavy. The next solver work should extend absorption/projection proof search before chasing broad brute-force finite search.
+3. The hard frontier is still TRUE-heavy: `277 TRUE` misses versus `78 FALSE` misses after the deep route.
 4. The current absorption graph is deliberately bounded. It should skip silently when it cannot certify the goal rather than emit speculative Lean.
-5. Local no-key LLM failures still mean the runner proxy lacks `OPENAI_API_KEY` or `OPENROUTER_API_KEY`; they are setup noise if deterministic paths and final judge-call behavior remain clean.
-6. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`, not direct `verify_answer(problem, ...)`.
+5. The theory read says the next high-value route is not another blind absorption bound raise. Build a proof-producing local equational closure / rewrite-script generator: congruence closure, target-guided substitutions, critical-pair joins, and local `have` theorem chaining.
+6. All `277` remaining hard TRUE misses are Teorth `implicit_proof_true`; none has a direct `full_entries` source record. A short explicit-edge probe finds only `43/277` with proven paths of length <= 5, mostly through generated `SimpleRewrites`, `TrivialBruteforce`, `MagmaEgg`, and `VampireProven` families.
+7. Local no-key LLM failures still mean the runner proxy lacks `OPENAI_API_KEY` or `OPENROUTER_API_KEY`; they are setup noise if deterministic paths and final judge-call behavior remain clean.
+8. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`, not direct `verify_answer(problem, ...)`.
 
 ## Operational Cautions
 
-1. Do not update canonical public totals from the 2026-05-14 hard-only evidence. Rerun `normal` too.
-2. `tmp_stage2_smoke/` is local scratch space. The 2026-05-14 hard-only run is summarized in `stage2/results/2026-05-14-hard-affine-absorption-summary.md`.
+1. Do not update canonical public totals from the 2026-05-15 hard-only evidence. Rerun `normal` too.
+2. `tmp_stage2_smoke/` is local scratch space. The latest hard-only run is summarized in `stage2/results/2026-05-15-deep-absorption-summary.md`, with the theory diagnosis in `stage2/results/2026-05-15-theory-diagnosis.md`.
 3. The official judge answer JSON must contain exactly `verdict` and `code`.
-4. The current packaged solver is `60614` bytes, with `stage2/submissions/` containing only `solver.py`.
+4. The current packaged solver is `62966` bytes, with `stage2/submissions/` containing only `solver.py`.
 5. The official docs still disagree on Marathon wall-clock reference: `docs/marathon_mode.md` uses `600 s/problem`, while `rules/evaluation.md` describes `3600 s/problem`-derived budgeting. Keep local tests parameterized.
 6. The imported Hugging Face `evaluation_*` subsets remain analysis-only until explicitly promoted into an official workflow.
 7. Custom local Solo knobs may be stripped by the official proxy environment. Treat proxy/runner behavior as authoritative.
@@ -65,11 +76,12 @@ Use `stage2/docs/playground-preflight.md` before upload or playground checks. Th
 
 ## Recommended Next Steps
 
-1. Extend the absorption/projection TRUE proof graph with focused fixtures first, then run the hard mix again.
-2. Use `stage2/results/2026-05-14-hard-affine-absorption-summary.md` as the durable local note for the hard-only patch evidence.
-3. Rerun the full public suite, including `normal`, before updating canonical public totals.
-4. Mine remaining hard FALSE gaps for reusable formulaic families, but prefer validated families over brute-force bound increases.
-5. Rerun official harnesses before calling the upgraded solver a promotion candidate.
+1. Read `stage2/results/2026-05-15-theory-diagnosis.md` first. It contains the post-deep hard ledger, Teorth certification, shortcomings, and the next route design.
+2. Build `true:equational_closure`: proof-producing congruence closure over generated terms, target-guided rewrite scripts, critical-pair joins, and local theorem chaining through intermediate generated laws.
+3. Start with the short-path TRUE fixture suggested in the theory diagnosis, then rerun the existing `15/15` deep absorption fixture to protect the current gains.
+4. Rerun `sample_20`, `sample_200`, Marathon `normal_100` with zero tokens, the hard mix seed `20260514`, then full `hard1|hard2|hard3`.
+5. Rerun the full public suite, including `normal`, before updating canonical public totals.
+6. Mine remaining hard FALSE gaps for reusable formulaic families later; current bottleneck is still TRUE.
 
 Useful refresh skeleton:
 

@@ -64,6 +64,19 @@ ABSORPTION_POOL_LIMIT = 10
 ABSORPTION_FRONTIER_LIMIT = 220
 ABSORPTION_MAX_FILLS = 180
 ABSORPTION_TERM_SLACK = 6
+ABSORPTION_DEEP_CHAIN_MAX_DEPTH = 3
+ABSORPTION_DEEP_POOL_LIMIT = 12
+ABSORPTION_DEEP_FRONTIER_LIMIT = 260
+ABSORPTION_DEEP_MAX_FILLS = 120
+ABSORPTION_DEEP_TERM_SLACK = 8
+ABSORPTION_DEEP_TIME_BUDGET = 1.25
+EQUATIONAL_CLOSURE_CHAIN_MAX_DEPTH = 4
+EQUATIONAL_CLOSURE_POOL_LIMIT = 18
+EQUATIONAL_CLOSURE_FRONTIER_LIMIT = 900
+EQUATIONAL_CLOSURE_MAX_FILLS = 350
+EQUATIONAL_CLOSURE_TERM_SLACK = 10
+EQUATIONAL_CLOSURE_DEPTH_SLACK = 3
+EQUATIONAL_CLOSURE_TIME_BUDGET = 0.45
 LLM_MAX_ROUNDS = 2
 MARATHON_LLM_MAX_CALLS = 24
 MARATHON_REF_SECONDS_DEFAULT = 600.0
@@ -805,7 +818,12 @@ def absorption_hypothesis(eq1: dict[str, Any]) -> bool:
     return False
 
 
-def absorption_term_pool(eq1: dict[str, Any], eq2: dict[str, Any]) -> list[Term]:
+def absorption_term_pool(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    pool_limit: int = ABSORPTION_POOL_LIMIT,
+) -> list[Term]:
     allowed_vars = set(eq2["variables"])
     seen: set[Term] = set()
     pool: list[Term] = []
@@ -831,7 +849,11 @@ def absorption_term_pool(eq1: dict[str, Any], eq2: dict[str, Any]) -> list[Term]
                 add(candidate)
 
     pool.sort(key=lambda term: (term_size(term), term_depth(term), term_to_lean(term)))
-    return pool[:ABSORPTION_POOL_LIMIT]
+    return pool[:pool_limit]
+
+
+def deadline_expired(deadline: float | None) -> bool:
+    return deadline is not None and time.monotonic() >= deadline
 
 
 def filled_absorption_steps(
@@ -841,6 +863,8 @@ def filled_absorption_steps(
     *,
     max_size: int,
     max_depth: int,
+    max_fills: int = ABSORPTION_MAX_FILLS,
+    deadline: float | None = None,
 ) -> list[tuple[Term, str, str]]:
     if not pool:
         return []
@@ -851,8 +875,12 @@ def filled_absorption_steps(
     default_term = pool[0]
 
     for path in subterm_paths(term):
+        if deadline_expired(deadline):
+            return steps
         subterm = term_at_path(term, path)
         for source_idx in (0, 1):
+            if deadline_expired(deadline):
+                return steps
             subst: dict[str, Term] = {}
             if not match_term(sides[source_idx], subterm, subst):
                 continue
@@ -866,8 +894,10 @@ def filled_absorption_steps(
             fill_count = 0
             fill_iter = product(pool, repeat=len(needed)) if needed else ((),)
             for fills in fill_iter:
+                if deadline_expired(deadline):
+                    return steps
                 fill_count += 1
-                if fill_count > ABSORPTION_MAX_FILLS:
+                if fill_count > max_fills:
                     break
 
                 subst_full = dict(subst)
@@ -912,11 +942,23 @@ def combine_meeting_proofs(left_proof: str | None, right_proof: str | None) -> s
     return f"({left_proof}).trans ({right_proof}).symm"
 
 
-def absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+def absorption_closure_route(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    route_name: str = "true:absorption_closure",
+    chain_max_depth: int = ABSORPTION_CHAIN_MAX_DEPTH,
+    pool_limit: int = ABSORPTION_POOL_LIMIT,
+    frontier_limit: int = ABSORPTION_FRONTIER_LIMIT,
+    max_fills: int = ABSORPTION_MAX_FILLS,
+    term_slack: int = ABSORPTION_TERM_SLACK,
+    time_budget: float | None = None,
+) -> tuple[str, str] | None:
     if not absorption_hypothesis(eq1):
         return None
 
-    pool = absorption_term_pool(eq1, eq2)
+    deadline = time.monotonic() + time_budget if time_budget else None
+    pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
     if not pool:
         return None
 
@@ -925,7 +967,7 @@ def absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[
         term_size(eq1["rhs"]),
         term_size(eq2["lhs"]),
         term_size(eq2["rhs"]),
-    ) + ABSORPTION_TERM_SLACK
+    ) + term_slack
     max_depth = max(
         term_depth(eq1["lhs"]),
         term_depth(eq1["rhs"]),
@@ -940,9 +982,13 @@ def absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[
     left_frontier = [left_start]
     right_frontier = [right_start]
 
-    for _depth in range(ABSORPTION_CHAIN_MAX_DEPTH):
+    for _depth in range(chain_max_depth):
+        if deadline_expired(deadline):
+            return None
         next_left: list[Term] = []
         for term in left_frontier:
+            if deadline_expired(deadline):
+                return None
             prefix = left_seen[term]
             for new_term, proof, _route in filled_absorption_steps(
                 eq1,
@@ -950,23 +996,29 @@ def absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[
                 pool,
                 max_size=max_size,
                 max_depth=max_depth,
+                max_fills=max_fills,
+                deadline=deadline,
             ):
+                if deadline_expired(deadline):
+                    return None
                 if new_term in left_seen:
                     continue
                 new_proof = chain_trans(prefix, proof)
                 if new_term in right_seen:
                     proof_expr = combine_meeting_proofs(new_proof, right_seen[new_term])
-                    return "true:absorption_closure", substitution_true_certificate(eq2["variables"], proof_expr)
+                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
                 left_seen[new_term] = new_proof
                 next_left.append(new_term)
-                if len(left_seen) >= ABSORPTION_FRONTIER_LIMIT:
+                if len(left_seen) >= frontier_limit:
                     break
-            if len(left_seen) >= ABSORPTION_FRONTIER_LIMIT:
+            if len(left_seen) >= frontier_limit:
                 break
-        left_frontier = next_left[:ABSORPTION_FRONTIER_LIMIT]
+        left_frontier = next_left[:frontier_limit]
 
         next_right: list[Term] = []
         for term in right_frontier:
+            if deadline_expired(deadline):
+                return None
             prefix = right_seen[term]
             for new_term, proof, _route in filled_absorption_steps(
                 eq1,
@@ -974,20 +1026,149 @@ def absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[
                 pool,
                 max_size=max_size,
                 max_depth=max_depth,
+                max_fills=max_fills,
+                deadline=deadline,
             ):
+                if deadline_expired(deadline):
+                    return None
                 if new_term in right_seen:
                     continue
                 new_proof = chain_trans(prefix, proof)
                 if new_term in left_seen:
                     proof_expr = combine_meeting_proofs(left_seen[new_term], new_proof)
-                    return "true:absorption_closure", substitution_true_certificate(eq2["variables"], proof_expr)
+                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
                 right_seen[new_term] = new_proof
                 next_right.append(new_term)
-                if len(right_seen) >= ABSORPTION_FRONTIER_LIMIT:
+                if len(right_seen) >= frontier_limit:
                     break
-            if len(right_seen) >= ABSORPTION_FRONTIER_LIMIT:
+            if len(right_seen) >= frontier_limit:
                 break
-        right_frontier = next_right[:ABSORPTION_FRONTIER_LIMIT]
+        right_frontier = next_right[:frontier_limit]
+
+        if not left_frontier and not right_frontier:
+            break
+
+    return None
+
+
+def deep_absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    return absorption_closure_route(
+        eq1,
+        eq2,
+        route_name="true:absorption_closure:deep",
+        chain_max_depth=ABSORPTION_DEEP_CHAIN_MAX_DEPTH,
+        pool_limit=ABSORPTION_DEEP_POOL_LIMIT,
+        frontier_limit=ABSORPTION_DEEP_FRONTIER_LIMIT,
+        max_fills=ABSORPTION_DEEP_MAX_FILLS,
+        term_slack=ABSORPTION_DEEP_TERM_SLACK,
+        time_budget=ABSORPTION_DEEP_TIME_BUDGET,
+    )
+
+
+def equational_closure_route(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    route_name: str = "true:equational_closure",
+    chain_max_depth: int = EQUATIONAL_CLOSURE_CHAIN_MAX_DEPTH,
+    pool_limit: int = EQUATIONAL_CLOSURE_POOL_LIMIT,
+    frontier_limit: int = EQUATIONAL_CLOSURE_FRONTIER_LIMIT,
+    max_fills: int = EQUATIONAL_CLOSURE_MAX_FILLS,
+    term_slack: int = EQUATIONAL_CLOSURE_TERM_SLACK,
+    depth_slack: int = EQUATIONAL_CLOSURE_DEPTH_SLACK,
+    time_budget: float | None = EQUATIONAL_CLOSURE_TIME_BUDGET,
+) -> tuple[str, str] | None:
+    if eq2["lhs"] == eq2["rhs"]:
+        return route_name, substitution_true_certificate(eq2["variables"], "rfl")
+
+    deadline = time.monotonic() + time_budget if time_budget else None
+    pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
+    if not pool:
+        return None
+
+    max_size = max(
+        term_size(eq1["lhs"]),
+        term_size(eq1["rhs"]),
+        term_size(eq2["lhs"]),
+        term_size(eq2["rhs"]),
+    ) + term_slack
+    max_depth = max(
+        term_depth(eq1["lhs"]),
+        term_depth(eq1["rhs"]),
+        term_depth(eq2["lhs"]),
+        term_depth(eq2["rhs"]),
+    ) + depth_slack
+
+    left_start = eq2["lhs"]
+    right_start = eq2["rhs"]
+    left_seen: dict[Term, str | None] = {left_start: None}
+    right_seen: dict[Term, str | None] = {right_start: None}
+    left_frontier = [left_start]
+    right_frontier = [right_start]
+
+    for _depth in range(chain_max_depth):
+        if deadline_expired(deadline):
+            return None
+
+        next_left: list[Term] = []
+        for term in left_frontier:
+            if deadline_expired(deadline):
+                return None
+            prefix = left_seen[term]
+            for new_term, proof, _route in filled_absorption_steps(
+                eq1,
+                term,
+                pool,
+                max_size=max_size,
+                max_depth=max_depth,
+                max_fills=max_fills,
+                deadline=deadline,
+            ):
+                if deadline_expired(deadline):
+                    return None
+                if new_term in left_seen:
+                    continue
+                new_proof = chain_trans(prefix, proof)
+                if new_term in right_seen:
+                    proof_expr = combine_meeting_proofs(new_proof, right_seen[new_term])
+                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
+                left_seen[new_term] = new_proof
+                next_left.append(new_term)
+                if len(left_seen) >= frontier_limit:
+                    break
+            if len(left_seen) >= frontier_limit:
+                break
+        left_frontier = next_left[:frontier_limit]
+
+        next_right: list[Term] = []
+        for term in right_frontier:
+            if deadline_expired(deadline):
+                return None
+            prefix = right_seen[term]
+            for new_term, proof, _route in filled_absorption_steps(
+                eq1,
+                term,
+                pool,
+                max_size=max_size,
+                max_depth=max_depth,
+                max_fills=max_fills,
+                deadline=deadline,
+            ):
+                if deadline_expired(deadline):
+                    return None
+                if new_term in right_seen:
+                    continue
+                new_proof = chain_trans(prefix, proof)
+                if new_term in left_seen:
+                    proof_expr = combine_meeting_proofs(left_seen[new_term], new_proof)
+                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
+                right_seen[new_term] = new_proof
+                next_right.append(new_term)
+                if len(right_seen) >= frontier_limit:
+                    break
+            if len(right_seen) >= frontier_limit:
+                break
+        right_frontier = next_right[:frontier_limit]
 
         if not left_frontier and not right_frontier:
             break
@@ -1183,6 +1364,35 @@ def solve_problem(
 
     counterexample = find_counterexample(eq1, eq2, time_budget=false_time_budget)
     if counterexample is None:
+        closure_first = not absorption_hypothesis(eq1)
+        if closure_first:
+            closure = equational_closure_route(eq1, eq2)
+            if closure is not None:
+                route, code = closure
+                return {
+                    "answer": make_true_answer(problem, code),
+                    "route": route,
+                    "priority": problem_priority(problem, eq1, eq2),
+                }
+
+        deep_absorption = deep_absorption_closure_route(eq1, eq2)
+        if deep_absorption is not None:
+            route, code = deep_absorption
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
+
+        if not closure_first:
+            closure = equational_closure_route(eq1, eq2)
+            if closure is not None:
+                route, code = closure
+                return {
+                    "answer": make_true_answer(problem, code),
+                    "route": route,
+                    "priority": problem_priority(problem, eq1, eq2),
+                }
         return None
     n, table, route = counterexample
     return {
