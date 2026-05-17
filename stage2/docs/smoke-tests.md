@@ -1,6 +1,6 @@
 # Stage 2 Smoke Tests
 
-Last smoke run: 2026-05-14.
+Last smoke run: 2026-05-17.
 
 ## Passing Locally
 
@@ -16,7 +16,7 @@ PowerShell with `.venv` Python 3.14.3:
 Observed:
 
 - Set `$env:PYTHONUTF8='1'` and `$env:PATH="$env:USERPROFILE\.elan\bin;$env:PATH"` for official runner checks.
-- Packaged `stage2/submissions/solver.py` at 60614 bytes.
+- Packaged `stage2/submissions/solver.py` at 68398 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -42,7 +42,14 @@ Observed after cleaning and packaging `stage2/submissions/`:
 - `sample_20`: `14/20` solved.
 - `sample_200`: `165/200` solved.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver remains 60614 bytes and the submission directory contains only `solver.py`.
+- Packaged solver remains 68398 bytes and the submission directory contains only `solver.py`.
+
+Latest local LLM transport smoke:
+
+- `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180`
+- Solo: `1/1` accepted with `llm_calls=1`, `missing_key_rows=0`, and solver return code `0`.
+- Marathon: `1/1` accepted with `89/4096` tokens used and solver return code `0`.
+- Treat this as proxy transport evidence only; hard TRUE proof-quality probes can be much slower.
 
 Recent certificate lessons:
 

@@ -1,26 +1,24 @@
 # Latest Handoff
 
-Updated: 2026-05-15
+Updated: 2026-05-17
 
-This is the compressed team-memory note for the current Stage 2 solver state.
+This is the compressed team-memory note for the current Stage 2 solver and homelab state.
 
 ## What Changed
 
-- The solver now has three recent deterministic levers:
-  - expanded linear/affine FALSE search over sizes `2,3,4,5,7,8,9`
-  - bounded TRUE proof search via `true:absorption_closure`
-  - second-stage bounded TRUE proof search via `true:absorption_closure:deep`
-- Quadratic search intentionally stays on the tighter older size policy to avoid a broad runtime jump.
-- `true:absorption_closure` triggers only on non-singleton absorption hypotheses such as `x = T` or `T = x` where `x` occurs inside `T`. It reconstructs Lean with instantiated `h`, `congrArg`, `.trans`, and `.symm`.
-- `true:absorption_closure:deep` keeps the shallow route unchanged, then runs after finite counterexample search fails with its own small deadline and tighter stderr-only route label.
-- The answer payload contract is unchanged: submitted answers contain exactly `verdict` and `code`; route labels remain in stderr/logs.
-- Packaged solver size after the deep route is `62966` bytes, still far below the 500 KB cap.
+- Added four compact named FALSE witness tables to `stage2/solver/solver.py`: `S4B`, `S5B`, `S5C`, and `S4C`.
+- Packaged `stage2/submissions/solver.py` is `68398` bytes, and `stage2/submissions/` contains only `solver.py`.
+- Added secret-safe local OpenRouter helpers:
+  - `stage2/experiments/set_openrouter_user_env.ps1`
+  - `stage2/experiments/homelab_llm_probe.py`
+- Added a bounded one-call proxy smoke for Solo and Marathon LLM transport, so local plumbing can be checked without sending hard TRUE proof prompts.
+- Added local OpenRouter provider normalization in the vendored harness so `deepinfra/bf16` is sent to OpenRouter as provider `DeepInfra` plus quantization `bf16`.
+- Documented that provider normalization as local harness drift in `vendor/stage2-official/UPSTREAM.md`.
 
 ## Best Public Evidence
 
-Canonical full public benchmark evidence still remains the 2026-05-12 generated run because `normal` has not been rerun after the 2026-05-14 patch:
+Canonical full public benchmark evidence is still the 2026-05-12 full refresh. Do not replace these totals with smoke-only or hard-mix-only runs:
 
-- `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`
 - `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`, `llm:0`
 - `hard1`: `17/69` solved, all `FALSE`, `llm:0`
 - `hard2`: `52/200` solved, all `FALSE`, `llm:0`
@@ -28,71 +26,56 @@ Canonical full public benchmark evidence still remains the 2026-05-12 generated 
 
 Public total remains `998/1669` until `normal|hard1|hard2|hard3` are refreshed together.
 
-Latest 2026-05-15 local runner-equivalent evidence:
+## Latest Local Evidence
 
-- deep absorption focused fixture: `15/15` accepted
-- same 150-row hard mix, seed `20260514`: `75/150`, up from `73/150` on the 2026-05-14 artifact
-- hard-mix deltas from 2026-05-14: 2 more TRUE wins via `true:absorption_closure:deep`, no regressions
-- `sample_20`: `14/20`, unchanged
-- `sample_200`: `166/200`, up by 1 TRUE, no regressions
-- Marathon `normal_100` with zero tokens: `70/100`, unchanged
-- full hard-only reruns:
-  - `hard1`: `25/69`, up from `24/69`
-  - `hard2`: `70/200`, up from `64/200`
-  - `hard3`: `219/400`, up from `211/400`
-- combined hard-only status after the deep patch: `314/669`, with `42/319` TRUE and `272/350` FALSE
-- hard-only remaining misses: `277` TRUE and `78` FALSE
-- durable notes:
-  - `stage2/results/2026-05-15-deep-absorption-summary.md`
-  - `stage2/results/2026-05-15-theory-diagnosis.md`
-- local ledger files, ignored by git unless force-added:
-  - `stage2/results/2026-05-15-post-deep-hard-misses.jsonl`
-  - `stage2/results/2026-05-15-post-deep-hard-true-misses-teorth.jsonl`
+Local runner-equivalent evidence after the May 17 witness patch:
+
+- New witness focused fixture: `10/10` accepted, `0` LLM calls.
+- Equational-closure TRUE fixture after witness patch: `26/26` accepted, `0` LLM calls.
+- `sample_20`: `14/20`, unchanged.
+- Fresh 150-row hard mixes with zero-token Marathon:
+  - seed `20260516`: `91/150`, up by `10`
+  - seed `20260517`: `83/150`, up by `5`
+  - seed `20260518`: `72/150`, up by `8`
+- Post-patch sampled misses are TRUE-heavy: FALSE misses fell to `4`, `11`, and `4` on the three mixes.
+- Bounded OpenRouter proxy smoke:
+  - Solo: `1/1` accepted, `llm_calls=1`, `missing_key_rows=0`, solver return code `0`, wall `72.4s`
+  - Marathon: `1/1` accepted, `89/4096` tokens, solver return code `0`, wall `3.5s`
+- Full-looking OpenRouter key pattern scan over repo text files: `0` matches.
+
+Durable notes:
+
+- `stage2/results/2026-05-17-hard-mix-witness-summary.md`
+- `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`
+- `stage2/docs/playground-preflight.md`
 
 ## Highest-Value Learnings
 
-1. Expanded composite affine search is validated and low risk. It closed all 14 known public composite-affine candidates in the focused fixture.
-2. `true:absorption_closure` is real, not speculative: it produced accepted official-runner certificates on hard TRUE rows.
-3. The hard frontier is still TRUE-heavy: `277 TRUE` misses versus `78 FALSE` misses after the deep route.
-4. The current absorption graph is deliberately bounded. It should skip silently when it cannot certify the goal rather than emit speculative Lean.
-5. The theory read says the next high-value route is not another blind absorption bound raise. Build a proof-producing local equational closure / rewrite-script generator: congruence closure, target-guided substitutions, critical-pair joins, and local `have` theorem chaining.
-6. All `277` remaining hard TRUE misses are Teorth `implicit_proof_true`; none has a direct `full_entries` source record. A short explicit-edge probe finds only `43/277` with proven paths of length <= 5, mostly through generated `SimpleRewrites`, `TrivialBruteforce`, `MagmaEgg`, and `VampireProven` families.
-7. Local no-key LLM failures still mean the runner proxy lacks `OPENAI_API_KEY` or `OPENROUTER_API_KEY`; they are setup noise if deterministic paths and final judge-call behavior remain clean.
-8. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`, not direct `verify_answer(problem, ...)`.
+1. The new compact witnesses are low-risk deterministic FALSE improvements, but they do not change the main bottleneck.
+2. The sampled hard frontier is now more TRUE-heavy. The next solver gains should come from proof-producing TRUE synthesis: target-guided closure, local theorem chaining, rewrite scripts, or congruence/completion.
+3. Blindly raising closure or absorption bounds was already tried on representative TRUE misses and did not help enough to justify runtime expansion.
+4. Local LLM transport is now configured and smoke-tested, but hard TRUE LLM probes are slow and should be reserved for proof-quality experiments, not plumbing checks.
+5. OpenRouter provider normalization is a documented local harness patch. Treat it as local drift unless and until upstream carries equivalent behavior.
 
-## Operational Cautions
+## Risks And Cautions
 
-1. Do not update canonical public totals from the 2026-05-15 hard-only evidence. Rerun `normal` too.
-2. `tmp_stage2_smoke/` is local scratch space. The latest hard-only run is summarized in `stage2/results/2026-05-15-deep-absorption-summary.md`, with the theory diagnosis in `stage2/results/2026-05-15-theory-diagnosis.md`.
-3. The official judge answer JSON must contain exactly `verdict` and `code`.
-4. The current packaged solver is `62966` bytes, with `stage2/submissions/` containing only `solver.py`.
-5. The official docs still disagree on Marathon wall-clock reference: `docs/marathon_mode.md` uses `600 s/problem`, while `rules/evaluation.md` describes `3600 s/problem`-derived budgeting. Keep local tests parameterized.
-6. The imported Hugging Face `evaluation_*` subsets remain analysis-only until explicitly promoted into an official workflow.
-7. Custom local Solo knobs may be stripped by the official proxy environment. Treat proxy/runner behavior as authoritative.
-
-## Playground Readiness
-
-Use `stage2/docs/playground-preflight.md` before upload or playground checks. The current packaged solver is deterministic-ready under the official single-file and proxy contracts: `stage2/submissions/` contains only `solver.py`, the file is below the 500 KB cap, deterministic certificates have official runner evidence, and unresolved cases use the proxy LLM protocol. Full LLM success still depends on the playground proxy being enabled and configured.
+1. Do not update canonical public totals from the May 17 hard-mix evidence. Rerun `normal`, `hard1`, `hard2`, and `hard3` together first.
+2. Do not call vendored harness behavior official-clean without noting the local provider-normalization drift.
+3. The stored OpenRouter key should be rotated before long runs if any earlier key was pasted into chat or terminal logs during setup troubleshooting.
+4. Positive-token hard TRUE LLM probes can spend minutes per row. Use `homelab_llm_probe.py --run-proxy-smoke` for transport checks.
+5. `tmp_stage2_smoke/` remains scratch space. Promote only date-stamped summaries under `stage2/results/` into team memory.
+6. The judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr and summaries.
+7. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 
 ## Recommended Next Steps
 
-1. Read `stage2/results/2026-05-15-theory-diagnosis.md` first. It contains the post-deep hard ledger, Teorth certification, shortcomings, and the next route design.
-2. Build `true:equational_closure`: proof-producing congruence closure over generated terms, target-guided rewrite scripts, critical-pair joins, and local theorem chaining through intermediate generated laws.
-3. Start with the short-path TRUE fixture suggested in the theory diagnosis, then rerun the existing `15/15` deep absorption fixture to protect the current gains.
-4. Rerun `sample_20`, `sample_200`, Marathon `normal_100` with zero tokens, the hard mix seed `20260514`, then full `hard1|hard2|hard3`.
-5. Rerun the full public suite, including `normal`, before updating canonical public totals.
-6. Mine remaining hard FALSE gaps for reusable formulaic families later; current bottleneck is still TRUE.
-
-Useful refresh skeleton:
+1. Start TRUE synthesis work from the remaining hard TRUE misses, not more broad FALSE brute force.
+2. Keep the witness patch protected with the focused `10/10` fixture and the `26/26` TRUE closure fixture.
+3. Rerun `sample_20`, `sample_200`, Marathon `normal_100` with zero tokens, then a full `normal|hard1|hard2|hard3` refresh before changing public totals.
+4. When validating local LLM plumbing, run:
 
 ```powershell
-$env:PYTHONUTF8='1'
-$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-.\stage2\solver\package_solver.ps1
-Push-Location vendor\stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\YYYY-MM-DD-normal.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard1.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard2.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard3.json
-Pop-Location
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180
 ```
+
+5. Before promotion, run the adversarial review checklist from `.github/skills/adversarial-solver-review/SKILL.md` and re-check `stage2/docs/playground-preflight.md`.

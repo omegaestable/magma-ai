@@ -105,6 +105,19 @@ def _is_openrouter_base_url(base_url: str) -> bool:
     return host == "openrouter.ai" or host.endswith(".openrouter.ai")
 
 
+def _openrouter_provider_config(provider: str) -> dict[str, Any]:
+    provider_name_map = {
+        "deepinfra": "DeepInfra",
+        "novita": "Novita",
+    }
+    provider_slug, _, quantization = provider.partition("/")
+    provider_name = provider_name_map.get(provider_slug.lower(), provider_slug)
+    config: dict[str, Any] = {"order": [provider_name]}
+    if quantization:
+        config["quantizations"] = [quantization]
+    return config
+
+
 def call_llm(
     prompt: str,
     *,
@@ -177,7 +190,7 @@ def call_llm(
     extra_body: dict[str, Any] = {}
     if _is_openrouter_base_url(base_url):
         if cfg.get("provider"):
-            extra_body["provider"] = {"order": [cfg["provider"]]}
+            extra_body["provider"] = _openrouter_provider_config(str(cfg["provider"]))
         if cfg.get("reasoning_effort"):
             extra_body["reasoning"] = {"effort": cfg["reasoning_effort"]}
 

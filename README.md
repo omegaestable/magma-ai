@@ -56,25 +56,29 @@ Canonical full public benchmark snapshot from the packaged deterministic solver,
 
 Current public total: `998/1669` solved.
 
-Latest local candidate evidence from 2026-05-14, not a replacement for the full public totals above:
+Latest local candidate evidence from 2026-05-17, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `60614` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `68398` bytes, single-file submission directory.
 - Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
-- Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; the remaining `35` sample misses are all TRUE cases.
+- Latest recorded Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; this was not rerun after the May 17 compact witness patch.
 - Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `70/100` accepted, `0` tokens.
-- 150-row mixed hard slice, seed `20260514`: `73/150` accepted, up from `68/150`, with no regressions. New wins were 2 TRUE `true:absorption_closure` certificates plus 3 expanded affine/linear FALSE witnesses.
-- Hard-only official reruns after the affine/absorption patch: `hard1 = 24/69`, `hard2 = 64/200`, `hard3 = 211/400`, with no regressions versus the 2026-05-12 hard artifacts.
+- Four compact named FALSE witnesses added on May 17: `S4B`, `S5B`, `S5C`, and `S4C`.
+- New-witness focused fixture: `10/10` accepted, `0` LLM calls.
+- Fresh 150-row hard mixes with zero-token Marathon improved to `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
+- Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths; use this only as transport evidence.
 
 The full generated evidence lives in:
 
 - `stage2/results/2026-05-14-hard-affine-absorption-summary.md`
+- `stage2/results/2026-05-17-hard-mix-witness-summary.md`
+- `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`
 - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
 - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
 - `stage2/results/2026-05-12-competition-preflight.md`
 
 For upload/playground readiness, use `stage2/docs/playground-preflight.md`. It keeps the single-file packaging contract, proxy-mediated LLM behavior, local no-key caveat, and smoke/full-benchmark evidence boundary in one place.
 
-Most important current lesson: the solver is no longer false-only, but the hard frontier is still dominated by TRUE templates. The latest hard-only rerun leaves `292` TRUE misses versus `78` FALSE misses; canonical full public gap counts stay at the 2026-05-12 values until `normal|hard1|hard2|hard3` are refreshed together.
+Most important current lesson: the compact witness patch further reduced sampled FALSE misses, so the hard frontier is even more TRUE-heavy. Canonical full public gap counts stay at the 2026-05-12 values until `normal|hard1|hard2|hard3` are refreshed together.
 
 For math extraction and Teorth provenance work, start from `theory/TEORTH_WORKFLOW.md`; it documents the cache-first path from implication graph and proof pages to solver motifs.
 

@@ -61,6 +61,29 @@ _MAX_REQUEST_BYTES = 4 * 1024 * 1024
 _MAX_OUTPUT_TOKENS_PER_CALL = 65536
 
 
+def _normalize_openrouter_provider(provider: Any) -> Any:
+    provider_name_map = {
+        "deepinfra": "DeepInfra",
+        "novita": "Novita",
+    }
+    if not isinstance(provider, dict):
+        return provider
+    order = provider.get("order")
+    if not isinstance(order, list) or len(order) != 1 or not isinstance(order[0], str):
+        return provider
+    provider_slug, _, quantization = order[0].partition("/")
+    if not quantization:
+        provider["order"] = [provider_name_map.get(provider_slug.lower(), provider_slug)]
+        return provider
+    normalized = dict(provider)
+    normalized["order"] = [provider_name_map.get(provider_slug.lower(), provider_slug)]
+    quantizations = list(normalized.get("quantizations") or [])
+    if quantization not in quantizations:
+        quantizations.append(quantization)
+    normalized["quantizations"] = quantizations
+    return normalized
+
+
 def _prompt_chars_for_messages(messages: Any) -> int:
     """Count prompt characters across all messages.
 
@@ -575,7 +598,10 @@ class _MarathonProxyServer(ThreadingHTTPServer):
         extra_body: dict[str, Any] = {}
         for k in ("provider", "reasoning", "transforms", "models", "route"):
             if k in kwargs:
-                extra_body[k] = kwargs.pop(k)
+                value = kwargs.pop(k)
+                if k == "provider":
+                    value = _normalize_openrouter_provider(value)
+                extra_body[k] = value
         if extra_body:
             kwargs["extra_body"] = extra_body
 

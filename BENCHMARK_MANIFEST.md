@@ -84,8 +84,9 @@ calls, but the ledger still shows the next frontier clearly:
 Latest smoke-only housekeeping evidence, separate from those public totals:
 
 - `sample_20`: `14/20`
-- `sample_200`: `165/200`, with all remaining misses TRUE
+- latest recorded `sample_200`: `165/200`, not rerun after the May 17 compact witness patch
 - Marathon `normal_100`: `70/100`, zero tokens
+- fresh May 17 hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 
 ## Stage 1 Archive
 

@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-14
+Updated: 2026-05-17
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -22,7 +22,7 @@ It must satisfy the official submission contract:
 6. LLM escalation goes only through the official Solo or Marathon proxy.
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 
-Current packaged state from the latest smoke pass: `60614` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest smoke pass: `68398` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -45,6 +45,70 @@ OPENAI_API_KEY or OPENROUTER_API_KEY not set
 ```
 
 That means local LLM plumbing reached the proxy, but the local upstream credential was absent. In a playground that provides the organizer proxy, the submitted solver does not need its own key. If a playground disables LLM access, deterministic certificates still work and unresolved TRUE cases remain unsolved.
+
+## Local OpenRouter Setup
+
+Do not put real upstream keys in `solver.py`, result summaries, repository docs,
+or ad hoc shell commands that are likely to be copied into logs. To configure a
+Windows homelab runner, use the secret-safe helper from the repository root:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\stage2\experiments\set_openrouter_user_env.ps1
+```
+
+The helper prompts with hidden input, stores `OPENROUTER_API_KEY` in the Windows
+User environment, and also sets it for the current PowerShell process. Restart
+VS Code terminals before long runs. If a key was pasted into chat or logs,
+rotate it first and configure the rotated value.
+
+If terminal hidden input is unreliable, copy the rotated key to the local
+Windows clipboard and use the clipboard mode instead:
+
+```powershell
+.\stage2\experiments\set_openrouter_user_env.ps1 -FromClipboard
+```
+
+This mode reads the key from the local clipboard, validates that it looks like a
+full OpenRouter key, stores it in the Windows User environment, and clears the
+clipboard unless `-KeepClipboard` is supplied. It prints only shape metadata,
+never the key value.
+
+Verify the local proxy path without printing the key:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py
+```
+
+This writes a tiny unresolved TRUE fixture and reports only
+`upstream_key_present=true|false`. Once the key is present and the solver is
+packaged, run a Solo LLM-path probe:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-solo
+```
+
+For a small positive-token Marathon proxy probe:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-marathon --marathon-budget-tokens 32768 --marathon-budget-seconds 600
+```
+
+For a fast transport-only smoke that avoids long hard-problem proof attempts,
+use the temporary one-call proxy smoke:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180
+```
+
+Latest local evidence for that smoke: Solo `1/1` accepted with `llm_calls=1`,
+`missing_key_rows=0`, solver return code `0`; Marathon `1/1` accepted with
+`89/4096` tokens used and solver return code `0`. Solo wall time was `72.4s`
+on the latest rerun, so treat the smoke as transport evidence, not a speed
+benchmark.
+
+Treat any printed key material as a failure of the local procedure; the expected
+diagnostic output contains only booleans, counts, ids, statuses, and paths.
 
 ## Required Local Check
 

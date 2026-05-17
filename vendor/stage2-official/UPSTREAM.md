@@ -23,10 +23,17 @@ These changes are local compatibility patches on top of the upstream snapshot:
 7. `pipeline/marathon_proxy.py` treats Windows `ConnectionAbortedError` as an expected broken-client condition when rejecting slowloris-style requests.
 8. `tests/marathon_fixtures/solvers/late_writer/solver.py` also registers a `SIGBREAK` handler when available, and `scripts/run_marathon_harness.py` skips the POSIX-only post-SIGTERM duplicate-write assertion on Windows where Python child processes do not receive catchable `SIGTERM` semantics.
 
+## Local Provider Compatibility Patch
+
+This change is local harness drift, not a Windows-only patch:
+
+1. `pipeline/proxy.py`, `pipeline/marathon_llm.py`, and `pipeline/marathon_proxy.py` normalize OpenRouter provider strings such as `deepinfra/bf16` into `provider.order=["DeepInfra"]` plus `provider.quantizations=["bf16"]`. This preserves the pinned local config value while avoiding OpenRouter `400` errors in homelab proxy tests.
+
 Current local evidence:
 
 1. `scripts/run_harness.py`: green on native Windows with Lean available and no failing buckets.
 2. `scripts/run_marathon_harness.py`: green on native Windows, 25/25 checks with Lean available.
+3. `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180`: Solo `1/1` accepted and Marathon `1/1` accepted through the local OpenRouter proxy path.
 
 To sync upstream later:
 

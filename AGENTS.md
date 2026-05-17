@@ -34,7 +34,7 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
-- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, bounded subterm rewrite chains, and bounded absorption closure.
+- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, bounded subterm rewrite chains, bounded absorption closure, deep absorption, and bounded equational closure.
 - Active deterministic FALSE routes: named compact witnesses, structured finite families, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
@@ -54,11 +54,12 @@ upload/playground check.
 Latest local candidate evidence, not a full public benchmark refresh:
 
 - `sample_20`: `14/20`
-- `sample_200`: `165/200`, with all remaining misses TRUE
+- latest recorded `sample_200`: `165/200`, not rerun after the May 17 witness patch
 - Marathon `normal_100` with zero tokens: `70/100` accepted
-- Hard mix, 150 rows from `hard1|hard2|hard3`, seed `20260514`: `73/150`, up from `68/150`, no regressions
-- Full hard-only reruns: `hard1 24/69`, `hard2 64/200`, `hard3 211/400`, no regressions versus 2026-05-12 hard artifacts
-- Packaged solver size: `60614` bytes
+- New compact witness fixture: `10/10` accepted, `0` LLM calls
+- Fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
+- Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
+- Packaged solver size: `68398` bytes
 
 ## Banned Approaches
 
