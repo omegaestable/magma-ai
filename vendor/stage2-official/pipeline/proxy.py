@@ -207,7 +207,7 @@ def _openrouter_provider_config(provider: str) -> dict[str, Any]:
     }
     provider_slug, _, quantization = provider.partition("/")
     provider_name = provider_name_map.get(provider_slug.lower(), provider_slug)
-    config: dict[str, Any] = {"order": [provider_name]}
+    config: dict[str, Any] = {"order": [provider_name], "allow_fallbacks": False}
     if quantization:
         config["quantizations"] = [quantization]
     return config

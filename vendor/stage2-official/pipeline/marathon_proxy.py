@@ -72,12 +72,19 @@ def _normalize_openrouter_provider(provider: Any) -> Any:
     if not isinstance(order, list) or len(order) != 1 or not isinstance(order[0], str):
         return provider
     provider_slug, _, quantization = order[0].partition("/")
-    if not quantization:
-        provider["order"] = [provider_name_map.get(provider_slug.lower(), provider_slug)]
-        return provider
     normalized = dict(provider)
     normalized["order"] = [provider_name_map.get(provider_slug.lower(), provider_slug)]
-    quantizations = list(normalized.get("quantizations") or [])
+    if "allow_fallbacks" not in normalized:
+        normalized["allow_fallbacks"] = False
+    if not quantization:
+        return normalized
+    raw_quantizations = normalized.get("quantizations") or []
+    if isinstance(raw_quantizations, str):
+        quantizations = [raw_quantizations]
+    elif isinstance(raw_quantizations, list):
+        quantizations = list(raw_quantizations)
+    else:
+        quantizations = []
     if quantization not in quantizations:
         quantizations.append(quantization)
     normalized["quantizations"] = quantizations

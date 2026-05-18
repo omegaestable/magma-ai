@@ -33,6 +33,41 @@ PROXY_SMOKE_CONFIG = TMP_DIR / "llm_proxy_smoke_config.json"
 PROXY_SMOKE_SOLO_OUTPUT = TMP_DIR / "llm_proxy_smoke_result.json"
 PROXY_SMOKE_MARATHON_DIR = TMP_DIR / "llm_proxy_smoke_marathon"
 
+
+def _windows_user_env(name: str) -> str:
+    if os.name != "nt":
+        return ""
+    try:
+        import winreg
+    except ImportError:
+        return ""
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as key:
+            value, _value_type = winreg.QueryValueEx(key, name)
+    except OSError:
+        return ""
+    return str(value or "")
+
+
+def upstream_key_value() -> str:
+    value = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY") or ""
+    if value:
+        return value
+    # Existing VS Code terminals do not always inherit User-environment changes
+    # made by the setup helper. Read the Windows User env directly for local
+    # probes, then pass it only to child runners through their process env.
+    return _windows_user_env("OPENROUTER_API_KEY") or _windows_user_env("OPENAI_API_KEY")
+
+
+def upstream_key_shape() -> dict[str, Any]:
+    value = upstream_key_value()
+    return {
+        "present": bool(value),
+        "length": len(value),
+        "starts_sk_or_v1": value.startswith("sk-or-v1-"),
+        "has_whitespace": any(ch.isspace() for ch in value),
+    }
+
 PROXY_SMOKE_SOLVER = r'''
 #!/usr/bin/env python3
 import json
@@ -113,7 +148,32 @@ def load_summary(path: Path) -> dict[str, Any]:
 
 
 def upstream_key_present() -> bool:
-    return bool(os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+    return bool(upstream_key_value())
+
+
+def print_key_status() -> None:
+    shape = upstream_key_shape()
+    print(
+        "upstream_key_present={present} value_hidden=true length={length} "
+        "starts_sk_or_v1={starts_sk_or_v1} has_whitespace={has_whitespace}".format(
+            present=str(shape["present"]).lower(),
+            length=shape["length"],
+            starts_sk_or_v1=str(shape["starts_sk_or_v1"]).lower(),
+            has_whitespace=str(shape["has_whitespace"]).lower(),
+        )
+    )
+
+
+def validate_upstream_key() -> None:
+    shape = upstream_key_shape()
+    if not shape["present"]:
+        raise SystemExit("upstream key not found in process or Windows User environment")
+    if not shape["starts_sk_or_v1"]:
+        raise SystemExit("configured upstream key does not look like an OpenRouter key")
+    if shape["length"] < 40:
+        raise SystemExit("configured upstream key is too short")
+    if shape["has_whitespace"]:
+        raise SystemExit("configured upstream key contains whitespace")
 
 
 def select_unresolved_true(
@@ -147,6 +207,11 @@ def write_fixture(rows: list[dict[str, Any]], output_path: Path) -> None:
 def runner_env() -> dict[str, str]:
     env = dict(os.environ)
     env["PYTHONUTF8"] = "1"
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    if not env.get("OPENROUTER_API_KEY") and not env.get("OPENAI_API_KEY"):
+        upstream_key = upstream_key_value()
+        if upstream_key:
+            env["OPENROUTER_API_KEY"] = upstream_key
     userprofile = env.get("USERPROFILE")
     if userprofile:
         elan_bin = str(Path(userprofile) / ".elan" / "bin")
@@ -255,6 +320,60 @@ def run_proxy_smoke(budget_tokens: int, budget_seconds: int) -> int:
     return exit_code
 
 
+def run_direct_openrouter_smoke() -> int:
+    validate_upstream_key()
+    try:
+        from openai import OpenAI
+        import openai
+    except ImportError as exc:
+        print(f"direct_openrouter_import_error={exc}")
+        return 1
+
+    client = OpenAI(
+        api_key=upstream_key_value(),
+        base_url="https://openrouter.ai/api/v1",
+        timeout=120,
+    )
+    base = {
+        "model": "openai/gpt-oss-120b",
+        "messages": [{"role": "user", "content": "Return exactly: ok"}],
+        "max_tokens": 16,
+        "temperature": 0.0,
+    }
+    pinned_provider = {
+        "provider": {
+            "order": ["DeepInfra"],
+            "quantizations": ["bf16"],
+            "allow_fallbacks": False,
+        }
+    }
+    tests = [
+        ("plain", {}),
+        ("provider_deepinfra_bf16", {"extra_body": pinned_provider}),
+        (
+            "provider_deepinfra_bf16_reasoning_low",
+            {"extra_body": {**pinned_provider, "reasoning": {"effort": "low"}}},
+        ),
+    ]
+    ok = True
+    for name, extra in tests:
+        kwargs = dict(base)
+        kwargs.update(extra)
+        try:
+            completion = client.chat.completions.create(**kwargs)
+            usage = getattr(completion, "usage", None)
+            total_tokens = getattr(usage, "total_tokens", None) if usage is not None else None
+            content = (completion.choices[0].message.content or "")[:40]
+            print(f"direct_openrouter_{name}=ok total_tokens={total_tokens} response_prefix={content!r}")
+        except openai.APIError as exc:
+            ok = False
+            print(f"direct_openrouter_{name}=api_error {str(exc)[:240]}")
+        except Exception as exc:  # noqa: BLE001
+            ok = False
+            print(f"direct_openrouter_{name}=error {type(exc).__name__}: {str(exc)[:240]}")
+    return 0 if ok else 1
+
+
 def summarize_solo_output(path: Path) -> None:
     if not path.exists():
         print(f"solo_output_missing={path}")
@@ -297,11 +416,22 @@ def main() -> int:
     parser.add_argument("--marathon-budget-tokens", type=int, default=32768)
     parser.add_argument("--marathon-budget-seconds", type=int, default=600)
     parser.add_argument("--run-proxy-smoke", action="store_true")
+    parser.add_argument("--run-direct-openrouter-smoke", action="store_true")
+    parser.add_argument("--key-status", action="store_true")
     args = parser.parse_args()
 
+    if args.key_status:
+        print_key_status()
+        return 0
+
     if args.run_proxy_smoke:
-        print(f"upstream_key_present={str(upstream_key_present()).lower()} value_hidden=true")
+        print_key_status()
+        validate_upstream_key()
         return run_proxy_smoke(args.marathon_budget_tokens, args.marathon_budget_seconds)
+
+    if args.run_direct_openrouter_smoke:
+        print_key_status()
+        return run_direct_openrouter_smoke()
 
     if args.limit <= 0:
         raise SystemExit("--limit must be positive")
@@ -310,7 +440,7 @@ def main() -> int:
     if not args.summary.exists():
         raise SystemExit(f"summary not found: {args.summary}")
 
-    print(f"upstream_key_present={str(upstream_key_present()).lower()} value_hidden=true")
+    print_key_status()
     rows = select_unresolved_true(args.manifest, args.summary, args.limit)
     if not rows:
         raise SystemExit("no unresolved TRUE rows selected")

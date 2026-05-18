@@ -8,6 +8,7 @@ Purpose: verify local upstream OpenRouter configuration and the official Solo / 
 - Clipboard mode validates `sk-or-v1-` prefix, minimum length, and no whitespace before storing `OPENROUTER_API_KEY` in the Windows User environment.
 - Clipboard mode clears the clipboard by default after storing.
 - Stored key shape after setup: length `73`, prefix check `true`, whitespace check `false`.
+- `homelab_llm_probe.py` now also reads the Windows User environment directly when the current terminal process has not inherited `OPENROUTER_API_KEY`.
 - No key value was printed by the helper or probes.
 
 ## Harness Compatibility
@@ -17,6 +18,7 @@ Purpose: verify local upstream OpenRouter configuration and the official Solo / 
   - `vendor/stage2-official/pipeline/marathon_llm.py`
   - `vendor/stage2-official/pipeline/marathon_proxy.py`
 - `deepinfra/bf16` is translated to `provider.order=["DeepInfra"]` plus `provider.quantizations=["bf16"]` for OpenRouter requests.
+- Pinned provider strings also set `provider.allow_fallbacks=false` so local route behavior matches the pinned config intent.
 - Documented the local patch in `vendor/stage2-official/UPSTREAM.md`.
 
 ## Evidence
@@ -24,8 +26,9 @@ Purpose: verify local upstream OpenRouter configuration and the official Solo / 
 - Direct OpenRouter request shape probe:
   - key present: `true`
   - length `73`, starts `sk-or-v1-`: `true`, whitespace: `false`
-  - plain request: OK, `total_tokens=74`
-  - provider `DeepInfra` + `bf16`: OK, `total_tokens=74`
+  - command: `python stage2/experiments/homelab_llm_probe.py --run-direct-openrouter-smoke`
+  - plain request: OK, `total_tokens=87`
+  - provider `DeepInfra` + `bf16` + `allow_fallbacks=false`: OK, `total_tokens=74`
   - provider + reasoning low: OK, `total_tokens=74`
 
 - Bounded one-call Solo proxy smoke:
@@ -34,7 +37,7 @@ Purpose: verify local upstream OpenRouter configuration and the official Solo / 
   - fixture: `tmp_stage2_smoke/llm_proxy_smoke.jsonl`
   - config: `tmp_stage2_smoke/llm_proxy_smoke_config.json`
   - result: `1/1` solved, verdict `true`
-  - wall: `72.4s` on the latest rerun; upstream/proxy latency is variable, so this is transport evidence, not a speed benchmark
+  - wall: `5.4s` on the latest rerun; upstream/proxy latency is variable, so this is transport evidence, not a speed benchmark
   - calls: `llm=1`, `judge=1`
   - missing-key rows: `0`
   - solver return code: `0`
@@ -43,8 +46,8 @@ Purpose: verify local upstream OpenRouter configuration and the official Solo / 
   - output dir: `tmp_stage2_smoke/llm_proxy_smoke_marathon`
   - result: `1/1` accepted
   - attempted: `1`, not attempted: `0`
-  - wall: `3.5s` of `180s`
-  - tokens: `89/4096`
+  - wall: `3.0s` of `180s`
+  - tokens: `74/4096`
   - token exhaustion: `false`
   - solver return code: `0`
 

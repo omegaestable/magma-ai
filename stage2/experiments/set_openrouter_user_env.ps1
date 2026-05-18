@@ -9,7 +9,8 @@ process. It intentionally never echoes the key.
 [CmdletBinding()]
 param(
     [switch]$FromClipboard,
-    [switch]$KeepClipboard
+    [switch]$KeepClipboard,
+    [switch]$Status
 )
 
 $ErrorActionPreference = 'Stop'
@@ -43,6 +44,12 @@ Write-Host 'Use a rotated key if the previous value was pasted into chat or logs
 $existing = [Environment]::GetEnvironmentVariable('OPENROUTER_API_KEY', 'User')
 if (-not [string]::IsNullOrWhiteSpace($existing)) {
     Write-Host ('Existing user key shape: length={0}, starts_sk_or_v1={1}' -f $existing.Length, $existing.StartsWith('sk-or-v1-'))
+}
+
+if ($Status) {
+    $processValue = if ($null -eq $env:OPENROUTER_API_KEY) { '' } else { $env:OPENROUTER_API_KEY }
+    Write-Host ('Process key shape: length={0}, starts_sk_or_v1={1}' -f $processValue.Length, $processValue.StartsWith('sk-or-v1-'))
+    return
 }
 
 if ($FromClipboard) {

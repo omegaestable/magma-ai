@@ -64,7 +64,7 @@ Current Windows evidence, after documented local compatibility patches under `ve
    - New hard-mix wins: 2 TRUE via `true:absorption_closure`, 2 expanded linear witnesses over `z8`/`z9`, and 1 affine witness over `z4`.
    - Full hard-only reruns after the patch: `hard1` 24/69, `hard2` 64/200, `hard3` 211/400, with no regressions versus the 2026-05-12 hard artifacts.
    - Combined hard-only status after the patch: 299/669 accepted, with 27/319 TRUE and 272/350 FALSE. Remaining hard-only misses are still TRUE-heavy: 292 TRUE and 78 FALSE.
-11. Local OpenRouter proxy smoke after the clipboard setup and provider-normalization patch: Solo 1/1 accepted with one LLM call and return code 0; Marathon 1/1 accepted with 89/4096 tokens and return code 0. This is transport evidence, not a speed benchmark.
+11. Local OpenRouter smoke after the clipboard setup and provider-normalization patch: direct plain/pinned-provider/pinned-provider-plus-reasoning requests returned OK; Solo proxy smoke 1/1 accepted with one LLM call and return code 0; Marathon proxy smoke 1/1 accepted with 74/4096 tokens and return code 0. This is transport evidence, not a speed benchmark.
 12. Canonical full public benchmark totals remain from the 2026-05-12 generated evidence until `normal`, `hard1`, `hard2`, and `hard3` are rerun together:
    - `normal.jsonl`: 743/1000 solved, with 245 TRUE + 498 FALSE, `llm:0`.
    - `hard1.jsonl`: 17/69 solved, all FALSE, `llm:0`.
@@ -82,7 +82,7 @@ Recent operational lessons:
 
 1. For runner-equivalent certificate debugging, use the official runner or call `verify_answer(_to_judge_problem(problem), raw_answer)`. A direct `verify_answer(problem, ...)` omits the pipeline default proof policy and can report disallowed `propext`, `Classical.choice`, or `Quot.sound` for certificates accepted by the runner.
 2. Custom local Solo environment knobs can be stripped by the official proxy environment; do not rely on them for official-run behavior.
-3. Local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` errors mean the runner proxy lacked an upstream local key. Use `stage2/experiments/set_openrouter_user_env.ps1 -FromClipboard` and `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke` to validate local transport without printing secrets.
+3. Local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` errors mean the runner proxy lacked an upstream local key. Use `stage2/experiments/set_openrouter_user_env.ps1 -FromClipboard`, `stage2/experiments/homelab_llm_probe.py --key-status`, and `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke` to validate local transport without printing secrets.
 4. `tmp_stage2_smoke/` files are temporary smoke/debug artifacts. Promote evidence to `stage2/results/` with a date-stamped name before treating it as team memory.
 5. The 2026-05-17 witness patch is a low-risk deterministic FALSE improvement, but the current frontier remains TRUE proof synthesis. Do not spend the next session on broad brute-force bound increases unless a specific family is validated first.
 6. The OpenRouter provider-normalization patch in the vendored harness is documented local drift, not an upstream-clean official change.

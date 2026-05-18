@@ -27,13 +27,14 @@ These changes are local compatibility patches on top of the upstream snapshot:
 
 This change is local harness drift, not a Windows-only patch:
 
-1. `pipeline/proxy.py`, `pipeline/marathon_llm.py`, and `pipeline/marathon_proxy.py` normalize OpenRouter provider strings such as `deepinfra/bf16` into `provider.order=["DeepInfra"]` plus `provider.quantizations=["bf16"]`. This preserves the pinned local config value while avoiding OpenRouter `400` errors in homelab proxy tests.
+1. `pipeline/proxy.py`, `pipeline/marathon_llm.py`, and `pipeline/marathon_proxy.py` normalize OpenRouter provider strings such as `deepinfra/bf16` into `provider.order=["DeepInfra"]`, `provider.quantizations=["bf16"]`, and `provider.allow_fallbacks=false`. This preserves the pinned local config value while avoiding OpenRouter `400` errors in homelab proxy tests.
 
 Current local evidence:
 
 1. `scripts/run_harness.py`: green on native Windows with Lean available and no failing buckets.
 2. `scripts/run_marathon_harness.py`: green on native Windows, 25/25 checks with Lean available.
-3. `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180`: Solo `1/1` accepted and Marathon `1/1` accepted through the local OpenRouter proxy path.
+3. `stage2/experiments/homelab_llm_probe.py --run-direct-openrouter-smoke`: plain, pinned-provider, and pinned-provider-plus-reasoning OpenRouter request shapes all returned OK.
+4. `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180`: Solo `1/1` accepted and Marathon `1/1` accepted through the local OpenRouter proxy path.
 
 To sync upstream later:
 

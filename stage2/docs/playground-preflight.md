@@ -77,12 +77,18 @@ never the key value.
 Verify the local proxy path without printing the key:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
 ```
 
-This writes a tiny unresolved TRUE fixture and reports only
-`upstream_key_present=true|false`. Once the key is present and the solver is
-packaged, run a Solo LLM-path probe:
+This reports only non-secret shape metadata. The probe reads the Windows User
+environment directly if the current terminal has not inherited the key yet. For
+a low-token direct OpenRouter request-shape smoke:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-direct-openrouter-smoke
+```
+
+Once the key is present and the solver is packaged, run a Solo LLM-path probe:
 
 ```powershell
 .\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-solo
@@ -102,10 +108,9 @@ use the temporary one-call proxy smoke:
 ```
 
 Latest local evidence for that smoke: Solo `1/1` accepted with `llm_calls=1`,
-`missing_key_rows=0`, solver return code `0`; Marathon `1/1` accepted with
-`89/4096` tokens used and solver return code `0`. Solo wall time was `72.4s`
-on the latest rerun, so treat the smoke as transport evidence, not a speed
-benchmark.
+`missing_key_rows=0`, solver return code `0`, wall `5.4s`; Marathon `1/1`
+accepted with `74/4096` tokens used, wall `3.0s`, and solver return code `0`.
+Treat the smoke as transport evidence, not a speed benchmark.
 
 Treat any printed key material as a failure of the local procedure; the expected
 diagnostic output contains only booleans, counts, ids, statuses, and paths.

@@ -12,7 +12,7 @@ This is the compressed team-memory note for the current Stage 2 solver and homel
   - `stage2/experiments/set_openrouter_user_env.ps1`
   - `stage2/experiments/homelab_llm_probe.py`
 - Added a bounded one-call proxy smoke for Solo and Marathon LLM transport, so local plumbing can be checked without sending hard TRUE proof prompts.
-- Added local OpenRouter provider normalization in the vendored harness so `deepinfra/bf16` is sent to OpenRouter as provider `DeepInfra` plus quantization `bf16`.
+- Added local OpenRouter provider normalization in the vendored harness so `deepinfra/bf16` is sent to OpenRouter as provider `DeepInfra`, quantization `bf16`, and `allow_fallbacks=false`.
 - Documented that provider normalization as local harness drift in `vendor/stage2-official/UPSTREAM.md`.
 
 ## Best Public Evidence
@@ -39,8 +39,9 @@ Local runner-equivalent evidence after the May 17 witness patch:
   - seed `20260518`: `72/150`, up by `8`
 - Post-patch sampled misses are TRUE-heavy: FALSE misses fell to `4`, `11`, and `4` on the three mixes.
 - Bounded OpenRouter proxy smoke:
-  - Solo: `1/1` accepted, `llm_calls=1`, `missing_key_rows=0`, solver return code `0`, wall `72.4s`
-  - Marathon: `1/1` accepted, `89/4096` tokens, solver return code `0`, wall `3.5s`
+  - Direct OpenRouter request-shape smoke: plain, pinned provider, and pinned provider + reasoning low all OK.
+  - Solo: `1/1` accepted, `llm_calls=1`, `missing_key_rows=0`, solver return code `0`, wall `5.4s`
+  - Marathon: `1/1` accepted, `74/4096` tokens, solver return code `0`, wall `3.0s`
 - Full-looking OpenRouter key pattern scan over repo text files: `0` matches.
 
 Durable notes:
