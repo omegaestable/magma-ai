@@ -46,29 +46,32 @@ Cold-start read order:
 
 ## Current Evidence
 
-Canonical full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-12:
+Latest completed full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch:
 
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`
-- `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`, `llm:0`
-- `hard1`: `17/69` solved, all `FALSE`, `llm:0`
-- `hard2`: `52/200` solved, all `FALSE`, `llm:0`
-- `hard3`: `186/400` solved, `3 TRUE + 183 FALSE`, `llm:0`
+- `normal`: `803/1000` solved, `305 TRUE + 498 FALSE`, `llm:0`
+- `hard1`: `42/69` solved, `6 TRUE + 36 FALSE`, `llm:0`
+- `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`, `llm:0`
+- `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`, `llm:0`
 
-Current public total: `998/1669` solved.
+Current completed public total: `1201/1669` solved.
 
-Latest local candidate evidence from 2026-05-17, not a replacement for the full public totals above:
+Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `68398` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `70631` bytes, single-file submission directory.
 - Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
 - Latest recorded Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; this was not rerun after the May 17 compact witness patch.
-- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `70/100` accepted, `0` tokens.
-- Four compact named FALSE witnesses added on May 17: `S4B`, `S5B`, `S5C`, and `S4C`.
-- New-witness focused fixture: `10/10` accepted, `0` LLM calls.
+- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `76/100` accepted in the latest optimized-package smoke.
+- Recent compact named FALSE witnesses include `S4D`, `S4E`, and `S5D`.
+- Accepted-grind fixture with heartbeat cap: `34/34` accepted.
+- Compact witness fixture: `8/8` accepted, `0` LLM calls.
 - Fresh 150-row hard mixes with zero-token Marathon improved to `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
 - Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths; use this only as transport evidence.
+- Full public no-loss validation of the optimized package is pending; preserve at least `1201/1669` before promotion.
 
 The full generated evidence lives in:
 
+- `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`
 - `stage2/results/2026-05-14-hard-affine-absorption-summary.md`
 - `stage2/results/2026-05-17-hard-mix-witness-summary.md`
 - `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`

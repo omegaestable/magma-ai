@@ -102,18 +102,41 @@ lanes were then run with separate isolated artifact dirs and completed cleanly.
    `25/34` same-LHS), so the next route should be proof-producing local congruence/e-graph
    extraction using explicit `h`, `.symm`, `.trans`, and `congrArg` Lean certificates.
 
+## Post-Refresh Optimization Addendum
+
+After this public refresh, the solver was lightly optimized without running another full
+public sweep. The optimized package is `70631` bytes and keeps the same broad `true:grind`
+eligibility, but the emitted grind proof now uses `set_option maxHeartbeats 10 in` before
+`grind`. Exact grind ledgers were extracted from this refresh and reconciled to `34`
+accepted and `433` incorrect `true:grind` attempts.
+
+Regression evidence for the optimized package:
+
+- Accepted-grind fixture: `34/34` accepted.
+- Lower heartbeat probe: `hb=5` lost one accepted row (`33/34`), so keep the cap at `10`.
+- Compact witness fixture: `8/8` accepted.
+- `normal_100` zero-token smoke: `76/100`, unchanged from the immediate pre-patch smoke.
+- Python syntax and packaged submission syntax checks passed.
+
+The full four-lane public no-loss check for the optimized package remains pending. Treat
+the table above as the latest completed public baseline, not as final promotion evidence
+for the optimized package.
+
 ## Recommended Next Work
 
-1. Implement a bounded local congruence proof extractor before broad `true:grind`. Reuse
+1. Run a full public no-loss validation for the optimized package when time allows. The
+   required baseline is at least `1201/1669`, with no lost accepted-grind rows.
+2. Implement a bounded local congruence proof extractor before broad `true:grind`. Reuse
    existing term parsing, instantiation, substitution proof, and absorption pool helpers;
    emit explicit Lean proof terms and cap pool size, instantiations, generated term size,
    and rounds.
-2. Validate against
+3. Validate against
    `tmp_stage2_smoke/2026-05-17-zero-token-sweep/local_congruence_grind_focus.jsonl`, then
    run the existing witness and TRUE closure regression fixtures.
-3. Keep `true:grind` as a temporary last-resort/discovery fallback until explicit proofs
-   cover most of its wins, then tighten or remove it to reduce `incorrect` certificates.
-4. Run the HF mirror sweep separately from public evidence:
+4. Keep `true:grind` as a temporary last-resort/discovery fallback until explicit proofs
+   cover most of its wins. Do not tighten its structural filter from the current ledger;
+   accepted and incorrect rows overlap too much.
+5. Run the HF mirror sweep separately from public evidence:
 
 ```powershell
 .\.venv\Scripts\python.exe stage2\experiments\run_zero_token_sweeps.py --scope hf --include-hf-core-duplicates --run-root tmp_stage2_smoke\2026-05-17-zero-token-hf-after-witness --force

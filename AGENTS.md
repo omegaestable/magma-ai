@@ -39,27 +39,30 @@ Follow this order exactly:
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
 
-Latest public benchmark snapshot:
+Latest completed public benchmark snapshot, before the final heartbeat/path-helper optimization patch:
 
-- `normal`: `743/1000`
-- `hard1`: `17/69`
-- `hard2`: `52/200`
-- `hard3`: `186/400`
+- `normal`: `803/1000`
+- `hard1`: `42/69`
+- `hard2`: `92/200`
+- `hard3`: `264/400`
+- total: `1201/1669`, split `390 TRUE + 811 FALSE`, with `0` solver tokens
 
-Use `stage2/results/2026-05-12-public-finite-countermodels-summary.md` and
+Use `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md` and
 `stage2/docs/LATEST_HANDOFF.md` as the current team-memory bridge before
 starting new solver work. Use `stage2/docs/playground-preflight.md` before any
 upload/playground check.
 
-Latest local candidate evidence, not a full public benchmark refresh:
+Latest local candidate evidence after the final optimization patch, not a full public rerun:
 
 - `sample_20`: `14/20`
 - latest recorded `sample_200`: `165/200`, not rerun after the May 17 witness patch
-- Marathon `normal_100` with zero tokens: `70/100` accepted
-- New compact witness fixture: `10/10` accepted, `0` LLM calls
+- Marathon `normal_100` with zero tokens: `76/100` accepted in the latest optimized-package smoke
+- accepted-grind fixture with heartbeat cap: `34/34` accepted
+- compact witness fixture: `8/8` accepted, `0` LLM calls
 - Fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
-- Packaged solver size: `68398` bytes
+- Packaged solver size: `70631` bytes
+- Full public no-loss validation of the optimized package is pending; preserve at least `1201/1669` before promotion.
 
 ## Banned Approaches
 

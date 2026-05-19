@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-17
+Updated: 2026-05-18
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -22,7 +22,7 @@ It must satisfy the official submission contract:
 6. LLM escalation goes only through the official Solo or Marathon proxy.
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 
-Current packaged state from the latest smoke pass: `68398` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest smoke pass: `70631` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 

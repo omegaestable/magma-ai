@@ -33,36 +33,37 @@ Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin
 
 ## Current Public Snapshot
 
-As of the 2026-05-12 readiness pass:
+Latest completed public refresh, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch:
 
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`
-- `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`
-- `hard1`: `17/69` solved, all `FALSE`
-- `hard2`: `52/200` solved, all `FALSE`
-- `hard3`: `186/400` solved, `3 TRUE + 183 FALSE`
+- `normal`: `803/1000` solved, `305 TRUE + 498 FALSE`
+- `hard1`: `42/69` solved, `6 TRUE + 36 FALSE`
+- `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`
+- `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`
 
-Total public score: `998/1669`, with `0` LLM calls.
+Total public score: `1201/1669`, with `0` LLM calls.
 
-Latest local candidate evidence from the 2026-05-17 hard-mix and homelab session:
+Latest local candidate evidence after the final optimization patch:
 
 - `sample_20`: `14/20` solved
 - latest recorded `sample_200`: `165/200` solved; not rerun after the May 17 compact witness patch
-- Marathon `normal_100` with zero token budget: `70/100` accepted
-- packaged solver size: `68398` bytes
+- Marathon `normal_100` with zero token budget: `76/100` accepted in the latest optimized-package smoke
+- packaged solver size: `70631` bytes
 - composite-affine focused fixture: `14/14` accepted
-- new compact witness fixture: `10/10` accepted, `0` LLM calls
+- accepted-grind fixture with heartbeat cap: `34/34` accepted
+- compact witness fixture: `8/8` accepted, `0` LLM calls
 - fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
 
-Do not replace the full public snapshot above with smoke-only numbers. Regenerate `stage2/results/` summaries first if the full public suite is rerun.
-The latest hard-mix and homelab local evidence is summarized in `results/2026-05-17-hard-mix-witness-summary.md` and `results/2026-05-17-homelab-openrouter-proxy-smoke.md`.
+Do not treat the optimized package as promoted until full public no-loss validation preserves at least `1201/1669`. Regenerate `stage2/results/` summaries first if the full public suite is rerun.
+The latest public, hard-mix, and homelab local evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, and `results/2026-05-17-homelab-openrouter-proxy-smoke.md`.
 
 Current best route learnings:
 
-- `true:singleton` is the dominant new TRUE lane.
-- `LP`, `RP`, and `C0` still dominate the compact FALSE lane.
-- affine and linear finite families are paying rent; the current split keeps linear/affine sizes at `2,3,4,5,7,8,9` while leaving quadratic search on the tighter older sizes.
-- `true:absorption_closure` and `true:equational_closure` produced accepted hard TRUE certificates, but the remaining hard frontier is still TRUE-heavy.
+- The frontier is now TRUE-heavy: the public remainder is mostly TRUE proof synthesis, not finite countermodels.
+- `true:grind` found `34` public wins but `433` incorrect attempts; keep the heartbeat cap and prefer explicit proof extraction before adding more grind reach.
+- Compact finite witnesses still pay rent, but broad brute-force bound increases are not the next best use of time.
+- `true:absorption_closure` and `true:equational_closure` produced accepted hard TRUE certificates; next TRUE work should be proof-producing local congruence/e-graph extraction.
 - `Fin 7` false certificates may need `set_option maxRecDepth 20000` before `decideFin!`.
 - runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 - canonical full public gap counts remain the 2026-05-12 numbers until `normal|hard1|hard2|hard3` are refreshed together.

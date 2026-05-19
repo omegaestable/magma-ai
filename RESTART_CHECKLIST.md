@@ -104,7 +104,7 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current expected packaged size after the 2026-05-17 witness patch: `68398` bytes, still far below the 500 KB limit.
+Current expected packaged size after the 2026-05-18 heartbeat/path-helper optimization patch: `70631` bytes, still far below the 500 KB limit.
 
 For playground/upload readiness, run the checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
 

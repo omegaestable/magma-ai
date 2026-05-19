@@ -63,29 +63,34 @@ vendor/stage2-official/docs/marathon_mode.md
 vendor/stage2-official/examples/marathon/TUTORIAL.md
 ```
 
-Current local smoke slice: `examples/problems/marathon/normal_100.jsonl`. The latest smoke-only run accepted `70/100` with zero token budget. Do not fold this into the full public total.
+Current local smoke slice: `examples/problems/marathon/normal_100.jsonl`. The latest optimized-package smoke accepted `76/100` with zero token budget. Do not fold this into the full public total.
 
 ## Local Result Storage
 
 Use `stage2/results/` for Stage 2 summaries, failure ledgers, and promotion evidence. Do not mix new Stage 2 results into archived Stage 1 result directories.
 
-Key generated artifacts after the 2026-05-12 readiness pass:
+Key generated artifacts:
 
+- `2026-05-18-zero-token-public-refresh-after-witness.md`
 - `2026-05-12-public-finite-countermodels-summary.md`
 - `2026-05-12-public-failure-ledger.jsonl`
 - `2026-05-12-competition-preflight.md`
 
-The current best public benchmark total is `998/1669` solved with `0` LLM
-calls, but the ledger still shows the next frontier clearly:
+The current completed public benchmark total is `1201/1669` solved with `0` LLM
+calls, from `2026-05-18-zero-token-public-refresh-after-witness.md`. Full
+public no-loss validation of the final optimized package is still pending.
+The ledger now shows the next frontier clearly:
 
-- `571` public `true_template_gap`
-- `100` public `finite_countermodel_gap`
+- `429` public TRUE misses
+- `39` public FALSE misses
 
 Latest smoke-only housekeeping evidence, separate from those public totals:
 
 - `sample_20`: `14/20`
 - latest recorded `sample_200`: `165/200`, not rerun after the May 17 compact witness patch
-- Marathon `normal_100`: `70/100`, zero tokens
+- Marathon `normal_100`: `76/100`, zero tokens in the latest optimized-package smoke
+- accepted-grind fixture with heartbeat cap: `34/34`
+- compact witness fixture: `8/8`
 - fresh May 17 hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 
 ## Stage 1 Archive
