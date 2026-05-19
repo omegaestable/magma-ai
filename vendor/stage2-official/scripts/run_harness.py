@@ -1339,9 +1339,10 @@ def run_pipeline_prompt_cases() -> list[dict[str, Any]]:
             os.environ["OPENAI_BASE_URL"] = prev_base2
     or_create = captured_create[0] if captured_create else {}
     or_eb = or_create.get("extra_body", {}) or {}
+    expected_provider = _proxy._openrouter_provider_config(str(default_cfg_full["llm"]["provider"]))
     ok_or_extras = (
         len(captured_create) == 1
-        and or_eb.get("provider", {}).get("order") == [default_cfg_full["llm"]["provider"]]
+        and or_eb.get("provider") == expected_provider
         and or_eb.get("reasoning", {}).get("effort") == default_cfg_full["llm"]["reasoning_effort"]
     )
     _record(

@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import time
+from functools import lru_cache
 from itertools import product
 from typing import Any
 
@@ -131,6 +132,9 @@ WITNESS_TABLES = (
     ("S5B", [[4, 3, 2, 2, 2], [2, 3, 2, 2, 3], [2, 2, 2, 2, 2], [2, 2, 2, 2, 2], [2, 2, 2, 2, 2]]),
     ("S5C", [[0, 0, 0, 2, 2], [4, 1, 1, 4, 1], [1, 2, 2, 1, 2], [2, 3, 3, 3, 2], [2, 4, 4, 2, 4]]),
     ("S4C", [[3, 3, 2, 2], [1, 1, 0, 0], [3, 3, 2, 2], [1, 1, 0, 0]]),
+    ("S4D", [[3, 2, 3, 3], [3, 3, 3, 3], [2, 3, 3, 3], [1, 2, 3, 3]]),
+    ("S4E", [[2, 2, 2, 3], [3, 3, 2, 3], [2, 2, 2, 3], [3, 3, 2, 3]]),
+    ("S5D", [[3, 3, 2, 2, 3], [4, 4, 2, 4, 2], [2, 2, 2, 2, 2], [2, 2, 2, 2, 2], [2, 2, 2, 2, 2]]),
 )
 
 
@@ -311,30 +315,39 @@ def parse_equation(text: str) -> dict[str, Any]:
     }
 
 
-def term_vars(term: Term) -> set[str]:
+@lru_cache(maxsize=None)
+def term_vars_tuple(term: Term) -> tuple[str, ...]:
     if term[0] == "var":
-        return {term[1]}
-    return term_vars(term[1]) | term_vars(term[2])
+        return (str(term[1]),)
+    return tuple(set(term_vars_tuple(term[1])) | set(term_vars_tuple(term[2])))
 
 
+def term_vars(term: Term) -> set[str]:
+    return set(term_vars_tuple(term))
+
+
+@lru_cache(maxsize=None)
 def term_size(term: Term) -> int:
     if term[0] == "var":
         return 1
     return 1 + term_size(term[1]) + term_size(term[2])
 
 
+@lru_cache(maxsize=None)
 def term_depth(term: Term) -> int:
     if term[0] == "var":
         return 0
     return 1 + max(term_depth(term[1]), term_depth(term[2]))
 
 
+@lru_cache(maxsize=None)
 def term_to_lean(term: Term) -> str:
     if term[0] == "var":
         return str(term[1])
     return f"({term_to_lean(term[1])} ◇ {term_to_lean(term[2])})"
 
 
+@lru_cache(maxsize=None)
 def dual_term(term: Term) -> Term:
     if term[0] == "var":
         return term
@@ -351,14 +364,20 @@ def dual_equation(equation: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def term_subterms(term: Term) -> list[Term]:
-    out = [term]
+@lru_cache(maxsize=None)
+def term_subterms_tuple(term: Term) -> tuple[Term, ...]:
+    out: list[Term] = [term]
     if term[0] == "op":
-        out.extend(term_subterms(term[1]))
-        out.extend(term_subterms(term[2]))
-    return out
+        out.extend(term_subterms_tuple(term[1]))
+        out.extend(term_subterms_tuple(term[2]))
+    return tuple(out)
 
 
+def term_subterms(term: Term) -> list[Term]:
+    return list(term_subterms_tuple(term))
+
+
+@lru_cache(maxsize=None)
 def boundary_vars(term: Term) -> tuple[str | None, str | None]:
     if term[0] == "var":
         return str(term[1]), str(term[1])
@@ -367,14 +386,20 @@ def boundary_vars(term: Term) -> tuple[str | None, str | None]:
     return left[0], right[1]
 
 
-def subterm_paths(term: Term, prefix: tuple[int, ...] = ()) -> list[tuple[int, ...]]:
-    paths = [prefix]
+@lru_cache(maxsize=None)
+def subterm_paths_tuple(term: Term, prefix: tuple[int, ...] = ()) -> tuple[tuple[int, ...], ...]:
+    paths: list[tuple[int, ...]] = [prefix]
     if term[0] == "op":
-        paths.extend(subterm_paths(term[1], prefix + (0,)))
-        paths.extend(subterm_paths(term[2], prefix + (1,)))
-    return paths
+        paths.extend(subterm_paths_tuple(term[1], prefix + (0,)))
+        paths.extend(subterm_paths_tuple(term[2], prefix + (1,)))
+    return tuple(paths)
 
 
+def subterm_paths(term: Term, prefix: tuple[int, ...] = ()) -> list[tuple[int, ...]]:
+    return list(subterm_paths_tuple(term, prefix))
+
+
+@lru_cache(maxsize=None)
 def term_at_path(term: Term, path: tuple[int, ...]) -> Term:
     cur = term
     for part in path:
@@ -382,6 +407,7 @@ def term_at_path(term: Term, path: tuple[int, ...]) -> Term:
     return cur
 
 
+@lru_cache(maxsize=None)
 def replace_subterm(term: Term, path: tuple[int, ...], replacement: Term) -> Term:
     if not path:
         return replacement
@@ -393,6 +419,7 @@ def replace_subterm(term: Term, path: tuple[int, ...], replacement: Term) -> Ter
     return ("op", term[1], replace_subterm(term[2], tail, replacement))
 
 
+@lru_cache(maxsize=None)
 def context_to_lean(term: Term, path: tuple[int, ...], placeholder: str = "t") -> str:
     if not path:
         return placeholder
@@ -644,7 +671,9 @@ def projection_law_route(eq1: dict[str, Any]) -> str | None:
 def goal_term_pool(eq2: dict[str, Any]) -> list[Term]:
     pool: list[Term] = []
     seen: set[Term] = set()
-    for term in [eq2["lhs"], eq2["rhs"], *term_subterms(eq2["lhs"]), *term_subterms(eq2["rhs"])]:
+    lhs_subterms = term_subterms_tuple(eq2["lhs"])
+    rhs_subterms = term_subterms_tuple(eq2["rhs"])
+    for term in (eq2["lhs"], eq2["rhs"], *lhs_subterms[1:], *rhs_subterms[1:]):
         if term not in seen:
             seen.add(term)
             pool.append(term)
@@ -840,9 +869,13 @@ def absorption_term_pool(
 
     for var in eq2["variables"]:
         add(("var", var))
-    for term in [eq2["lhs"], eq2["rhs"], *term_subterms(eq2["lhs"]), *term_subterms(eq2["rhs"])]:
+    eq2_lhs_subterms = term_subterms_tuple(eq2["lhs"])
+    eq2_rhs_subterms = term_subterms_tuple(eq2["rhs"])
+    for term in (eq2["lhs"], eq2["rhs"], *eq2_lhs_subterms[1:], *eq2_rhs_subterms[1:]):
         add(term)
-    for term in [eq1["lhs"], eq1["rhs"], *term_subterms(eq1["lhs"]), *term_subterms(eq1["rhs"])]:
+    eq1_lhs_subterms = term_subterms_tuple(eq1["lhs"])
+    eq1_rhs_subterms = term_subterms_tuple(eq1["rhs"])
+    for term in (eq1["lhs"], eq1["rhs"], *eq1_lhs_subterms[1:], *eq1_rhs_subterms[1:]):
         add(term)
 
     small = list(pool)
@@ -1397,6 +1430,12 @@ def solve_problem(
                     "route": route,
                     "priority": problem_priority(problem, eq1, eq2),
                 }
+        if grind_true_candidate(eq1, eq2):
+            return {
+                "answer": make_true_answer(problem, grind_true_certificate(eq2["variables"])),
+                "route": "true:grind",
+                "priority": problem_priority(problem, eq1, eq2),
+            }
         return None
     n, table, route = counterexample
     return {
@@ -1432,6 +1471,27 @@ def submission : Goal := by
   intro G _ h
   exact h
 """
+
+
+def grind_true_certificate(variables: list[str]) -> str:
+    intros = ""
+    if variables:
+        intros = "  intro " + " ".join(variables) + "\n"
+    return """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+""" + intros + "  set_option maxHeartbeats 10 in\n  grind\n"
+
+
+def grind_true_candidate(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
+    if len(eq2["variables"]) > 4:
+        return False
+    if max(term_size(eq1["lhs"]), term_size(eq1["rhs"]), term_size(eq2["lhs"]), term_size(eq2["rhs"])) > 11:
+        return False
+    if absorption_hypothesis(eq1):
+        return True
+    return eq1["lhs"] == eq2["lhs"] or eq1["rhs"] == eq2["lhs"]
 
 
 def extract_json_object(text: str) -> dict[str, Any] | None:

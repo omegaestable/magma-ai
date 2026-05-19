@@ -1,50 +1,45 @@
 # Latest Handoff
 
-Updated: 2026-05-17
+Updated: 2026-05-18
 
 This is the compressed team-memory note for the current Stage 2 solver and homelab state.
 
 ## What Changed
 
-- Added four compact named FALSE witness tables to `stage2/solver/solver.py`: `S4B`, `S5B`, `S5C`, and `S4C`.
-- Packaged `stage2/submissions/solver.py` is `68398` bytes, and `stage2/submissions/` contains only `solver.py`.
-- Added secret-safe local OpenRouter helpers:
-  - `stage2/experiments/set_openrouter_user_env.ps1`
-  - `stage2/experiments/homelab_llm_probe.py`
-- Added a bounded one-call proxy smoke for Solo and Marathon LLM transport, so local plumbing can be checked without sending hard TRUE proof prompts.
-- Added local OpenRouter provider normalization in the vendored harness so `deepinfra/bf16` is sent to OpenRouter as provider `DeepInfra`, quantization `bf16`, and `allow_fallbacks=false`.
-- Documented that provider normalization as local harness drift in `vendor/stage2-official/UPSTREAM.md`.
+- Added broad zero-token `true:grind` fallback as a discovery route for short absorption/congruence-shaped TRUE rows.
+- Added three more compact named FALSE witness tables to `stage2/solver/solver.py`: `S4D`, `S4E`, and `S5D`.
+- Packaged `stage2/submissions/solver.py` is `69553` bytes, and `stage2/submissions/` contains only `solver.py`.
+- Added reusable zero-token sweep tooling:
+  - `stage2/experiments/run_zero_token_sweeps.py`
+  - `stage2/experiments/analyze_zero_token_run.py`
+- The vendored Solo harness still has local OpenRouter provider-normalization drift; this does not affect zero-token Marathon scoring.
 
 ## Best Public Evidence
 
-Canonical full public benchmark evidence is still the 2026-05-12 full refresh. Do not replace these totals with smoke-only or hard-mix-only runs:
+Latest official public evidence is the completed zero-token Marathon refresh after the `S4D`/`S4E`/`S5D` witness patch:
 
-- `normal`: `743/1000` solved, `245 TRUE + 498 FALSE`, `llm:0`
-- `hard1`: `17/69` solved, all `FALSE`, `llm:0`
-- `hard2`: `52/200` solved, all `FALSE`, `llm:0`
-- `hard3`: `186/400` solved, `3 TRUE + 183 FALSE`, `llm:0`
+- `normal`: `803/1000` solved, `305 TRUE + 498 FALSE`, `0` solver tokens (`normal` score was salvaged with `--score-only`).
+- `hard1`: `42/69` solved, `6 TRUE + 36 FALSE`, `0` tokens.
+- `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`, `0` tokens.
+- `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`, `0` tokens.
 
-Public total remains `998/1669` until `normal|hard1|hard2|hard3` are refreshed together.
+Public total is now `1201/1669`, split `390 TRUE + 811 FALSE`, with `35` not attempted and `433` incorrect attempted certificates.
+
+Durable summary:
+
+- `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`
 
 ## Latest Local Evidence
 
-Local runner-equivalent evidence after the May 17 witness patch:
+- Pre-final-witness public zero-token Marathon sweep: `1189/1669`.
+- Post-witness public zero-token Marathon refresh: `1201/1669`, a `+12` delta.
+- Net public FALSE lift from `S4D`/`S4E`/`S5D`: `+10` (`hard1 +3`, `hard2 +3`, `hard3 +4`, `normal +0`).
+- Focused residual FALSE fixture: `8/8` accepted, `0` tokens, route counts `S4D=5`, `S4E=1`, `S5D=2`.
+- `true:grind` public behavior after refresh: `34` accepted, `433` incorrect.
+- Answer-kind accepted totals: `811 false:finite`, `356 true:certificate`, `34 true:grind`.
+- Remaining public misses by answer labels: `429` TRUE and `39` FALSE.
 
-- New witness focused fixture: `10/10` accepted, `0` LLM calls.
-- Equational-closure TRUE fixture after witness patch: `26/26` accepted, `0` LLM calls.
-- `sample_20`: `14/20`, unchanged.
-- Fresh 150-row hard mixes with zero-token Marathon:
-  - seed `20260516`: `91/150`, up by `10`
-  - seed `20260517`: `83/150`, up by `5`
-  - seed `20260518`: `72/150`, up by `8`
-- Post-patch sampled misses are TRUE-heavy: FALSE misses fell to `4`, `11`, and `4` on the three mixes.
-- Bounded OpenRouter proxy smoke:
-  - Direct OpenRouter request-shape smoke: plain, pinned provider, and pinned provider + reasoning low all OK.
-  - Solo: `1/1` accepted, `llm_calls=1`, `missing_key_rows=0`, solver return code `0`, wall `5.4s`
-  - Marathon: `1/1` accepted, `74/4096` tokens, solver return code `0`, wall `3.0s`
-- Full-looking OpenRouter key pattern scan over repo text files: `0` matches.
-
-Durable notes:
+Other durable notes:
 
 - `stage2/results/2026-05-17-hard-mix-witness-summary.md`
 - `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`
@@ -52,31 +47,30 @@ Durable notes:
 
 ## Highest-Value Learnings
 
-1. The new compact witnesses are low-risk deterministic FALSE improvements, but they do not change the main bottleneck.
-2. The sampled hard frontier is now more TRUE-heavy. The next solver gains should come from proof-producing TRUE synthesis: target-guided closure, local theorem chaining, rewrite scripts, or congruence/completion.
-3. Blindly raising closure or absorption bounds was already tried on representative TRUE misses and did not help enough to justify runtime expansion.
-4. Local LLM transport is now configured and smoke-tested, but hard TRUE LLM probes are slow and should be reserved for proof-quality experiments, not plumbing checks.
-5. OpenRouter provider normalization is a documented local harness patch. Treat it as local drift unless and until upstream carries equivalent behavior.
+1. Compact finite witnesses are still low-risk deterministic FALSE gains, but the public frontier is now overwhelmingly TRUE-heavy.
+2. Broad `grind` is useful as a temporary discovery route, not as the next clean solver strategy: it scored `34` public TRUE wins but caused `433` official incorrect proof attempts and slow hard-lane scoring.
+3. Accepted `grind` wins are mostly absorption/congruence-shaped (`31/34` absorption-shaped, `25/34` same-LHS). Widening existing closure bounds recovered only `4/34`, so the next TRUE route should be proof-producing local congruence/e-graph extraction.
+4. The normal refresh initially hit a judge infrastructure artifact error compiling `JudgeProblem`; preserving `answers.jsonl` and rerunning `--score-only` with an isolated `JUDGE_ARTIFACT_DIR` cleanly recovered the score.
+5. HF/evaluation mirror sweeps remain discovery evidence and should stay separate from public Marathon evidence.
 
 ## Risks And Cautions
 
-1. Do not update canonical public totals from the May 17 hard-mix evidence. Rerun `normal`, `hard1`, `hard2`, and `hard3` together first.
-2. Do not call vendored harness behavior official-clean without noting the local provider-normalization drift.
-3. The stored OpenRouter key should be rotated before long runs if any earlier key was pasted into chat or terminal logs during setup troubleshooting.
-4. Positive-token hard TRUE LLM probes can spend minutes per row. Use `homelab_llm_probe.py --run-proxy-smoke` for transport checks.
-5. `tmp_stage2_smoke/` remains scratch space. Promote only date-stamped summaries under `stage2/results/` into team memory.
-6. The judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr and summaries.
-7. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
+1. Treat the `1201/1669` result as official zero-token Marathon evidence, not the older Solo/pipeline summary format.
+2. Do not promote broad `true:grind` as final-clean without addressing its `433` incorrect public attempts.
+3. Do not call vendored Solo harness behavior official-clean without noting the local provider-normalization drift.
+4. `tmp_stage2_smoke/` remains scratch space. Promote only date-stamped summaries under `stage2/results/` into team memory.
+5. The judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr and summaries.
+6. Runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 
 ## Recommended Next Steps
 
-1. Start TRUE synthesis work from the remaining hard TRUE misses, not more broad FALSE brute force.
-2. Keep the witness patch protected with the focused `10/10` fixture and the `26/26` TRUE closure fixture.
-3. Rerun `sample_20`, `sample_200`, Marathon `normal_100` with zero tokens, then a full `normal|hard1|hard2|hard3` refresh before changing public totals.
-4. When validating local LLM plumbing, run:
+1. Implement a bounded local congruence/e-graph TRUE extractor before broad `true:grind`. Reuse existing term parsing, substitution, absorption pool, and proof-chain helpers; emit explicit `h`, `.symm`, `.trans`, and `congrArg` Lean terms.
+2. Validate it on `tmp_stage2_smoke/2026-05-17-zero-token-sweep/local_congruence_grind_focus.jsonl`, then rerun the focused witness and TRUE closure regression fixtures.
+3. Tighten or remove broad `true:grind` once explicit TRUE certificates cover most of its accepted wins.
+4. Run the HF mirror sweep as a separate discovery lane:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180
+.\.venv\Scripts\python.exe stage2\experiments\run_zero_token_sweeps.py --scope hf --include-hf-core-duplicates --run-root tmp_stage2_smoke\2026-05-17-zero-token-hf-after-witness --force
 ```
 
-5. Before promotion, run the adversarial review checklist from `.github/skills/adversarial-solver-review/SKILL.md` and re-check `stage2/docs/playground-preflight.md`.
+5. Before any upload/promotion, rerun the adversarial review checklist and re-check `stage2/docs/playground-preflight.md`.
