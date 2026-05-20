@@ -16,7 +16,7 @@ PowerShell with `.venv` Python 3.14.3:
 Observed:
 
 - Set `$env:PYTHONUTF8='1'` and `$env:PATH="$env:USERPROFILE\.elan\bin;$env:PATH"` for official runner checks.
-- Packaged `stage2/submissions/solver.py` at 70946 bytes.
+- Packaged `stage2/submissions/solver.py` at 71662 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -42,7 +42,7 @@ Observed after cleaning and packaging `stage2/submissions/`:
 - `sample_20`: `14/20` solved.
 - `sample_200`: `165/200` solved in the latest recorded full-sample run; not rerun after the May 17 compact witness patch.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver is currently 70946 bytes and the submission directory contains only `solver.py`.
+- Packaged solver is currently 71662 bytes and the submission directory contains only `solver.py`.
 
 Latest local LLM transport smoke:
 

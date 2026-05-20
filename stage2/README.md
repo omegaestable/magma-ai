@@ -29,7 +29,7 @@ The current `solver/solver.py` is still deliberately conservative, but it now ha
 3. exact substitution, projection-boundary laws, short bridge/constancy chains, bounded subterm rewrite chains, and bounded absorption-closure TRUE implications
 4. deterministic FALSE implications from named witnesses, structured tables, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded finite search
 
-Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. The broad `true:grind` fallback is disabled by default after playground error-rate failures and is now opt-in only via `MAGMA_ENABLE_GRIND=1`.
+Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. The broad `true:grind` fallback has been removed from active solver policy after playground error-rate failures.
 
 ## Current Public Snapshot
 
@@ -41,27 +41,27 @@ Latest completed public refresh, generated on 2026-05-18 before the final heartb
 - `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`
 - `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`
 
-Total public score: `1201/1669`, with `0` LLM calls. This is historical zero-token evidence; `34` of those wins came from `true:grind`, which is no longer enabled by default.
+Total public score: `1201/1669`, with `0` LLM calls. This is historical zero-token evidence; `34` of those wins came from `true:grind`, which is now retired from active solver policy.
 
 Latest local candidate evidence after the final optimization patch:
 
 - `sample_20`: `14/20` solved
 - latest recorded `sample_200`: `165/200` solved; not rerun after the May 17 compact witness patch
 - Marathon `normal_100` with zero token budget: `76/100` accepted in the latest optimized-package smoke
-- packaged solver size: `70946` bytes after the latest local package pass
+- packaged solver size: `71662` bytes after the latest local package pass
 - composite-affine focused fixture: `14/14` accepted
-- accepted-grind fixture with heartbeat cap: `34/34` accepted only with `MAGMA_ENABLE_GRIND=1`
+- accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
 - compact witness fixture: `8/8` accepted, `0` LLM calls
 - fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
 
-Do not treat the optimized package as promoted from zero-token evidence alone. Regenerate `stage2/results/` summaries after a post-rollback deterministic refresh, and use positive-token LLM parity evidence before any LLM-backed playground promotion.
+Do not treat the optimized package as promoted from zero-token evidence alone. The default local gate is now positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`; zero-token sweeps are optional deterministic regression only.
 The latest public, hard-mix, and homelab local evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, and `results/2026-05-17-homelab-openrouter-proxy-smoke.md`.
 
 Current best route learnings:
 
 - The frontier is now TRUE-heavy: the public remainder is mostly TRUE proof synthesis, not finite countermodels.
-- `true:grind` found `34` public wins but `433` incorrect attempts and failed playground error discipline; keep it opt-in and prefer explicit proof extraction or judged LLM certificates.
+- `true:grind` found `34` public wins but `433` incorrect attempts and failed playground error discipline; it is historical evidence only, not an active route.
 - Compact finite witnesses still pay rent, but broad brute-force bound increases are not the next best use of time.
 - `true:absorption_closure` and `true:equational_closure` produced accepted hard TRUE certificates; next TRUE work should be proof-producing local congruence/e-graph extraction.
 - `Fin 7` false certificates may need `set_option maxRecDepth 20000` before `decideFin!`.
@@ -76,7 +76,7 @@ Package it with:
 
 The packaging script clears `stage2/submissions/` before copying `solver.py`, because the official Solo runner requires the submission directory to contain no extra files.
 
-Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, official proxy LLM behavior, the local no-key caveat, the zero-token evidence boundary, and the positive-token parity runner.
+Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, official proxy LLM behavior, the local no-key caveat, failure classification, and the positive-token parity runner.
 
 See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and Windows harness status.
 Use `docs/solver-route-ledger.md` and `docs/motif-cards/` before changing a route, and use `docs/cleanup-manifest.md` before touching scratch artifacts.
@@ -84,7 +84,7 @@ Use `../theory/TEORTH_WORKFLOW.md`, `../theory/TEORTH_NOTES.md`, and `../theory/
 
 ## Next Engines
 
-1. Run `experiments/run_playground_parity_llm.py` with a configured local OpenRouter key to prove nonzero official-proxy LLM usage.
+1. Run `experiments/run_playground_parity_llm.py` with a configured local upstream key to prove nonzero official-proxy LLM usage, nonzero Marathon token use, and classified LLM/judge outcomes.
 2. Build the small route fixtures listed in `docs/solver-route-ledger.md`.
 3. Teorth-backed route mining for reusable proof and witness families.
 4. Extend proof-producing TRUE synthesis before spending time on broad brute-force FALSE search.

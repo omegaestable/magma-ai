@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-19
+Updated: 2026-05-20
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -21,9 +21,9 @@ It must satisfy the official submission contract:
 5. Judge answers contain exactly `verdict` and `code`; route labels stay in stderr and result summaries.
 6. LLM escalation goes only through the official Solo or Marathon proxy.
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
-8. The broad `grind` TRUE fallback is disabled by default. Re-enable it only for explicit local regression archaeology with `MAGMA_ENABLE_GRIND=1`; do not use it as playground-promotion evidence.
+8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Current packaged state from the latest local smoke pass: `70946` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest local package pass: `71662` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -107,20 +107,28 @@ For a small positive-token Marathon proxy probe:
 ```
 
 For the preferred local playground-parity LLM check, use the positive-token
-runner. By default it selects currently unresolved TRUE rows from the latest
-zero-token hard-mix summary, keeps `grind` disabled, runs packaging, runs the
+runner. By default it builds a small reproducible mixed fixture from the
+official `normal`, `hard1`, `hard2`, and `hard3` files, runs packaging, runs the
 direct OpenRouter request-shape smoke, then runs official Solo and Marathon
-through the proxy. It fails closed if the submission directory is dirty, if a
-missing-key/proxy error appears, or if Solo/Marathon records zero LLM usage.
+through the proxy. It fails closed if the submission directory is dirty, if the
+local upstream key is missing, if Solo/Marathon records zero LLM usage, if
+Marathon records zero tokens, or if LLM/proxy/judge failures are only visible in
+logs instead of the summary.
 
 ```powershell
 .\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py
 ```
 
-For a narrower targeted run, keep at least three selected rows or provide an
-explicit Marathon token budget. With the official `65536` max-output setting,
-a one-row default-compression Marathon run may correctly refuse the LLM call
-before contacting OpenRouter because it lacks enough token headroom.
+For a targeted unresolved-TRUE run, use:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py --fixture-mode unresolved-true
+```
+
+The runner defaults Marathon to at least `131072` tokens so the official
+`65536` max-output setting has enough headroom. Smaller explicit budgets are
+allowed for debugging, but they should fail the parity gate if they prevent real
+LLM use.
 
 For a fast transport-only smoke that avoids long hard-problem proof attempts,
 use the temporary one-call proxy smoke:
@@ -166,13 +174,13 @@ $env:PYTHONUTF8='1'
 Push-Location vendor\stage2-official
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json --output ..\..\tmp_stage2_smoke\sample20_playground_preflight.json
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json --output ..\..\tmp_stage2_smoke\sample200_playground_preflight.json
-..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions --manifest examples\problems\marathon\normal_100.jsonl --budget-tokens 0
 Pop-Location
 ```
 
 Use explicit Solo output paths when recording smoke evidence. The runner's
 default `pipeline/results/submissions.json` is easy to confuse with earlier
-local smoke rows.
+local smoke rows. Zero-token Marathon remains useful as an optional deterministic
+regression check, but it is no longer a playground-readiness gate.
 
 Optional focused LLM-path check when no local key is available. First create or select a tiny fixture containing a currently unresolved TRUE row from the latest hard-mix or hard-only run:
 
@@ -193,10 +201,12 @@ A candidate is playground-ready when:
 2. The packaged size is below 500 KB.
 3. Syntax and local DSL smokes pass.
 4. Official Solo samples run under the vendored runner.
-5. Official Marathon zero-token smoke accepts deterministic submissions without rejected certificates.
-6. Positive-token LLM parity has been run through the official proxy path, with `llm_calls > 0`, `tokens_used > 0`, and no missing-key/protocol errors.
-7. Any LLM failure is clearly classified as local missing-key setup, proxy/protocol breakage, token-budget exhaustion, malformed LLM output, or judge rejection.
-8. Unsolved Solo paths make a final schema-valid judge call instead of silently exiting or emitting verdict-less terminal markers.
-9. Public benchmark totals are not updated from smoke-only evidence.
+5. Positive-token playground parity has been run through the official proxy path, with `llm_calls > 0`, Marathon `tokens_used > 0`, and no missing-key/protocol errors.
+6. Any LLM failure is classified as local missing-key setup, proxy/upstream breakage, token-budget exhaustion, malformed LLM output, or judge rejection in the parity summary.
+7. Unsolved Solo paths make a final schema-valid judge call instead of silently exiting or emitting verdict-less terminal markers.
+8. Public benchmark totals are not updated from smoke-only evidence.
 
-For the current solver, deterministic readiness and LLM readiness are separate gates. A candidate is not LLM-ready until the positive-token parity runner or an equivalent official-runner command proves nonzero proxy usage.
+For the current solver, deterministic regression and LLM readiness are separate
+lanes. A candidate is not playground-ready until the positive-token parity
+runner, or an equivalent official-runner command, proves nonzero proxy usage and
+classifies all failures.

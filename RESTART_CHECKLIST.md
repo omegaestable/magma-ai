@@ -104,9 +104,9 @@ Before official Solo runs, confirm the generated submission directory contains o
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current expected packaged size after the 2026-05-19 grind rollback and LLM-parity patch: `70946` bytes, still far below the 500 KB limit.
+Current packaged size should be checked after every package step; the active solver no longer exposes the historical grind route and remains far below the 500 KB limit.
 
-For playground/upload readiness, run the checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
+For playground/upload readiness, run the positive-token checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
 
 ## 6. First Smoke Runs
 

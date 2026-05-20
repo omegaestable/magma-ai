@@ -30,7 +30,7 @@ This manifest records clutter and evidence debt without deleting anything. Use i
 | `tmp_stage2_smoke/2026-05-14-*after-*` | `stage2/results/archive/obsolete-intermediate/` | Absorption/affine tuning snapshots superseded by summaries. |
 | `tmp_stage2_smoke/2026-05-15-*after-*` | `stage2/results/archive/obsolete-intermediate/` | Equational-closure tuning snapshots. |
 | `tmp_stage2_smoke/2026-05-16-*after-witness*` | `stage2/results/archive/witness-tuning/` | Pre/post compact-witness tuning traces. |
-| `tmp_stage2_smoke/*grind*` and `tmp_stage2_smoke/judge-artifacts-grind-*` | `stage2/results/archive/grind-regression-evidence/` | Grind is default-off but accepted/incorrect ledger remains useful archaeology. |
+| `tmp_stage2_smoke/*grind*` and `tmp_stage2_smoke/judge-artifacts-grind-*` | `stage2/results/archive/grind-regression-evidence/` | Grind is retired from active solver policy, but accepted/incorrect ledgers remain useful archaeology. |
 | `tmp_stage2_smoke/*normal100*` duplicate runs | `stage2/results/archive/smokes/` | Keep one final representative run plus summary. |
 | `tmp_stage2_smoke/playground_parity_llm_dry_check*` | `stage2/results/archive/parity-dry-runs/` | Keep final dry check if needed; intermediate dry checks are tuning clutter. |
 

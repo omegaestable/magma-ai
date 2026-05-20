@@ -7,9 +7,6 @@ The deterministic core now handles:
 4. finite FALSE witnesses from named small magmas, structured table families,
    affine/quadratic families, and bounded Fin n search.
 
-The former broad `grind` TRUE fallback is opt-in only via
-`MAGMA_ENABLE_GRIND=1`; playground/package defaults leave it disabled.
-
 LLM escalation is available only through the official Solo/Marathon
 proxies. Unsupported cases are skipped rather than answered speculatively.
 """
@@ -95,8 +92,6 @@ LLM_CONFIG = {
     "seed": 0,
     "http_timeout_seconds": 600.0,
 }
-
-TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
 
 ALLOWED_IMPORTS = {
     "JudgeProblem",
@@ -1434,12 +1429,6 @@ def solve_problem(
                     "route": route,
                     "priority": problem_priority(problem, eq1, eq2),
                 }
-        if grind_enabled() and grind_true_candidate(eq1, eq2):
-            return {
-                "answer": make_true_answer(problem, grind_true_certificate(eq2["variables"])),
-                "route": "true:grind",
-                "priority": problem_priority(problem, eq1, eq2),
-            }
         return None
     n, table, route = counterexample
     return {
@@ -1475,27 +1464,6 @@ def submission : Goal := by
   intro G _ h
   exact h
 """
-
-
-def grind_true_certificate(variables: list[str]) -> str:
-    intros = ""
-    if variables:
-        intros = "  intro " + " ".join(variables) + "\n"
-    return """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-""" + intros + "  set_option maxHeartbeats 10 in\n  grind\n"
-
-
-def grind_true_candidate(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
-    if len(eq2["variables"]) > 4:
-        return False
-    if max(term_size(eq1["lhs"]), term_size(eq1["rhs"]), term_size(eq2["lhs"]), term_size(eq2["rhs"])) > 11:
-        return False
-    if absorption_hypothesis(eq1):
-        return True
-    return eq1["lhs"] == eq2["lhs"] or eq1["rhs"] == eq2["lhs"]
 
 
 def extract_json_object(text: str) -> dict[str, Any] | None:
@@ -1732,11 +1700,6 @@ def solo_llm_rounds() -> int:
     except ValueError:
         return LLM_MAX_ROUNDS
 
-
-def grind_enabled() -> bool:
-    return os.environ.get("MAGMA_ENABLE_GRIND", "").strip().lower() in TRUE_ENV_VALUES
-
-
 def run_solo() -> int:
     payload = load_json_line(sys.stdin)
     if not payload:
@@ -1931,6 +1894,31 @@ def run_marathon() -> int:
 
     llm_calls = 0
     call_llm, tokens_used, budget_remaining = load_marathon_llm()
+    unresolved_count = len(prioritized) - len(solved_ids)
+    if unresolved_count > 0 and call_llm is None:
+        print(
+            json.dumps(
+                {
+                    "route": "llm:disabled",
+                    "reason": "missing_marathon_proxy_library",
+                    "unresolved": unresolved_count,
+                    "budget_tokens": budget_tokens,
+                }
+            ),
+            file=sys.stderr,
+        )
+    if unresolved_count > 0 and budget_tokens == 0:
+        print(
+            json.dumps(
+                {
+                    "route": "llm:disabled",
+                    "reason": "zero_token_budget",
+                    "unresolved": unresolved_count,
+                    "budget_tokens": budget_tokens,
+                }
+            ),
+            file=sys.stderr,
+        )
     if call_llm is not None and budget_tokens != 0:
         for priority, problem in prioritized:
             if llm_calls >= MARATHON_LLM_MAX_CALLS:
@@ -1940,9 +1928,37 @@ def run_marathon() -> int:
             pid = str(problem.get("id"))
             if pid in solved_ids:
                 continue
-            if budget_tokens > 0 and tokens_used is not None and tokens_used() >= budget_tokens:
+            used = tokens_used() if tokens_used is not None else None
+            if budget_tokens > 0 and used is not None and used >= budget_tokens:
+                print(
+                    json.dumps(
+                        {
+                            "route": "llm:disabled",
+                            "reason": "token_budget_spent",
+                            "id": pid,
+                            "tokens_used": used,
+                            "budget_tokens": budget_tokens,
+                        }
+                    ),
+                    file=sys.stderr,
+                )
                 break
-            if budget_tokens > 0 and budget_remaining is not None and budget_remaining() < LLM_CONFIG["max_output_tokens"] // 2:
+            remaining = budget_remaining() if budget_remaining is not None else None
+            min_headroom = LLM_CONFIG["max_output_tokens"] // 2
+            if budget_tokens > 0 and remaining is not None and remaining < min_headroom:
+                print(
+                    json.dumps(
+                        {
+                            "route": "llm:disabled",
+                            "reason": "insufficient_remaining_token_headroom",
+                            "id": pid,
+                            "budget_remaining": remaining,
+                            "required_headroom": min_headroom,
+                            "budget_tokens": budget_tokens,
+                        }
+                    ),
+                    file=sys.stderr,
+                )
                 break
             analysis = solver_analysis(problem)
             prompt = render_marathon_prompt(problem, analysis)

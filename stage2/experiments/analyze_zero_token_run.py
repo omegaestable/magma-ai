@@ -144,8 +144,8 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
             handle.write("\n")
 
 
-def analyze(run_dir: Path) -> dict[str, Any]:
-    manifest = manifest_from_launcher(run_dir)
+def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, Any]:
+    manifest = manifest_override.resolve() if manifest_override is not None else manifest_from_launcher(run_dir)
     problems = load_problem_rows(manifest)
     by_id = {str(row.get("id")): row for row in problems}
     summary = load_json(run_dir / "summary.json")
@@ -221,11 +221,12 @@ def analyze(run_dir: Path) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path, default=None)
     parser.add_argument("run_dirs", nargs="+", type=Path)
     args = parser.parse_args()
 
     for run_dir in args.run_dirs:
-        analysis = analyze(run_dir.resolve())
+        analysis = analyze(run_dir.resolve(), args.manifest)
         print(
             f"{analysis['run_dir']}: score={analysis['score']} "
             f"gaps={analysis['gap_counts']} routes={len(analysis['route_counts'])}"

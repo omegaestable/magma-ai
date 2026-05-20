@@ -74,7 +74,7 @@ Before upload or playground testing, run `stage2/docs/playground-preflight.md` a
 2. Confusing a local runner proxy missing `OPENAI_API_KEY` or `OPENROUTER_API_KEY` with a solver-side protocol bug.
 3. Updating public benchmark claims from smoke-only evidence.
 
-The current solver keeps broad `true:grind` disabled by default and is deterministic-ready under the official single-file and proxy contracts. LLM readiness additionally requires a positive-token proxy run with nonzero LLM calls and nonzero Marathon token usage; the solver should never carry local keys or call model APIs directly.
+The current solver does not expose broad `true:grind` as an active route. LLM readiness requires a positive-token proxy run with nonzero LLM calls, nonzero Marathon token usage, and classified LLM/proxy/judge outcomes; the solver should never carry local keys or call model APIs directly.
 
 ## Solo Debug Loop
 

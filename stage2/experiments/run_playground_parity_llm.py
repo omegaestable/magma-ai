@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Run local OpenRouter-backed LLM checks through the official Stage 2 proxy.
+"""Run playground-parity LLM checks through the official Stage 2 proxy.
 
-This is the positive-token counterpart to zero-token Marathon sweeps. It is
-meant to prove that a candidate exercised the playground-facing LLM paths:
-official packaging, Solo proxy calls, Marathon proxy calls, and nonzero token
-accounting. It never prints upstream key values.
+This is the default local gate for LLM-backed candidates. It packages the
+solver, builds or selects a small official-fixture probe, runs the official
+Solo and Marathon proxy paths with a positive token budget, and fails closed
+when proxy usage or token accounting is missing. It never prints upstream key
+values.
 """
 
 from __future__ import annotations
@@ -12,7 +13,6 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import homelab_llm_probe as probe
+import make_mixed_manifest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -32,13 +33,14 @@ PACKAGE_SCRIPT = REPO_ROOT / "stage2" / "solver" / "package_solver.ps1"
 OFFICIAL_CONFIG = OFFICIAL_DIR / "pipeline" / "config.json"
 DEFAULT_OUTPUT_DIR = TMP_DIR / "playground_parity_llm"
 DEFAULT_FIXTURE = TMP_DIR / "playground_parity_llm_fixture.jsonl"
+DEFAULT_MIXED_MANIFEST = TMP_DIR / "playground_parity_mixed_manifest.jsonl"
 SUMMARY_NAME = "playground_parity_summary.json"
 REF_PER_PROBLEM_TOKENS = 65536
+DEFAULT_MIN_MARATHON_TOKENS = 131072
 
 
-def runner_env(*, enable_grind: bool) -> dict[str, str]:
+def runner_env() -> dict[str, str]:
     env = probe.runner_env()
-    env["MAGMA_ENABLE_GRIND"] = "1" if enable_grind else "0"
     env.setdefault("MAGMA_SOLO_LLM_ROUNDS", "2")
     return env
 
@@ -107,20 +109,70 @@ def missing_key_in(value: Any) -> bool:
     )
 
 
+def classify_text(value: Any) -> str:
+    text = json.dumps(value, ensure_ascii=False).lower()
+    if missing_key_in(value):
+        return "missing_key"
+    if "token budget exhausted" in text or ("budget" in text and "token" in text):
+        return "token_budget_exhausted"
+    if "upstream" in text or "api error" in text or "badrequesterror" in text or "502" in text:
+        return "proxy_upstream_error"
+    if "llm:reject" in text or "reject" in text or "malformed" in text or "parse" in text:
+        return "malformed_or_rejected_llm_output"
+    return "other_llm_error"
+
+
+def classify_judge_status(status: Any) -> str | None:
+    if not status:
+        return None
+    status_text = str(status)
+    if status_text == "accepted":
+        return "accepted_certificate"
+    if status_text == "not_attempted":
+        return "not_attempted"
+    return "judge_rejection"
+
+
+def key_status() -> dict[str, Any]:
+    shape = probe.upstream_key_shape()
+    return {
+        "present": bool(shape["present"]),
+        "length": int(shape["length"]),
+        "starts_sk_or_v1": bool(shape["starts_sk_or_v1"]),
+        "has_whitespace": bool(shape["has_whitespace"]),
+        "value_hidden": True,
+    }
+
+
 def solo_metrics(path: Path) -> dict[str, Any]:
     if not path.exists():
-        return {"missing": True, "rows": 0, "llm_calls": 0, "missing_key_rows": 0}
+        return {
+            "missing": True,
+            "rows": 0,
+            "llm_calls": 0,
+            "missing_key_rows": 0,
+            "failure_classes": {},
+        }
     rows = json.loads(path.read_text(encoding="utf-8"))
     statuses: Counter[str] = Counter()
+    failure_classes: Counter[str] = Counter()
     missing_key_rows = 0
     for row in rows:
         if missing_key_in(row):
             missing_key_rows += 1
+            failure_classes["missing_key"] += 1
         for entry in row.get("log", []):
+            if entry.get("type") == "llm":
+                response = entry.get("response", {})
+                if isinstance(response, dict) and "error" in response:
+                    failure_classes[classify_text(response)] += 1
             if entry.get("type") == "judge":
                 status = entry.get("response", {}).get("status")
                 if status:
                     statuses[str(status)] += 1
+                    klass = classify_judge_status(status)
+                    if klass in {"accepted_certificate", "judge_rejection"}:
+                        failure_classes[klass] += 1
     return {
         "missing": False,
         "rows": len(rows),
@@ -129,6 +181,7 @@ def solo_metrics(path: Path) -> dict[str, Any]:
         "judge_calls": sum(int(row.get("judge_calls", 0) or 0) for row in rows),
         "missing_key_rows": missing_key_rows,
         "judge_statuses": dict(statuses),
+        "failure_classes": dict(failure_classes),
         "ids": [row.get("id") for row in rows],
     }
 
@@ -155,16 +208,35 @@ def marathon_metrics(output_dir: Path) -> dict[str, Any]:
     summary_path = output_dir / "summary.json"
     log_path = output_dir / "run.log"
     if not summary_path.exists():
-        return {"missing": True, "llm_calls": 0, "tokens_used": 0, "missing_key_rows": 0}
+        return {
+            "missing": True,
+            "llm_calls": 0,
+            "tokens_used": 0,
+            "missing_key_rows": 0,
+            "failure_classes": {},
+        }
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     records = stderr_json_records(log_path)
     solver_summaries = [record for record in records if "submitted_total" in record]
     final_solver_summary = solver_summaries[-1] if solver_summaries else {}
     route_counts: Counter[str] = Counter()
+    failure_classes: Counter[str] = Counter()
     for record in records:
         route = record.get("route")
         if route:
             route_counts[str(route)] += 1
+        if route == "llm:error":
+            failure_classes[classify_text(record)] += 1
+        elif route == "llm:reject":
+            failure_classes["malformed_or_rejected_llm_output"] += 1
+        elif route == "llm:disabled":
+            reason = str(record.get("reason") or "unknown")
+            failure_classes[f"disabled:{reason}"] += 1
+
+    for status, count in summary.get("by_status", {}).items():
+        klass = classify_judge_status(status)
+        if klass in {"accepted_certificate", "judge_rejection"}:
+            failure_classes[klass] += int(count)
     return {
         "missing": False,
         "score": summary.get("score"),
@@ -179,16 +251,66 @@ def marathon_metrics(output_dir: Path) -> dict[str, Any]:
         "solver_routes": final_solver_summary.get("routes", {}),
         "stderr_routes": dict(route_counts),
         "missing_key_rows": 1 if missing_key_in(records) else 0,
+        "failure_classes": dict(failure_classes),
     }
 
 
-def write_fixture(args: argparse.Namespace) -> list[dict[str, Any]]:
-    rows = probe.select_unresolved_true(args.manifest, args.summary, args.limit)
+def load_fixture_rows(path: Path) -> list[dict[str, Any]]:
+    return make_mixed_manifest.load_rows(path)
+
+
+def write_fixture(args: argparse.Namespace) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    fixture_info: dict[str, Any] = {"mode": args.fixture_mode}
+    if args.fixture_mode == "unresolved-true":
+        if not args.manifest.exists():
+            raise SystemExit(f"manifest not found: {args.manifest}")
+        if not args.summary.exists():
+            raise SystemExit(f"summary not found: {args.summary}")
+        limit = args.limit if args.limit is not None else 3
+        rows = probe.select_unresolved_true(args.manifest, args.summary, limit)
+        fixture_info.update(
+            {
+                "source_manifest": str(args.manifest),
+                "source_summary": str(args.summary),
+                "limit": limit,
+            }
+        )
+        if not rows:
+            raise SystemExit("no unresolved TRUE rows selected for parity probe")
+    elif args.fixture_mode == "mixed":
+        selected, metadata, meta_path = make_mixed_manifest.build_mixed_manifest(
+            out=args.mixed_manifest,
+            seed=args.mixed_seed,
+            per_source=args.mixed_per_source,
+            shuffle=args.mixed_shuffle,
+        )
+        rows = selected[: args.limit] if args.limit is not None else selected
+        fixture_info.update(
+            {
+                "mixed_manifest": str(args.mixed_manifest),
+                "mixed_metadata": str(meta_path),
+                "mixed_seed": args.mixed_seed,
+                "mixed_per_source": args.mixed_per_source,
+                "mixed_shuffle": args.mixed_shuffle,
+                "source_total": metadata["total"],
+                "source_expected_true": metadata["expected_true"],
+                "source_expected_false": metadata["expected_false"],
+                "limit": args.limit,
+            }
+        )
+    else:
+        if not args.fixture.exists():
+            raise SystemExit(f"fixture not found: {args.fixture}")
+        rows = load_fixture_rows(args.fixture)
+        fixture_info.update({"source_fixture": str(args.fixture), "limit": args.limit})
+        if args.limit is not None:
+            rows = rows[: args.limit]
+
     if not rows:
-        raise SystemExit("no unresolved TRUE rows selected for parity probe")
+        raise SystemExit("no rows selected for parity probe")
     probe.write_fixture(rows, args.fixture)
     print(f"fixture={args.fixture} rows={len(rows)} ids={','.join(str(row['id']) for row in rows)}")
-    return rows
+    return rows, fixture_info
 
 
 def official_max_output_tokens() -> int:
@@ -253,6 +375,11 @@ def add_failures(summary: dict[str, Any], failures: list[str], *, require_llm: b
             failures.append("Solo reported missing upstream key/proxy")
         if require_llm and int(solo.get("llm_calls", 0) or 0) <= 0:
             failures.append("Solo recorded zero LLM calls")
+        blocking = sorted(
+            key for key in (solo.get("failure_classes") or {}) if key != "accepted_certificate"
+        )
+        if blocking:
+            failures.append(f"Solo classified LLM/judge failures: {blocking}")
 
     marathon = summary.get("marathon")
     if marathon is not None:
@@ -264,14 +391,29 @@ def add_failures(summary: dict[str, Any], failures: list[str], *, require_llm: b
             failures.append("Marathon solver summary recorded zero LLM calls")
         if require_llm and int(marathon.get("tokens_used", 0) or 0) <= 0:
             failures.append("Marathon summary recorded zero tokens used")
+        blocking = sorted(
+            key for key in (marathon.get("failure_classes") or {}) if key != "accepted_certificate"
+        )
+        if blocking:
+            failures.append(f"Marathon classified LLM/judge failures: {blocking}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--fixture-mode",
+        choices=("mixed", "unresolved-true", "existing"),
+        default="mixed",
+        help="How to choose the official rows used for the playground-parity probe.",
+    )
     parser.add_argument("--manifest", type=Path, default=probe.DEFAULT_MANIFEST)
     parser.add_argument("--summary", type=Path, default=probe.DEFAULT_SUMMARY)
     parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE)
-    parser.add_argument("--limit", type=int, default=3)
+    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--mixed-manifest", type=Path, default=DEFAULT_MIXED_MANIFEST)
+    parser.add_argument("--mixed-seed", type=int, default=20260520)
+    parser.add_argument("--mixed-per-source", type=int, default=2)
+    parser.add_argument("--no-mixed-shuffle", dest="mixed_shuffle", action="store_false")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--compression-ratio", type=float, default=0.5)
     parser.add_argument("--marathon-budget-tokens", type=int, default=None)
@@ -281,36 +423,40 @@ def main() -> int:
     parser.add_argument("--skip-solo", action="store_true")
     parser.add_argument("--skip-marathon", action="store_true")
     parser.add_argument("--keep-output", action="store_true")
-    parser.add_argument("--enable-grind", action="store_true")
     args = parser.parse_args()
 
-    if args.limit <= 0:
-        raise SystemExit("--limit must be positive")
+    if args.limit is not None and args.limit <= 0:
+        raise SystemExit("--limit must be positive when supplied")
+    if args.mixed_per_source <= 0:
+        raise SystemExit("--mixed-per-source must be positive")
     if args.compression_ratio <= 0:
         raise SystemExit("--compression-ratio must be positive")
-    if not args.manifest.exists():
-        raise SystemExit(f"manifest not found: {args.manifest}")
-    if not args.summary.exists():
-        raise SystemExit(f"summary not found: {args.summary}")
+    if args.skip_solo and args.skip_marathon:
+        raise SystemExit("playground parity requires at least one official proxy path; do not skip both Solo and Marathon")
 
-    env = runner_env(enable_grind=args.enable_grind)
+    env = runner_env()
     reset_output_dir(args.output_dir, keep_output=args.keep_output)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     failures: list[str] = []
-    rows = write_fixture(args)
+    rows, fixture_info = write_fixture(args)
 
     if not args.skip_marathon and args.marathon_budget_tokens is None:
         derived_tokens = int(args.compression_ratio * len(rows) * REF_PER_PROBLEM_TOKENS)
-        if derived_tokens <= official_max_output_tokens():
-            raise SystemExit(
-                "default Marathon token budget is too small to force a full-config LLM call; "
-                "increase --limit, --compression-ratio, or set --marathon-budget-tokens"
-            )
+        args.marathon_budget_tokens = max(DEFAULT_MIN_MARATHON_TOKENS, derived_tokens)
+        print(f"marathon_budget_tokens={args.marathon_budget_tokens} defaulted=true")
+    if not args.skip_marathon and args.marathon_budget_tokens <= 0:
+        failures.append("Marathon token budget must be positive for playground parity")
 
     if not args.skip_package:
         failures.extend([] if run_python_smokes(env) == 0 else ["local Python/DSL smokes failed"])
         failures.extend([] if run_package(env) == 0 else ["solver packaging failed"])
+
+    key = key_status()
+    if not key["present"]:
+        failures.append("local upstream OpenRouter/OpenAI key is not configured")
+    elif key["has_whitespace"]:
+        failures.append("local upstream key contains whitespace")
 
     direct_exit_code: int | None = None
     if not args.skip_direct_openrouter_smoke:
@@ -339,9 +485,12 @@ def main() -> int:
     summary: dict[str, Any] = {
         "label": "playground-parity-positive-token-llm",
         "fixture": str(args.fixture),
+        "fixture_info": fixture_info,
         "row_ids": [row.get("id") for row in rows],
-        "grind_enabled": args.enable_grind,
+        "key_status": key,
         "direct_openrouter_smoke_exit_code": direct_exit_code,
+        "marathon_budget_tokens": args.marathon_budget_tokens,
+        "marathon_budget_seconds": args.marathon_budget_seconds,
         "submission": submission_cleanliness(),
     }
     if solo is not None:
