@@ -2,7 +2,7 @@
 
 This directory is for reusable mathematical assets that survive the Stage 1 to Stage 2 reset.
 
-Start with `TEORTH_WORKFLOW.md` for the end-to-end path from Teorth graph/proof-page evidence to solver motif cards. Use `tools/README.md` as the script index.
+Start with `TEORTH_WORKFLOW.md` for the end-to-end path from Teorth graph/proof-page evidence to solver motif cards. Use `TEORTH_NOTES.md` as the current route-provenance index and `tools/README.md` as the script index.
 
 ## Canonical Data
 
@@ -51,6 +51,8 @@ Create these as work proceeds:
 5. Random equation dive logs that feed the solver, not just chat history.
 
 Use the motif-card convention in `TEORTH_WORKFLOW.md` for durable proof and witness ideas. Every card should include source pairs, Teorth/proof-page provenance, family trigger, Lean rendering sketch, local semantic check, official runner evidence, expected coverage, and blockers.
+
+Current route cards live under `stage2/docs/motif-cards/`; keep `TEORTH_NOTES.md` synchronized with that directory.
 
 ## Current Learned Families
 

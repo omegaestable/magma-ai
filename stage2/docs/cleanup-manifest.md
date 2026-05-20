@@ -1,0 +1,69 @@
+# Non-Destructive Cleanup Manifest
+
+Updated: 2026-05-19
+
+This manifest records clutter and evidence debt without deleting anything. Use it before any future cleanup commit so raw artifacts are not lost accidentally.
+
+## Policy
+
+- Do not delete dated result summaries under `stage2/results/`.
+- Do not delete raw evidence that is the only source for a promoted claim.
+- Prefer archive-with-manifest over deletion for judge artifacts and Marathon outputs.
+- Treat `tmp_stage2_smoke/` as scratch, but preserve a final representative run when it is the only evidence for a recent workflow.
+- Ask before deleting or moving anything outside `tmp_stage2_smoke/`.
+
+## Keep In Place
+
+| Path / pattern | Reason |
+| --- | --- |
+| `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md` | Historical public baseline; includes now-disabled grind wins and must remain caveated. |
+| `stage2/results/2026-05-17-hard-mix-witness-summary.md` | Compact witness provenance for S4D/S4E/S5D. |
+| `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md` | Local OpenRouter/proxy transport precedent. |
+| `stage2/results/2026-05-15-theory-diagnosis.md` | Teorth proof-page and finite-model diagnosis. |
+| `stage2/experiments/*.py` | Active tooling unless a future audit marks a script obsolete. |
+| `stage2/docs/solver-route-ledger.md` and `stage2/docs/motif-cards/` | Current route review artifacts. |
+
+## Archive Candidates
+
+| Path / pattern | Suggested destination | Why |
+| --- | --- | --- |
+| `tmp_stage2_smoke/2026-05-14-*after-*` | `stage2/results/archive/obsolete-intermediate/` | Absorption/affine tuning snapshots superseded by summaries. |
+| `tmp_stage2_smoke/2026-05-15-*after-*` | `stage2/results/archive/obsolete-intermediate/` | Equational-closure tuning snapshots. |
+| `tmp_stage2_smoke/2026-05-16-*after-witness*` | `stage2/results/archive/witness-tuning/` | Pre/post compact-witness tuning traces. |
+| `tmp_stage2_smoke/*grind*` and `tmp_stage2_smoke/judge-artifacts-grind-*` | `stage2/results/archive/grind-regression-evidence/` | Grind is default-off but accepted/incorrect ledger remains useful archaeology. |
+| `tmp_stage2_smoke/*normal100*` duplicate runs | `stage2/results/archive/smokes/` | Keep one final representative run plus summary. |
+| `tmp_stage2_smoke/playground_parity_llm_dry_check*` | `stage2/results/archive/parity-dry-runs/` | Keep final dry check if needed; intermediate dry checks are tuning clutter. |
+
+## Delete Candidates After Review
+
+| Path / pattern | Reason |
+| --- | --- |
+| `tmp_stage2_smoke/sample20-current.json`, `tmp_stage2_smoke/sample200-current.json` | Untimestamped snapshots with no promotion status. |
+| `tmp_stage2_smoke/answers.jsonl` | One-off output; regenerate from runner. |
+| `tmp_stage2_smoke/solo_result.json` | Stale standalone Solo output. |
+| `tmp_stage2_smoke/reflexive_problem.json` | One-off fixture if not referenced by a current doc. |
+| `tmp_stage2_smoke/hard3_true*.json*` | Old TRUE tuning fixtures superseded by route summaries. |
+| Non-final `post_rollback_tiny_zero_token*` dirs | Iterative implementation checks; keep only final summary if needed. |
+
+## Promote or Summarize Before Cleanup
+
+- Positive-token parity run: create a dated summary under `stage2/results/` before archiving raw output.
+- Post-rollback zero-token public refresh: create a new deterministic baseline summary before deleting any raw public-run traces.
+- Targeted unresolved TRUE LLM repair run: summarize accepted/rejected/malformed/incorrect/token-exhausted classes before cleanup.
+- New motif route fixture runs: record problem ids, routes, statuses, and result paths.
+
+## Suggested Future Archive Manifest Format
+
+```text
+# Archive Batch YYYY-MM-DD
+
+Source: tmp_stage2_smoke/<path>
+Destination: stage2/results/archive/<path>
+Reason: <obsolete tuning | representative smoke | grind archaeology | witness tuning>
+Summary artifact: stage2/results/<dated-summary>.md or none
+Safe to delete later: yes/no
+```
+
+## Current No-Delete Decision
+
+For the 2026-05-19 conservative polish session, cleanup is documentation-only. No raw artifact should be deleted or moved without a separate explicit approval.

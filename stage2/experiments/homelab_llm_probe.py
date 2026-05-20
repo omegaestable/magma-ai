@@ -413,7 +413,7 @@ def main() -> int:
     parser.add_argument("--solo-output", type=Path, default=DEFAULT_SOLO_OUTPUT)
     parser.add_argument("--run-marathon", action="store_true")
     parser.add_argument("--marathon-output-dir", type=Path, default=DEFAULT_MARATHON_DIR)
-    parser.add_argument("--marathon-budget-tokens", type=int, default=32768)
+    parser.add_argument("--marathon-budget-tokens", type=int, default=131072)
     parser.add_argument("--marathon-budget-seconds", type=int, default=600)
     parser.add_argument("--run-proxy-smoke", action="store_true")
     parser.add_argument("--run-direct-openrouter-smoke", action="store_true")

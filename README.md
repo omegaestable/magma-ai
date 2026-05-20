@@ -46,7 +46,7 @@ Cold-start read order:
 
 ## Current Evidence
 
-Latest completed full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch:
+Latest completed full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch and before the default grind rollback:
 
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`
 - `normal`: `803/1000` solved, `305 TRUE + 498 FALSE`, `llm:0`
@@ -54,20 +54,20 @@ Latest completed full public benchmark snapshot from the packaged deterministic 
 - `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`, `llm:0`
 - `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`, `llm:0`
 
-Current completed public total: `1201/1669` solved.
+Historical completed public total: `1201/1669` solved. This included `34` accepted `true:grind` rows; broad grind is now disabled by default after playground error-rate failures.
 
 Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `70631` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `70946` bytes, single-file submission directory.
 - Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
 - Latest recorded Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; this was not rerun after the May 17 compact witness patch.
 - Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `76/100` accepted in the latest optimized-package smoke.
 - Recent compact named FALSE witnesses include `S4D`, `S4E`, and `S5D`.
-- Accepted-grind fixture with heartbeat cap: `34/34` accepted.
+- Accepted-grind fixture with heartbeat cap: `34/34` accepted only with `MAGMA_ENABLE_GRIND=1`.
 - Compact witness fixture: `8/8` accepted, `0` LLM calls.
 - Fresh 150-row hard mixes with zero-token Marathon improved to `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
 - Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths; use this only as transport evidence.
-- Full public no-loss validation of the optimized package is pending; preserve at least `1201/1669` before promotion.
+- Full public validation of the post-rollback package is pending; treat zero-token results as deterministic evidence only and require positive-token proxy evidence before LLM-backed promotion.
 
 The full generated evidence lives in:
 
@@ -79,11 +79,11 @@ The full generated evidence lives in:
 - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
 - `stage2/results/2026-05-12-competition-preflight.md`
 
-For upload/playground readiness, use `stage2/docs/playground-preflight.md`. It keeps the single-file packaging contract, proxy-mediated LLM behavior, local no-key caveat, and smoke/full-benchmark evidence boundary in one place.
+For upload/playground readiness, use `stage2/docs/playground-preflight.md`. It keeps the single-file packaging contract, proxy-mediated LLM behavior, local no-key caveat, zero-token evidence boundary, and positive-token parity runner in one place.
 
-Most important current lesson: the compact witness patch further reduced sampled FALSE misses, so the hard frontier is even more TRUE-heavy. Canonical full public gap counts stay at the 2026-05-12 values until `normal|hard1|hard2|hard3` are refreshed together.
+Most important current lesson: the compact witness patch further reduced sampled FALSE misses, broad grind failed playground error discipline, and the hard frontier is even more TRUE-heavy. Canonical full public gap counts stay at the 2026-05-12 values until `normal|hard1|hard2|hard3` are refreshed together.
 
-For math extraction and Teorth provenance work, start from `theory/TEORTH_WORKFLOW.md`; it documents the cache-first path from implication graph and proof pages to solver motifs.
+For route review, start from `stage2/docs/solver-route-ledger.md` and `stage2/docs/motif-cards/`. For math extraction and Teorth provenance work, start from `theory/TEORTH_WORKFLOW.md` and `theory/TEORTH_NOTES.md`; they document the cache-first path from implication graph and proof pages to solver motifs.
 
 ## Repository Layout
 

@@ -57,12 +57,12 @@ Latest local candidate evidence after the final optimization patch, not a full p
 - `sample_20`: `14/20`
 - latest recorded `sample_200`: `165/200`, not rerun after the May 17 witness patch
 - Marathon `normal_100` with zero tokens: `76/100` accepted in the latest optimized-package smoke
-- accepted-grind fixture with heartbeat cap: `34/34` accepted
+- accepted-grind fixture with heartbeat cap: `34/34` accepted only with `MAGMA_ENABLE_GRIND=1`
 - compact witness fixture: `8/8` accepted, `0` LLM calls
 - Fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
-- Packaged solver size: `70631` bytes
-- Full public no-loss validation of the optimized package is pending; preserve at least `1201/1669` before promotion.
+- Packaged solver size: `70946` bytes
+- Full public validation of the post-rollback package is pending. Treat the prior `1201/1669` as historical zero-token evidence that included `34` default-disabled grind wins; require positive-token proxy evidence before LLM-backed promotion.
 
 ## Banned Approaches
 

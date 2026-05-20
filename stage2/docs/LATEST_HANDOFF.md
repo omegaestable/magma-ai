@@ -1,29 +1,26 @@
 # Latest Handoff
 
-Updated: 2026-05-18
+Updated: 2026-05-19
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
 ## Current Solver Snapshot
 
 - Active source: `stage2/solver/solver.py`.
-- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `70631` bytes.
+- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `70946` bytes.
 - Submission directory should contain only `solver.py`.
-- Public zero-token baseline to beat or preserve: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`.
-- Full public no-loss validation after the final optimization patch is still pending. Do not claim a promoted `1201/1669` for the optimized package until that check is run.
+- Historical public zero-token baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-default-disabled grind wins.
+- Full public validation after the grind rollback is still pending. Do not claim the post-rollback package preserves the old grind-backed total until a new run exists; use positive-token proxy evidence for LLM-backed promotion.
 
 ## What Changed This Session
 
-- Added broad zero-token `true:grind` fallback as a discovery route for short absorption/congruence-shaped TRUE rows.
-- Added compact named FALSE witness tables `S4D`, `S4E`, and `S5D`.
-- Added reusable sweep/analysis tooling:
-  - `stage2/experiments/run_zero_token_sweeps.py`
-  - `stage2/experiments/analyze_zero_token_run.py`
-  - `stage2/experiments/extract_grind_ledger.py`
-- Built exact public `true:grind` ledgers: `34` accepted and `433` incorrect from `467` total grind attempts.
-- Kept broad `grind` eligibility, but capped the emitted Lean proof with `set_option maxHeartbeats 10 in` before `grind`.
-- Added behavior-preserving caches for repeated term work: term size/depth/rendering, variables, subterms, duals, boundary vars, subterm paths, path lookup, subterm replacement, and context-to-Lean rendering.
-- Trimmed duplicate root expansion in `goal_term_pool` and `absorption_term_pool` while preserving existing pool order.
+- Playground experience showed the broad `true:grind` idea is not viable: its error rate exploded under playground conditions, so grind-heavy evidence is no longer promotion evidence.
+- Quarantined `true:grind` behind `MAGMA_ENABLE_GRIND=1`; default packaged/playground runs leave it disabled and escalate unresolved TRUE rows to the LLM path instead.
+- Aligned solver-side Marathon `LLM_CONFIG` with the official proxy config shape: `max_output_tokens=65536`, `reasoning_effort=medium`, and the same `openai/gpt-oss-120b` / `deepinfra/bf16` routing hint.
+- Added `stage2/experiments/run_playground_parity_llm.py`, a positive-token OpenRouter parity runner that packages the solver, selects unresolved TRUE rows, runs official Solo and Marathon proxy paths, and fails if local evidence records zero LLM calls or zero Marathon tokens.
+- Raised the default real-solver Marathon LLM probe budget in `stage2/experiments/homelab_llm_probe.py` to clear the official max-output headroom check.
+- Updated `stage2/docs/playground-preflight.md` so zero-token Marathon is explicitly deterministic-only evidence and positive-token proxy usage is a separate readiness gate.
+- Added `stage2/docs/solver-route-ledger.md`, route motif cards under `stage2/docs/motif-cards/`, `theory/TEORTH_NOTES.md`, and `stage2/docs/cleanup-manifest.md` for the conservative deep-polish handoff.
 
 ## Best Public Evidence
 
@@ -47,7 +44,7 @@ Answer-kind totals for that baseline:
 ## Latest Regression Evidence
 
 - Exact grind ledger extraction reconciled to `34 accepted / 433 incorrect`.
-- Accepted-grind fixture with heartbeat cap: `34/34` accepted.
+- Accepted-grind fixture with heartbeat cap: `34/34` accepted only when `MAGMA_ENABLE_GRIND=1`; the default solver path no longer emits `true:grind` certificates.
 - Lower heartbeat probe: `hb=5` scored `33/34`, so do not lower below `10` without fresh evidence.
 - Compact witness fixture: `8/8` accepted with `S4D/S4E/S5D` coverage.
 - Official `normal_100` smoke after the optimization patch: `76/100`, unchanged from the immediately preceding smoke.
@@ -55,22 +52,23 @@ Answer-kind totals for that baseline:
 
 ## Key Lessons
 
-1. The frontier is TRUE-heavy. Compact witness mining still helps, but the next material lift needs explicit TRUE proof extraction.
-2. `true:grind` is useful but noisy. It found `34` public TRUE wins and caused `433` incorrect attempts; the heartbeat cap is the safe timing mitigation found this session.
-3. Do not tighten `grind_true_candidate` from the current ledger. Accepted and incorrect grind rows overlap heavily on absorption shape, same-LHS shape, variable counts, term sizes, and depths.
-4. The next clean TRUE route should be a bounded local congruence/e-graph extractor before fallback `grind`, using existing parsing, substitution, rewrite-step, absorption-pool, and proof-chain helpers.
-5. The vendored Solo harness still has local OpenRouter provider-normalization drift. This does not affect zero-token Marathon scoring, but mention it before treating harness output as upstream-clean.
+1. The frontier is TRUE-heavy. Compact witness mining still helps, but the next material lift needs explicit TRUE proof extraction or judged LLM certificates.
+2. `true:grind` was a discovery route, not a deployable strategy. It found `34` public TRUE wins but caused `433` incorrect attempts and failed the playground-error discipline.
+3. Do not use zero-token Marathon as LLM evidence. It is only a deterministic append-only smoke.
+4. Positive-token local LLM evidence must prove official proxy usage: nonzero Solo LLM calls, nonzero Marathon `llm_calls`, nonzero `tokens_used`, and no missing-key/protocol errors.
+5. The vendored Solo harness still has local OpenRouter provider-normalization drift. Mention the exact local config before treating harness output as upstream-clean.
 
 ## Recommended Next Steps
 
-1. Run a full public no-loss validation when budget allows: `normal`, `hard1`, `hard2`, and `hard3` against the optimized packaged solver. Required baseline is at least `1201/1669`, with no lost accepted-grind rows.
-2. If no-loss holds, update `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md` or add a new dated optimization result summary.
-3. Implement proof-producing local congruence/e-graph TRUE extraction before `true:grind`; avoid heuristic grind filters unless the accepted-grind fixture stays `34/34`.
-4. Keep HF mirror sweeps separate from public evidence.
+1. Run `stage2/experiments/run_playground_parity_llm.py` with a configured local OpenRouter key and inspect the generated parity summary before any new playground upload.
+2. Build the route-specific fixtures listed in `stage2/docs/solver-route-ledger.md` before attempting broad refactors.
+3. If positive-token LLM evidence is clean, run a targeted unresolved-TRUE fixture and classify LLM rejects versus judge rejections before broad public sweeps.
+4. Run a full public no-loss validation when budget allows: `normal`, `hard1`, `hard2`, and `hard3` against the optimized packaged solver. Required deterministic baseline is at least the pre-rollback non-grind accepted set; do not require broad grind wins unless `MAGMA_ENABLE_GRIND=1` is deliberately under test.
 5. Before upload or promotion, rerun `stage2/docs/playground-preflight.md` and the adversarial solver review checklist.
 
 ## Scratch Discipline
 
 - `tmp_stage2_smoke/` is scratch. Promote only concise dated summaries under `stage2/results/`.
+- Consult `stage2/docs/cleanup-manifest.md` before deleting or moving scratch artifacts; the 2026-05-19 polish pass is documentation-only for cleanup.
 - Do not hardcode public benchmark ids in solver policy. The grind ledgers are regression fixtures only.
 - Judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr, ledgers, or summaries.

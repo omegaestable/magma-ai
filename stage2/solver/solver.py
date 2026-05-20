@@ -3,10 +3,12 @@
 The deterministic core now handles:
 1. reflexive TRUE implications;
 2. singleton/collapse TRUE implications;
-3. direct substitution, bounded rewrite chains, and subterm congruence
-   TRUE implications;
-4. finite FALSE witnesses from named small magmas, structured table
-   families, affine/quadratic families, and bounded Fin n search.
+3. direct substitution, bounded rewrite chains, and subterm congruence TRUE implications;
+4. finite FALSE witnesses from named small magmas, structured table families,
+   affine/quadratic families, and bounded Fin n search.
+
+The former broad `grind` TRUE fallback is opt-in only via
+`MAGMA_ENABLE_GRIND=1`; playground/package defaults leave it disabled.
 
 LLM escalation is available only through the official Solo/Marathon
 proxies. Unsupported cases are skipped rather than answered speculatively.
@@ -86,13 +88,15 @@ LLM_MAX_TABLE_N = 8
 LLM_CONFIG = {
     "model": "openai/gpt-oss-120b",
     "provider": "deepinfra/bf16",
-    "max_output_tokens": 8192,
+    "max_output_tokens": 65536,
     "temperature": 0.0,
-    "reasoning_effort": "low",
+    "reasoning_effort": "medium",
     "use_seed": True,
     "seed": 0,
     "http_timeout_seconds": 600.0,
 }
+
+TRUE_ENV_VALUES = {"1", "true", "yes", "on"}
 
 ALLOWED_IMPORTS = {
     "JudgeProblem",
@@ -1430,7 +1434,7 @@ def solve_problem(
                     "route": route,
                     "priority": problem_priority(problem, eq1, eq2),
                 }
-        if grind_true_candidate(eq1, eq2):
+        if grind_enabled() and grind_true_candidate(eq1, eq2):
             return {
                 "answer": make_true_answer(problem, grind_true_certificate(eq2["variables"])),
                 "route": "true:grind",
@@ -1727,6 +1731,10 @@ def solo_llm_rounds() -> int:
         return max(0, int(raw))
     except ValueError:
         return LLM_MAX_ROUNDS
+
+
+def grind_enabled() -> bool:
+    return os.environ.get("MAGMA_ENABLE_GRIND", "").strip().lower() in TRUE_ENV_VALUES
 
 
 def run_solo() -> int:

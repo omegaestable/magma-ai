@@ -64,7 +64,7 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
-The current packaged smoke size is `70631` bytes. Re-check this after every package step instead of carrying old size notes forward.
+The current packaged smoke size is `70946` bytes. Re-check this after every package step instead of carrying old size notes forward.
 
 ## Playground Preflight Gate
 
@@ -74,7 +74,7 @@ Before upload or playground testing, run `stage2/docs/playground-preflight.md` a
 2. Confusing a local runner proxy missing `OPENAI_API_KEY` or `OPENROUTER_API_KEY` with a solver-side protocol bug.
 3. Updating public benchmark claims from smoke-only evidence.
 
-The current solver is deterministic-ready for the playground under the official single-file and proxy contracts. LLM success depends on the playground proxy being enabled and configured; the solver should never carry local keys or call model APIs directly.
+The current solver keeps broad `true:grind` disabled by default and is deterministic-ready under the official single-file and proxy contracts. LLM readiness additionally requires a positive-token proxy run with nonzero LLM calls and nonzero Marathon token usage; the solver should never carry local keys or call model APIs directly.
 
 ## Solo Debug Loop
 
