@@ -1,6 +1,6 @@
 # Stage 2 Smoke Tests
 
-Last smoke run: 2026-05-19.
+Last smoke run: 2026-05-20.
 
 ## Passing Locally
 
@@ -16,7 +16,7 @@ PowerShell with `.venv` Python 3.14.3:
 Observed:
 
 - Set `$env:PYTHONUTF8='1'` and `$env:PATH="$env:USERPROFILE\.elan\bin;$env:PATH"` for official runner checks.
-- Packaged `stage2/submissions/solver.py` at 71662 bytes.
+- Packaged `stage2/submissions/solver.py` at 76136 bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -42,7 +42,7 @@ Observed after cleaning and packaging `stage2/submissions/`:
 - `sample_20`: `14/20` solved.
 - `sample_200`: `165/200` solved in the latest recorded full-sample run; not rerun after the May 17 compact witness patch.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver is currently 71662 bytes and the submission directory contains only `solver.py`.
+- Packaged solver is currently 76136 bytes and the submission directory contains only `solver.py`.
 
 Latest local LLM transport smoke:
 
@@ -114,9 +114,17 @@ Pop-Location
 
 Observed:
 
-- `normal_100`: `70/100` accepted with zero token budget.
+- `normal_100`: `74/100` accepted with zero token budget in `56.6s` after the regular absorption time cap.
 - All attempted certificates were accepted.
 - Treat this as pacing/smoke evidence, not a replacement for the full `normal.jsonl` benchmark.
+
+Route profiling helper added on 2026-05-20:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\profile_solver_routes.py --manifest vendor\stage2-official\examples\problems\marathon\normal_100.jsonl --output tmp_stage2_smoke\solver_route_profile.json --marathon-budget-seconds 600 --reference-seconds-per-problem 600
+```
+
+Latest profile evidence with `ABSORPTION_TIME_BUDGET = 0.05`: `normal_100` produced `74` deterministic candidates in `51.0s`; `sample_200` produced `169` deterministic candidates in `62.2s` without judge or LLM calls.
 
 ## Focused Hard TRUE And Hard-Mix Probes
 

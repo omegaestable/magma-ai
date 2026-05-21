@@ -64,6 +64,7 @@ ABSORPTION_POOL_LIMIT = 10
 ABSORPTION_FRONTIER_LIMIT = 220
 ABSORPTION_MAX_FILLS = 180
 ABSORPTION_TERM_SLACK = 6
+ABSORPTION_TIME_BUDGET = 0.05
 ABSORPTION_DEEP_CHAIN_MAX_DEPTH = 3
 ABSORPTION_DEEP_POOL_LIMIT = 12
 ABSORPTION_DEEP_FRONTIER_LIMIT = 260
@@ -1080,7 +1081,7 @@ def absorption_closure_route(
     frontier_limit: int = ABSORPTION_FRONTIER_LIMIT,
     max_fills: int = ABSORPTION_MAX_FILLS,
     term_slack: int = ABSORPTION_TERM_SLACK,
-    time_budget: float | None = None,
+    time_budget: float | None = ABSORPTION_TIME_BUDGET,
 ) -> tuple[str, str] | None:
     if not absorption_hypothesis(eq1):
         return None

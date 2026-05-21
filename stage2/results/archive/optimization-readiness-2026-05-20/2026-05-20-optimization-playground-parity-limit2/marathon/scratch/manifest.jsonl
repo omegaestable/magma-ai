@@ -1,0 +1,2 @@
+{"id": "hard3_0140", "index": 140, "difficulty": "hard", "eq1_id": 1072, "eq2_id": 1251, "equation1": "x = y ◇ ((x ◇ (x ◇ x)) ◇ x)", "equation2": "x = x ◇ (((y ◇ y) ◇ y) ◇ x)", "answer": true}
+{"id": "hard3_0114", "index": 114, "difficulty": "hard", "eq1_id": 922, "eq2_id": 1444, "equation1": "x = y ◇ ((y ◇ y) ◇ (z ◇ x))", "equation2": "x = (x ◇ y) ◇ (x ◇ (y ◇ x))", "answer": true}

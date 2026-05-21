@@ -63,7 +63,7 @@ vendor/stage2-official/docs/marathon_mode.md
 vendor/stage2-official/examples/marathon/TUTORIAL.md
 ```
 
-Current local smoke slice: `examples/problems/marathon/normal_100.jsonl`. The latest optimized-package smoke accepted `76/100` with zero token budget. Do not fold this into the full public total.
+Current local smoke slice: `examples/problems/marathon/normal_100.jsonl`. The latest speed-capped optimized-package smoke accepted `74/100` with zero token budget in `56.6s`. Do not fold this into the full public total.
 
 ## Local Result Storage
 
@@ -88,7 +88,7 @@ Latest smoke-only housekeeping evidence, separate from those public totals:
 
 - `sample_20`: `14/20`
 - latest recorded `sample_200`: `165/200`, not rerun after the May 17 compact witness patch
-- Marathon `normal_100`: `76/100`, zero tokens in the latest optimized-package smoke
+- Marathon `normal_100`: `74/100`, zero tokens in the latest speed-capped optimized-package smoke
 - accepted-grind fixture with heartbeat cap: `34/34`
 - compact witness fixture: `8/8`
 - fresh May 17 hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`

@@ -23,7 +23,7 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Current packaged state from the latest local package pass: `71662` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest local package pass: `76136` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -210,3 +210,8 @@ For the current solver, deterministic regression and LLM readiness are separate
 lanes. A candidate is not playground-ready until the positive-token parity
 runner, or an equivalent official-runner command, proves nonzero proxy usage and
 classifies all failures.
+
+Latest local note: the 2026-05-20 positive-token parity probe proved proxy
+transport with Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon
+`tokens_used=7208`, but it is not promotion-clean because the unresolved TRUE
+row failed by judge rejection / rejected LLM output.

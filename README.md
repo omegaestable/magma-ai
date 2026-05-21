@@ -58,15 +58,15 @@ Historical completed public total: `1201/1669` solved. This included `34` accept
 
 Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `71662` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `76136` bytes, single-file submission directory.
 - Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
 - Latest recorded Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; this was not rerun after the May 17 compact witness patch.
-- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `76/100` accepted in the latest optimized-package smoke.
+- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget after the absorption time-cap optimization: `74/100` accepted in `56.6s`, with no SIGTERM and `0` tokens.
 - Recent compact named FALSE witnesses include `S4D`, `S4E`, and `S5D`.
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
 - Compact witness fixture: `8/8` accepted, `0` LLM calls.
 - Fresh 150-row hard mixes with zero-token Marathon improved to `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
-- Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths; use this only as transport evidence.
+- Positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`. Use this as transport evidence, not proof-quality promotion evidence.
 - Full public validation of the post-rollback package is pending; treat zero-token results as deterministic regression only and require positive-token proxy evidence before LLM-backed promotion.
 
 The full generated evidence lives in:
@@ -75,6 +75,7 @@ The full generated evidence lives in:
 - `stage2/results/2026-05-14-hard-affine-absorption-summary.md`
 - `stage2/results/2026-05-17-hard-mix-witness-summary.md`
 - `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`
+- `stage2/results/2026-05-20-optimization-readiness.md`
 - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
 - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
 - `stage2/results/2026-05-12-competition-preflight.md`

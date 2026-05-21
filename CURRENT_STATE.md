@@ -16,7 +16,7 @@ Last updated: 2026-05-20.
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `71662` bytes.
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `76136` bytes.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
 - Route motif cards: `stage2/docs/motif-cards/`.
@@ -64,7 +64,8 @@ Latest local regression evidence after the final optimization patch:
 - Exact grind ledgers reconcile to `34 accepted / 433 incorrect`.
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
 - Compact witness fixture: `8/8` accepted.
-- Official `normal_100` smoke: `76/100`, unchanged from the immediate pre-patch smoke.
+- Official `normal_100` zero-token smoke after the absorption time-cap optimization: `74/100` in `56.6s`, no SIGTERM, `0` tokens.
+- Positive-token LLM parity on two unresolved TRUE rows reached the official proxy paths: Solo `llm_calls=2`, Marathon `llm_calls=1`, Marathon `tokens_used=7208`; promotion still blocked by judge rejection / rejected LLM output.
 - Python syntax/editor diagnostics and packaged submission syntax checks pass.
 
 Full public validation of the optimized package after the grind rollback is pending. Historical non-grind accepted count from the previous public refresh is `1167/1669`; use positive-token LLM evidence, not grind, to recover TRUE frontier coverage.
@@ -81,6 +82,7 @@ Full public validation of the optimized package after the grind rollback is pend
 - `stage2/docs/cleanup-manifest.md`
 - `theory/TEORTH_NOTES.md`
 - `stage2/docs/LATEST_HANDOFF.md`
+- `stage2/results/2026-05-20-optimization-readiness.md`
 
 ## Operational Notes
 
@@ -94,10 +96,10 @@ Full public validation of the optimized package after the grind rollback is pend
 
 ## Immediate Next Work
 
-1. Run `stage2/experiments/run_playground_parity_llm.py` with a configured local upstream key and inspect the generated parity summary.
+1. Run broader no-loss validation for the `0.05s` absorption cap, especially hard TRUE closure fixtures and the full public sets.
 2. Fill the route fixture backlog in `stage2/docs/solver-route-ledger.md` before risky refactors.
 3. Treat zero-token sweeps as optional deterministic regression only, not as the active local gate.
-4. Classify LLM rejects versus judge rejections on targeted unresolved TRUE fixtures before broad positive-token public sweeps.
+4. Improve unresolved TRUE proof quality: the proxy path works, but current LLM output is rejected or judge-incorrect on `hard3_0114`.
 5. Keep HF mirror sweeps separate from public evidence.
 
 ## Non-Goals

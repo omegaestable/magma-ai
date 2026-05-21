@@ -1,0 +1,354 @@
+[
+  {
+    "id": "normal_0646",
+    "eq1_id": 2034,
+    "eq2_id": 2417,
+    "elapsed_seconds": 4.36,
+    "solved": true,
+    "verdict": "true",
+    "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b b b b).trans (h b b b b b b).symm\n  intro x y z w\n  exact hall _ _\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b b b b).trans (h b b b b b b).symm\n  intro x y z w\n  exact hall _ _\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 4.3
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"true:singleton\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "normal_0103",
+    "eq1_id": 248,
+    "eq2_id": 702,
+    "elapsed_seconds": 2.64,
+    "solved": true,
+    "verdict": "true",
+    "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b).trans (h b b b).symm\n  intro x y z w u\n  exact hall _ _\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b).trans (h b b b).symm\n  intro x y z w u\n  exact hall _ _\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 2.58
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"true:singleton\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "normal_0028",
+    "eq1_id": 1185,
+    "eq2_id": 796,
+    "elapsed_seconds": 2.6,
+    "solved": true,
+    "verdict": "true",
+    "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b).trans (h b b b).symm\n  intro x y z w\n  exact hall _ _\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b).trans (h b b b).symm\n  intro x y z w\n  exact hall _ _\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 2.54
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"true:singleton\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "normal_0749",
+    "eq1_id": 701,
+    "eq2_id": 2035,
+    "elapsed_seconds": 423.07,
+    "solved": false,
+    "verdict": null,
+    "code": null,
+    "llm_calls": 2,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "0",
+            "analysis": "hypothesis variables: x y z w\ngoal variables: x\ngoal lhs: x\ngoal rhs: ((x ◇ x) ◇ x) ◇ (x ◇ x)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0749: does Equation701 imply Equation2035?\nHypothesis: x = y ◇ (x ◇ ((z ◇ w) ◇ w))\nGoal: x = ((x ◇ x) ◇ x) ◇ (x ◇ x)\n\nDeterministic analysis:\nhypothesis variables: x y z w\ngoal variables: x\ngoal lhs: x\ngoal rhs: ((x ◇ x) ◇ x) ◇ (x ◇ x)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\": \"true\",\n  \"proof_kind\": \"rewrite_chain\",\n  \"chain\": [\n    \"x\",\n    \"((x ◇ x) ◇ x) ◇ (x ◇ x)\"\n  ]\n}"
+        },
+        "elapsed": 130.33
+      },
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "1",
+            "analysis": "hypothesis variables: x y z w\ngoal variables: x\ngoal lhs: x\ngoal rhs: ((x ◇ x) ◇ x) ◇ (x ◇ x)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0749: does Equation701 imply Equation2035?\nHypothesis: x = y ◇ (x ◇ ((z ◇ w) ◇ w))\nGoal: x = ((x ◇ x) ◇ x) ◇ (x ◇ x)\n\nDeterministic analysis:\nhypothesis variables: x y z w\ngoal variables: x\ngoal lhs: x\ngoal rhs: ((x ◇ x) ◇ x) ◇ (x ◇ x)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\":\"true\",\n  \"proof_kind\":\"rewrite_chain\",\n  \"chain\":[\"x\",\"((x ◇ x) ◇ x) ◇ (x ◇ x)\"]\n}"
+        },
+        "elapsed": 290.57
+      },
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  exact h\n"
+        },
+        "response": {
+          "status": "incorrect",
+          "message": "Submission.lean:5:2: error: Type mismatch\n  h\nhas type\n  EquationLHS G\nbut is expected to have type\n  EquationRHS G"
+        },
+        "elapsed": 0.97
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"route\": \"skip:deterministic\", \"reason\": \"No deterministic certificate available; escalating through proxy LLM.\"}\n{\"route\": \"llm:reject\", \"round\": 0, \"reason\": \"rewrite_chain_unproved_or_bad_endpoints\"}\n{\"route\": \"llm:reject\", \"round\": 1, \"reason\": \"rewrite_chain_unproved_or_bad_endpoints\"}\n{\"judge_status\": \"incorrect\", \"route\": \"fallback:final_judge_call\"}\n",
+        "returncode": 0
+      }
+    ]
+  },
+  {
+    "id": "normal_0260",
+    "eq1_id": 1808,
+    "eq2_id": 3695,
+    "elapsed_seconds": 698.15,
+    "solved": false,
+    "verdict": null,
+    "code": null,
+    "llm_calls": 2,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "0",
+            "analysis": "hypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x ◇ x\ngoal rhs: (y ◇ z) ◇ (x ◇ y)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0260: does Equation1808 imply Equation3695?\nHypothesis: x = (y ◇ z) ◇ ((w ◇ x) ◇ z)\nGoal: x ◇ x = (y ◇ z) ◇ (x ◇ y)\n\nDeterministic analysis:\nhypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x ◇ x\ngoal rhs: (y ◇ z) ◇ (x ◇ y)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\": \"true\",\n  \"proof_kind\": \"rewrite_chain\",\n  \"chain\": [\n    \"x ◇ x\",\n    \"(y ◇ z) ◇ (x ◇ y)\"\n  ]\n}"
+        },
+        "elapsed": 582.63
+      },
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "1",
+            "analysis": "hypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x ◇ x\ngoal rhs: (y ◇ z) ◇ (x ◇ y)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0260: does Equation1808 imply Equation3695?\nHypothesis: x = (y ◇ z) ◇ ((w ◇ x) ◇ z)\nGoal: x ◇ x = (y ◇ z) ◇ (x ◇ y)\n\nDeterministic analysis:\nhypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x ◇ x\ngoal rhs: (y ◇ z) ◇ (x ◇ y)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\": \"true\",\n  \"proof_kind\": \"rewrite_chain\",\n  \"chain\": [\n    \"x ◇ x\",\n    \"x ◇ x\",\n    \"(y ◇ z) ◇ (x ◇ y)\"\n  ]\n}"
+        },
+        "elapsed": 108.92
+      },
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  exact h\n"
+        },
+        "response": {
+          "status": "incorrect",
+          "message": "Submission.lean:5:2: error: Type mismatch\n  h\nhas type\n  EquationLHS G\nbut is expected to have type\n  EquationRHS G"
+        },
+        "elapsed": 1.03
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"route\": \"skip:deterministic\", \"reason\": \"No deterministic certificate available; escalating through proxy LLM.\"}\n{\"route\": \"llm:reject\", \"round\": 0, \"reason\": \"rewrite_chain_unproved_or_bad_endpoints\"}\n{\"route\": \"llm:reject\", \"round\": 1, \"reason\": \"rewrite_chain_unproved_or_bad_endpoints\"}\n{\"judge_status\": \"incorrect\", \"route\": \"fallback:final_judge_call\"}\n",
+        "returncode": 0
+      }
+    ]
+  },
+  {
+    "id": "normal_0227",
+    "eq1_id": 2377,
+    "eq2_id": 1139,
+    "elapsed_seconds": 276.97,
+    "solved": false,
+    "verdict": null,
+    "code": null,
+    "llm_calls": 2,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "0",
+            "analysis": "hypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x\ngoal rhs: y ◇ ((y ◇ (z ◇ z)) ◇ z)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0227: does Equation2377 imply Equation1139?\nHypothesis: x = (y ◇ (z ◇ (x ◇ w))) ◇ y\nGoal: x = y ◇ ((y ◇ (z ◇ z)) ◇ z)\n\nDeterministic analysis:\nhypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x\ngoal rhs: y ◇ ((y ◇ (z ◇ z)) ◇ z)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\": \"false\",\n  \"counterexample_table\": [\n    [0, 1],\n    [1, 0]\n  ]\n}"
+        },
+        "elapsed": 110.88
+      },
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "1",
+            "analysis": "hypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x\ngoal rhs: y ◇ ((y ◇ (z ◇ z)) ◇ z)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0227: does Equation2377 imply Equation1139?\nHypothesis: x = (y ◇ (z ◇ (x ◇ w))) ◇ y\nGoal: x = y ◇ ((y ◇ (z ◇ z)) ◇ z)\n\nDeterministic analysis:\nhypothesis variables: x y z w\ngoal variables: x y z\ngoal lhs: x\ngoal rhs: y ◇ ((y ◇ (z ◇ z)) ◇ z)\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\": \"false\",\n  \"counterexample_table\": [\n    [0, 1],\n    [1, 0]\n  ]\n}"
+        },
+        "elapsed": 156.73
+      },
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  exact h\n"
+        },
+        "response": {
+          "status": "incorrect",
+          "message": "Submission.lean:5:2: error: Type mismatch\n  h\nhas type\n  EquationLHS G\nbut is expected to have type\n  EquationRHS G"
+        },
+        "elapsed": 0.98
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"route\": \"skip:deterministic\", \"reason\": \"No deterministic certificate available; escalating through proxy LLM.\"}\n{\"route\": \"llm:reject\", \"round\": 0, \"reason\": \"false_table_not_counterexample\"}\n{\"route\": \"llm:reject\", \"round\": 1, \"reason\": \"false_table_not_counterexample\"}\n{\"judge_status\": \"incorrect\", \"route\": \"fallback:final_judge_call\"}\n",
+        "returncode": 0
+      }
+    ]
+  },
+  {
+    "id": "normal_0210",
+    "eq1_id": 2421,
+    "eq2_id": 3205,
+    "elapsed_seconds": 2.55,
+    "solved": true,
+    "verdict": "true",
+    "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b b).trans (h b b b b).symm\n  intro x y z w\n  exact hall _ _\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  have hall : ∀ a b : G, a = b := by\n    intro a b\n    exact (h a b b b).trans (h b b b b).symm\n  intro x y z w\n  exact hall _ _\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 2.49
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"true:singleton\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "normal_0126",
+    "eq1_id": 3110,
+    "eq2_id": 4441,
+    "elapsed_seconds": 323.51,
+    "solved": false,
+    "verdict": null,
+    "code": null,
+    "llm_calls": 2,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "0",
+            "analysis": "hypothesis variables: x y z\ngoal variables: x y z w\ngoal lhs: x ◇ (y ◇ x)\ngoal rhs: (x ◇ z) ◇ w\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0126: does Equation3110 imply Equation4441?\nHypothesis: x = (((y ◇ x) ◇ x) ◇ z) ◇ z\nGoal: x ◇ (y ◇ x) = (x ◇ z) ◇ w\n\nDeterministic analysis:\nhypothesis variables: x y z\ngoal variables: x y z w\ngoal lhs: x ◇ (y ◇ x)\ngoal rhs: (x ◇ z) ◇ w\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\":\"true\",\n  \"proof_kind\":\"rewrite_chain\",\n  \"chain\":[\n    \"x ◇ (y ◇ x)\",\n    \"(((y ◇ x) ◇ x) ◇ z) ◇ z ◇ (y ◇ x)\",\n    \"(x ◇ z) ◇ w\"\n  ]\n}"
+        },
+        "elapsed": 170.56
+      },
+      {
+        "type": "llm",
+        "request": {
+          "solver_context": {
+            "round": "1",
+            "analysis": "hypothesis variables: x y z\ngoal variables: x y z w\ngoal lhs: x ◇ (y ◇ x)\ngoal rhs: (x ◇ z) ◇ w\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean."
+          },
+          "filled_prompt": "You are helping produce Lean 4 certificates for magma equation implications.\n\nReturn only one JSON object. Prefer the solver-owned DSL over raw Lean.\n\nProblem normal_0126: does Equation3110 imply Equation4441?\nHypothesis: x = (((y ◇ x) ◇ x) ◇ z) ◇ z\nGoal: x ◇ (y ◇ x) = (x ◇ z) ◇ w\n\nDeterministic analysis:\nhypothesis variables: x y z\ngoal variables: x y z w\ngoal lhs: x ◇ (y ◇ x)\ngoal rhs: (x ◇ z) ◇ w\nFor TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.\nFor FALSE, provide a square finite table; the solver will test it before emitting Lean.\n\nPrevious judge attempts:\n(no previous attempts)\n\nAccepted JSON shapes:\n1. TRUE rewrite chain, checked and rendered by the solver:\n   {\"verdict\":\"true\",\"proof_kind\":\"rewrite_chain\",\"chain\":[\"<goal lhs>\",\"<middle>\",\"<goal rhs>\"]}\n2. TRUE Lean body fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"proof\":\"intro x y\n  exact ...\"}\n3. TRUE full Lean fallback, checked by the judge after sanitizer checks:\n   {\"verdict\":\"true\",\"code\":\"import JudgeProblem\n\ndef submission : Goal := by\n  ...\"}\n4. FALSE finite countermodel, verified locally before Lean is emitted:\n   {\"verdict\":\"false\",\"counterexample_table\":[[0,1],[1,0]]}\n\nDo not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,\nor Teorth theorem names. If you are unsure, return the finite table DSL or a\nshort proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.\n"
+        },
+        "response": {
+          "response": "{\n  \"verdict\":\"true\",\n  \"proof_kind\":\"rewrite_chain\",\n  \"chain\":[\"x ◇ (y ◇ x)\",\"(x ◇ z) ◇ w\"]\n}"
+        },
+        "elapsed": 147.9
+      },
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "true",
+          "code": "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n  exact h\n"
+        },
+        "response": {
+          "status": "incorrect",
+          "message": "Submission.lean:5:2: error: Type mismatch\n  h\nhas type\n  EquationLHS G\nbut is expected to have type\n  EquationRHS G"
+        },
+        "elapsed": 1.02
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"route\": \"skip:deterministic\", \"reason\": \"No deterministic certificate available; escalating through proxy LLM.\"}\n{\"route\": \"llm:reject\", \"round\": 0, \"reason\": \"rewrite_chain_unproved_or_bad_endpoints\"}\n{\"route\": \"llm:reject\", \"round\": 1, \"reason\": \"rewrite_chain_unproved_or_bad_endpoints\"}\n{\"judge_status\": \"incorrect\", \"route\": \"fallback:final_judge_call\"}\n",
+        "returncode": 0
+      }
+    ]
+  }
+]

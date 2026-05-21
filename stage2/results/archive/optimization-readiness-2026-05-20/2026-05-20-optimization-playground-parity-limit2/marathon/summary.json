@@ -1,0 +1,28 @@
+{
+  "score": 1,
+  "attempted": 1,
+  "not_attempted": 1,
+  "by_status": {
+    "accepted": 1,
+    "not_attempted": 1
+  },
+  "wall_seconds": 161.4178349999711,
+  "sigterm_fired": false,
+  "sigkill_fired": false,
+  "tokens_used": 7208,
+  "tokens_exhausted": false,
+  "per_problem": [
+    {
+      "id": "hard3_0140",
+      "status": "accepted",
+      "verdict": "true",
+      "message": "certificate accepted"
+    },
+    {
+      "id": "hard3_0114",
+      "status": "not_attempted",
+      "verdict": null,
+      "message": ""
+    }
+  ]
+}

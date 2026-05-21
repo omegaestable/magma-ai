@@ -47,16 +47,16 @@ Latest local candidate evidence after the final optimization patch:
 
 - `sample_20`: `14/20` solved
 - latest recorded `sample_200`: `165/200` solved; not rerun after the May 17 compact witness patch
-- Marathon `normal_100` with zero token budget: `76/100` accepted in the latest optimized-package smoke
-- packaged solver size: `71662` bytes after the latest local package pass
+- Marathon `normal_100` with zero token budget after the absorption time-cap optimization: `74/100` accepted in `56.6s`
+- packaged solver size: `76136` bytes after the latest local package pass
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
 - compact witness fixture: `8/8` accepted, `0` LLM calls
 - fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
-- bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
+- positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`, but unresolved TRUE proof quality still failed
 
 Do not treat the optimized package as promoted from zero-token evidence alone. The default local gate is now positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`; zero-token sweeps are optional deterministic regression only.
-The latest public, hard-mix, and homelab local evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, and `results/2026-05-17-homelab-openrouter-proxy-smoke.md`.
+The latest public, hard-mix, homelab, and optimization evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, and `results/2026-05-20-optimization-readiness.md`.
 
 Current best route learnings:
 
@@ -84,9 +84,9 @@ Use `../theory/TEORTH_WORKFLOW.md`, `../theory/TEORTH_NOTES.md`, and `../theory/
 
 ## Next Engines
 
-1. Run `experiments/run_playground_parity_llm.py` with a configured local upstream key to prove nonzero official-proxy LLM usage, nonzero Marathon token use, and classified LLM/judge outcomes.
+1. Run broader no-loss validation for the `0.05s` absorption cap, especially hard TRUE closure fixtures and the full public sets.
 2. Build the small route fixtures listed in `docs/solver-route-ledger.md`.
-3. Teorth-backed route mining for reusable proof and witness families.
+3. Improve unresolved TRUE proof quality; proxy transport works, but targeted parity still fails by judge rejection / rejected LLM output.
 4. Extend proof-producing TRUE synthesis before spending time on broad brute-force FALSE search.
 5. Refresh the full public suite, including `normal`, before updating canonical `stage2/results/` totals.
 

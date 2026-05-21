@@ -4,6 +4,12 @@ Updated: 2026-05-19
 
 This manifest records clutter and evidence debt without deleting anything. Use it before any future cleanup commit so raw artifacts are not lost accidentally.
 
+## Completed Archive Batches
+
+| Batch | Manifest | Summary | Notes |
+| --- | --- | --- | --- |
+| 2026-05-20 optimization readiness | `stage2/results/archive/optimization-readiness-2026-05-20/MANIFEST.md` | `stage2/results/2026-05-20-optimization-readiness.md` | Moved summarized optimization profiles, zero-token Marathon runs, aborted Solo attempts, and positive-token parity output out of `tmp_stage2_smoke/`. |
+
 ## Policy
 
 - Do not delete dated result summaries under `stage2/results/`.

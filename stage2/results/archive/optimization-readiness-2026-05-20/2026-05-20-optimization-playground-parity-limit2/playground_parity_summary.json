@@ -1,0 +1,82 @@
+{
+  "label": "playground-parity-positive-token-llm",
+  "fixture": "C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\tmp_stage2_smoke\\playground_parity_llm_fixture.jsonl",
+  "fixture_info": {
+    "mode": "unresolved-true",
+    "source_manifest": "C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\tmp_stage2_smoke\\2026-05-16-hard-mix-150-seed20260516.jsonl",
+    "source_summary": "C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\tmp_stage2_smoke\\2026-05-16-marathon-hard-mix-150-seed20260516-after-witness-zero-token\\summary.json",
+    "limit": 2
+  },
+  "row_ids": [
+    "hard3_0140",
+    "hard3_0114"
+  ],
+  "key_status": {
+    "present": true,
+    "length": 73,
+    "starts_sk_or_v1": true,
+    "has_whitespace": false,
+    "value_hidden": true
+  },
+  "direct_openrouter_smoke_exit_code": 0,
+  "marathon_budget_tokens": 131072,
+  "marathon_budget_seconds": 300.0,
+  "submission": {
+    "entries": [
+      "solver.py"
+    ],
+    "size_bytes": 76136,
+    "only_solver_py": true,
+    "under_size_limit": true
+  },
+  "solo": {
+    "missing": false,
+    "rows": 2,
+    "solved": 1,
+    "llm_calls": 2,
+    "judge_calls": 2,
+    "missing_key_rows": 0,
+    "judge_statuses": {
+      "accepted": 1,
+      "incorrect": 1
+    },
+    "failure_classes": {
+      "accepted_certificate": 1,
+      "judge_rejection": 1
+    },
+    "ids": [
+      "hard3_0140",
+      "hard3_0114"
+    ]
+  },
+  "marathon": {
+    "missing": false,
+    "score": 1,
+    "attempted": 1,
+    "not_attempted": 1,
+    "by_status": {
+      "accepted": 1,
+      "not_attempted": 1
+    },
+    "tokens_used": 7208,
+    "tokens_exhausted": false,
+    "llm_calls": 1,
+    "submitted_deterministic": 1,
+    "submitted_total": 1,
+    "solver_routes": {
+      "true:c9_e1072_collapse:true:rewrite": 1
+    },
+    "stderr_routes": {
+      "llm:reject": 1
+    },
+    "missing_key_rows": 0,
+    "failure_classes": {
+      "malformed_or_rejected_llm_output": 1,
+      "accepted_certificate": 1
+    }
+  },
+  "failures": [
+    "Solo classified LLM/judge failures: ['judge_rejection']",
+    "Marathon classified LLM/judge failures: ['malformed_or_rejected_llm_output']"
+  ]
+}
