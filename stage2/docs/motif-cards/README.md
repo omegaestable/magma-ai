@@ -9,6 +9,7 @@ These cards justify solver route families with mathematical triggers, Lean rende
 - `true-basic-rewrites.md` — reflexive, singleton/collapse, direct substitution, bridge, and constancy routes.
 - `true-projection-laws.md` — projection and boundary-variable TRUE routes.
 - `true-closure-routes.md` — bounded rewrite chains, absorption closure, deep absorption, equational closure, and opt-in grind archaeology.
+- `true-c9-absorption-collapse.md` — candidate local-lemma route for C9-like hard TRUE absorption collapses.
 - `false-finite-witnesses.md` — named, structured, affine, quadratic, enumerated, dual, and LLM-proposed finite countermodels.
 - `llm-proxy-dsl.md` — Solo/Marathon proxy paths and accepted LLM DSL shapes.
 

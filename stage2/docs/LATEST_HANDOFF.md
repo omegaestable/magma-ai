@@ -7,7 +7,7 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 ## Current Solver Snapshot
 
 - Active source: `stage2/solver/solver.py`.
-- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `71662` bytes.
+- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `76088` bytes.
 - Submission directory should contain only `solver.py`.
 - Historical public zero-token baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-retired grind wins.
 - Full public validation after the grind rollback is still pending. Do not claim the post-rollback package preserves the old grind-backed total until a new run exists; use positive-token proxy evidence for LLM-backed promotion.
@@ -21,6 +21,7 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 - Raised the default real-solver Marathon LLM probe budget in `stage2/experiments/homelab_llm_probe.py` to clear the official max-output headroom check.
 - Updated `stage2/docs/playground-preflight.md` so zero-token Marathon is optional deterministic regression only and positive-token proxy usage is the active readiness gate.
 - Added `stage2/docs/solver-route-ledger.md`, route motif cards under `stage2/docs/motif-cards/`, `theory/TEORTH_NOTES.md`, and `stage2/docs/cleanup-manifest.md` for the conservative deep-polish handoff.
+- Added a narrow structural `E1072`-shape collapse route in `stage2/solver/solver.py`: it derives local `E19` from `x = y ◇ ((x ◇ (x ◇ x)) ◇ x)` and composes through existing simple `E19` routes.
 
 ## Best Public Evidence
 
@@ -47,6 +48,7 @@ Answer-kind totals for that baseline:
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer emits `true:grind` certificates.
 - Lower heartbeat probe: `hb=5` scored `33/34`, so do not lower below `10` without fresh evidence.
 - Compact witness fixture: `8/8` accepted with `S4D/S4E/S5D` coverage.
+- C9 focused fixture: `hard3_0140` (`E1072 -> E1251`) accepted by official Solo with `0` LLM calls and `1` judge call; raw result at `tmp_stage2_smoke/2026-05-20-c9-hard3-0140-solo-result-after-guard.json`.
 - Official `normal_100` smoke after the optimization patch: `76/100`, unchanged from the immediately preceding smoke.
 - Packaged optimized solver syntax check passed.
 

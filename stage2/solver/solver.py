@@ -727,9 +727,101 @@ def completed_bridge_route(
     return None
 
 
-def call_expression(eq1_vars: list[str], subst: dict[str, Term]) -> str:
+def simple_true_proof_expr(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    hypothesis_name: str = "h",
+) -> tuple[str, str] | None:
+    direct = direct_substitution_route(eq1, eq2)
+    if direct is not None:
+        mode, subst = direct
+        call_expr = call_expression(eq1["variables"], subst, hypothesis_name)
+        if mode == "symm":
+            call_expr = f"({call_expr}).symm"
+        return "true:rewrite" if mode == "direct" else "true:rewrite:symm", call_expr
+
+    bridge = bridge_route(eq1, eq2)
+    if bridge is None:
+        bridge = completed_bridge_route(eq1, eq2)
+    if bridge is not None:
+        bridge_name, left_subst, right_subst = bridge
+        left_call = call_expression(eq1["variables"], left_subst, hypothesis_name)
+        right_call = call_expression(eq1["variables"], right_subst, hypothesis_name)
+        left_source = int(bridge_name[-2])
+        right_source = int(bridge_name[-1])
+        left_to_mid = left_call if left_source == 0 else f"({left_call}).symm"
+        mid_to_right = f"({right_call}).symm" if right_source == 0 else right_call
+        return bridge_name, f"({left_to_mid}).trans ({mid_to_right})"
+
+    return None
+
+
+def call_expression(eq1_vars: list[str], subst: dict[str, Term], name: str = "h") -> str:
     args = [term_to_lean(subst[var]) for var in eq1_vars]
-    return "h" if not args else "h " + " ".join(args)
+    return name if not args else name + " " + " ".join(args)
+
+
+def c9_e1072_shape_root(eq1: dict[str, Any]) -> str | None:
+    lhs = eq1["lhs"]
+    rhs = eq1["rhs"]
+    if lhs[0] != "var" or rhs[0] != "op" or rhs[1][0] != "var":
+        return None
+    root = str(lhs[1])
+    root_term = ("var", root)
+    tail = ("op", ("op", root_term, ("op", root_term, root_term)), root_term)
+    if rhs[2] != tail:
+        return None
+    return root
+
+
+def c9_e1072_to_e19_lemma(eq1: dict[str, Any], root: str) -> str | None:
+    lead = eq1["rhs"][1]
+    if lead[0] != "var":
+        return None
+    lead_name = str(lead[1])
+    if lead_name == root:
+        return None
+    a = ("var", "a")
+    b = ("var", "b")
+    c = ("var", "c")
+    v0 = ("var", "v0")
+    v0_tail = ("op", v0, ("op", v0, v0))
+    first = call_expression(eq1["variables"], {root: a, lead_name: b})
+    second = call_expression(eq1["variables"], {root: v0, lead_name: c})
+    third = call_expression(eq1["variables"], {root: a, lead_name: v0_tail})
+    return (
+        "  have h19 : ∀ a b c : G, a = b ◇ (c ◇ a) := by\n"
+        "    intro a b c\n"
+        "    let v0 : G := ((a ◇ (a ◇ a)) ◇ a)\n"
+        f"    exact ({first}).trans (congrArg (fun t => b ◇ t) "
+        f"(({second}).trans (congrArg (fun t => c ◇ t) (({third}).symm))))\n"
+    )
+
+
+def c9_e1072_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    root = c9_e1072_shape_root(eq1)
+    if root is None:
+        return None
+    lemma = c9_e1072_to_e19_lemma(eq1, root)
+    if lemma is None:
+        return None
+    e19 = parse_equation("x = y ◇ (z ◇ x)")
+    composed = simple_true_proof_expr(e19, eq2, hypothesis_name="h19")
+    if composed is None:
+        return None
+    route, proof_expr = composed
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{lemma}"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return f"true:c9_e1072_collapse:{route}", code
 
 
 def rewrite_steps_from_term(eq1: dict[str, Any], term: Term) -> list[tuple[Term, str, str]]:
@@ -1389,6 +1481,15 @@ def solve_problem(
             "priority": problem_priority(problem, eq1, eq2),
         }
 
+    c9_collapse = c9_e1072_collapse_route(eq1, eq2)
+    if c9_collapse is not None:
+        route, code = c9_collapse
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
     absorption = absorption_closure_route(eq1, eq2)
     if absorption is not None:
         route, code = absorption
@@ -1592,30 +1693,32 @@ def chain_certificate_from_terms(
     return substitution_true_certificate(eq2["variables"], expr)
 
 
-def candidate_from_llm_text(problem: dict[str, Any], text: str) -> dict[str, Any] | None:
+def candidate_from_llm_text_with_reason(problem: dict[str, Any], text: str) -> tuple[dict[str, Any] | None, str]:
     obj = extract_json_object(text)
     if obj is None:
-        return None
+        return None, "no_json_object"
     if isinstance(obj.get("answer"), dict):
         obj = obj["answer"]
     verdict = str(obj.get("verdict", "")).lower()
     if verdict not in {"true", "false"}:
-        return None
+        return None, "missing_or_invalid_verdict"
     try:
         eq1 = parse_equation(str(problem["equation1"]))
         eq2 = parse_equation(str(problem["equation2"]))
     except (KeyError, ValueError):
-        return None
+        return None, "problem_parse_failed"
 
     if verdict == "false":
         raw_table = obj.get("counterexample_table", obj.get("table"))
         table = normalize_table(raw_table)
-        if table is None or not table_is_counterexample(eq1, eq2, table):
-            return None
+        if table is None:
+            return None, "false_table_invalid_shape"
+        if not table_is_counterexample(eq1, eq2, table):
+            return None, "false_table_not_counterexample"
         return {
             "answer": make_false_answer(problem, len(table), table),
             "route": "llm:false:table",
-        }
+        }, "ok"
 
     chain = obj.get("chain")
     if chain is None and isinstance(obj.get("steps"), list):
@@ -1623,23 +1726,29 @@ def candidate_from_llm_text(problem: dict[str, Any], text: str) -> dict[str, Any
         if steps and all(isinstance(step, dict) for step in steps):
             chain = [steps[0].get("from")]
             chain.extend(step.get("to") for step in steps)
+    chain_reject_reason = "no_chain_supplied"
     if chain is not None:
         variables = set(eq1["variables"]) | set(eq2["variables"])
         chain_terms = parse_llm_chain_terms(chain, variables)
-        if chain_terms is not None:
+        if chain_terms is None:
+            chain_reject_reason = "rewrite_chain_parse_failed"
+        else:
             code = chain_certificate_from_terms(eq1, eq2, chain_terms)
             if code is not None:
                 return {
                     "answer": make_true_answer(problem, code),
                     "route": "llm:true:rewrite_chain",
-                }
+                }, "ok"
+            chain_reject_reason = "rewrite_chain_unproved_or_bad_endpoints"
 
     code = obj.get("code", obj.get("lean"))
     if isinstance(code, str) and sanitize_lean_code(code, verdict="true"):
         return {
             "answer": make_true_answer(problem, code),
             "route": "llm:true:raw_code",
-        }
+        }, "ok"
+    if isinstance(code, str):
+        return None, "raw_code_sanitizer_rejected"
 
     proof = obj.get("proof", obj.get("proof_body"))
     if isinstance(proof, str):
@@ -1648,8 +1757,14 @@ def candidate_from_llm_text(problem: dict[str, Any], text: str) -> dict[str, Any
             return {
                 "answer": make_true_answer(problem, code),
                 "route": "llm:true:proof_body",
-            }
-    return None
+            }, "ok"
+        return None, "proof_body_rejected"
+    return None, chain_reject_reason
+
+
+def candidate_from_llm_text(problem: dict[str, Any], text: str) -> dict[str, Any] | None:
+    candidate, _reason = candidate_from_llm_text_with_reason(problem, text)
+    return candidate
 
 
 def solver_analysis(problem: dict[str, Any]) -> str:
@@ -1762,9 +1877,9 @@ def run_solo() -> int:
                 file=sys.stderr,
             )
             break
-        candidate = candidate_from_llm_text(problem, str(llm_response.get("response", "")))
+        candidate, reject_reason = candidate_from_llm_text_with_reason(problem, str(llm_response.get("response", "")))
         if candidate is None:
-            print(json.dumps({"route": "llm:reject", "round": round_idx}), file=sys.stderr)
+            print(json.dumps({"route": "llm:reject", "round": round_idx, "reason": reject_reason}), file=sys.stderr)
             continue
         answer = dict(candidate["answer"])
         key = (str(answer.get("verdict")), str(answer.get("code")))
@@ -1975,9 +2090,9 @@ def run_marathon() -> int:
                 if "exhausted" in error or "budget" in error:
                     break
                 continue
-            candidate = candidate_from_llm_text(problem, str(response.get("response", "")))
+            candidate, reject_reason = candidate_from_llm_text_with_reason(problem, str(response.get("response", "")))
             if candidate is None:
-                print(json.dumps({"route": "llm:reject", "id": pid}), file=sys.stderr)
+                print(json.dumps({"route": "llm:reject", "id": pid, "reason": reject_reason}), file=sys.stderr)
                 continue
             append_answer(output_path, candidate["answer"])
             route = str(candidate["route"])

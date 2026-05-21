@@ -434,6 +434,12 @@ def main() -> int:
     if args.skip_solo and args.skip_marathon:
         raise SystemExit("playground parity requires at least one official proxy path; do not skip both Solo and Marathon")
 
+    args.manifest = args.manifest.resolve()
+    args.summary = args.summary.resolve()
+    args.fixture = args.fixture.resolve()
+    args.mixed_manifest = args.mixed_manifest.resolve()
+    args.output_dir = args.output_dir.resolve()
+
     env = runner_env()
     reset_output_dir(args.output_dir, keep_output=args.keep_output)
     args.output_dir.mkdir(parents=True, exist_ok=True)
