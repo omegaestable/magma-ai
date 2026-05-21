@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from itertools import product
 from typing import Any
@@ -26,7 +27,9 @@ from typing import Any
 
 PROMPT = """You are helping produce Lean 4 certificates for magma equation implications.
 
-Return only one JSON object. Prefer the solver-owned DSL over raw Lean.
+Return exactly one JSON object. The first character must be { and the last
+character must be }. Do not include markdown, commentary, analysis, or <think>
+blocks. Prefer the solver-owned DSL over raw Lean.
 
 Problem {problem.id}: does Equation{problem.eq1_id} imply Equation{problem.eq2_id}?
 Hypothesis: {problem.equation1}
@@ -54,6 +57,9 @@ short proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
+MAX_LEAN_CODE_BYTES = 100_000
+MAX_FALSE_CERT_BYTES = 20_000
+VALID_VERDICTS = {"true", "false"}
 AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
 AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
@@ -80,18 +86,21 @@ EQUATIONAL_CLOSURE_DEPTH_SLACK = 3
 EQUATIONAL_CLOSURE_TIME_BUDGET = 0.45
 LLM_MAX_ROUNDS = 2
 MARATHON_LLM_MAX_CALLS = 24
+MARATHON_LLM_BATCH_SIZE = 10
 MARATHON_REF_SECONDS_DEFAULT = 600.0
 LLM_MAX_TABLE_N = 8
+LLM_MAX_OUTPUT_TOKENS = 4096
+LLM_HTTP_TIMEOUT_SECONDS = 45.0
 
 LLM_CONFIG = {
     "model": "openai/gpt-oss-120b",
     "provider": "deepinfra/bf16",
-    "max_output_tokens": 65536,
+    "max_output_tokens": LLM_MAX_OUTPUT_TOKENS,
     "temperature": 0.0,
-    "reasoning_effort": "medium",
+    "reasoning_effort": "low",
     "use_seed": True,
     "seed": 0,
-    "http_timeout_seconds": 600.0,
+    "http_timeout_seconds": LLM_HTTP_TIMEOUT_SECONDS,
 }
 
 ALLOWED_IMPORTS = {
@@ -242,7 +251,7 @@ def is_reflexive_problem(problem: dict[str, Any]) -> bool:
 
 def make_true_answer(problem: dict[str, Any], code: str) -> dict[str, Any]:
     return {
-        "id": problem.get("id"),
+        "id": str(problem.get("id", "")),
         "verdict": "true",
         "code": code,
     }
@@ -250,10 +259,33 @@ def make_true_answer(problem: dict[str, Any], code: str) -> dict[str, Any]:
 
 def make_false_answer(problem: dict[str, Any], n: int, table: list[list[int]]) -> dict[str, Any]:
     return {
-        "id": problem.get("id"),
+        "id": str(problem.get("id", "")),
         "verdict": "false",
         "code": false_certificate(n, table),
     }
+
+
+def judge_answer_payload(answer: dict[str, Any]) -> dict[str, str] | None:
+    verdict = answer.get("verdict")
+    code = answer.get("code")
+    if verdict not in VALID_VERDICTS or not isinstance(code, str):
+        return None
+    code_bytes = len(code.encode("utf-8"))
+    if code_bytes > MAX_LEAN_CODE_BYTES:
+        return None
+    if verdict == "false" and code_bytes > MAX_FALSE_CERT_BYTES:
+        return None
+    return {"verdict": verdict, "code": code}
+
+
+def marathon_answer_payload(answer: dict[str, Any]) -> dict[str, str] | None:
+    pid = answer.get("id")
+    if not isinstance(pid, str) or not pid:
+        return None
+    payload = judge_answer_payload(answer)
+    if payload is None:
+        return None
+    return {"id": pid, **payload}
 
 
 def strip_outer_parens(text: str) -> str:
@@ -1553,8 +1585,10 @@ def send_proxy_call(message: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def judge_via_solo_proxy(answer: dict[str, Any]) -> dict[str, Any] | None:
-    request = dict(answer)
-    request.pop("id", None)
+    request = judge_answer_payload(answer)
+    if request is None:
+        log_stderr({"route": "output:skip_malformed_judge_answer"})
+        return None
     request["call"] = "judge"
     return send_proxy_call(request)
 
@@ -1590,9 +1624,9 @@ def extract_json_object(text: str) -> dict[str, Any] | None:
 def sanitize_lean_code(code: str, *, verdict: str) -> bool:
     if not isinstance(code, str) or not code.strip():
         return False
-    if len(code.encode("utf-8")) > 100_000:
+    if len(code.encode("utf-8")) > MAX_LEAN_CODE_BYTES:
         return False
-    if verdict == "false" and len(code.encode("utf-8")) > 20_000:
+    if verdict == "false" and len(code.encode("utf-8")) > MAX_FALSE_CERT_BYTES:
         return False
     if BANNED_LEAN_RE.search(code):
         return False
@@ -1807,6 +1841,57 @@ def render_marathon_prompt(problem: dict[str, Any], analysis: str) -> str:
     return re.sub(r"\{(?:problem|solver|history)\.[a-zA-Z_]+\}", "", prompt)
 
 
+def log_stderr(record: dict[str, Any]) -> None:
+    print(json.dumps(record, separators=(",", ":")), file=sys.stderr, flush=True)
+
+
+def text_preview(text: str, limit: int = 160) -> str:
+    compact = re.sub(r"\s+", " ", text or "").strip()
+    if len(compact) <= limit:
+        return compact
+    return compact[:limit]
+
+
+def marathon_llm_attempt(
+    call_llm: Any,
+    problem: dict[str, Any],
+    config: dict[str, Any],
+    deadline: float,
+) -> dict[str, Any]:
+    pid = str(problem.get("id"))
+    started = time.monotonic()
+    max_seconds = min(float(config.get("http_timeout_seconds", LLM_HTTP_TIMEOUT_SECONDS)), max(1.0, deadline - started - 5.0))
+    result: dict[str, Any] = {"id": pid}
+    try:
+        analysis = solver_analysis(problem)
+        prompt = render_marathon_prompt(problem, analysis)
+        response = call_llm(prompt, config=config, max_seconds=max_seconds)
+    except Exception as exc:  # noqa: BLE001
+        result["error"] = str(exc)
+        result["elapsed_seconds"] = round(time.monotonic() - started, 3)
+        return result
+
+    result["elapsed_seconds"] = round(time.monotonic() - started, 3)
+    for key in ("tokens_used_call", "tokens_used_total", "budget_remaining"):
+        if key in response:
+            result[key] = response.get(key)
+    if "error" in response:
+        result["error"] = str(response.get("error", ""))
+        return result
+
+    response_text = str(response.get("response", ""))
+    candidate, reject_reason = candidate_from_llm_text_with_reason(problem, response_text)
+    if candidate is None:
+        result["reject_reason"] = reject_reason
+        result["response_chars"] = len(response_text)
+        if reject_reason == "no_json_object":
+            result["response_preview"] = text_preview(response_text)
+        return result
+    result["candidate"] = candidate
+    result["route"] = str(candidate.get("route", "llm:unknown"))
+    return result
+
+
 def solo_llm_rounds() -> int:
     raw = os.environ.get("MAGMA_SOLO_LLM_ROUNDS")
     if raw is None:
@@ -1927,11 +2012,16 @@ def iter_manifest(path: str) -> list[dict[str, Any]]:
     return problems
 
 
-def append_answer(path: str, answer: dict[str, Any]) -> None:
+def append_answer(path: str, answer: dict[str, Any]) -> bool:
+    payload = marathon_answer_payload(answer)
+    if payload is None:
+        log_stderr({"route": "output:skip_malformed_marathon_answer"})
+        return False
     with open(path, "a", encoding="utf-8") as output_file:
-        output_file.write(json.dumps(answer, separators=(",", ":")))
+        output_file.write(json.dumps(payload, separators=(",", ":")))
         output_file.write("\n")
         output_file.flush()
+    return True
 
 
 def marathon_reference_seconds() -> float:
@@ -2001,7 +2091,8 @@ def run_marathon() -> int:
         answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
         if answer_record is None:
             continue
-        append_answer(output_path, answer_record["answer"])
+        if not append_answer(output_path, answer_record["answer"]):
+            continue
         route = str(answer_record["route"])
         route_counts[route] = route_counts.get(route, 0) + 1
         solved += 1
@@ -2036,70 +2127,120 @@ def run_marathon() -> int:
             file=sys.stderr,
         )
     if call_llm is not None and budget_tokens != 0:
-        for priority, problem in prioritized:
-            if llm_calls >= MARATHON_LLM_MAX_CALLS:
-                break
-            if time.monotonic() + 20.0 >= deadline:
-                break
-            pid = str(problem.get("id"))
-            if pid in solved_ids:
-                continue
-            used = tokens_used() if tokens_used is not None else None
-            if budget_tokens > 0 and used is not None and used >= budget_tokens:
-                print(
-                    json.dumps(
+        unresolved = [(priority, problem) for priority, problem in prioritized if str(problem.get("id")) not in solved_ids]
+        index = 0
+        stop_llm = False
+        with ThreadPoolExecutor(max_workers=MARATHON_LLM_BATCH_SIZE) as executor:
+            while index < len(unresolved) and llm_calls < MARATHON_LLM_MAX_CALLS and not stop_llm:
+                if time.monotonic() + 20.0 >= deadline:
+                    break
+                used = tokens_used() if tokens_used is not None else None
+                if budget_tokens > 0 and used is not None and used >= budget_tokens:
+                    log_stderr(
                         {
                             "route": "llm:disabled",
                             "reason": "token_budget_spent",
-                            "id": pid,
                             "tokens_used": used,
                             "budget_tokens": budget_tokens,
                         }
-                    ),
-                    file=sys.stderr,
-                )
-                break
-            remaining = budget_remaining() if budget_remaining is not None else None
-            min_headroom = LLM_CONFIG["max_output_tokens"] // 2
-            if budget_tokens > 0 and remaining is not None and remaining < min_headroom:
-                print(
-                    json.dumps(
+                    )
+                    break
+                remaining = budget_remaining() if budget_remaining is not None else None
+                min_headroom = int(LLM_CONFIG["max_output_tokens"])
+                if budget_tokens > 0 and remaining is not None and remaining >= 0 and remaining < min_headroom:
+                    log_stderr(
                         {
                             "route": "llm:disabled",
                             "reason": "insufficient_remaining_token_headroom",
-                            "id": pid,
                             "budget_remaining": remaining,
                             "required_headroom": min_headroom,
                             "budget_tokens": budget_tokens,
                         }
-                    ),
-                    file=sys.stderr,
-                )
-                break
-            analysis = solver_analysis(problem)
-            prompt = render_marathon_prompt(problem, analysis)
-            max_seconds = max(1.0, deadline - time.monotonic() - 5.0)
-            try:
-                response = call_llm(prompt, config=LLM_CONFIG, max_seconds=max_seconds)
-            except Exception as exc:  # noqa: BLE001
-                print(json.dumps({"route": "llm:error", "id": pid, "error": str(exc)}), file=sys.stderr)
-                continue
-            llm_calls += 1
-            if "error" in response:
-                error = str(response.get("error", ""))
-                print(json.dumps({"route": "llm:error", "id": pid, "error": error}), file=sys.stderr)
-                if "exhausted" in error or "budget" in error:
+                    )
                     break
-                continue
-            candidate, reject_reason = candidate_from_llm_text_with_reason(problem, str(response.get("response", "")))
-            if candidate is None:
-                print(json.dumps({"route": "llm:reject", "id": pid, "reason": reject_reason}), file=sys.stderr)
-                continue
-            append_answer(output_path, candidate["answer"])
-            route = str(candidate["route"])
-            route_counts[route] = route_counts.get(route, 0) + 1
-            solved += 1
-            solved_ids.add(pid)
+
+                batch: list[dict[str, Any]] = []
+                remaining_call_slots = MARATHON_LLM_MAX_CALLS - llm_calls
+                while index < len(unresolved) and len(batch) < min(MARATHON_LLM_BATCH_SIZE, remaining_call_slots):
+                    _priority, problem = unresolved[index]
+                    index += 1
+                    pid = str(problem.get("id"))
+                    if pid not in solved_ids:
+                        batch.append(problem)
+                if not batch:
+                    continue
+
+                llm_calls += len(batch)
+                log_stderr(
+                    {
+                        "route": "llm:batch_start",
+                        "size": len(batch),
+                        "ids": [str(problem.get("id")) for problem in batch],
+                        "llm_calls": llm_calls,
+                        "max_output_tokens": LLM_CONFIG["max_output_tokens"],
+                        "reasoning_effort": LLM_CONFIG.get("reasoning_effort"),
+                        "http_timeout_seconds": LLM_CONFIG.get("http_timeout_seconds"),
+                        "budget_remaining": remaining,
+                    }
+                )
+                futures = {
+                    executor.submit(marathon_llm_attempt, call_llm, problem, LLM_CONFIG, deadline): problem
+                    for problem in batch
+                }
+                for future in as_completed(futures):
+                    problem = futures[future]
+                    pid = str(problem.get("id"))
+                    try:
+                        result = future.result()
+                    except Exception as exc:  # noqa: BLE001
+                        log_stderr({"route": "llm:error", "id": pid, "error": str(exc)})
+                        continue
+                    if "error" in result:
+                        error = str(result.get("error", ""))
+                        log_stderr(
+                            {
+                                "route": "llm:error",
+                                "id": pid,
+                                "error": error,
+                                "elapsed_seconds": result.get("elapsed_seconds"),
+                                "budget_remaining": result.get("budget_remaining"),
+                            }
+                        )
+                        if "exhausted" in error or "budget" in error:
+                            stop_llm = True
+                        continue
+                    if "candidate" not in result:
+                        log_stderr(
+                            {
+                                "route": "llm:reject",
+                                "id": pid,
+                                "reason": result.get("reject_reason", "unknown"),
+                                "elapsed_seconds": result.get("elapsed_seconds"),
+                                "tokens_used_call": result.get("tokens_used_call"),
+                                "budget_remaining": result.get("budget_remaining"),
+                                "response_chars": result.get("response_chars"),
+                                "response_preview": result.get("response_preview"),
+                            }
+                        )
+                        continue
+
+                    candidate = result["candidate"]
+                    if not append_answer(output_path, candidate["answer"]):
+                        continue
+                    route = str(candidate["route"])
+                    route_counts[route] = route_counts.get(route, 0) + 1
+                    solved += 1
+                    solved_ids.add(pid)
+                    log_stderr(
+                        {
+                            "route": "llm:accepted_candidate",
+                            "id": pid,
+                            "candidate_route": route,
+                            "elapsed_seconds": result.get("elapsed_seconds"),
+                            "tokens_used_call": result.get("tokens_used_call"),
+                            "budget_remaining": result.get("budget_remaining"),
+                        }
+                    )
 
     print(
         json.dumps(
@@ -2115,6 +2256,7 @@ def run_marathon() -> int:
             }
         ),
         file=sys.stderr,
+        flush=True,
     )
     return 0
 

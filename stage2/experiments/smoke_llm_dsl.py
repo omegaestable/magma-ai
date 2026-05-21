@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import tempfile
+import time
 from pathlib import Path
 
 
@@ -56,8 +58,71 @@ def main() -> int:
     true_candidate = solver.candidate_from_llm_text(true_problem, true_payload)
     assert true_candidate is not None
     assert true_candidate["answer"]["verdict"] == "true"
+    assert set(true_candidate["answer"]) == {"id", "verdict", "code"}
 
-    assert solver.candidate_from_llm_text(false_problem, "not json") is None
+    extra_answer = dict(true_candidate["answer"])
+    extra_answer["route"] = "internal:metadata"
+    extra_answer["debug"] = {"not": "judge-visible"}
+    expected_judge_payload = {
+        "verdict": true_candidate["answer"]["verdict"],
+        "code": true_candidate["answer"]["code"],
+    }
+    expected_marathon_payload = {
+        "id": true_candidate["answer"]["id"],
+        **expected_judge_payload,
+    }
+    assert solver.judge_answer_payload(extra_answer) == expected_judge_payload
+    assert solver.marathon_answer_payload(extra_answer) == expected_marathon_payload
+    assert solver.judge_answer_payload({"id": "bad", "verdict": "unknown", "code": "x"}) is None
+    assert solver.judge_answer_payload(
+        {"id": "bad", "verdict": "true", "code": "x" * (solver.MAX_LEAN_CODE_BYTES + 1)}
+    ) is None
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_path = Path(tmpdir) / "answers.jsonl"
+        assert solver.append_answer(str(output_path), extra_answer) is True
+        assert json.loads(output_path.read_text(encoding="utf-8").strip()) == expected_marathon_payload
+        assert solver.append_answer(str(output_path), {"id": "", "verdict": "true", "code": "x"}) is False
+        assert len(output_path.read_text(encoding="utf-8").splitlines()) == 1
+
+    steps_payload = json.dumps(
+        {
+            "verdict": "true",
+            "steps": [
+                {"from": "x", "to": "x ◇ x"},
+            ],
+        }
+    )
+    steps_candidate, steps_reason = solver.candidate_from_llm_text_with_reason(true_problem, steps_payload)
+    assert steps_candidate is not None, steps_reason
+    assert steps_candidate["route"] == "llm:true:rewrite_chain"
+
+    no_json_candidate, no_json_reason = solver.candidate_from_llm_text_with_reason(false_problem, "not json")
+    assert no_json_candidate is None
+    assert no_json_reason == "no_json_object"
+
+    bad_table_payload = json.dumps({"verdict": "false", "counterexample_table": [[0, 1], [1]]})
+    bad_table_candidate, bad_table_reason = solver.candidate_from_llm_text_with_reason(
+        false_problem,
+        bad_table_payload,
+    )
+    assert bad_table_candidate is None
+    assert bad_table_reason == "false_table_invalid_shape"
+
+    not_counterexample_problem = {
+        "id": "fake_not_counterexample",
+        "eq1_id": 5,
+        "eq2_id": 6,
+        "equation1": "x = x",
+        "equation2": "x = x",
+    }
+    not_counterexample_payload = json.dumps({"verdict": "false", "counterexample_table": [[0, 0], [1, 1]]})
+    not_counterexample_candidate, not_counterexample_reason = solver.candidate_from_llm_text_with_reason(
+        not_counterexample_problem,
+        not_counterexample_payload,
+    )
+    assert not_counterexample_candidate is None
+    assert not_counterexample_reason == "false_table_not_counterexample"
 
     banned_payload = json.dumps(
         {
@@ -66,6 +131,32 @@ def main() -> int:
         }
     )
     assert solver.candidate_from_llm_text(true_problem, banned_payload) is None
+
+    proof_body_payload = json.dumps({"verdict": "true", "proof": "intro x\n  exact h x x"})
+    proof_body_candidate = solver.candidate_from_llm_text(true_problem, proof_body_payload)
+    assert proof_body_candidate is not None
+    assert proof_body_candidate["route"] == "llm:true:proof_body"
+
+    def fake_marathon_call(prompt, *, config=None, max_seconds=None):
+        assert "Return exactly one JSON object" in prompt
+        assert config is not None
+        assert config["max_output_tokens"] == solver.LLM_MAX_OUTPUT_TOKENS
+        assert max_seconds is not None and max_seconds > 0
+        return {
+            "response": true_payload,
+            "tokens_used_call": 111,
+            "tokens_used_total": 111,
+            "budget_remaining": 4096,
+        }
+
+    marathon_result = solver.marathon_llm_attempt(
+        fake_marathon_call,
+        true_problem,
+        solver.LLM_CONFIG,
+        time.monotonic() + 30.0,
+    )
+    assert marathon_result["route"] == "llm:true:rewrite_chain"
+    assert marathon_result["tokens_used_call"] == 111
 
     duplicate = solver.candidate_from_llm_text(true_problem, true_payload)
     assert duplicate is not None
