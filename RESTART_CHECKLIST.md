@@ -143,7 +143,7 @@ Push-Location vendor/stage2-official
 Pop-Location
 ```
 
-Latest smoke-only outcomes: `sample_20 = 14/20`, `sample_200 = 165/200`, and Marathon `normal_100 = 70/100` accepted with zero tokens. Latest 2026-05-14 hard-only runner evidence after the affine/absorption patch: hard mix `73/150`, composite-affine fixture `14/14`, `hard1 = 24/69`, `hard2 = 64/200`, `hard3 = 211/400`, with no regressions versus the 2026-05-12 hard artifacts.
+Latest smoke-only outcomes: `sample_20 = 14/20`, latest recorded `sample_200 = 165/200`, and Marathon `normal_100 = 74/100` accepted with zero tokens after the absorption cap and closure-helper refactor. Latest May 21 selected-row reproduction: three `evaluation_extra_hard_false_*` rows now accept via `false:witness:S4C`; remaining listed fallback rows are unresolved gaps, not ids to hardcode.
 
 Public benchmark refresh and team-memory regeneration:
 
@@ -172,3 +172,4 @@ Pop-Location
 8. Debugging certificates with direct `verify_answer(problem, ...)` and forgetting the pipeline proof policy; use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 9. Treating `tmp_stage2_smoke/` or live Teorth scrape output as durable evidence before promoting it to `stage2/results/`.
 10. Treating local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` as a solver protocol failure when the request reached the proxy LLM path.
+11. Overfitting to pasted public/evaluation row ids instead of extracting reusable proof templates, witness families, or regression fixtures.

@@ -61,14 +61,15 @@ Latest local candidate evidence after the final optimization patch, not a full p
 - compact witness fixture: `8/8` accepted, `0` LLM calls
 - Fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
-- Packaged solver size: `76136` bytes
+- Packaged solver size: `85173` bytes
+- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction lives at `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 - Full public validation of the post-rollback package is pending. Treat the prior `1201/1669` as historical zero-token evidence that included `34` default-disabled grind wins; require positive-token proxy evidence before LLM-backed promotion.
 
 ## Banned Approaches
 
 1. Do not treat Stage 1 prompt accuracy as Stage 2 evidence.
 2. Do not submit speculative Lean code as a solved case without judge acceptance.
-3. Do not hardcode private or benchmark-specific answers as policy.
+3. Do not hardcode private or benchmark-specific answers as policy. Generalize row-list findings into proof/witness families or reusable fixtures; pasted ids are diagnostics, not solver policy.
 4. Do not rely on network, local secrets, or repo-local imports from the submitted solver.
 5. Do not import Teorth theorem names in official certificates unless upstream allowlists them.
 6. Do not edit vendored official harness files casually; document any local patch.

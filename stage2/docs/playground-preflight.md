@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-20
+Updated: 2026-05-21
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -23,7 +23,7 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Current packaged state from the latest local package pass: `76136` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest local package pass: `85173` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -192,6 +192,8 @@ Pop-Location
 ```
 
 The old `hard3_true2.jsonl` probe is no longer a good LLM-path check because `hard3_0002` is now accepted deterministically by `true:absorption_closure`. For LLM-path testing, use a currently unresolved TRUE fixture from the latest hard-mix or hard-only run. Expected local no-key behavior is still: the row reaches the LLM proxy, reports `OPENAI_API_KEY or OPENROUTER_API_KEY not set`, then makes a final fallback judge call with a valid `verdict` and `code`. A rejected fallback certificate is a clean miss, not a protocol collapse.
+
+When reproducing pasted public/evaluation rows, keep the result as a fixture or handoff note. Do not add benchmark-id-specific solver policy; extract a reusable proof template, finite witness family, or LLM-quality fix.
 
 ## Ready Criteria
 

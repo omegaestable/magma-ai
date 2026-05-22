@@ -58,7 +58,8 @@ Historical completed public total: `1201/1669` solved. This included `34` accept
 
 Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `76136` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `85173` bytes, single-file submission directory.
+- May 21 prune/refactor evidence: closure-route dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior, and selected fallback reproduction is summarized in `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 - Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
 - Latest recorded Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; this was not rerun after the May 17 compact witness patch.
 - Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget after the absorption time-cap optimization: `74/100` accepted in `56.6s`, with no SIGTERM and `0` tokens.
@@ -68,11 +69,13 @@ Latest local candidate evidence after the final optimization patch, not a replac
 - Fresh 150-row hard mixes with zero-token Marathon improved to `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
 - Positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`. Use this as transport evidence, not proof-quality promotion evidence.
 - Full public validation of the post-rollback package is pending; treat zero-token results as deterministic regression only and require positive-token proxy evidence before LLM-backed promotion.
+- Pasted public/evaluation row lists are diagnostic fixtures. Do not hardcode ids; generalize fixes into reusable proof or witness families.
 
 The full generated evidence lives in:
 
 - `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`
 - `stage2/results/2026-05-14-hard-affine-absorption-summary.md`
+- `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - `stage2/results/2026-05-17-hard-mix-witness-summary.md`
 - `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`
 - `stage2/results/2026-05-20-optimization-readiness.md`

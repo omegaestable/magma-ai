@@ -48,7 +48,8 @@ Latest local candidate evidence after the final optimization patch:
 - `sample_20`: `14/20` solved
 - latest recorded `sample_200`: `165/200` solved; not rerun after the May 17 compact witness patch
 - Marathon `normal_100` with zero token budget after the absorption time-cap optimization: `74/100` accepted in `56.6s`
-- packaged solver size: `76136` bytes after the latest local package pass
+- packaged solver size: `85173` bytes after the latest local package pass
+- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
 - compact witness fixture: `8/8` accepted, `0` LLM calls
@@ -56,7 +57,7 @@ Latest local candidate evidence after the final optimization patch:
 - positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`, but unresolved TRUE proof quality still failed
 
 Do not treat the optimized package as promoted from zero-token evidence alone. The default local gate is now positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`; zero-token sweeps are optional deterministic regression only.
-The latest public, hard-mix, homelab, and optimization evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, and `results/2026-05-20-optimization-readiness.md`.
+Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, and fallback-reproduction evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, and `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 
 Current best route learnings:
 

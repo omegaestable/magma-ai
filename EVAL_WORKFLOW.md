@@ -64,7 +64,7 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
-The current packaged smoke size is `76136` bytes. Re-check this after every package step instead of carrying old size notes forward.
+The current packaged smoke size is `85173` bytes. Re-check this after every package step instead of carrying old size notes forward.
 
 ## Playground Preflight Gate
 
@@ -135,6 +135,8 @@ After any meaningful public benchmark run, regenerate:
 These are now part of the team-memory chain, not optional extras.
 
 Keep smoke evidence separate from full benchmark evidence. `sample_20`, `sample_200`, targeted fixtures, and Marathon slices are useful for debugging and pacing, but top-level public totals should only change after the full public suite is rerun and summarized under `stage2/results/`.
+
+Selected-row reproductions are diagnostic fixtures. Normalize labels to local ids, verify direct probes with `_to_judge_problem(problem)`, and convert any finding into a reusable proof/witness family or a focused regression fixture instead of hardcoding benchmark ids into solver policy.
 
 ## Promotion Rule
 
