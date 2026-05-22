@@ -795,6 +795,136 @@ def call_expression(eq1_vars: list[str], subst: dict[str, Term], name: str = "h"
     return name if not args else name + " " + " ".join(args)
 
 
+def call_expression_lean_args(eq1_vars: list[str], subst: dict[str, str], name: str = "h") -> str:
+    args = [subst[var] for var in eq1_vars]
+    return name if not args else name + " " + " ".join(args)
+
+
+def self_square_absorption_source(eq1: dict[str, Any]) -> tuple[str, str] | None:
+    lhs = eq1["lhs"]
+    rhs = eq1["rhs"]
+    if lhs[0] != "var" or rhs[0] != "op" or rhs[1] != rhs[2]:
+        return None
+    root = str(lhs[1])
+    square_root = rhs[1]
+    if square_root[0] != "op" or square_root[2] != ("var", root) or square_root[1][0] != "var":
+        return None
+    square_var = str(square_root[1][1])
+    if square_var == root or set(eq1["variables"]) != {root, square_var}:
+        return None
+    return root, square_var
+
+
+def self_square_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = self_square_absorption_source(eq1)
+    if source is None:
+        return None
+    root, square_var = source
+    if eq2["lhs"] != ("var", root):
+        return None
+    rhs = eq2["rhs"]
+    if rhs[0] != "op" or rhs[2][0] != "op" or rhs[2][2] != ("var", root):
+        return None
+
+    target_left = rhs[1]
+    target_tail = rhs[2]
+    tail_left = target_tail[1]
+    root_term = ("var", root)
+    first_call = call_expression_lean_args(
+        eq1["variables"],
+        {root: term_to_lean(root_term), square_var: term_to_lean(tail_left)},
+    )
+    second_call = call_expression_lean_args(eq1["variables"], {root: "B", square_var: "A"})
+    third_call = call_expression_lean_args(eq1["variables"], {root: "C", square_var: "C"})
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  let A : G := {term_to_lean(target_left)}\n"
+        f"  let B : G := {term_to_lean(target_tail)}\n"
+        "  let C : G := A ◇ B\n"
+        "  calc\n"
+        f"    {root} = B ◇ B := {first_call}\n"
+        f"    _ = (C ◇ C) ◇ (C ◇ C) := congrArg (fun t => t ◇ t) ({second_call})\n"
+        f"    _ = C := ({third_call}).symm\n"
+    )
+    return "true:self_square_absorption", code
+
+
+def repeat_tail_absorption_source(eq1: dict[str, Any]) -> tuple[str, str, str] | None:
+    lhs = eq1["lhs"]
+    rhs = eq1["rhs"]
+    if lhs[0] != "var" or rhs[0] != "op":
+        return None
+    root_name = str(lhs[1])
+    lead_term = rhs[1]
+    tail = rhs[2]
+    if lead_term[0] != "var" or tail[0] != "op":
+        return None
+    repeat_term = tail[1]
+    repeated_tail = tail[2]
+    if repeat_term[0] != "var" or repeated_tail[0] != "op":
+        return None
+    if repeated_tail[1] != repeat_term or repeated_tail[2] != ("var", root_name):
+        return None
+    lead_name = str(lead_term[1])
+    repeat_name = str(repeat_term[1])
+    if len({root_name, lead_name, repeat_name}) != 3:
+        return None
+    if set(eq1["variables"]) != {root_name, lead_name, repeat_name}:
+        return None
+    return root_name, lead_name, repeat_name
+
+
+def repeat_tail_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = repeat_tail_absorption_source(eq1)
+    if source is None:
+        return None
+    root_name, lead_name, repeat_name = source
+    root_term = ("var", root_name)
+    if eq2["lhs"] != root_term:
+        return None
+    rhs = eq2["rhs"]
+    if rhs[0] != "op" or rhs[1] != ("op", root_term, root_term) or rhs[2][0] != "op" or rhs[2][1] != root_term:
+        return None
+    target_tail = rhs[2][2]
+    if target_tail[0] != "op" or target_tail[2] != root_term:
+        return None
+
+    pivot_term = target_tail[1]
+    pivot_lean = term_to_lean(pivot_term)
+    root_lean = term_to_lean(root_term)
+    root_square_lean = term_to_lean(("op", root_term, root_term))
+    first_mid = ("op", pivot_term, ("op", pivot_term, ("op", pivot_term, root_term)))
+    first_call = call_expression_lean_args(
+        eq1["variables"],
+        {root_name: root_lean, lead_name: pivot_lean, repeat_name: pivot_lean},
+    )
+    second_call = call_expression_lean_args(
+        eq1["variables"],
+        {root_name: term_to_lean(first_mid), lead_name: root_square_lean, repeat_name: root_lean},
+    )
+    third_call = call_expression_lean_args(
+        eq1["variables"],
+        {root_name: term_to_lean(target_tail), lead_name: root_lean, repeat_name: pivot_lean},
+    )
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    context = f"(({root_lean} ◇ {root_lean}) ◇ ({root_lean} ◇ t))"
+    proof_expr = f"(({first_call}).trans ({second_call})).trans (congrArg (fun t => {context}) ({third_call})).symm"
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return "true:repeat_tail_absorption", code
+
+
 def c9_e1072_shape_root(eq1: dict[str, Any]) -> str | None:
     lhs = eq1["lhs"]
     rhs = eq1["rhs"]
@@ -1103,21 +1233,19 @@ def combine_meeting_proofs(left_proof: str | None, right_proof: str | None) -> s
     return f"({left_proof}).trans ({right_proof}).symm"
 
 
-def absorption_closure_route(
+def _closure_route_impl(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
     *,
-    route_name: str = "true:absorption_closure",
-    chain_max_depth: int = ABSORPTION_CHAIN_MAX_DEPTH,
-    pool_limit: int = ABSORPTION_POOL_LIMIT,
-    frontier_limit: int = ABSORPTION_FRONTIER_LIMIT,
-    max_fills: int = ABSORPTION_MAX_FILLS,
-    term_slack: int = ABSORPTION_TERM_SLACK,
-    time_budget: float | None = ABSORPTION_TIME_BUDGET,
+    route_name: str,
+    chain_max_depth: int,
+    pool_limit: int,
+    frontier_limit: int,
+    max_fills: int,
+    term_slack: int,
+    depth_slack: int,
+    time_budget: float | None,
 ) -> tuple[str, str] | None:
-    if not absorption_hypothesis(eq1):
-        return None
-
     deadline = time.monotonic() + time_budget if time_budget else None
     pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
     if not pool:
@@ -1134,7 +1262,7 @@ def absorption_closure_route(
         term_depth(eq1["rhs"]),
         term_depth(eq2["lhs"]),
         term_depth(eq2["rhs"]),
-    ) + 2
+    ) + depth_slack
 
     left_start = eq2["lhs"]
     right_start = eq2["rhs"]
@@ -1143,73 +1271,94 @@ def absorption_closure_route(
     left_frontier = [left_start]
     right_frontier = [right_start]
 
+    def expand_frontier(
+        frontier: list[Term],
+        seen: dict[Term, str | None],
+        other_seen: dict[Term, str | None],
+        *,
+        from_left: bool,
+    ) -> tuple[list[Term], tuple[str, str] | None, bool]:
+        next_frontier: list[Term] = []
+        for term in frontier:
+            if deadline_expired(deadline):
+                return next_frontier, None, True
+            prefix = seen[term]
+            for new_term, proof, _route in filled_absorption_steps(
+                eq1,
+                term,
+                pool,
+                max_size=max_size,
+                max_depth=max_depth,
+                max_fills=max_fills,
+                deadline=deadline,
+            ):
+                if deadline_expired(deadline):
+                    return next_frontier, None, True
+                if new_term in seen:
+                    continue
+                new_proof = chain_trans(prefix, proof)
+                if new_term in other_seen:
+                    if from_left:
+                        proof_expr = combine_meeting_proofs(new_proof, other_seen[new_term])
+                    else:
+                        proof_expr = combine_meeting_proofs(other_seen[new_term], new_proof)
+                    code = substitution_true_certificate(eq2["variables"], proof_expr)
+                    return next_frontier, (route_name, code), False
+                seen[new_term] = new_proof
+                next_frontier.append(new_term)
+                if len(seen) >= frontier_limit:
+                    break
+            if len(seen) >= frontier_limit:
+                break
+        return next_frontier[:frontier_limit], None, False
+
     for _depth in range(chain_max_depth):
         if deadline_expired(deadline):
             return None
-        next_left: list[Term] = []
-        for term in left_frontier:
-            if deadline_expired(deadline):
-                return None
-            prefix = left_seen[term]
-            for new_term, proof, _route in filled_absorption_steps(
-                eq1,
-                term,
-                pool,
-                max_size=max_size,
-                max_depth=max_depth,
-                max_fills=max_fills,
-                deadline=deadline,
-            ):
-                if deadline_expired(deadline):
-                    return None
-                if new_term in left_seen:
-                    continue
-                new_proof = chain_trans(prefix, proof)
-                if new_term in right_seen:
-                    proof_expr = combine_meeting_proofs(new_proof, right_seen[new_term])
-                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
-                left_seen[new_term] = new_proof
-                next_left.append(new_term)
-                if len(left_seen) >= frontier_limit:
-                    break
-            if len(left_seen) >= frontier_limit:
-                break
-        left_frontier = next_left[:frontier_limit]
+        left_frontier, result, timed_out = expand_frontier(left_frontier, left_seen, right_seen, from_left=True)
+        if timed_out:
+            return None
+        if result is not None:
+            return result
 
-        next_right: list[Term] = []
-        for term in right_frontier:
-            if deadline_expired(deadline):
-                return None
-            prefix = right_seen[term]
-            for new_term, proof, _route in filled_absorption_steps(
-                eq1,
-                term,
-                pool,
-                max_size=max_size,
-                max_depth=max_depth,
-                max_fills=max_fills,
-                deadline=deadline,
-            ):
-                if deadline_expired(deadline):
-                    return None
-                if new_term in right_seen:
-                    continue
-                new_proof = chain_trans(prefix, proof)
-                if new_term in left_seen:
-                    proof_expr = combine_meeting_proofs(left_seen[new_term], new_proof)
-                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
-                right_seen[new_term] = new_proof
-                next_right.append(new_term)
-                if len(right_seen) >= frontier_limit:
-                    break
-            if len(right_seen) >= frontier_limit:
-                break
-        right_frontier = next_right[:frontier_limit]
+        right_frontier, result, timed_out = expand_frontier(right_frontier, right_seen, left_seen, from_left=False)
+        if timed_out:
+            return None
+        if result is not None:
+            return result
 
         if not left_frontier and not right_frontier:
             break
 
     return None
+
+
+def absorption_closure_route(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    route_name: str = "true:absorption_closure",
+    chain_max_depth: int = ABSORPTION_CHAIN_MAX_DEPTH,
+    pool_limit: int = ABSORPTION_POOL_LIMIT,
+    frontier_limit: int = ABSORPTION_FRONTIER_LIMIT,
+    max_fills: int = ABSORPTION_MAX_FILLS,
+    term_slack: int = ABSORPTION_TERM_SLACK,
+    time_budget: float | None = ABSORPTION_TIME_BUDGET,
+) -> tuple[str, str] | None:
+    if not absorption_hypothesis(eq1):
+        return None
+    return _closure_route_impl(
+        eq1,
+        eq2,
+        route_name=route_name,
+        chain_max_depth=chain_max_depth,
+        pool_limit=pool_limit,
+        frontier_limit=frontier_limit,
+        max_fills=max_fills,
+        term_slack=term_slack,
+        depth_slack=2,
+        time_budget=time_budget,
+    )
 
 
 def deep_absorption_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
@@ -1241,100 +1390,18 @@ def equational_closure_route(
 ) -> tuple[str, str] | None:
     if eq2["lhs"] == eq2["rhs"]:
         return route_name, substitution_true_certificate(eq2["variables"], "rfl")
-
-    deadline = time.monotonic() + time_budget if time_budget else None
-    pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
-    if not pool:
-        return None
-
-    max_size = max(
-        term_size(eq1["lhs"]),
-        term_size(eq1["rhs"]),
-        term_size(eq2["lhs"]),
-        term_size(eq2["rhs"]),
-    ) + term_slack
-    max_depth = max(
-        term_depth(eq1["lhs"]),
-        term_depth(eq1["rhs"]),
-        term_depth(eq2["lhs"]),
-        term_depth(eq2["rhs"]),
-    ) + depth_slack
-
-    left_start = eq2["lhs"]
-    right_start = eq2["rhs"]
-    left_seen: dict[Term, str | None] = {left_start: None}
-    right_seen: dict[Term, str | None] = {right_start: None}
-    left_frontier = [left_start]
-    right_frontier = [right_start]
-
-    for _depth in range(chain_max_depth):
-        if deadline_expired(deadline):
-            return None
-
-        next_left: list[Term] = []
-        for term in left_frontier:
-            if deadline_expired(deadline):
-                return None
-            prefix = left_seen[term]
-            for new_term, proof, _route in filled_absorption_steps(
-                eq1,
-                term,
-                pool,
-                max_size=max_size,
-                max_depth=max_depth,
-                max_fills=max_fills,
-                deadline=deadline,
-            ):
-                if deadline_expired(deadline):
-                    return None
-                if new_term in left_seen:
-                    continue
-                new_proof = chain_trans(prefix, proof)
-                if new_term in right_seen:
-                    proof_expr = combine_meeting_proofs(new_proof, right_seen[new_term])
-                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
-                left_seen[new_term] = new_proof
-                next_left.append(new_term)
-                if len(left_seen) >= frontier_limit:
-                    break
-            if len(left_seen) >= frontier_limit:
-                break
-        left_frontier = next_left[:frontier_limit]
-
-        next_right: list[Term] = []
-        for term in right_frontier:
-            if deadline_expired(deadline):
-                return None
-            prefix = right_seen[term]
-            for new_term, proof, _route in filled_absorption_steps(
-                eq1,
-                term,
-                pool,
-                max_size=max_size,
-                max_depth=max_depth,
-                max_fills=max_fills,
-                deadline=deadline,
-            ):
-                if deadline_expired(deadline):
-                    return None
-                if new_term in right_seen:
-                    continue
-                new_proof = chain_trans(prefix, proof)
-                if new_term in left_seen:
-                    proof_expr = combine_meeting_proofs(left_seen[new_term], new_proof)
-                    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
-                right_seen[new_term] = new_proof
-                next_right.append(new_term)
-                if len(right_seen) >= frontier_limit:
-                    break
-            if len(right_seen) >= frontier_limit:
-                break
-        right_frontier = next_right[:frontier_limit]
-
-        if not left_frontier and not right_frontier:
-            break
-
-    return None
+    return _closure_route_impl(
+        eq1,
+        eq2,
+        route_name=route_name,
+        chain_max_depth=chain_max_depth,
+        pool_limit=pool_limit,
+        frontier_limit=frontier_limit,
+        max_fills=max_fills,
+        term_slack=term_slack,
+        depth_slack=depth_slack,
+        time_budget=time_budget,
+    )
 
 
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
@@ -1523,6 +1590,24 @@ def solve_problem(
             "priority": problem_priority(problem, eq1, eq2),
         }
 
+    self_square = self_square_absorption_route(eq1, eq2)
+    if self_square is not None:
+        route, code = self_square
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    repeat_tail = repeat_tail_absorption_route(eq1, eq2)
+    if repeat_tail is not None:
+        route, code = repeat_tail
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
     absorption = absorption_closure_route(eq1, eq2)
     if absorption is not None:
         route, code = absorption
@@ -1594,12 +1679,7 @@ def judge_via_solo_proxy(answer: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def fallback_true_certificate() -> str:
-    return """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  exact h
-"""
+    return reflexive_true_certificate()
 
 
 def extract_json_object(text: str) -> dict[str, Any] | None:

@@ -1,0 +1,52 @@
+{
+  "run_dir": "stage2\\results\\2026-05-21-hard-pass2-public90-baseline-marathon",
+  "manifest": "tmp_stage2_smoke\\2026-05-21-hard-pass2-public90.jsonl",
+  "score": 48,
+  "attempted": 48,
+  "not_attempted": 42,
+  "by_status": {
+    "accepted": 48,
+    "not_attempted": 42
+  },
+  "accepted_verdicts": {
+    "true": 4,
+    "false": 44
+  },
+  "gap_counts": {
+    "finite_countermodel_gap": 8,
+    "true_template_gap": 34
+  },
+  "route_counts": {
+    "false:witness:LP": 2,
+    "true:equational_closure": 3,
+    "false:witness:S4C": 8,
+    "false:linear:z5:2,4": 2,
+    "false:affine:z9:6,1,1": 1,
+    "false:witness:XOR": 1,
+    "false:linear:z5:2,2": 1,
+    "false:witness:S5C": 1,
+    "false:witness:T3L": 5,
+    "false:enum_fin3": 5,
+    "false:witness:S5B": 1,
+    "false:linear:z7:2,6": 1,
+    "false:linear:z5:4,2": 2,
+    "false:spine:leftsucc:z3": 2,
+    "false:spine:rightsucc:z3": 5,
+    "false:witness:RP": 1,
+    "false:spine:rightsucc:z4": 2,
+    "true:c9_e1072_collapse:true:rewrite": 1,
+    "false:linear:z9:3,1": 1,
+    "false:witness:S4D": 2,
+    "false:witness:S5D": 1
+  },
+  "answer_status_counts": {
+    "false:finite": {
+      "accepted": 44
+    },
+    "true:certificate": {
+      "accepted": 4
+    }
+  },
+  "tokens_used": 0,
+  "wall_seconds": 84.06578489999993
+}

@@ -1,0 +1,45 @@
+{
+  "run_dir": "stage2\\results\\2026-05-21-hard-theory-public30-after-repeat-tail-marathon",
+  "manifest": "tmp_stage2_smoke\\2026-05-21-hard-theory-public30.jsonl",
+  "score": 16,
+  "attempted": 16,
+  "not_attempted": 14,
+  "by_status": {
+    "not_attempted": 14,
+    "accepted": 16
+  },
+  "accepted_verdicts": {
+    "false": 13,
+    "true": 3
+  },
+  "gap_counts": {
+    "finite_countermodel_gap": 4,
+    "true_template_gap": 10
+  },
+  "route_counts": {
+    "false:spine:leftsucc:z3": 2,
+    "false:linear:z7:2,6": 2,
+    "true:equational_closure": 1,
+    "false:linear:z8:2,4": 1,
+    "false:witness:S4B": 1,
+    "false:linear:z5:2,4": 1,
+    "false:linear:z4:2,3": 1,
+    "false:witness:S4C": 1,
+    "false:linear:z9:3,1": 1,
+    "false:linear:z5:4,2": 1,
+    "true:self_square_absorption": 1,
+    "false:witness:Z3B": 1,
+    "false:spine:rightsucc:z3": 1,
+    "true:constancy:00": 1
+  },
+  "answer_status_counts": {
+    "false:finite": {
+      "accepted": 13
+    },
+    "true:certificate": {
+      "accepted": 3
+    }
+  },
+  "tokens_used": 0,
+  "wall_seconds": 25.517573499999344
+}

@@ -1,0 +1,30 @@
+{"id": "hard1_0009", "index": 9, "difficulty": "hard", "eq1_id": 2656, "eq2_id": 2863, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ y", "equation2": "x = ((x ◇ (y ◇ x)) ◇ x) ◇ y", "answer": false}
+{"id": "hard3_0329", "index": 329, "difficulty": "hard", "eq1_id": 3074, "eq2_id": 4288, "equation1": "x = (((x ◇ y) ◇ x) ◇ z) ◇ w", "equation2": "x ◇ (x ◇ y) = x ◇ (z ◇ z)", "answer": true}
+{"id": "hard1_0057", "index": 57, "difficulty": "hard", "eq1_id": 964, "eq2_id": 698, "equation1": "x = y ◇ ((z ◇ y) ◇ (y ◇ x))", "equation2": "x = y ◇ (x ◇ ((z ◇ w) ◇ x))", "answer": false}
+{"id": "hard2_0038", "index": 38, "difficulty": "hard", "eq1_id": 1076, "eq2_id": 519, "equation1": "x = y ◇ ((x ◇ (x ◇ y)) ◇ y)", "equation2": "x = y ◇ (y ◇ (y ◇ (z ◇ w)))", "answer": false}
+{"id": "hard1_0052", "index": 52, "difficulty": "hard", "eq1_id": 169, "eq2_id": 2056, "equation1": "x = (y ◇ x) ◇ (y ◇ x)", "equation2": "x = ((x ◇ y) ◇ x) ◇ (z ◇ x)", "answer": true}
+{"id": "hard1_0030", "index": 30, "difficulty": "hard", "eq1_id": 2301, "eq2_id": 4303, "equation1": "x = (y ◇ (x ◇ (y ◇ x))) ◇ y", "equation2": "x ◇ (x ◇ y) = z ◇ (y ◇ x)", "answer": false}
+{"id": "hard3_0379", "index": 379, "difficulty": "hard", "eq1_id": 3857, "eq2_id": 4316, "equation1": "x ◇ y = (z ◇ w) ◇ (u ◇ y)", "equation2": "x ◇ (y ◇ x) = x ◇ (z ◇ x)", "answer": true}
+{"id": "hard2_0199", "index": 199, "difficulty": "hard", "eq1_id": 2668, "eq2_id": 2848, "equation1": "x = ((x ◇ y) ◇ (x ◇ z)) ◇ w", "equation2": "x = ((x ◇ (x ◇ x)) ◇ x) ◇ y", "answer": true}
+{"id": "hard1_0061", "index": 61, "difficulty": "hard", "eq1_id": 447, "eq2_id": 1247, "equation1": "x = x ◇ (y ◇ (z ◇ (x ◇ y)))", "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ w)", "answer": true}
+{"id": "hard2_0005", "index": 5, "difficulty": "hard", "eq1_id": 1181, "eq2_id": 2449, "equation1": "x = y ◇ ((z ◇ (z ◇ x)) ◇ y)", "equation2": "x = (x ◇ ((x ◇ y) ◇ y)) ◇ x", "answer": true}
+{"id": "hard1_0013", "index": 13, "difficulty": "hard", "eq1_id": 4208, "eq2_id": 3356, "equation1": "x ◇ y = ((z ◇ y) ◇ x) ◇ x", "equation2": "x ◇ y = y ◇ (y ◇ (y ◇ y))", "answer": true}
+{"id": "hard2_0188", "index": 188, "difficulty": "hard", "eq1_id": 4686, "eq2_id": 4625, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ x", "equation2": "(x ◇ x) ◇ y = (z ◇ w) ◇ y", "answer": false}
+{"id": "hard1_0058", "index": 58, "difficulty": "hard", "eq1_id": 4574, "eq2_id": 4438, "equation1": "x ◇ (y ◇ z) = (w ◇ w) ◇ z", "equation2": "x ◇ (y ◇ x) = (x ◇ z) ◇ x", "answer": false}
+{"id": "hard2_0009", "index": 9, "difficulty": "hard", "eq1_id": 898, "eq2_id": 2673, "equation1": "x = y ◇ ((x ◇ z) ◇ (z ◇ y))", "equation2": "x = ((x ◇ y) ◇ (y ◇ y)) ◇ y", "answer": false}
+{"id": "hard1_0069", "index": 69, "difficulty": "hard", "eq1_id": 286, "eq2_id": 532, "equation1": "x = ((y ◇ y) ◇ z) ◇ x", "equation2": "x = y ◇ (y ◇ (z ◇ (w ◇ x)))", "answer": true}
+{"id": "hard3_0260", "index": 260, "difficulty": "hard", "eq1_id": 2478, "eq2_id": 2287, "equation1": "x = (x ◇ ((y ◇ z) ◇ x)) ◇ z", "equation2": "x = (x ◇ (y ◇ (z ◇ w))) ◇ z", "answer": true}
+{"id": "hard1_0033", "index": 33, "difficulty": "hard", "eq1_id": 2994, "eq2_id": 2623, "equation1": "x = ((y ◇ (z ◇ y)) ◇ y) ◇ x", "equation2": "x = (y ◇ ((z ◇ w) ◇ y)) ◇ x", "answer": false}
+{"id": "hard2_0157", "index": 157, "difficulty": "hard", "eq1_id": 2450, "eq2_id": 4140, "equation1": "x = (x ◇ ((x ◇ y) ◇ y)) ◇ y", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ w", "answer": false}
+{"id": "hard3_0062", "index": 62, "difficulty": "hard", "eq1_id": 419, "eq2_id": 842, "equation1": "x = x ◇ (x ◇ (y ◇ (y ◇ x)))", "equation2": "x = x ◇ ((y ◇ y) ◇ (x ◇ x))", "answer": false}
+{"id": "hard3_0310", "index": 310, "difficulty": "hard", "eq1_id": 2889, "eq2_id": 27, "equation1": "x = ((x ◇ (y ◇ z)) ◇ y) ◇ w", "equation2": "x = (x ◇ y) ◇ z", "answer": false}
+{"id": "hard2_0178", "index": 178, "difficulty": "hard", "eq1_id": 853, "eq2_id": 849, "equation1": "x = x ◇ ((y ◇ z) ◇ (x ◇ y))", "equation2": "x = x ◇ ((y ◇ y) ◇ (z ◇ y))", "answer": true}
+{"id": "hard1_0017", "index": 17, "difficulty": "hard", "eq1_id": 1286, "eq2_id": 2891, "equation1": "x = y ◇ (((x ◇ y) ◇ x) ◇ y)", "equation2": "x = ((x ◇ (y ◇ z)) ◇ z) ◇ y", "answer": false}
+{"id": "hard2_0016", "index": 16, "difficulty": "hard", "eq1_id": 646, "eq2_id": 4127, "equation1": "x = x ◇ (y ◇ ((y ◇ z) ◇ y))", "equation2": "x ◇ y = ((x ◇ y) ◇ x) ◇ x", "answer": false}
+{"id": "hard2_0141", "index": 141, "difficulty": "hard", "eq1_id": 2983, "eq2_id": 2791, "equation1": "x = ((y ◇ (z ◇ x)) ◇ z) ◇ z", "equation2": "x = ((y ◇ z) ◇ (y ◇ y)) ◇ x", "answer": true}
+{"id": "hard3_0365", "index": 365, "difficulty": "hard", "eq1_id": 3536, "eq2_id": 326, "equation1": "x ◇ y = x ◇ ((z ◇ z) ◇ x)", "equation2": "x ◇ y = x ◇ (y ◇ y)", "answer": true}
+{"id": "hard3_0217", "index": 217, "difficulty": "hard", "eq1_id": 2049, "eq2_id": 215, "equation1": "x = ((x ◇ x) ◇ y) ◇ (z ◇ w)", "equation2": "x = (x ◇ (y ◇ z)) ◇ y", "answer": false}
+{"id": "hard3_0264", "index": 264, "difficulty": "hard", "eq1_id": 2513, "eq2_id": 4263, "equation1": "x = (y ◇ ((x ◇ z) ◇ x)) ◇ x", "equation2": "x ◇ y = ((z ◇ w) ◇ u) ◇ y", "answer": false}
+{"id": "hard3_0237", "index": 237, "difficulty": "hard", "eq1_id": 2126, "eq2_id": 3734, "equation1": "x = ((y ◇ y) ◇ x) ◇ (x ◇ z)", "equation2": "x ◇ y = (x ◇ z) ◇ (x ◇ w)", "answer": false}
+{"id": "hard3_0182", "index": 182, "difficulty": "hard", "eq1_id": 1618, "eq2_id": 3093, "equation1": "x = (y ◇ z) ◇ (w ◇ (w ◇ x))", "equation2": "x = (((x ◇ y) ◇ z) ◇ z) ◇ x", "answer": false}
+{"id": "hard2_0097", "index": 97, "difficulty": "hard", "eq1_id": 2248, "eq2_id": 4079, "equation1": "x = (x ◇ (x ◇ (y ◇ y))) ◇ z", "equation2": "x ◇ x = ((x ◇ y) ◇ z) ◇ w", "answer": true}
