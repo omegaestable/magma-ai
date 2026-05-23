@@ -56,7 +56,11 @@ Latest local candidate evidence after the final optimization patch:
 - fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`, but unresolved TRUE proof quality still failed
 
-Do not treat the optimized package as promoted from zero-token evidence alone. The default local gate is now positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`; zero-token sweeps are optional deterministic regression only.
+Do not treat the optimized package as promoted from zero-token evidence alone. The default small-fixture gate is positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`, and the default wide public hard-set gate is `stage2/experiments/run_playground_public_sweeps.py`; zero-token sweeps are deterministic regression only.
+For standard local LLM runs, store the rotated upstream key in the ignored
+repo-root `.env` with `stage2/experiments/set_openrouter_repo_env.ps1`. The
+repo-owned probe and parity entrypoints load process env first, then `.env`,
+then legacy Windows User env fallback.
 Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, and fallback-reproduction evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, and `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 
 Current best route learnings:
@@ -77,7 +81,7 @@ Package it with:
 
 The packaging script clears `stage2/submissions/` before copying `solver.py`, because the official Solo runner requires the submission directory to contain no extra files.
 
-Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, official proxy LLM behavior, the local no-key caveat, failure classification, and the positive-token parity runner.
+Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, official proxy LLM behavior, the local no-key caveat, failure classification, the small positive-token parity runner, and the wide public playground-equivalent sweep helper.
 
 See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and Windows harness status.
 Use `docs/solver-route-ledger.md` and `docs/motif-cards/` before changing a route, and use `docs/cleanup-manifest.md` before touching scratch artifacts.

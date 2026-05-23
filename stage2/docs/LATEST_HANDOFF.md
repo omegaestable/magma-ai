@@ -1,16 +1,17 @@
 # Latest Handoff
 
-Updated: 2026-05-21
+Updated: 2026-05-23
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
 ## Current Solver Snapshot
 
 - Active source: `stage2/solver/solver.py`.
-- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `85173` bytes.
+- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `112696` bytes.
 - Submission directory should contain only `solver.py`.
 - Historical public zero-token baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-retired grind wins.
 - Current durable May 21 summary: `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
+- Current durable May 23 route expansion summary: `stage2/results/2026-05-23-held-out-structural-route-expansion.md`.
 - Full public validation after the grind rollback and May 21 refactor is still pending. Do not claim the current package preserves old grind-backed totals until a new full run exists.
 
 ## What Changed This Session
@@ -21,16 +22,31 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 - Changed `fallback_true_certificate()` to return `reflexive_true_certificate()` instead of carrying duplicate Lean text.
 - Packaged the solver and confirmed the source and packaged hashes matched after repackaging.
 - Reproduced pasted public/evaluation fallback rows with a runner-equivalent direct probe and with official zero-token Marathon on the same 27-row manifest.
+- Added six narrow deterministic TRUE route families from held-out structural motifs: `middle_self_collapse`, `square_twist_comm`, `front_double_self_collapse`, `alternating_front_self_collapse`, `mirrored_alternating_front_self_collapse`, and `sandwich_left_projection`.
+- Preserved the local guided-chain LLM changes; Marathon raw TRUE remains disabled and deterministic certificates still run before LLM spending.
 
 ## Latest Regression Evidence
 
 - Python syntax checks passed for source and packaged solver.
-- Packaged size: `85173` bytes.
+- Packaged size: `112696` bytes.
 - Submission directory cleanliness: only `solver.py`.
-- Route profile on `normal_100`: `74` deterministic candidates, `26` skips, `49.925s`.
+- Route profile on public `normal_100` after the May 23 route expansion: `74` deterministic candidates, `26` skips, `47.479s`.
+- Held-out hard first 80 after the May 23 route expansion: `76` deterministic candidates, `4` skips, `7.854s`.
 - Official Solo harness on `sample_20`: exit `0`, no failing categories.
-- Official zero-token Marathon on `normal_100`: `74/100`, `74` accepted, `26` not attempted, `0` tokens, `50.5s`.
-- Analyzer agreed on `normal_100`: `score=74`, gaps `{'true_template_gap': 26}`.
+- Latest official zero-token Marathon on `normal_100` from the May 21 refactor package: `74/100`, `74` accepted, `26` not attempted, `0` tokens, `50.5s`.
+- Analyzer agreed on that official `normal_100` run: `score=74`, gaps `{'true_template_gap': 26}`.
+- Current May 23 package has profile guardrail evidence for `normal_100`; a fresh official `normal_100` Marathon run is still pending.
+
+Focused official zero-token Marathon checks accepted these new held-out routes:
+
+- `evaluation_hard_0004`: `true:middle_self_collapse`, `1/1`, `0` tokens.
+- `evaluation_extra_hard_0034`: `true:square_twist_comm`, `1/1`, `0` tokens.
+- `evaluation_hard_0010`: `true:front_double_self_collapse`, `1/1`, `0` tokens.
+- `evaluation_hard_0026`: `true:alternating_front_self_collapse`, `1/1`, `0` tokens.
+- `evaluation_hard_0052`: `true:mirrored_alternating_front_self_collapse`, `1/1`, `0` tokens.
+- `evaluation_hard_0070`: `true:sandwich_left_projection`, `1/1`, `0` tokens.
+
+Current held-out hard80 TRUE skips after this pass: `evaluation_hard_0072`, `evaluation_hard_0074`, `evaluation_hard_0078`, and `evaluation_hard_0080`.
 
 ## Selected-Row Reproduction
 
@@ -95,12 +111,13 @@ Answer-kind totals for that baseline:
 
 ## Recommended Next Steps
 
-1. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
-2. Run broader no-loss validation for the refactored closure helper, especially hard TRUE closure fixtures and the full public sets.
-3. Build route-specific fixtures listed in `stage2/docs/solver-route-ledger.md` before attempting broad refactors.
-4. Improve unresolved TRUE proof quality; the LLM proxy works, but current outputs are rejected by the solver or judge.
-5. Run a full public no-loss validation when budget allows: `normal`, `hard1`, `hard2`, and `hard3` against the current packaged solver.
-6. Before upload or promotion, rerun `stage2/docs/playground-preflight.md` and the adversarial solver review checklist.
+1. Continue held-out TRUE work one unseen structural family at a time; next hard80 row is `evaluation_hard_0072` (`eq1_id=86`, `eq2_id=1009`).
+2. For extra-hard, first 120 rows are clean; inspect skips after row 120 from `tmp_stage2_smoke/2026-05-23-eval-extra-hard200-after-square-twist-profile.jsonl`.
+3. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
+4. Run broader no-loss validation for the refactored closure helper and May 23 routes, especially hard TRUE closure fixtures and the full public sets.
+5. Improve unresolved TRUE proof quality; the LLM proxy works, but current outputs are rejected by the solver or judge.
+6. Run a full public no-loss validation when budget allows: `normal`, `hard1`, `hard2`, and `hard3` against the current packaged solver.
+7. Before upload or promotion, rerun `stage2/docs/playground-preflight.md` and the adversarial solver review checklist.
 
 ## Scratch Discipline
 

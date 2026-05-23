@@ -97,6 +97,56 @@ def main() -> int:
     assert steps_candidate is not None, steps_reason
     assert steps_candidate["route"] == "llm:true:rewrite_chain"
 
+    guided_problem = {
+        "id": "fake_guided_true",
+        "eq1_id": 7,
+        "eq2_id": 8,
+        "equation1": "x = x ◇ y",
+        "equation2": "x = (x ◇ x) ◇ x",
+    }
+    guided_payload = json.dumps(
+        {
+            "verdict": "true",
+            "proof_kind": "guided_chain",
+            "chain": ["x", "(x ◇ x) ◇ x"],
+        }
+    )
+    guided_candidate, guided_reason = solver.candidate_from_llm_text_with_reason(guided_problem, guided_payload)
+    assert guided_candidate is not None, guided_reason
+    assert guided_candidate["route"] == "llm:true:guided_chain"
+
+    bad_endpoint_payload = json.dumps(
+        {
+            "verdict": "true",
+            "proof_kind": "guided_chain",
+            "chain": ["x ◇ x", "(x ◇ x) ◇ x"],
+        }
+    )
+    bad_endpoint_candidate, bad_endpoint_reason = solver.candidate_from_llm_text_with_reason(
+        guided_problem,
+        bad_endpoint_payload,
+    )
+    assert bad_endpoint_candidate is None
+    assert bad_endpoint_reason == "guided_chain_unproved_or_bad_endpoints"
+
+    unproved_payload = json.dumps(
+        {
+            "verdict": "true",
+            "proof_kind": "guided_chain",
+            "chain": ["x", "y"],
+        }
+    )
+    unproved_problem = {
+        "id": "fake_unproved_true",
+        "eq1_id": 9,
+        "eq2_id": 10,
+        "equation1": "x = x",
+        "equation2": "x = y",
+    }
+    unproved_candidate, unproved_reason = solver.candidate_from_llm_text_with_reason(unproved_problem, unproved_payload)
+    assert unproved_candidate is None
+    assert unproved_reason == "guided_chain_unproved_or_bad_endpoints"
+
     no_json_candidate, no_json_reason = solver.candidate_from_llm_text_with_reason(false_problem, "not json")
     assert no_json_candidate is None
     assert no_json_reason == "no_json_object"
@@ -136,6 +186,13 @@ def main() -> int:
     proof_body_candidate = solver.candidate_from_llm_text(true_problem, proof_body_payload)
     assert proof_body_candidate is not None
     assert proof_body_candidate["route"] == "llm:true:proof_body"
+    disabled_raw_candidate, disabled_raw_reason = solver.candidate_from_llm_text_with_reason(
+        true_problem,
+        proof_body_payload,
+        allow_raw_true=False,
+    )
+    assert disabled_raw_candidate is None
+    assert disabled_raw_reason == "raw_true_disabled"
 
     def fake_marathon_call(prompt, *, config=None, max_seconds=None):
         assert "Return exactly one JSON object" in prompt

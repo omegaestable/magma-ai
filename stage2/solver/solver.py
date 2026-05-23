@@ -44,6 +44,8 @@ Previous judge attempts:
 Accepted JSON shapes:
 1. TRUE rewrite chain, checked and rendered by the solver:
    {"verdict":"true","proof_kind":"rewrite_chain","chain":["<goal lhs>","<middle>","<goal rhs>"]}
+   Use proof_kind "guided_chain" when a step may need a short solver-owned
+   congruence or closure proof.
 2. TRUE Lean body fallback, checked by the judge after sanitizer checks:
    {"verdict":"true","proof":"intro x y\n  exact ..."}
 3. TRUE full Lean fallback, checked by the judge after sanitizer checks:
@@ -52,8 +54,9 @@ Accepted JSON shapes:
    {"verdict":"false","counterexample_table":[[0,1],[1,0]]}
 
 Do not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,
-or Teorth theorem names. If you are unsure, return the finite table DSL or a
-short proof body using only h, Eq.trans/.symm, congrArg, exact, calc, and simpa.
+or Teorth theorem names. Marathon accepts only solver-verified DSL certificates,
+so raw Lean/proof bodies are mainly a Solo debugging fallback. If you are unsure,
+return a TRUE chain whose adjacent terms are solver-provable, or a finite table DSL.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
@@ -84,6 +87,8 @@ EQUATIONAL_CLOSURE_MAX_FILLS = 350
 EQUATIONAL_CLOSURE_TERM_SLACK = 10
 EQUATIONAL_CLOSURE_DEPTH_SLACK = 3
 EQUATIONAL_CLOSURE_TIME_BUDGET = 0.45
+GUIDED_CHAIN_MAX_DEPTH = 3
+GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 0.08
 LLM_MAX_ROUNDS = 2
 MARATHON_LLM_MAX_CALLS = 24
 MARATHON_LLM_BATCH_SIZE = 10
@@ -655,6 +660,441 @@ def singleton_route(eq1: dict[str, Any]) -> tuple[str, bool] | None:
     return None
 
 
+def middle_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "op" or op_side[2][0] != "var":
+            continue
+        root = str(variable_side[1])
+        inner = op_side[1]
+        tail = op_side[2]
+        if inner[1][0] != "var" or inner[2] != ("var", root):
+            continue
+        lead = str(inner[1][1])
+        tail_name = str(tail[1])
+        if len({root, lead, tail_name}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, tail_name}:
+            continue
+        return root, lead, tail_name, swapped
+    return None
+
+
+def middle_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = middle_self_collapse_source(eq1)
+    if source is None:
+        return None
+    root, lead, tail, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", tail: "c"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hc : ∀ a b c : G, a = (b ◇ a) ◇ c := by\n"
+        "    intro a b c\n"
+        f"    exact {call}\n"
+        "  have hright : ∀ a b c : G, b = a ◇ c := by\n"
+        "    intro a b c\n"
+        "    have h1 : a = (b ◇ a) ◇ b := hc a b b\n"
+        "    have h2 : b = ((b ◇ a) ◇ b) ◇ c := hc b (b ◇ a) c\n"
+        "    exact h2.trans (congrArg (fun t => t ◇ c) h1.symm)\n"
+        "  have hall : ∀ a b : G, a = b := by\n"
+        "    intro a b\n"
+        "    have hb : b = a := by\n"
+        "      exact (hright a b a).trans (hright a a a).symm\n"
+        "    exact hb.symm\n"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:middle_self_collapse", code
+
+
+def front_double_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
+            continue
+        root = str(variable_side[1])
+        lead = str(op_side[1][1])
+        middle = op_side[2]
+        if middle[0] != "op" or middle[1] != ("var", root):
+            continue
+        tail = middle[2]
+        if tail[0] != "op" or tail[1] != ("var", root) or tail[2][0] != "var":
+            continue
+        tail_name = str(tail[2][1])
+        if len({root, lead, tail_name}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, tail_name}:
+            continue
+        return root, lead, tail_name, swapped
+    return None
+
+
+def front_double_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = front_double_self_collapse_source(eq1)
+    if source is None:
+        return None
+    root, lead, tail, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", tail: "c"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hc : ∀ a b c : G, a = b ◇ (a ◇ (a ◇ c)) := by\n"
+        "    intro a b c\n"
+        f"    exact {call}\n"
+        "  have hall : ∀ a b : G, a = b := by\n"
+        "    have hrow : ∀ a b c : G, a ◇ b = a ◇ (a ◇ c) := by\n"
+        "      intro a b c\n"
+        "      have ha : a = (b ◇ (b ◇ c)) ◇ (a ◇ (a ◇ c)) := by\n"
+        "        exact hc a (b ◇ (b ◇ c)) c\n"
+        "      have ht : b ◇ (b ◇ c) = (a ◇ (a ◇ c)) ◇ ((b ◇ (b ◇ c)) ◇ a) := by\n"
+        "        exact (hc (b ◇ (b ◇ c)) (a ◇ (a ◇ c)) (a ◇ (a ◇ c))).trans (congrArg (fun t => (a ◇ (a ◇ c)) ◇ ((b ◇ (b ◇ c)) ◇ t)) ha.symm)\n"
+        "      have hb : b = (a ◇ (a ◇ c)) ◇ ((a ◇ (a ◇ c)) ◇ ((b ◇ (b ◇ c)) ◇ a)) := by\n"
+        "        exact (hc b (a ◇ (a ◇ c)) c).trans (congrArg (fun t => (a ◇ (a ◇ c)) ◇ t) ht)\n"
+        "      have hs : a ◇ (a ◇ c) = a ◇ b := by\n"
+        "        exact (hc (a ◇ (a ◇ c)) a ((b ◇ (b ◇ c)) ◇ a)).trans (congrArg (fun t => a ◇ t) hb.symm)\n"
+        "      exact hs.symm\n"
+        "    intro a b\n"
+        "    have ha : a = (b ◇ b) ◇ (a ◇ a) := by\n"
+        "      exact (hc a (b ◇ b) b).trans (congrArg (fun t => (b ◇ b) ◇ t) (hrow a a b).symm)\n"
+        "    have hb : b = (b ◇ b) ◇ (b ◇ b) := by\n"
+        "      exact (hc b (b ◇ b) b).trans (congrArg (fun t => (b ◇ b) ◇ t) (hrow b b b).symm)\n"
+        "    have hsame : (b ◇ b) ◇ (a ◇ a) = (b ◇ b) ◇ (b ◇ b) := by\n"
+        "      exact (hrow (b ◇ b) (a ◇ a) b).trans (hrow (b ◇ b) (b ◇ b) b).symm\n"
+        "    exact ha.trans (hsame.trans hb.symm)\n"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:front_double_self_collapse", code
+
+
+def alternating_front_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str] | None:
+    for variable_side, op_side in ((eq1["lhs"], eq1["rhs"]), (eq1["rhs"], eq1["lhs"])):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
+            continue
+        root = str(variable_side[1])
+        lead = str(op_side[1][1])
+        middle = op_side[2]
+        if middle[0] != "op" or middle[1] != ("var", root):
+            continue
+        tail = middle[2]
+        if tail[0] != "op" or tail[1] != ("var", lead) or tail[2][0] != "var":
+            continue
+        tail_name = str(tail[2][1])
+        if len({root, lead, tail_name}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, tail_name}:
+            continue
+        return root, lead, tail_name
+    return None
+
+
+def alternating_front_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = alternating_front_self_collapse_source(eq1)
+    if source is None:
+        return None
+    root, lead, _tail = source
+    singleton_goal = {
+        "lhs": ("var", root),
+        "rhs": ("var", lead),
+        "variables": [root, lead],
+        "lhs_text": root,
+        "rhs_text": lead,
+        "text": f"{root} = {lead}",
+    }
+    result = _closure_proof_expr_impl(
+        eq1,
+        singleton_goal,
+        route_name="true:alternating_front_self_collapse:hall",
+        chain_max_depth=EQUATIONAL_CLOSURE_CHAIN_MAX_DEPTH,
+        pool_limit=EQUATIONAL_CLOSURE_POOL_LIMIT,
+        frontier_limit=EQUATIONAL_CLOSURE_FRONTIER_LIMIT,
+        max_fills=EQUATIONAL_CLOSURE_MAX_FILLS,
+        term_slack=EQUATIONAL_CLOSURE_TERM_SLACK,
+        depth_slack=EQUATIONAL_CLOSURE_DEPTH_SLACK,
+        time_budget=0.08,
+    )
+    if result is None:
+        return None
+    _route, proof_expr = result
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"  have hall : ∀ {root} {lead} : G, {root} = {lead} := by\n"
+        f"    intro {root} {lead}\n"
+        f"    exact {proof_expr}\n"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:alternating_front_self_collapse", code
+
+
+def mirrored_alternating_front_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
+            continue
+        root = str(variable_side[1])
+        lead = str(op_side[1][1])
+        middle = op_side[2]
+        if middle[0] != "op" or middle[1] != ("var", root):
+            continue
+        tail = middle[2]
+        if tail[0] != "op" or tail[1][0] != "var" or tail[2] != ("var", lead):
+            continue
+        tail_name = str(tail[1][1])
+        if len({root, lead, tail_name}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, tail_name}:
+            continue
+        return root, lead, tail_name, swapped
+    return None
+
+
+def mirrored_alternating_front_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = mirrored_alternating_front_self_collapse_source(eq1)
+    if source is None:
+        return None
+    root, lead, tail, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", tail: "c"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsrc : ∀ a b c : G, a = b ◇ (a ◇ (c ◇ b)) := by\n"
+        "    intro a b c\n"
+        f"    exact {call}\n"
+        "  have hall : ∀ a b : G, a = b := by\n"
+        "    intro a b\n"
+        "    have hc : ∀ x y z : G, x = (y ◇ x) ◇ z := by\n"
+        "      intro x y z\n"
+        "      exact (hsrc x (y ◇ x) z).trans (congrArg (fun t => (y ◇ x) ◇ t) (hsrc z x y).symm)\n"
+        "    have hright : ∀ x y z : G, y = x ◇ z := by\n"
+        "      intro x y z\n"
+        "      have h1 : x = (y ◇ x) ◇ y := hc x y y\n"
+        "      have h2 : y = ((y ◇ x) ◇ y) ◇ z := hc y (y ◇ x) z\n"
+        "      exact h2.trans (congrArg (fun t => t ◇ z) h1.symm)\n"
+        "    exact ((hright a b a).trans (hright a a a).symm).symm\n"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:mirrored_alternating_front_self_collapse", code
+
+
+def sandwich_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        root = str(variable_side[1])
+        root_term = ("var", root)
+        if op_side[1] != root_term:
+            continue
+        tail = op_side[2]
+        if tail[0] != "op" or tail[1][0] != "var":
+            continue
+        lead = str(tail[1][1])
+        inner = tail[2]
+        if inner[0] != "op" or inner[1][0] != "var" or inner[2] != ("var", lead):
+            continue
+        middle = str(inner[1][1])
+        if len({root, lead, middle}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, middle}:
+            continue
+        return root, lead, middle, swapped
+    return None
+
+
+def projection_proof_expr_from_law(
+    eq2: dict[str, Any],
+    side: str,
+    *,
+    hypothesis_name: str,
+) -> str | None:
+    law = parse_equation("x = x ◇ y" if side == "left" else "x = y ◇ x")
+    left = projection_term_proof(law, eq2["lhs"], side, hypothesis_name=hypothesis_name)
+    right = projection_term_proof(law, eq2["rhs"], side, hypothesis_name=hypothesis_name)
+    if left is None or right is None:
+        return None
+    left_proof, left_target = left
+    right_proof, right_target = right
+    if left_target != right_target:
+        return None
+    if left_proof == "rfl":
+        return f"({right_proof}).symm" if right_proof != "rfl" else "rfl"
+    if right_proof == "rfl":
+        return left_proof
+    return f"({left_proof}).trans ({right_proof}).symm"
+
+
+def sandwich_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = sandwich_left_projection_source(eq1)
+    if source is None:
+        return None
+    proof_expr = projection_proof_expr_from_law(eq2, "left", hypothesis_name="hleft")
+    if proof_expr is None:
+        return None
+    root, lead, middle, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", middle: "c"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsrc : ∀ a b c : G, a = a ◇ (b ◇ (c ◇ b)) := by\n"
+        "    intro a b c\n"
+        f"    exact {call}\n"
+        "  have hleft : ∀ a b : G, a = a ◇ b := by\n"
+        "    intro a b\n"
+        "    exact\n"
+        "      ((hsrc a b a).trans\n"
+        "        (congrArg (fun t => a ◇ (b ◇ t)) (hsrc (a ◇ b) b a))).trans\n"
+        "        ((congrArg (fun t => a ◇ t) (hsrc b (a ◇ b) b)).symm)\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return "true:sandwich_left_projection", code
+
+
+def square_twist_comm_source(eq1: dict[str, Any]) -> tuple[str, str, bool] | None:
+    for swapped, source_lhs, source_rhs in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if source_lhs[0] != "op" or source_rhs[0] != "op" or source_rhs[1][0] != "op":
+            continue
+        if source_lhs[1][0] != "var" or source_lhs[2][0] != "var" or source_rhs[2][0] != "var":
+            continue
+        left_name = str(source_lhs[1][1])
+        right_name = str(source_lhs[2][1])
+        square = source_rhs[1]
+        tail_name = str(source_rhs[2][1])
+        if left_name == right_name or tail_name != left_name:
+            continue
+        if square != ("op", ("var", right_name), ("var", right_name)):
+            continue
+        if set(eq1["variables"]) != {left_name, right_name}:
+            continue
+        return left_name, right_name, swapped
+    return None
+
+
+@lru_cache(maxsize=None)
+def commutative_term_key(term: Term) -> Term:
+    if term[0] == "var":
+        return term
+    left = commutative_term_key(term[1])
+    right = commutative_term_key(term[2])
+    if repr(right) < repr(left):
+        left, right = right, left
+    return "op", left, right
+
+
+def combine_binary_congr(
+    left_src: Term,
+    right_src: Term,
+    left_dst: Term,
+    left_proof: str,
+    right_proof: str,
+) -> str:
+    proof_expr: str | None = None
+    if left_proof != "rfl":
+        proof_expr = f"congrArg (fun t => t ◇ {term_to_lean(right_src)}) ({left_proof})"
+    if right_proof != "rfl":
+        proof = f"congrArg (fun t => {term_to_lean(left_dst)} ◇ t) ({right_proof})"
+        proof_expr = chain_trans(proof_expr, proof)
+    return proof_expr or "rfl"
+
+
+def commutative_term_proof(src: Term, dst: Term, *, hypothesis_name: str = "hcomm") -> str | None:
+    if src == dst:
+        return "rfl"
+    if src[0] != "op" or dst[0] != "op":
+        return None
+
+    left_direct = commutative_term_proof(src[1], dst[1], hypothesis_name=hypothesis_name)
+    if left_direct is not None:
+        right_direct = commutative_term_proof(src[2], dst[2], hypothesis_name=hypothesis_name)
+        if right_direct is not None:
+            return combine_binary_congr(src[1], src[2], dst[1], left_direct, right_direct)
+
+    left_swapped = commutative_term_proof(src[2], dst[1], hypothesis_name=hypothesis_name)
+    if left_swapped is None:
+        return None
+    right_swapped = commutative_term_proof(src[1], dst[2], hypothesis_name=hypothesis_name)
+    if right_swapped is None:
+        return None
+    swap_proof = f"{hypothesis_name} {term_to_lean(src[1])} {term_to_lean(src[2])}"
+    rest = combine_binary_congr(src[2], src[1], dst[1], left_swapped, right_swapped)
+    return chain_trans(swap_proof, rest)
+
+
+def square_twist_comm_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = square_twist_comm_source(eq1)
+    if source is None or commutative_term_key(eq2["lhs"]) != commutative_term_key(eq2["rhs"]):
+        return None
+    left_name, right_name, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {left_name: "a", right_name: "b"})
+    if swapped:
+        call = f"({call}).symm"
+    proof_expr = commutative_term_proof(eq2["lhs"], eq2["rhs"])
+    if proof_expr is None:
+        return None
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hc : ∀ a b : G, a ◇ b = (b ◇ b) ◇ a := by\n"
+        "    intro a b\n"
+        f"    exact {call}\n"
+        "  have hsq : ∀ a : G, a ◇ a = (a ◇ a) ◇ (a ◇ a) := by\n"
+        "    intro a\n"
+        "    exact (hc a a).trans (hc (a ◇ a) a)\n"
+        "  have hcomm : ∀ a b : G, a ◇ b = b ◇ a := by\n"
+        "    intro a b\n"
+        "    have h1 : a ◇ b = (b ◇ b) ◇ a := hc a b\n"
+        "    have h2 : (b ◇ b) ◇ a = (a ◇ a) ◇ (b ◇ b) := hc (b ◇ b) a\n"
+        "    have h3 : (a ◇ a) ◇ (b ◇ b) = (b ◇ b) ◇ (a ◇ a) := by\n"
+        "      exact (hc (a ◇ a) (b ◇ b)).trans (congrArg (fun t => t ◇ (a ◇ a)) (hsq b).symm)\n"
+        "    have h4 : (b ◇ b) ◇ (a ◇ a) = (a ◇ a) ◇ b := (hc (a ◇ a) b).symm\n"
+        "    exact h1.trans (h2.trans (h3.trans (h4.trans (hc b a).symm)))\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return "true:square_twist_comm", code
+
+
 def direct_substitution_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, dict[str, Term]] | None:
     for swapped in (False, True):
         source_lhs = eq1["rhs"] if swapped else eq1["lhs"]
@@ -987,7 +1427,12 @@ def c9_e1072_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[s
     return f"true:c9_e1072_collapse:{route}", code
 
 
-def rewrite_steps_from_term(eq1: dict[str, Any], term: Term) -> list[tuple[Term, str, str]]:
+def rewrite_steps_from_term(
+    eq1: dict[str, Any],
+    term: Term,
+    *,
+    hypothesis_name: str = "h",
+) -> list[tuple[Term, str, str]]:
     steps: list[tuple[Term, str, str]] = []
     sides = (eq1["lhs"], eq1["rhs"])
     for path in subterm_paths(term):
@@ -1002,7 +1447,7 @@ def rewrite_steps_from_term(eq1: dict[str, Any], term: Term) -> list[tuple[Term,
             new_term = replace_subterm(term, path, replacement)
             if new_term == term:
                 continue
-            call = call_expression(eq1["variables"], subst)
+            call = call_expression(eq1["variables"], subst, hypothesis_name)
             proof = call if source_idx == 0 else f"({call}).symm"
             if path:
                 context = context_to_lean(term, path, "t")
@@ -1011,15 +1456,21 @@ def rewrite_steps_from_term(eq1: dict[str, Any], term: Term) -> list[tuple[Term,
     return steps
 
 
-def proof_between_terms(eq1: dict[str, Any], src: Term, dst: Term) -> tuple[str, str] | None:
+def proof_between_terms(
+    eq1: dict[str, Any],
+    src: Term,
+    dst: Term,
+    *,
+    hypothesis_name: str = "h",
+) -> tuple[str, str] | None:
     sides = (eq1["lhs"], eq1["rhs"])
     for source_idx in (0, 1):
         subst: dict[str, Term] = {}
         if match_term(sides[source_idx], src, subst) and match_term(sides[1 - source_idx], dst, subst):
-            call = call_expression(eq1["variables"], subst)
+            call = call_expression(eq1["variables"], subst, hypothesis_name)
             proof = call if source_idx == 0 else f"({call}).symm"
             return proof, f"rewrite_whole:{source_idx}"
-    for new_term, proof, route in rewrite_steps_from_term(eq1, src):
+    for new_term, proof, route in rewrite_steps_from_term(eq1, src, hypothesis_name=hypothesis_name):
         if new_term == dst:
             return proof, route
     return None
@@ -1029,15 +1480,17 @@ def projection_term_proof(
     eq1: dict[str, Any],
     term: Term,
     side: str,
+    *,
+    hypothesis_name: str = "h",
 ) -> tuple[str, str] | None:
     if term[0] == "var":
         return "rfl", str(term[1])
     projected = term[2] if side == "right" else term[1]
-    immediate = proof_between_terms(eq1, term, projected)
+    immediate = proof_between_terms(eq1, term, projected, hypothesis_name=hypothesis_name)
     if immediate is None:
         return None
     proof_expr = immediate[0]
-    rest = projection_term_proof(eq1, projected, side)
+    rest = projection_term_proof(eq1, projected, side, hypothesis_name=hypothesis_name)
     if rest is None:
         return None
     rest_proof, target_var = rest
@@ -1092,6 +1545,47 @@ def find_rewrite_chain(
                 seen.add(new_term)
                 next_queue.append((new_term, new_proofs, new_routes))
         queue = next_queue
+    return None
+
+
+def proof_between_terms_guided(
+    eq1: dict[str, Any],
+    variables: list[str],
+    src: Term,
+    dst: Term,
+    *,
+    max_depth: int = GUIDED_CHAIN_MAX_DEPTH,
+    closure_time_budget: float | None = GUIDED_CHAIN_CLOSURE_TIME_BUDGET,
+) -> tuple[str, str] | None:
+    if src == dst:
+        return "rfl", "guided:rfl"
+
+    direct = proof_between_terms(eq1, src, dst)
+    if direct is not None:
+        proof, route = direct
+        return proof, route
+
+    edge_eq = {"lhs": src, "rhs": dst, "variables": variables}
+    chain = find_rewrite_chain(eq1, edge_eq, max_depth=max_depth)
+    if chain is not None:
+        routes, proof_expr = chain
+        return proof_expr, "guided:rewrite_chain:" + ",".join(routes)
+
+    closure = _closure_proof_expr_impl(
+        eq1,
+        edge_eq,
+        route_name="guided:equational_closure",
+        chain_max_depth=2,
+        pool_limit=12,
+        frontier_limit=180,
+        max_fills=80,
+        term_slack=6,
+        depth_slack=2,
+        time_budget=closure_time_budget,
+    )
+    if closure is not None:
+        route, proof_expr = closure
+        return proof_expr, route
     return None
 
 
@@ -1233,7 +1727,7 @@ def combine_meeting_proofs(left_proof: str | None, right_proof: str | None) -> s
     return f"({left_proof}).trans ({right_proof}).symm"
 
 
-def _closure_route_impl(
+def _closure_proof_expr_impl(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
     *,
@@ -1302,8 +1796,7 @@ def _closure_route_impl(
                         proof_expr = combine_meeting_proofs(new_proof, other_seen[new_term])
                     else:
                         proof_expr = combine_meeting_proofs(other_seen[new_term], new_proof)
-                    code = substitution_true_certificate(eq2["variables"], proof_expr)
-                    return next_frontier, (route_name, code), False
+                    return next_frontier, (route_name, proof_expr), False
                 seen[new_term] = new_proof
                 next_frontier.append(new_term)
                 if len(seen) >= frontier_limit:
@@ -1331,6 +1824,37 @@ def _closure_route_impl(
             break
 
     return None
+
+
+def _closure_route_impl(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    route_name: str,
+    chain_max_depth: int,
+    pool_limit: int,
+    frontier_limit: int,
+    max_fills: int,
+    term_slack: int,
+    depth_slack: int,
+    time_budget: float | None,
+) -> tuple[str, str] | None:
+    result = _closure_proof_expr_impl(
+        eq1,
+        eq2,
+        route_name=route_name,
+        chain_max_depth=chain_max_depth,
+        pool_limit=pool_limit,
+        frontier_limit=frontier_limit,
+        max_fills=max_fills,
+        term_slack=term_slack,
+        depth_slack=depth_slack,
+        time_budget=time_budget,
+    )
+    if result is None:
+        return None
+    route, proof_expr = result
+    return route, substitution_true_certificate(eq2["variables"], proof_expr)
 
 
 def absorption_closure_route(
@@ -1415,6 +1939,18 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (0, len(eq2["text"]), "true:reflexive")
     if singleton_route(eq1):
         return (1, len(eq2["text"]), "true:singleton")
+    if middle_self_collapse_source(eq1):
+        return (1, len(eq2["text"]), "true:middle_self_collapse")
+    if front_double_self_collapse_source(eq1):
+        return (1, len(eq2["text"]), "true:front_double_self_collapse")
+    if alternating_front_self_collapse_source(eq1):
+        return (1, len(eq2["text"]), "true:alternating_front_self_collapse")
+    if mirrored_alternating_front_self_collapse_source(eq1):
+        return (1, len(eq2["text"]), "true:mirrored_alternating_front_self_collapse")
+    if sandwich_left_projection_source(eq1) and projection_proof_expr_from_law(eq2, "left", hypothesis_name="hleft"):
+        return (2, len(eq2["text"]), "true:sandwich_left_projection")
+    if square_twist_comm_source(eq1) and commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"]):
+        return (2, len(eq2["text"]), "true:square_twist_comm")
     if direct_substitution_route(eq1, eq2):
         return (2, len(eq2["text"]), "true:rewrite")
     if bridge_route(eq1, eq2):
@@ -1512,6 +2048,60 @@ def solve_problem(
                 singleton_true_certificate(eq1["variables"], eq2["variables"], singleton_var, singleton_on_lhs),
             ),
             "route": "true:singleton",
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    middle_self_collapse = middle_self_collapse_route(eq1, eq2)
+    if middle_self_collapse is not None:
+        route, code = middle_self_collapse
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    front_double_self_collapse = front_double_self_collapse_route(eq1, eq2)
+    if front_double_self_collapse is not None:
+        route, code = front_double_self_collapse
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    alternating_front_self_collapse = alternating_front_self_collapse_route(eq1, eq2)
+    if alternating_front_self_collapse is not None:
+        route, code = alternating_front_self_collapse
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    mirrored_alternating_front_self_collapse = mirrored_alternating_front_self_collapse_route(eq1, eq2)
+    if mirrored_alternating_front_self_collapse is not None:
+        route, code = mirrored_alternating_front_self_collapse
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    square_twist_comm = square_twist_comm_route(eq1, eq2)
+    if square_twist_comm is not None:
+        route, code = square_twist_comm
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    sandwich_left_projection = sandwich_left_projection_route(eq1, eq2)
+    if sandwich_left_projection is not None:
+        route, code = sandwich_left_projection
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
             "priority": problem_priority(problem, eq1, eq2),
         }
 
@@ -1808,7 +2398,33 @@ def chain_certificate_from_terms(
     return substitution_true_certificate(eq2["variables"], expr)
 
 
-def candidate_from_llm_text_with_reason(problem: dict[str, Any], text: str) -> tuple[dict[str, Any] | None, str]:
+def guided_chain_certificate_from_terms(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    chain_terms: list[Term],
+) -> str | None:
+    if chain_terms[0] != eq2["lhs"] or chain_terms[-1] != eq2["rhs"]:
+        return None
+    proofs: list[str] = []
+    for src, dst in zip(chain_terms, chain_terms[1:]):
+        step = proof_between_terms_guided(eq1, eq2["variables"], src, dst)
+        if step is None:
+            return None
+        proofs.append(step[0])
+    if not proofs:
+        return None
+    expr = proofs[0]
+    for proof in proofs[1:]:
+        expr = f"({expr}).trans ({proof})"
+    return substitution_true_certificate(eq2["variables"], expr)
+
+
+def candidate_from_llm_text_with_reason(
+    problem: dict[str, Any],
+    text: str,
+    *,
+    allow_raw_true: bool = True,
+) -> tuple[dict[str, Any] | None, str]:
     obj = extract_json_object(text)
     if obj is None:
         return None, "no_json_object"
@@ -1843,7 +2459,7 @@ def candidate_from_llm_text_with_reason(problem: dict[str, Any], text: str) -> t
             chain.extend(step.get("to") for step in steps)
     chain_reject_reason = "no_chain_supplied"
     if chain is not None:
-        variables = set(eq1["variables"]) | set(eq2["variables"])
+        variables = set(eq2["variables"])
         chain_terms = parse_llm_chain_terms(chain, variables)
         if chain_terms is None:
             chain_reject_reason = "rewrite_chain_parse_failed"
@@ -1854,7 +2470,18 @@ def candidate_from_llm_text_with_reason(problem: dict[str, Any], text: str) -> t
                     "answer": make_true_answer(problem, code),
                     "route": "llm:true:rewrite_chain",
                 }, "ok"
-            chain_reject_reason = "rewrite_chain_unproved_or_bad_endpoints"
+            code = guided_chain_certificate_from_terms(eq1, eq2, chain_terms)
+            if code is not None:
+                return {
+                    "answer": make_true_answer(problem, code),
+                    "route": "llm:true:guided_chain",
+                }, "ok"
+            chain_reject_reason = "guided_chain_unproved_or_bad_endpoints"
+
+    if not allow_raw_true:
+        if isinstance(obj.get("code", obj.get("lean")), str) or isinstance(obj.get("proof", obj.get("proof_body")), str):
+            return None, "raw_true_disabled"
+        return None, chain_reject_reason
 
     code = obj.get("code", obj.get("lean"))
     if isinstance(code, str) and sanitize_lean_code(code, verdict="true"):
@@ -1877,9 +2504,30 @@ def candidate_from_llm_text_with_reason(problem: dict[str, Any], text: str) -> t
     return None, chain_reject_reason
 
 
-def candidate_from_llm_text(problem: dict[str, Any], text: str) -> dict[str, Any] | None:
-    candidate, _reason = candidate_from_llm_text_with_reason(problem, text)
+def candidate_from_llm_text(
+    problem: dict[str, Any],
+    text: str,
+    *,
+    allow_raw_true: bool = True,
+) -> dict[str, Any] | None:
+    candidate, _reason = candidate_from_llm_text_with_reason(problem, text, allow_raw_true=allow_raw_true)
     return candidate
+
+
+def terms_preview(terms: list[Term] | tuple[Term, ...], *, limit: int = 10) -> str:
+    rendered: list[str] = []
+    seen: set[str] = set()
+    for term in terms:
+        text = term_to_lean(term)
+        if text in seen:
+            continue
+        seen.add(text)
+        rendered.append(text)
+        if len(rendered) >= limit:
+            break
+    if not rendered:
+        return "(none)"
+    return ", ".join(rendered)
 
 
 def solver_analysis(problem: dict[str, Any]) -> str:
@@ -1888,21 +2536,64 @@ def solver_analysis(problem: dict[str, Any]) -> str:
         eq2 = parse_equation(str(problem["equation2"]))
     except (KeyError, ValueError):
         return "Could not parse one of the equations; prefer a finite-table DSL only if certain."
+    hypothesis_subterms = list(term_subterms_tuple(eq1["lhs"]) + term_subterms_tuple(eq1["rhs"]))
+    goal_subterms = list(term_subterms_tuple(eq2["lhs"]) + term_subterms_tuple(eq2["rhs"]))
+    deterministic_status: list[str] = []
+    deterministic_status.append("singleton: yes" if singleton_route(eq1) else "singleton: no")
+    deterministic_status.append("direct substitution: yes" if direct_substitution_route(eq1, eq2) else "direct substitution: no")
+    deterministic_status.append("two-instance bridge: yes" if bridge_route(eq1, eq2) else "two-instance bridge: no")
+    deterministic_status.append(
+        "completed bridge/constancy: yes"
+        if completed_bridge_route(eq1, eq2, max_trials=300)
+        else "completed bridge/constancy: no"
+    )
+    deterministic_status.append("projection law: yes" if projection_law_route(eq1) else "projection law: no")
+    deterministic_status.append("absorption-like hypothesis: yes" if absorption_hypothesis(eq1) else "absorption-like hypothesis: no")
     cues: list[str] = [
         f"hypothesis variables: {' '.join(eq1['variables']) or '(none)'}",
         f"goal variables: {' '.join(eq2['variables']) or '(none)'}",
         f"goal lhs: {eq2['lhs_text']}",
         f"goal rhs: {eq2['rhs_text']}",
+        f"hypothesis subterms: {terms_preview(hypothesis_subterms, limit=12)}",
+        f"goal subterms: {terms_preview(goal_subterms, limit=12)}",
+        "deterministic route cues: " + "; ".join(deterministic_status),
     ]
-    if singleton_route(eq1):
-        cues.append("singleton/collapse cue was present but should already have been attempted deterministically.")
-    if direct_substitution_route(eq1, eq2):
-        cues.append("direct substitution cue was present but should already have been attempted deterministically.")
-    if bridge_route(eq1, eq2) or completed_bridge_route(eq1, eq2, max_trials=300):
-        cues.append("two-instance bridge/constancy cue was present but should already have been attempted deterministically.")
-    cues.append("For TRUE, prefer a rewrite_chain whose adjacent terms are one explicit use of the hypothesis, possibly under congrArg.")
+    if absorption_hypothesis(eq1):
+        cues.append("This is a good TRUE candidate for absorption/collapse/congruence chaining.")
+    elif projection_cue(eq1, eq2):
+        cues.append("Boundary/projection cues can be FALSE; use TRUE only if the chain is explicit and solver-provable.")
+    cues.append("Admissible term syntax: variables x y z w u v; binary products as a ◇ b; parentheses are allowed.")
+    cues.append("A TRUE chain must start exactly with the goal lhs and end exactly with the goal rhs.")
+    cues.append("Each adjacent TRUE chain step must be one explicit hypothesis rewrite, short rewrite chain, or bounded solver-owned closure/congruence step.")
+    cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
+    cues.append("Raw Lean/proof bodies may be judged in Solo, but Marathon will reject raw TRUE and append only solver-verified DSL certificates.")
     cues.append("For FALSE, provide a square finite table; the solver will test it before emitting Lean.")
     return "\n".join(cues)
+
+
+def llm_problem_priority(priority: tuple[int, int, str], problem: dict[str, Any]) -> tuple[int, int, int, str]:
+    try:
+        eq1 = parse_equation(str(problem["equation1"]))
+        eq2 = parse_equation(str(problem["equation2"]))
+    except (KeyError, ValueError):
+        return (9, priority[0], priority[1], str(problem.get("id", "")))
+
+    score = 4
+    if absorption_hypothesis(eq1):
+        score -= 3
+    if eq1["lhs"][0] == "var" or eq1["rhs"][0] == "var":
+        score -= 1
+    if eq2["lhs"][0] == "var" or eq2["rhs"][0] == "var":
+        score -= 1
+    if term_vars(eq2["lhs"]) == term_vars(eq2["rhs"]):
+        score -= 1
+    if projection_cue(eq1, eq2) and not absorption_hypothesis(eq1):
+        score += 2
+    if not term_vars(eq2["lhs"]).issubset(set(eq1["variables"])) or not term_vars(eq2["rhs"]).issubset(set(eq1["variables"])):
+        score += 1
+    score = max(0, score)
+    size = term_size(eq1["lhs"]) + term_size(eq1["rhs"]) + term_size(eq2["lhs"]) + term_size(eq2["rhs"])
+    return (score, priority[0], size, str(problem.get("id", "")))
 
 
 def render_marathon_prompt(problem: dict[str, Any], analysis: str) -> str:
@@ -1960,7 +2651,11 @@ def marathon_llm_attempt(
         return result
 
     response_text = str(response.get("response", ""))
-    candidate, reject_reason = candidate_from_llm_text_with_reason(problem, response_text)
+    candidate, reject_reason = candidate_from_llm_text_with_reason(
+        problem,
+        response_text,
+        allow_raw_true=False,
+    )
     if candidate is None:
         result["reject_reason"] = reject_reason
         result["response_chars"] = len(response_text)
@@ -2207,7 +2902,12 @@ def run_marathon() -> int:
             file=sys.stderr,
         )
     if call_llm is not None and budget_tokens != 0:
-        unresolved = [(priority, problem) for priority, problem in prioritized if str(problem.get("id")) not in solved_ids]
+        unresolved = [
+            (llm_problem_priority(priority, problem), problem)
+            for priority, problem in prioritized
+            if str(problem.get("id")) not in solved_ids
+        ]
+        unresolved.sort(key=lambda item: item[0])
         index = 0
         stop_llm = False
         with ThreadPoolExecutor(max_workers=MARATHON_LLM_BATCH_SIZE) as executor:

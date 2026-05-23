@@ -44,7 +44,7 @@ not exercise the LLM proxy path and must not be cited as evidence for an LLM
 strategy. Positive-token LLM evidence must show both `llm_calls > 0` from the
 solver stderr summary and `tokens_used > 0` from the official Marathon summary.
 
-On a local machine, the proxy still needs one upstream key in the runner environment, usually `OPENAI_API_KEY` or `OPENROUTER_API_KEY`. If neither is set, unresolved cases can fail with:
+On a local machine, the proxy still needs one upstream key in the runner environment, usually `OPENAI_API_KEY` or `OPENROUTER_API_KEY`. The repo-owned probe and parity entrypoints populate that runner environment from process env first, then the ignored root `.env`, then legacy Windows User env fallback. If neither source is configured, unresolved cases can fail with:
 
 ```text
 OPENAI_API_KEY or OPENROUTER_API_KEY not set
@@ -55,30 +55,35 @@ That means local LLM plumbing reached the proxy, but the local upstream credenti
 ## Local OpenRouter Setup
 
 Do not put real upstream keys in `solver.py`, result summaries, repository docs,
-or ad hoc shell commands that are likely to be copied into logs. To configure a
-Windows homelab runner, use the secret-safe helper from the repository root:
+or ad hoc shell commands that are likely to be copied into logs. For standard
+local Stage 2 runs, use the repo-local helper from the repository root:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-.\stage2\experiments\set_openrouter_user_env.ps1
+.\stage2\experiments\set_openrouter_repo_env.ps1
 ```
 
-The helper prompts with hidden input, stores `OPENROUTER_API_KEY` in the Windows
-User environment, and also sets it for the current PowerShell process. Restart
-VS Code terminals before long runs. If a key was pasted into chat or logs,
-rotate it first and configure the rotated value.
+The helper prompts with hidden input, writes `OPENROUTER_API_KEY` to the ignored
+root `.env`, and also sets it for the current PowerShell process. Repo-owned
+Stage 2 LLM entrypoints load process env first, then `.env`, then legacy
+Windows User env fallback. If a key was pasted into chat or logs, rotate it
+first and configure the rotated value.
 
 If terminal hidden input is unreliable, copy the rotated key to the local
 Windows clipboard and use the clipboard mode instead:
 
 ```powershell
-.\stage2\experiments\set_openrouter_user_env.ps1 -FromClipboard
+.\stage2\experiments\set_openrouter_repo_env.ps1 -FromClipboard
 ```
 
 This mode reads the key from the local clipboard, validates that it looks like a
-full OpenRouter key, stores it in the Windows User environment, and clears the
+full OpenRouter key, stores it in the ignored root `.env`, and clears the
 clipboard unless `-KeepClipboard` is supplied. It prints only shape metadata,
 never the key value.
+
+The legacy Windows User environment helper,
+`stage2/experiments/set_openrouter_user_env.ps1`, still exists for machine-wide
+storage, but it is no longer the standard repo path.
 
 Verify the local proxy path without printing the key:
 
@@ -86,9 +91,11 @@ Verify the local proxy path without printing the key:
 .\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
 ```
 
-This reports only non-secret shape metadata. The probe reads the Windows User
-environment directly if the current terminal has not inherited the key yet. For
-a low-token direct OpenRouter request-shape smoke:
+This reports only non-secret shape metadata, including whether the key came
+from `process_env`, `repo_env`, or `windows_user_env`. The probe and parity
+runner read the ignored root `.env` directly, so new VS Code terminals do not
+need to inherit the key first. For a low-token direct OpenRouter request-shape
+smoke:
 
 ```powershell
 .\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-direct-openrouter-smoke
@@ -119,6 +126,17 @@ logs instead of the summary.
 .\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py
 ```
 
+For the default wide public hard-set check, use the playground-equivalent
+public sweep helper. It packages the single-file submission, runs the official
+public `hard1`, `hard2`, and `hard3` manifests through the Marathon proxy, uses
+the published evaluation-setup reference budgets (`3600` seconds and `65536`
+tokens per problem, scaled by compression ratio), requires nonzero LLM usage,
+and writes combined gap-analysis summaries under `tmp_stage2_smoke/`.
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\run_playground_public_sweeps.py
+```
+
 For a targeted unresolved-TRUE run, use:
 
 ```powershell
@@ -129,6 +147,10 @@ The runner defaults Marathon to at least `131072` tokens so the official
 `65536` max-output setting has enough headroom. Smaller explicit budgets are
 allowed for debugging, but they should fail the parity gate if they prevent real
 LLM use.
+
+The wide public sweep helper defaults to the published `0.5` compression ratio.
+Override `--compression-ratio` only when intentionally simulating a different
+official budget share.
 
 For a fast transport-only smoke that avoids long hard-problem proof attempts,
 use the temporary one-call proxy smoke:

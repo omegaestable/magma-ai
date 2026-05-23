@@ -106,7 +106,15 @@ Get-ChildItem -Force stage2/submissions
 
 Current packaged size should be checked after every package step; the active solver no longer exposes the historical grind route and remains far below the 500 KB limit.
 
-For playground/upload readiness, run the positive-token checklist in `stage2/docs/playground-preflight.md`. Local LLM calls require an upstream key in the runner environment, but the submitted solver must rely only on the official proxy protocol.
+Before positive-token parity or proxy smokes, configure the ignored repo-root
+`.env` and verify the non-secret key shape:
+
+```powershell
+.\stage2\experiments\set_openrouter_repo_env.ps1
+.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
+```
+
+For playground/upload readiness, run the positive-token checklist in `stage2/docs/playground-preflight.md`. The repo-owned probe/parity helpers load the upstream key from process env or the ignored root `.env` by default, but the submitted solver must rely only on the official proxy protocol.
 
 ## 6. First Smoke Runs
 
@@ -127,6 +135,21 @@ Push-Location vendor/stage2-official
 c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
 Pop-Location
 ```
+
+Preferred local wide-set LLM readiness gate:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\run_playground_public_sweeps.py
+```
+
+Preferred local small-fixture parity gate:
+
+```powershell
+.\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py
+```
+
+Use the direct Solo and zero-token Marathon commands below as diagnostics, not
+as the default local playground-readiness gate.
 
 Current fast local smoke probes:
 

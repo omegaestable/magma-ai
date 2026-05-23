@@ -69,6 +69,7 @@ Latest local regression evidence after the final optimization/refactor patch:
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
 - Compact witness fixture: `8/8` accepted.
 - Positive-token LLM parity on two unresolved TRUE rows reached the official proxy paths: Solo `llm_calls=2`, Marathon `llm_calls=1`, Marathon `tokens_used=7208`; promotion still blocked by judge rejection / rejected LLM output.
+- Wide public hard-set local readiness now has a dedicated playground-equivalent helper: `stage2/experiments/run_playground_public_sweeps.py` packages the single-file solver, applies the published `3600 s` / `65536 token` per-problem budget model, requires nonzero LLM usage, and writes combined gap-analysis summaries.
 - Python syntax/editor diagnostics and packaged submission syntax checks pass.
 
 Full public validation of the optimized package after the grind rollback is pending. Historical non-grind accepted count from the previous public refresh is `1167/1669`; use positive-token LLM evidence, not grind, to recover TRUE frontier coverage.
@@ -80,6 +81,7 @@ Full public validation of the optimized package after the grind rollback is pend
 - `stage2/experiments/analyze_zero_token_run.py`
 - `stage2/experiments/extract_grind_ledger.py`
 - `stage2/experiments/run_playground_parity_llm.py`
+- `stage2/experiments/run_playground_public_sweeps.py`
 - `stage2/docs/solver-route-ledger.md`
 - `stage2/docs/motif-cards/`
 - `stage2/docs/cleanup-manifest.md`
@@ -95,7 +97,7 @@ Full public validation of the optimized package after the grind rollback is pend
 3. The vendored Solo harness has local OpenRouter provider-normalization drift; call it out before treating local positive-token proxy output as upstream-clean.
 4. For runner-equivalent certificate debugging, use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`. Direct `verify_answer(problem, ...)` omits runner proof policy.
 5. Judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr, summaries, or ledgers.
-6. Local `OPENAI_API_KEY` or `OPENROUTER_API_KEY` errors are transport/setup issues, not submitted-solver protocol failures.
+6. Local `OPENAI_API_KEY` or `OPENROUTER_API_KEY` errors are transport/setup issues, not submitted-solver protocol failures. Repo-owned probe/parity entrypoints load process env first, the ignored root `.env` second, and legacy Windows User env fallback last.
 7. Zero-token Marathon proves deterministic append-only behavior only and is not a playground-readiness gate; LLM readiness requires nonzero proxy calls, nonzero Marathon token usage, and classified failures.
 8. Solo fallback `TRUE INCORRECT` rows and Marathon `not_attempted` rows can be the same unresolved deterministic gap under different runner policies.
 

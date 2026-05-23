@@ -52,7 +52,7 @@ May 21 focused reproduction:
 
 Latest local LLM transport smoke:
 
-- `stage2/experiments/homelab_llm_probe.py --key-status` reports only non-secret key-shape metadata and can read the Windows User environment directly.
+- `stage2/experiments/homelab_llm_probe.py --key-status` reports only non-secret key-shape metadata and reads process env first, then the ignored root `.env`, then legacy Windows User env fallback.
 - `stage2/experiments/homelab_llm_probe.py --run-direct-openrouter-smoke` verifies plain, pinned-provider, and pinned-provider-plus-reasoning OpenRouter request shapes.
 - `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180`
 - Solo: `1/1` accepted with `llm_calls=1`, `missing_key_rows=0`, wall `5.4s`, and solver return code `0`.

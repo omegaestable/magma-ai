@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Run reproducible zero-token Marathon sweeps across local Stage 2 corpora.
+"""Run reproducible Marathon sweeps across local Stage 2 corpora.
 
 This is a development helper, not submitted solver code. It keeps official
 public evidence and Hugging Face discovery evidence separated while using the
 same vendored Marathon runner and packaged single-file solver for every lane.
+
+Zero-token remains the default for deterministic regression, but the helper can
+also run positive-token lanes and fail closed when LLM usage is mandatory.
 """
 
 from __future__ import annotations
@@ -17,6 +20,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+import local_runner_env
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -144,27 +149,87 @@ def read_summary(path: Path) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
+def repo_relative(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
+def stderr_json_records(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    records: list[dict[str, Any]] = []
+    prefix = "[marathon:stderr] "
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if prefix not in line:
+            continue
+        payload = line.split(prefix, 1)[1].strip()
+        try:
+            record = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict):
+            records.append(record)
+    return records
+
+
+def run_metrics(run_dir: Path) -> dict[str, Any]:
+    summary = read_summary(run_dir / "summary.json") or {}
+    records = stderr_json_records(run_dir / "run.log")
+    solver_summaries = [record for record in records if "submitted_total" in record]
+    final_solver_summary = solver_summaries[-1] if solver_summaries else {}
+    llm_disabled_reasons = sorted(
+        {
+            str(record.get("reason") or "unknown")
+            for record in records
+            if record.get("route") == "llm:disabled"
+        }
+    )
+    missing_upstream_key = "no upstream API key" in (run_dir / "run.log").read_text(
+        encoding="utf-8", errors="replace"
+    ) if (run_dir / "run.log").exists() else False
+    return {
+        "score": summary.get("score"),
+        "attempted": summary.get("attempted"),
+        "not_attempted": summary.get("not_attempted"),
+        "by_status": summary.get("by_status") if isinstance(summary.get("by_status"), dict) else {},
+        "wall_seconds": summary.get("wall_seconds"),
+        "tokens_used": summary.get("tokens_used"),
+        "llm_calls": int(final_solver_summary.get("llm_calls", 0) or 0),
+        "submitted_total": final_solver_summary.get("submitted_total"),
+        "submitted_deterministic": final_solver_summary.get("submitted_deterministic"),
+        "missing_upstream_key": missing_upstream_key,
+        "llm_disabled_reasons": llm_disabled_reasons,
+    }
+
+
 def summary_row(spec: SweepSpec, run_dir: Path, status: str, returncode: int | None) -> dict[str, Any]:
     stats = problem_stats(spec.manifest)
-    summary = read_summary(run_dir / "summary.json") or {}
-    by_status = summary.get("by_status") if isinstance(summary.get("by_status"), dict) else {}
+    metrics = run_metrics(run_dir)
     return {
         "name": spec.name,
         "lane": spec.lane,
         "role": spec.role,
-        "manifest": str(spec.manifest.relative_to(REPO_ROOT)),
-        "run_dir": str(run_dir.relative_to(REPO_ROOT)),
+        "manifest": repo_relative(spec.manifest),
+        "run_dir": repo_relative(run_dir),
         "status": status,
         "returncode": returncode,
         "problems": stats["problems"],
         "expected_true": stats["expected_true"],
         "expected_false": stats["expected_false"],
-        "score": summary.get("score"),
-        "attempted": summary.get("attempted"),
-        "not_attempted": summary.get("not_attempted"),
-        "by_status": by_status,
-        "wall_seconds": summary.get("wall_seconds"),
-        "tokens_used": summary.get("tokens_used"),
+        "score": metrics["score"],
+        "attempted": metrics["attempted"],
+        "not_attempted": metrics["not_attempted"],
+        "by_status": metrics["by_status"],
+        "wall_seconds": metrics["wall_seconds"],
+        "tokens_used": metrics["tokens_used"],
+        "llm_calls": metrics["llm_calls"],
+        "submitted_total": metrics["submitted_total"],
+        "submitted_deterministic": metrics["submitted_deterministic"],
+        "missing_upstream_key": metrics["missing_upstream_key"],
+        "llm_disabled_reasons": metrics["llm_disabled_reasons"],
     }
 
 
@@ -184,8 +249,8 @@ def write_combined(run_root: Path, rows: list[dict[str, Any]]) -> None:
         "",
         f"Generated: {payload['generated_at']}",
         "",
-        "| Lane | Dataset | Role | Problems | Score | Attempted | Not attempted | Accepted | Other status | Tokens | Wall s | Status |",
-        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Lane | Dataset | Role | Problems | Score | Attempted | Not attempted | Accepted | Other status | LLM calls | Tokens | Wall s | Status |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         by_status = row.get("by_status") or {}
@@ -194,32 +259,67 @@ def write_combined(run_root: Path, rows: list[dict[str, Any]]) -> None:
         score = "" if row.get("score") is None else row["score"]
         attempted = "" if row.get("attempted") is None else row["attempted"]
         not_attempted = "" if row.get("not_attempted") is None else row["not_attempted"]
+        llm_calls = "" if row.get("llm_calls") is None else row["llm_calls"]
         tokens = "" if row.get("tokens_used") is None else row["tokens_used"]
         wall = "" if row.get("wall_seconds") is None else f"{float(row['wall_seconds']):.1f}"
         lines.append(
             f"| `{row['lane']}` | `{row['name']}` | `{row['role']}` | {row['problems']} | "
             f"{score} | {attempted} | {not_attempted} | {accepted} | {other} | "
-            f"{tokens} | {wall} | `{row['status']}` |"
+            f"{llm_calls} | {tokens} | {wall} | `{row['status']}` |"
         )
     lines.append("")
     (run_root / "sweep-summary.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def command_for(spec: SweepSpec, run_dir: Path, compression_ratio: float) -> list[str]:
-    return [
+def command_for(
+    spec: SweepSpec,
+    run_dir: Path,
+    compression_ratio: float,
+    budget_tokens: int,
+    budget_seconds: float | None,
+) -> list[str]:
+    command = [
         sys.executable,
         str(REPO_ROOT / "vendor" / "stage2-official" / "scripts" / "run_marathon.py"),
         "--solver",
         str(SOLVER_DIR),
         "--manifest",
         str(spec.manifest),
-        "--budget-tokens",
-        "0",
         "--compression-ratio",
         str(compression_ratio),
         "--output-dir",
         str(run_dir),
     ]
+    command.extend(["--budget-tokens", str(budget_tokens)])
+    if budget_seconds is not None:
+        command.extend(["--budget-seconds", str(budget_seconds)])
+    return command
+
+
+def validate_llm_requirement(row: dict[str, Any], *, require_llm: bool) -> str | None:
+    if not require_llm:
+        return None
+    if row.get("missing_upstream_key"):
+        return "missing upstream key or proxy configuration"
+    if int(row.get("llm_calls", 0) or 0) <= 0:
+        reasons = row.get("llm_disabled_reasons") or []
+        if reasons:
+            return f"zero llm_calls (disabled reasons: {', '.join(reasons)})"
+        return "zero llm_calls"
+    if int(row.get("tokens_used", 0) or 0) <= 0:
+        return "zero tokens_used"
+    return None
+
+
+def runner_env() -> dict[str, str]:
+    env, _sources = local_runner_env.load_local_runner_env()
+    env["PYTHONUTF8"] = "1"
+    home = Path.home()
+    elan_bin = str(home / ".elan" / "bin")
+    path = env.get("PATH", "")
+    if elan_bin not in path.split(os.pathsep):
+        env["PATH"] = elan_bin + os.pathsep + path
+    return env
 
 
 def main() -> int:
@@ -229,11 +329,28 @@ def main() -> int:
     parser.add_argument("--include-hf-core-duplicates", action="store_true")
     parser.add_argument("--compression-ratio", type=float, default=0.5)
     parser.add_argument("--run-root", type=Path, default=None)
+    parser.add_argument(
+        "--budget-tokens",
+        type=int,
+        default=0,
+        help="Token budget passed to the official Marathon runner. Default 0 preserves zero-token sweeps; use >0 or -1 to enable LLM calls.",
+    )
+    parser.add_argument(
+        "--budget-seconds",
+        type=float,
+        default=None,
+        help="Optional wall-clock budget override passed to the official Marathon runner.",
+    )
+    parser.add_argument(
+        "--require-llm",
+        action="store_true",
+        help="Fail if a completed run records zero llm_calls or zero tokens_used.",
+    )
     parser.add_argument("--force", action="store_true", help="Rerun even when summary.json exists")
     parser.add_argument("--list", action="store_true", help="List selected datasets and exit")
     args = parser.parse_args()
 
-    run_root = args.run_root or (DEFAULT_RUN_ROOT / f"{datetime.now():%Y-%m-%d}-zero-token-sweep")
+    run_root = (args.run_root or (DEFAULT_RUN_ROOT / f"{datetime.now():%Y-%m-%d}-zero-token-sweep")).resolve()
     specs = select_specs(args.scope, include_core_duplicates=args.include_hf_core_duplicates)
     if args.only:
         wanted = set(args.only)
@@ -256,6 +373,26 @@ def main() -> int:
         print(f"Submission dir must contain only solver.py; found {solver_entries!r}", file=sys.stderr)
         return 2
 
+    if args.require_llm and args.budget_tokens == 0:
+        print("--require-llm is incompatible with --budget-tokens 0", file=sys.stderr)
+        return 2
+
+    key_state = local_runner_env.upstream_key_state()
+    if args.budget_tokens != 0:
+        print(
+            "llm_budget_mode=enabled budget_tokens={0} key_source={1} key_present={2}".format(
+                args.budget_tokens,
+                key_state["source"],
+                str(bool(key_state["value"])).lower(),
+            )
+        )
+    if args.require_llm and not key_state["value"]:
+        print(
+            "LLM usage required but no upstream key was found in process env, repo .env, or Windows User environment.",
+            file=sys.stderr,
+        )
+        return 2
+
     run_root.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []
     overall_rc = 0
@@ -269,21 +406,26 @@ def main() -> int:
             continue
 
         run_dir.mkdir(parents=True, exist_ok=True)
-        cmd = command_for(spec, run_dir, args.compression_ratio)
+        cmd = command_for(spec, run_dir, args.compression_ratio, args.budget_tokens, args.budget_seconds)
         (run_dir / "launcher-command.json").write_text(
             json.dumps({"command": cmd}, indent=2),
             encoding="utf-8",
         )
         print(f"\n[run] {spec.lane}/{spec.name}")
         print(" ".join(cmd))
-        env = os.environ.copy()
-        env["PYTHONUTF8"] = "1"
-        env["PATH"] = str(Path.home() / ".elan" / "bin") + os.pathsep + env.get("PATH", "")
+        env = runner_env()
         proc = subprocess.run(cmd, cwd=REPO_ROOT, env=env, check=False)
         status = "completed" if proc.returncode == 0 else "failed"
-        rows.append(summary_row(spec, run_dir, status, proc.returncode))
+        row = summary_row(spec, run_dir, status, proc.returncode)
+        llm_failure = validate_llm_requirement(row, require_llm=args.require_llm)
+        if llm_failure is not None and status == "completed":
+            status = "failed_llm_requirement"
+            row["status"] = status
+            row["llm_requirement_failure"] = llm_failure
+            overall_rc = 1
+        rows.append(row)
         write_combined(run_root, rows)
-        if proc.returncode != 0:
+        if proc.returncode != 0 or llm_failure is not None:
             overall_rc = proc.returncode or 1
             break
 

@@ -75,6 +75,14 @@ Before upload or playground testing, run `stage2/docs/playground-preflight.md` a
 3. Updating public benchmark claims from smoke-only evidence.
 
 The current solver does not expose broad `true:grind` as an active route. LLM readiness requires a positive-token proxy run with nonzero LLM calls, nonzero Marathon token usage, and classified LLM/proxy/judge outcomes; the solver should never carry local keys or call model APIs directly.
+For wide official public validation under the published playground budget model,
+use `stage2/experiments/run_playground_public_sweeps.py`; it packages the
+single-file solver, applies the public `3600 s` / `65536 token` reference
+budgets per problem, and fails closed on zero-token or zero-call runs.
+For standard local LLM runs, configure the rotated upstream key in the ignored
+root `.env` with `stage2/experiments/set_openrouter_repo_env.ps1`. The
+repo-owned probe/parity entrypoints load process env first, root `.env`
+second, and legacy Windows User env last.
 
 ## Solo Debug Loop
 

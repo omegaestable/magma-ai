@@ -140,6 +140,8 @@ def key_status() -> dict[str, Any]:
         "length": int(shape["length"]),
         "starts_sk_or_v1": bool(shape["starts_sk_or_v1"]),
         "has_whitespace": bool(shape["has_whitespace"]),
+        "source": str(shape.get("source") or "missing"),
+        "repo_env_path": str(shape.get("repo_env_path") or ""),
         "value_hidden": True,
     }
 

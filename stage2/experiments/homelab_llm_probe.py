@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import local_runner_env
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TMP_DIR = REPO_ROOT / "tmp_stage2_smoke"
@@ -34,38 +36,25 @@ PROXY_SMOKE_SOLO_OUTPUT = TMP_DIR / "llm_proxy_smoke_result.json"
 PROXY_SMOKE_MARATHON_DIR = TMP_DIR / "llm_proxy_smoke_marathon"
 
 
-def _windows_user_env(name: str) -> str:
-    if os.name != "nt":
-        return ""
-    try:
-        import winreg
-    except ImportError:
-        return ""
-    try:
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as key:
-            value, _value_type = winreg.QueryValueEx(key, name)
-    except OSError:
-        return ""
-    return str(value or "")
+def upstream_key_state() -> dict[str, str]:
+    return local_runner_env.upstream_key_state()
 
 
 def upstream_key_value() -> str:
-    value = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY") or ""
-    if value:
-        return value
-    # Existing VS Code terminals do not always inherit User-environment changes
-    # made by the setup helper. Read the Windows User env directly for local
-    # probes, then pass it only to child runners through their process env.
-    return _windows_user_env("OPENROUTER_API_KEY") or _windows_user_env("OPENAI_API_KEY")
+    return upstream_key_state()["value"]
 
 
 def upstream_key_shape() -> dict[str, Any]:
-    value = upstream_key_value()
+    state = upstream_key_state()
+    value = state["value"]
     return {
         "present": bool(value),
         "length": len(value),
         "starts_sk_or_v1": value.startswith("sk-or-v1-"),
         "has_whitespace": any(ch.isspace() for ch in value),
+        "source": state["source"],
+        "name": state["name"],
+        "repo_env_path": state["repo_env_path"],
     }
 
 PROXY_SMOKE_SOLVER = r'''
@@ -155,11 +144,14 @@ def print_key_status() -> None:
     shape = upstream_key_shape()
     print(
         "upstream_key_present={present} value_hidden=true length={length} "
-        "starts_sk_or_v1={starts_sk_or_v1} has_whitespace={has_whitespace}".format(
+        "starts_sk_or_v1={starts_sk_or_v1} has_whitespace={has_whitespace} "
+        "source={source} repo_env_path={repo_env_path}".format(
             present=str(shape["present"]).lower(),
             length=shape["length"],
             starts_sk_or_v1=str(shape["starts_sk_or_v1"]).lower(),
             has_whitespace=str(shape["has_whitespace"]).lower(),
+            source=shape["source"],
+            repo_env_path=shape["repo_env_path"],
         )
     )
 
@@ -167,7 +159,9 @@ def print_key_status() -> None:
 def validate_upstream_key() -> None:
     shape = upstream_key_shape()
     if not shape["present"]:
-        raise SystemExit("upstream key not found in process or Windows User environment")
+        raise SystemExit(
+            "upstream key not found in process env, repo .env, or Windows User environment"
+        )
     if not shape["starts_sk_or_v1"]:
         raise SystemExit("configured upstream key does not look like an OpenRouter key")
     if shape["length"] < 40:
@@ -205,13 +199,9 @@ def write_fixture(rows: list[dict[str, Any]], output_path: Path) -> None:
 
 
 def runner_env() -> dict[str, str]:
-    env = dict(os.environ)
+    env, _sources = local_runner_env.load_local_runner_env()
     env["PYTHONUTF8"] = "1"
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    if not env.get("OPENROUTER_API_KEY") and not env.get("OPENAI_API_KEY"):
-        upstream_key = upstream_key_value()
-        if upstream_key:
-            env["OPENROUTER_API_KEY"] = upstream_key
     userprofile = env.get("USERPROFILE")
     if userprofile:
         elan_bin = str(Path(userprofile) / ".elan" / "bin")

@@ -111,11 +111,16 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
 
-Set local LLM credentials only for local experiments. Do not assume these exist in the official solver subprocess.
+Set local LLM credentials only for local experiments. Repo-owned Stage 2 LLM
+entrypoints load the ignored root `.env` before falling back to legacy Windows
+User environment variables. Do not assume these exist in the official solver
+subprocess.
 
 ```powershell
-Copy-Item .env.example .env
+.\stage2\experiments\set_openrouter_repo_env.ps1
 ```
+
+Use `-FromClipboard` if hidden terminal input is unreliable.
 
 Official Lean setup should run inside WSL 2 or Linux/macOS:
 

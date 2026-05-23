@@ -1,9 +1,10 @@
 <#
 Set the local OpenRouter key for official Stage 2 runner experiments.
 
-This script prompts for the key with hidden input, stores it as a Windows
-User environment variable, and makes it available to the current PowerShell
-process. It intentionally never echoes the key.
+Prefer `set_openrouter_repo_env.ps1` for standard repo-local runs. This script
+prompts for the key with hidden input, stores it as a Windows User environment
+variable, and makes it available to the current PowerShell process. It
+intentionally never echoes the key.
 #>
 
 [CmdletBinding()]
@@ -38,6 +39,7 @@ function Set-OpenRouterKeyValue {
     $env:OPENROUTER_API_KEY = $Plain
 }
 
+Write-Host 'Prefer .\stage2\experiments\set_openrouter_repo_env.ps1 for standard repo-local Stage 2 runs.'
 Write-Host 'This stores OPENROUTER_API_KEY in the Windows User environment.'
 Write-Host 'Use a rotated key if the previous value was pasted into chat or logs.'
 
