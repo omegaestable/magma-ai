@@ -80,6 +80,12 @@ ABSORPTION_DEEP_FRONTIER_LIMIT = 260
 ABSORPTION_DEEP_MAX_FILLS = 120
 ABSORPTION_DEEP_TERM_SLACK = 8
 ABSORPTION_DEEP_TIME_BUDGET = 1.25
+ABSORPTION_CONTEXT_BRIDGE_POOL_LIMIT = 16
+ABSORPTION_CONTEXT_BRIDGE_SEED_LIMIT = 8
+ABSORPTION_CONTEXT_BRIDGE_MAX_FILLS = 5000
+ABSORPTION_CONTEXT_BRIDGE_TERM_SLACK = 12
+ABSORPTION_CONTEXT_BRIDGE_DEPTH_SLACK = 4
+ABSORPTION_CONTEXT_BRIDGE_TIME_BUDGET = 1.5
 EQUATIONAL_CLOSURE_CHAIN_MAX_DEPTH = 4
 EQUATIONAL_CLOSURE_POOL_LIMIT = 18
 EQUATIONAL_CLOSURE_FRONTIER_LIMIT = 900
@@ -148,6 +154,7 @@ WITNESS_TABLES = (
     ("S4C", [[3, 3, 2, 2], [1, 1, 0, 0], [3, 3, 2, 2], [1, 1, 0, 0]]),
     ("S4D", [[3, 2, 3, 3], [3, 3, 3, 3], [2, 3, 3, 3], [1, 2, 3, 3]]),
     ("S4E", [[2, 2, 2, 3], [3, 3, 2, 3], [2, 2, 2, 3], [3, 3, 2, 3]]),
+    ("S4F", [[0, 2, 3, 1], [3, 1, 0, 2], [1, 3, 2, 0], [2, 0, 1, 3]]),
     ("S5D", [[3, 3, 2, 2, 3], [4, 4, 2, 4, 2], [2, 2, 2, 2, 2], [2, 2, 2, 2, 2], [2, 2, 2, 2, 2]]),
 )
 
@@ -1637,6 +1644,30 @@ def absorption_term_pool(
     return pool[:pool_limit]
 
 
+def absorption_context_bridge_pool(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    pool_limit: int = ABSORPTION_CONTEXT_BRIDGE_POOL_LIMIT,
+    seed_limit: int = ABSORPTION_CONTEXT_BRIDGE_SEED_LIMIT,
+) -> list[Term]:
+    pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
+    if not pool:
+        return []
+    allowed_vars = set(eq2["variables"])
+    seen: set[Term] = set(pool)
+    frontier = list(pool[:seed_limit])
+    for left in frontier:
+        for right in frontier:
+            candidate = ("op", left, right)
+            if candidate in seen or not term_vars(candidate).issubset(allowed_vars):
+                continue
+            if term_size(candidate) <= 7 and term_depth(candidate) <= 3:
+                seen.add(candidate)
+    extended = sorted(seen, key=lambda term: (term_size(term), term_depth(term), term_to_lean(term)))
+    return extended[:pool_limit]
+
+
 def deadline_expired(deadline: float | None) -> bool:
     return deadline is not None and time.monotonic() >= deadline
 
@@ -1725,6 +1756,79 @@ def combine_meeting_proofs(left_proof: str | None, right_proof: str | None) -> s
     if right_proof is None:
         return left_proof
     return f"({left_proof}).trans ({right_proof}).symm"
+
+
+def absorption_context_bridge_route(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    route_name: str = "true:absorption_context_bridge",
+    pool_limit: int = ABSORPTION_CONTEXT_BRIDGE_POOL_LIMIT,
+    seed_limit: int = ABSORPTION_CONTEXT_BRIDGE_SEED_LIMIT,
+    max_fills: int = ABSORPTION_CONTEXT_BRIDGE_MAX_FILLS,
+    term_slack: int = ABSORPTION_CONTEXT_BRIDGE_TERM_SLACK,
+    depth_slack: int = ABSORPTION_CONTEXT_BRIDGE_DEPTH_SLACK,
+    time_budget: float | None = None,
+    max_goal_vars: int = 2,
+) -> tuple[str, str] | None:
+    if not absorption_hypothesis(eq1) or len(eq2["variables"]) > max_goal_vars:
+        return None
+    if time_budget is None:
+        time_budget = ABSORPTION_CONTEXT_BRIDGE_TIME_BUDGET
+    pool = absorption_context_bridge_pool(eq1, eq2, pool_limit=pool_limit, seed_limit=seed_limit)
+    if not pool:
+        return None
+    deadline = time.monotonic() + time_budget if time_budget else None
+    max_size = max(
+        term_size(eq1["lhs"]),
+        term_size(eq1["rhs"]),
+        term_size(eq2["lhs"]),
+        term_size(eq2["rhs"]),
+    ) + term_slack
+    max_depth = max(
+        term_depth(eq1["lhs"]),
+        term_depth(eq1["rhs"]),
+        term_depth(eq2["lhs"]),
+        term_depth(eq2["rhs"]),
+    ) + depth_slack
+    left_steps = filled_absorption_steps(
+        eq1,
+        eq2["lhs"],
+        pool,
+        max_size=max_size,
+        max_depth=max_depth,
+        max_fills=max_fills,
+        deadline=deadline,
+    )
+    if deadline_expired(deadline):
+        return None
+    right_steps = filled_absorption_steps(
+        eq1,
+        eq2["rhs"],
+        pool,
+        max_size=max_size,
+        max_depth=max_depth,
+        max_fills=max_fills,
+        deadline=deadline,
+    )
+    if deadline_expired(deadline):
+        return None
+
+    left_seen: dict[Term, str] = {}
+    for term, proof, _route in left_steps:
+        left_seen.setdefault(term, proof)
+    right_seen: dict[Term, str] = {}
+    for term, proof, _route in right_steps:
+        right_seen.setdefault(term, proof)
+
+    common = sorted(
+        set(left_seen).intersection(right_seen),
+        key=lambda term: (term_size(term), term_depth(term), term_to_lean(term)),
+    )
+    if not common:
+        return None
+    proof_expr = combine_meeting_proofs(left_seen[common[0]], right_seen[common[0]])
+    return route_name, substitution_true_certificate(eq2["variables"], proof_expr)
 
 
 def _closure_proof_expr_impl(
@@ -2192,6 +2296,15 @@ def solve_problem(
     repeat_tail = repeat_tail_absorption_route(eq1, eq2)
     if repeat_tail is not None:
         route, code = repeat_tail
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    absorption_context_bridge = absorption_context_bridge_route(eq1, eq2)
+    if absorption_context_bridge is not None:
+        route, code = absorption_context_bridge
         return {
             "answer": make_true_answer(problem, code),
             "route": route,

@@ -285,6 +285,8 @@ def write_fixture(args: argparse.Namespace) -> tuple[list[dict[str, Any]], dict[
             seed=args.mixed_seed,
             per_source=args.mixed_per_source,
             shuffle=args.mixed_shuffle,
+            sources=args.mixed_sources,
+            source_counts=args.mixed_source_counts,
         )
         rows = selected[: args.limit] if args.limit is not None else selected
         fixture_info.update(
@@ -294,6 +296,8 @@ def write_fixture(args: argparse.Namespace) -> tuple[list[dict[str, Any]], dict[
                 "mixed_seed": args.mixed_seed,
                 "mixed_per_source": args.mixed_per_source,
                 "mixed_shuffle": args.mixed_shuffle,
+                "mixed_source_names": list(metadata.get("sources", {}).keys()),
+                "mixed_source_counts": metadata.get("source_counts", {}),
                 "source_total": metadata["total"],
                 "source_expected_true": metadata["expected_true"],
                 "source_expected_false": metadata["expected_false"],
@@ -415,6 +419,20 @@ def main() -> int:
     parser.add_argument("--mixed-manifest", type=Path, default=DEFAULT_MIXED_MANIFEST)
     parser.add_argument("--mixed-seed", type=int, default=20260520)
     parser.add_argument("--mixed-per-source", type=int, default=2)
+    parser.add_argument(
+        "--mixed-source",
+        action="append",
+        default=[],
+        metavar="NAME=PATH",
+        help="Optional explicit mixed-fixture source manifest. Repeatable.",
+    )
+    parser.add_argument(
+        "--mixed-source-count",
+        action="append",
+        default=[],
+        metavar="NAME=COUNT",
+        help="Optional per-source override for mixed mode. Repeatable.",
+    )
     parser.add_argument("--no-mixed-shuffle", dest="mixed_shuffle", action="store_false")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--compression-ratio", type=float, default=0.5)
@@ -441,6 +459,17 @@ def main() -> int:
     args.fixture = args.fixture.resolve()
     args.mixed_manifest = args.mixed_manifest.resolve()
     args.output_dir = args.output_dir.resolve()
+    try:
+        args.mixed_sources = (
+            make_mixed_manifest.parse_source_entries(args.mixed_source) if args.mixed_source else None
+        )
+        args.mixed_source_counts = (
+            make_mixed_manifest.parse_source_count_entries(args.mixed_source_count)
+            if args.mixed_source_count
+            else None
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
     env = runner_env()
     reset_output_dir(args.output_dir, keep_output=args.keep_output)

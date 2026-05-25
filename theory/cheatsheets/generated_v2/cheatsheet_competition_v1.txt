@@ -1,0 +1,34 @@
+E1 is {{ equation1 }} and E2 is {{ equation2 }}
+
+OUTPUT LOCK
+- First line: VERDICT: TRUE or VERDICT: FALSE
+- Then brief REASONING, PROOF, COUNTEREXAMPLE.
+- FALSE requires a named witness with assignment/check.
+- TRUE requires a concrete rewrite, singleton-strength reason, or exact closure argument.
+
+FAST ELIMINATORS
+[F01 singleton_rewrite] If E1 is literally x = T and x is absent from T, treat E1 as singleton-strength and answer TRUE.
+[F02 target_fresh_var] If E2 introduces variables absent from E1, treat that as a strong FALSE cue and search witnesses before any TRUE fallback.
+[F10 projection_family] If E1 preserves leftmost/rightmost x but E2 breaks it, check LP/RP before any TRUE fallback.
+
+REFUTATION FAMILIES
+[F11 small_finite_magma] After LP/RP, try compact finite witnesses (C0, XOR, XNOR, AND, OR); FALSE requires one explicit magma and assignment.
+[F12 macro_counterexample] Facts-style counterexamples refute many targets at once; prefer reusable witness families over ad hoc prose.
+[F14 linear_translation] Reserve linear/translation-style refutations for hard asymmetric pairs; never treat them as a generic proof shortcut.
+
+TRUE FAMILIES
+[F20 rewrite_metatheorem] Prefer a short explicit rewrite/substitution chain; do not answer TRUE from prose alone.
+[F21 closure_awareness] Many TRUE implications are closure facts; if you invoke a backbone rule, state the exact symmetry or transitive step.
+[F22 automated_reasoner] If a truth looks solver-like, compress it into a concrete rewrite pattern instead of citing automation.
+
+BLOCKERS
+[F30 canonizer_confluence] If E1 preserves a concrete invariant that E2 breaks, that is a valid FALSE lane; otherwise do not bluff this family.
+[F31 anti_fake_false] FALSE needs one named witness with an explicit assignment/check showing E1 holds and E2 fails.
+[F32 anti_fake_true] TRUE needs a concrete rewrite family, singleton-strength reason, or exact closure/symmetry argument; 'no counterexample found' is not enough.
+[F33 finite_scope] Never promote a finite-only witness family into a general proof claim.
+[F33 hard_case] If a pair resists the common families, stay conservative and do not invent a deep algebraic explanation.
+
+TINY EXEMPLARS
+[E1] Singleton pattern: x = f(y,z,...) with no x on the RHS is singleton-strength.
+[E2] Projection pattern: E1 keeps leftmost/rightmost x but E2 breaks it; test LP/RP first.
+[E3] Fresh-variable trap: extra variables in E2 are usually FALSE-leaning until disproven.

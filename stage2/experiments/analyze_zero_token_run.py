@@ -43,6 +43,46 @@ def load_problem_rows(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def load_manifest_metadata(path: Path) -> dict[str, Any] | None:
+    meta_path = path.with_suffix(path.suffix + ".meta.json")
+    if not meta_path.exists():
+        return None
+    payload = load_json(meta_path)
+    return payload if isinstance(payload, dict) else None
+
+
+def source_scope(name: str, info: dict[str, Any]) -> str:
+    path_text = str(info.get("path", ""))
+    if name.startswith("evaluation_") or "evaluation_" in path_text or "hf_cache" in path_text:
+        return "evaluation"
+    return "official"
+
+
+def build_source_index(metadata: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    if metadata is None:
+        return {}
+    index: dict[str, dict[str, Any]] = {}
+    sources = metadata.get("sources")
+    if not isinstance(sources, dict):
+        return index
+    for name, raw_info in sources.items():
+        if not isinstance(name, str) or not isinstance(raw_info, dict):
+            continue
+        ids = raw_info.get("ids")
+        if not isinstance(ids, list):
+            continue
+        info = {
+            "source_bucket": name,
+            "source_scope": source_scope(name, raw_info),
+            "source_path": raw_info.get("path"),
+        }
+        for raw_id in ids:
+            if raw_id is None:
+                continue
+            index[str(raw_id)] = info
+    return index
+
+
 def load_answers(path: Path) -> dict[str, dict[str, Any]]:
     answers: dict[str, dict[str, Any]] = {}
     if not path.exists():
@@ -147,6 +187,8 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, Any]:
     manifest = manifest_override.resolve() if manifest_override is not None else manifest_from_launcher(run_dir)
     problems = load_problem_rows(manifest)
+    manifest_metadata = load_manifest_metadata(manifest)
+    source_index = build_source_index(manifest_metadata)
     by_id = {str(row.get("id")): row for row in problems}
     summary = load_json(run_dir / "summary.json")
     answers = load_answers(run_dir / "answers.jsonl")
@@ -156,6 +198,10 @@ def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, A
     gaps: list[dict[str, Any]] = []
     gap_counts: Counter[str] = Counter()
     verdict_counts: Counter[str] = Counter()
+    accepted_by_source: Counter[str] = Counter()
+    gaps_by_source: Counter[str] = Counter()
+    accepted_by_scope: Counter[str] = Counter()
+    gaps_by_scope: Counter[str] = Counter()
     answer_status_counts: dict[str, Counter[str]] = {}
     for item in status_rows:
         if not isinstance(item, dict):
@@ -175,6 +221,9 @@ def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, A
             "equation1": problem.get("equation1"),
             "equation2": problem.get("equation2"),
         }
+        source_info = source_index.get(pid)
+        if source_info is not None:
+            row.update(source_info)
         if status == "accepted":
             verdict_counts[str(verdict)] += 1
             answer = answers.get(pid)
@@ -182,6 +231,9 @@ def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, A
                 row["code_bytes"] = len(str(answer.get("code", "")).encode("utf-8"))
                 row["answer_kind"] = answer_kind(answer)
             accepted.append(row)
+            if source_info is not None:
+                accepted_by_source[source_info["source_bucket"]] += 1
+                accepted_by_scope[source_info["source_scope"]] += 1
         else:
             kind = gap_kind(problem, status)
             row["gap_kind"] = kind
@@ -190,6 +242,9 @@ def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, A
             if answer is not None:
                 row["answer_kind"] = answer_kind(answer)
             gaps.append(row)
+            if source_info is not None:
+                gaps_by_source[source_info["source_bucket"]] += 1
+                gaps_by_scope[source_info["source_scope"]] += 1
 
         answer = answers.get(pid)
         if answer is not None:
@@ -200,12 +255,26 @@ def analyze(run_dir: Path, manifest_override: Path | None = None) -> dict[str, A
     analysis = {
         "run_dir": str(run_dir.relative_to(REPO_ROOT)),
         "manifest": str(manifest.relative_to(REPO_ROOT)) if manifest.is_relative_to(REPO_ROOT) else str(manifest),
+        "manifest_metadata": (
+            str(manifest.with_suffix(manifest.suffix + ".meta.json").relative_to(REPO_ROOT))
+            if manifest.with_suffix(manifest.suffix + ".meta.json").exists()
+            and manifest.with_suffix(manifest.suffix + ".meta.json").is_relative_to(REPO_ROOT)
+            else (
+                str(manifest.with_suffix(manifest.suffix + ".meta.json"))
+                if manifest.with_suffix(manifest.suffix + ".meta.json").exists()
+                else None
+            )
+        ),
         "score": summary.get("score"),
         "attempted": summary.get("attempted"),
         "not_attempted": summary.get("not_attempted"),
         "by_status": summary.get("by_status", {}),
         "accepted_verdicts": dict(verdict_counts),
         "gap_counts": dict(gap_counts),
+        "accepted_by_source": dict(accepted_by_source),
+        "gaps_by_source": dict(gaps_by_source),
+        "accepted_by_scope": dict(accepted_by_scope),
+        "gaps_by_scope": dict(gaps_by_scope),
         "route_counts": route_counts,
         "answer_status_counts": {
             kind: dict(counts) for kind, counts in sorted(answer_status_counts.items())
