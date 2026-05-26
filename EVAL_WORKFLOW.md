@@ -64,7 +64,7 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
-The current packaged smoke size is `85173` bytes. Re-check this after every package step instead of carrying old size notes forward.
+The current packaged smoke size is `116670` bytes as of 2026-05-25. Re-check this after every package step instead of carrying old size notes forward.
 
 ## Playground Preflight Gate
 
@@ -99,6 +99,12 @@ For the pinned harness snapshot, `pipeline/proxy.py` and the official Solo demos
 Operational reminder: the judge answer schema is exact. The submitted JSON must
 contain only `verdict` and `code`. Route labels and solver-family notes belong
 in stderr/log-derived summaries, not in the answer payload.
+
+For fast deterministic Solo smokes on a machine with local upstream keys
+configured, blank `OPENAI_API_KEY` and `OPENROUTER_API_KEY` in the runner
+process. This makes unresolved LLM proxy calls fail fast while still checking
+schema-valid fallback behavior. Use the positive-token parity runner only when
+intentionally testing LLM readiness.
 
 For runner-equivalent certificate debugging, prefer the official runner. If a direct Python check is needed inside the harness code, convert the public problem row with `_to_judge_problem(problem)` before calling `verify_answer(_to_judge_problem(problem), raw_answer)`. A plain `verify_answer(problem, ...)` omits the pipeline default proof policy and can report dependency-policy failures that the runner does not report.
 

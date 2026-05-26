@@ -58,11 +58,11 @@ Historical completed public total: `1201/1669` solved. This included `34` accept
 
 Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `85173` bytes, single-file submission directory.
+- Packaged `stage2/submissions/solver.py`: `116670` bytes, single-file submission directory after the 2026-05-25 cleanup pass.
 - May 21 prune/refactor evidence: closure-route dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior, and selected fallback reproduction is summarized in `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
-- Official Solo `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`.
-- Latest recorded Official Solo `sample_200`: `165/200` solved after the `Fin 7` recursion-depth fix and `S4A`/`S5A` named witnesses; this was not rerun after the May 17 compact witness patch.
-- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget after the absorption time-cap optimization: `74/100` accepted in `56.6s`, with no SIGTERM and `0` tokens.
+- Official Solo `sample_20` no-key smoke: `15/20` solved on 2026-05-25.
+- Official Solo `sample_200` no-key smoke: `169/200` solved on 2026-05-25.
+- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `74/100` accepted in `60.6s`, with no SIGTERM/SIGKILL and `0` tokens on 2026-05-25.
 - Recent compact named FALSE witnesses include `S4D`, `S4E`, and `S5D`.
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
 - Compact witness fixture: `8/8` accepted, `0` LLM calls.
@@ -82,6 +82,7 @@ The full generated evidence lives in:
 - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
 - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
 - `stage2/results/2026-05-12-competition-preflight.md`
+- `stage2/results/2026-05-25-cleanup-and-smoke.md`
 
 For upload/playground readiness, use `stage2/docs/playground-preflight.md`. It keeps the single-file packaging contract, proxy-mediated LLM behavior, local no-key caveat, failure classification, and positive-token parity runner in one place.
 

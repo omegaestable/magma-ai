@@ -166,7 +166,12 @@ Push-Location vendor/stage2-official
 Pop-Location
 ```
 
-Latest smoke-only outcomes: `sample_20 = 14/20`, latest recorded `sample_200 = 165/200`, and Marathon `normal_100 = 74/100` accepted with zero tokens after the absorption cap and closure-helper refactor. Latest May 21 selected-row reproduction: three `evaluation_extra_hard_false_*` rows now accept via `false:witness:S4C`; remaining listed fallback rows are unresolved gaps, not ids to hardcode.
+Latest smoke-only outcomes: `sample_20 = 15/20` and `sample_200 = 169/200` in the 2026-05-25 no-key Solo smokes, and Marathon `normal_100 = 74/100` accepted with zero tokens in `60.6s`. Latest May 21 selected-row reproduction: three `evaluation_extra_hard_false_*` rows now accept via `false:witness:S4C`; remaining listed fallback rows are unresolved gaps, not ids to hardcode.
+
+If the local machine has an upstream LLM key configured, blank `OPENAI_API_KEY`
+and `OPENROUTER_API_KEY` for fast deterministic Solo smokes. Otherwise
+unresolved rows can spend real proxy calls and make `sample_20`/`sample_200`
+look like slow LLM tests instead of quick integration checks.
 
 Public benchmark refresh and team-memory regeneration:
 

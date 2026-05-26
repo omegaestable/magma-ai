@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-21
+Updated: 2026-05-25
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -23,7 +23,7 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Current packaged state from the latest local package pass: `85173` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest local package pass: `116670` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 ## Proxy Reality
 
@@ -203,6 +203,12 @@ Use explicit Solo output paths when recording smoke evidence. The runner's
 default `pipeline/results/submissions.json` is easy to confuse with earlier
 local smoke rows. Zero-token Marathon remains useful as an optional deterministic
 regression check, but it is no longer a playground-readiness gate.
+
+On machines with local upstream keys configured, blank `OPENAI_API_KEY` and
+`OPENROUTER_API_KEY` for these fast deterministic Solo smokes. Otherwise
+unresolved rows will make real proxy calls and the sample runs become slow
+positive-token experiments. Keep positive-token LLM checks in the parity runner
+or bounded proxy smoke section above.
 
 Optional focused LLM-path check when no local key is available. First create or select a tiny fixture containing a currently unresolved TRUE row from the latest hard-mix or hard-only run:
 

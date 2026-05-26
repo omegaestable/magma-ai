@@ -54,14 +54,14 @@ upload/playground check.
 
 Latest local candidate evidence after the final optimization patch, not a full public rerun:
 
-- `sample_20`: `14/20`
-- latest recorded `sample_200`: `165/200`, not rerun after the May 17 witness patch
-- Marathon `normal_100` with zero tokens after the absorption time-cap optimization: `74/100` accepted in `56.6s`
+- `sample_20`: `15/20` in the 2026-05-25 no-key Solo smoke
+- `sample_200`: `169/200` in the 2026-05-25 no-key Solo smoke
+- Marathon `normal_100` with zero tokens: `74/100` accepted in `60.6s` on 2026-05-25
 - accepted-grind fixture with heartbeat cap: `34/34` accepted only with `MAGMA_ENABLE_GRIND=1`
 - compact witness fixture: `8/8` accepted, `0` LLM calls
 - Fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
-- Bounded local OpenRouter proxy smoke: Solo `1/1` and Marathon `1/1` accepted through official proxy paths
-- Packaged solver size: `85173` bytes
+- Bounded local OpenRouter proxy smoke on 2026-05-25: Solo `1/1` and Marathon `1/1` accepted through official proxy paths, with Marathon `89/4096` tokens used
+- Packaged solver size: `116670` bytes
 - May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction lives at `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 - Full public validation of the post-rollback package is pending. Treat the prior `1201/1669` as historical zero-token evidence that included `34` default-disabled grind wins; require positive-token proxy evidence before LLM-backed promotion.
 

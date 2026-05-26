@@ -2,7 +2,7 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-05-21.
+Last updated: 2026-05-25.
 
 ## Stage
 
@@ -16,7 +16,7 @@ Last updated: 2026-05-21.
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `85173` bytes.
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `116670` bytes.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
 - Route motif cards: `stage2/docs/motif-cards/`.
@@ -61,7 +61,12 @@ Answer-kind totals for that baseline:
 
 Latest local regression evidence after the final optimization/refactor patch:
 
-- Closure-route dedupe via `_closure_route_impl` packaged at `85173` bytes; source and packaged hashes matched after repackaging.
+- Current package pass produced `stage2/submissions/solver.py` at `116670` bytes, still well below the 500 KB limit.
+- 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20`, official Solo no-key `sample_200 = 169/200`, and official zero-token Marathon `normal_100 = 74/100` accepted in `60.6s`.
+- Official harnesses passed on 2026-05-25: Solo harness had no failing buckets; Marathon harness passed `25/25` with Lean available.
+- Bounded proxy transport smoke passed on 2026-05-25: Solo `1/1` with `llm_calls=1`; Marathon `1/1` with `89/4096` tokens used.
+- Cleanup removed repo-side generated `__pycache__` directories; `.venv/` and scratch evidence were left in place.
+- Earlier closure-route dedupe via `_closure_route_impl` preserved `normal_100 = 74/100` zero-token Marathon behavior.
 - Route profile on `normal_100`: `74` deterministic candidates, `26` skips, `49.925s`.
 - Official zero-token Marathon on `normal_100`: `74/100` accepted, `26` not attempted, `0` tokens, `50.5s`.
 - Selected 27-row fallback reproduction: three `evaluation_extra_hard_false_*` rows now accepted by `false:witness:S4C`; the other 24 reproduce Solo fallback `TRUE` plus judge `incorrect`, while zero-token Marathon skips them.
@@ -89,6 +94,7 @@ Full public validation of the optimized package after the grind rollback is pend
 - `stage2/docs/LATEST_HANDOFF.md`
 - `stage2/results/2026-05-20-optimization-readiness.md`
 - `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
+- `stage2/results/2026-05-25-cleanup-and-smoke.md`
 
 ## Operational Notes
 

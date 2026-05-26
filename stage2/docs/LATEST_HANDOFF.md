@@ -1,17 +1,18 @@
 # Latest Handoff
 
-Updated: 2026-05-23
+Updated: 2026-05-25
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
 ## Current Solver Snapshot
 
 - Active source: `stage2/solver/solver.py`.
-- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `112696` bytes.
+- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `116670` bytes.
 - Submission directory should contain only `solver.py`.
 - Historical public zero-token baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-retired grind wins.
 - Current durable May 21 summary: `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 - Current durable May 23 route expansion summary: `stage2/results/2026-05-23-held-out-structural-route-expansion.md`.
+- Current durable May 25 cleanup/smoke summary: `stage2/results/2026-05-25-cleanup-and-smoke.md`.
 - Full public validation after the grind rollback and May 21 refactor is still pending. Do not claim the current package preserves old grind-backed totals until a new full run exists.
 
 ## What Changed This Session
@@ -28,7 +29,11 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 ## Latest Regression Evidence
 
 - Python syntax checks passed for source and packaged solver.
-- Packaged size: `112696` bytes.
+- Packaged size: `116670` bytes.
+- 2026-05-25 no-key Solo smoke: `sample_20 = 15/20`, `sample_200 = 169/200`.
+- 2026-05-25 zero-token Marathon smoke: `normal_100 = 74/100`, `60.6s`, `0` tokens, no SIGTERM/SIGKILL.
+- 2026-05-25 bounded proxy smoke: Solo `1/1` with `llm_calls=1`; Marathon `1/1` with `89/4096` tokens used.
+- Repo-side generated `__pycache__` directories were removed; `.venv/` bytecode was left alone as ignored local environment state.
 - Submission directory cleanliness: only `solver.py`.
 - Route profile on public `normal_100` after the May 23 route expansion: `74` deterministic candidates, `26` skips, `47.479s`.
 - Held-out hard first 80 after the May 23 route expansion: `76` deterministic candidates, `4` skips, `7.854s`.

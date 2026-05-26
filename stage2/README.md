@@ -45,10 +45,10 @@ Total public score: `1201/1669`, with `0` LLM calls. This is historical zero-tok
 
 Latest local candidate evidence after the final optimization patch:
 
-- `sample_20`: `14/20` solved
-- latest recorded `sample_200`: `165/200` solved; not rerun after the May 17 compact witness patch
-- Marathon `normal_100` with zero token budget after the absorption time-cap optimization: `74/100` accepted in `56.6s`
-- packaged solver size: `85173` bytes after the latest local package pass
+- `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke
+- `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke
+- Marathon `normal_100` with zero token budget: `74/100` accepted in `60.6s` on 2026-05-25
+- packaged solver size: `116670` bytes after the latest local package pass
 - May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
@@ -61,7 +61,7 @@ For standard local LLM runs, store the rotated upstream key in the ignored
 repo-root `.env` with `stage2/experiments/set_openrouter_repo_env.ps1`. The
 repo-owned probe and parity entrypoints load process env first, then `.env`,
 then legacy Windows User env fallback.
-Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, and fallback-reproduction evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, and `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
+Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, fallback-reproduction, and cleanup-smoke evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`, and `results/2026-05-25-cleanup-and-smoke.md`.
 
 Current best route learnings:
 
