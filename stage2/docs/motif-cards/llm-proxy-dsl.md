@@ -4,7 +4,7 @@ Updated: 2026-05-19
 
 ## Scope
 
-Routes covered: Solo LLM proxy, Marathon LLM proxy, `llm:true:rewrite_chain`, `llm:true:raw_code`, `llm:true:proof_body`, and `llm:false:table`.
+Routes covered: Solo LLM proxy, Marathon LLM proxy, `llm:true:rewrite_chain`, `llm:true:raw_code`, and `llm:false:table`.
 
 ## Principle
 
@@ -14,10 +14,6 @@ The submitted solver may use only the official proxy interfaces. It must not car
 
 ```json
 {"verdict":"true","proof_kind":"rewrite_chain","chain":["<goal lhs>","<middle>","<goal rhs>"]}
-```
-
-```json
-{"verdict":"true","proof":"intro x y\n  exact ..."}
 ```
 
 ```json
@@ -32,7 +28,7 @@ The submitted solver may use only the official proxy interfaces. It must not car
 
 - Rewrite chains must parse and each adjacent step must be proved by solver-owned rewrite logic.
 - Raw Lean must pass `sanitize_lean_code`: allowed imports, `submission` definition, size limits, no banned tokens, no Teorth theorem names.
-- Proof bodies are wrapped in the standard `JudgeProblem` scaffold and sanitized again.
+- Raw Lean means a complete `Submission.lean` file; helper declarations above `submission` are allowed.
 - Finite tables must be normalized and checked by `table_is_counterexample` before emission.
 
 ## Proxy Paths

@@ -29,7 +29,8 @@ PROMPT = """You are helping produce Lean 4 certificates for magma equation impli
 
 Return exactly one JSON object. The first character must be { and the last
 character must be }. Do not include markdown, commentary, analysis, or <think>
-blocks. Prefer the solver-owned DSL over raw Lean.
+blocks. Prefer the solver-owned DSL when you can give an exact chain, but a
+compact raw Lean TRUE proof is useful and may be submitted to the judge.
 
 Problem {problem.id}: does Equation{problem.eq1_id} imply Equation{problem.eq2_id}?
 Hypothesis: {problem.equation1}
@@ -46,17 +47,18 @@ Accepted JSON shapes:
    {"verdict":"true","proof_kind":"rewrite_chain","chain":["<goal lhs>","<middle>","<goal rhs>"]}
    Use proof_kind "guided_chain" when a step may need a short solver-owned
    congruence or closure proof.
-2. TRUE Lean body fallback, checked by the judge after sanitizer checks:
-   {"verdict":"true","proof":"intro x y\n  exact ..."}
-3. TRUE full Lean fallback, checked by the judge after sanitizer checks:
+2. TRUE full Lean fallback, checked by the judge after sanitizer checks:
    {"verdict":"true","code":"import JudgeProblem\n\ndef submission : Goal := by\n  ..."}
-4. FALSE finite countermodel, verified locally before Lean is emitted:
+    The code field must be a complete Lean file and may declare helper
+    theorems, defs, lemmas, namespaces, or notation above submission.
+3. FALSE finite countermodel, verified locally before Lean is emitted:
    {"verdict":"false","counterexample_table":[[0,1],[1,0]]}
 
 Do not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,
-or Teorth theorem names. Marathon accepts only solver-verified DSL certificates,
-so raw Lean/proof bodies are mainly a Solo debugging fallback. If you are unsure,
-return a TRUE chain whose adjacent terms are solver-provable, or a finite table DSL.
+or Teorth theorem names. These are unresolved after deterministic search, so
+lean toward TRUE: return FALSE only when you have an actual finite table. If a
+short solver-owned chain is not enough, return a complete Lean file using only
+the local hypothesis h and ordinary equality reasoning.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
@@ -96,19 +98,19 @@ EQUATIONAL_CLOSURE_TIME_BUDGET = 0.45
 GUIDED_CHAIN_MAX_DEPTH = 3
 GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 0.08
 LLM_MAX_ROUNDS = 2
-MARATHON_LLM_MAX_CALLS = 24
-MARATHON_LLM_BATCH_SIZE = 10
+MARATHON_LLM_MAX_CALLS = 64
+MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
 LLM_MAX_TABLE_N = 8
-LLM_MAX_OUTPUT_TOKENS = 4096
-LLM_HTTP_TIMEOUT_SECONDS = 45.0
+LLM_MAX_OUTPUT_TOKENS = 6144
+LLM_HTTP_TIMEOUT_SECONDS = 75.0
 
 LLM_CONFIG = {
     "model": "openai/gpt-oss-120b",
     "provider": "deepinfra/bf16",
     "max_output_tokens": LLM_MAX_OUTPUT_TOKENS,
     "temperature": 0.0,
-    "reasoning_effort": "low",
+    "reasoning_effort": "medium",
     "use_seed": True,
     "seed": 0,
     "http_timeout_seconds": LLM_HTTP_TIMEOUT_SECONDS,
@@ -2433,30 +2435,6 @@ def sanitize_lean_code(code: str, *, verdict: str) -> bool:
     return saw_judge_problem
 
 
-def clean_proof_body(proof: str) -> str:
-    proof = re.sub(r"<think>[\s\S]*?</think>", "", proof or "").strip()
-    proof = re.sub(r"^```(?:lean)?\s*\n?", "", proof)
-    proof = re.sub(r"\n?```\s*$", "", proof).strip()
-    proof = re.sub(r"^\s*import\s+.*\n?", "", proof, flags=re.MULTILINE)
-    match = re.search(r"\b(?:def|theorem)\s+submission\s*:\s*Goal\s*:=\s*by\s*(.*)", proof, re.DOTALL)
-    if match:
-        proof = match.group(1).strip()
-    proof = re.sub(r"^\s*by\s+", "", proof).strip()
-    proof = re.sub(r"^\s*intro\s+G\s+_\s+h\s*\n?", "", proof)
-    return proof.strip()
-
-
-def true_body_certificate(proof_body: str) -> str | None:
-    body = clean_proof_body(proof_body)
-    if not body or BANNED_LEAN_RE.search(body):
-        return None
-    indented = "\n".join(("  " + line if line.strip() else "") for line in body.splitlines())
-    code = "import JudgeProblem\n\n" "def submission : Goal := by\n" "  intro G _ h\n" f"{indented}\n"
-    if not sanitize_lean_code(code, verdict="true"):
-        return None
-    return code
-
-
 def normalize_table(value: Any) -> list[list[int]] | None:
     if not isinstance(value, list) or not value:
         return None
@@ -2591,8 +2569,11 @@ def candidate_from_llm_text_with_reason(
                 }, "ok"
             chain_reject_reason = "guided_chain_unproved_or_bad_endpoints"
 
+    if isinstance(obj.get("proof"), str) or isinstance(obj.get("proof_body"), str):
+        return None, "proof_body_unsupported"
+
     if not allow_raw_true:
-        if isinstance(obj.get("code", obj.get("lean")), str) or isinstance(obj.get("proof", obj.get("proof_body")), str):
+        if isinstance(obj.get("code", obj.get("lean")), str):
             return None, "raw_true_disabled"
         return None, chain_reject_reason
 
@@ -2604,16 +2585,6 @@ def candidate_from_llm_text_with_reason(
         }, "ok"
     if isinstance(code, str):
         return None, "raw_code_sanitizer_rejected"
-
-    proof = obj.get("proof", obj.get("proof_body"))
-    if isinstance(proof, str):
-        code = true_body_certificate(proof)
-        if code is not None:
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": "llm:true:proof_body",
-            }, "ok"
-        return None, "proof_body_rejected"
     return None, chain_reject_reason
 
 
@@ -2679,7 +2650,8 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     cues.append("A TRUE chain must start exactly with the goal lhs and end exactly with the goal rhs.")
     cues.append("Each adjacent TRUE chain step must be one explicit hypothesis rewrite, short rewrite chain, or bounded solver-owned closure/congruence step.")
     cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
-    cues.append("Raw Lean/proof bodies may be judged in Solo, but Marathon will reject raw TRUE and append only solver-verified DSL certificates.")
+    cues.append("Raw Lean/proof bodies may be submitted in Marathon and judged later; use them for TRUE if the DSL chain is too cramped.")
+    cues.append("This row already escaped deterministic finite countermodel search; default to a TRUE proof attempt unless you have a concrete table.")
     cues.append("For FALSE, provide a square finite table; the solver will test it before emitting Lean.")
     return "\n".join(cues)
 
@@ -2729,6 +2701,21 @@ def log_stderr(record: dict[str, Any]) -> None:
     print(json.dumps(record, separators=(",", ":")), file=sys.stderr, flush=True)
 
 
+def log_route_count_chunks(route_counts: dict[str, int], *, max_chars: int = 850) -> None:
+    chunk: dict[str, int] = {}
+    for route, count in sorted(route_counts.items()):
+        trial = dict(chunk)
+        trial[route] = count
+        record = {"route": "route_counts", "routes": trial}
+        if chunk and len(json.dumps(record, separators=(",", ":"))) > max_chars:
+            log_stderr({"route": "route_counts", "routes": chunk})
+            chunk = {route: count}
+        else:
+            chunk = trial
+    if chunk:
+        log_stderr({"route": "route_counts", "routes": chunk})
+
+
 def text_preview(text: str, limit: int = 160) -> str:
     compact = re.sub(r"\s+", " ", text or "").strip()
     if len(compact) <= limit:
@@ -2767,7 +2754,7 @@ def marathon_llm_attempt(
     candidate, reject_reason = candidate_from_llm_text_with_reason(
         problem,
         response_text,
-        allow_raw_true=False,
+        allow_raw_true=True,
     )
     if candidate is None:
         result["reject_reason"] = reject_reason
@@ -3135,21 +3122,19 @@ def run_marathon() -> int:
                         }
                     )
 
-    print(
-        json.dumps(
-            {
-                "submitted_deterministic": deterministic_submitted,
-                "submitted_total": solved,
-                "llm_calls": llm_calls,
-                "budget_seconds": budget_seconds,
-                "budget_tokens": budget_tokens,
-                "reference_seconds_per_problem": ref_seconds,
-                "per_problem_false_budget": round(per_problem_budget, 3),
-                "routes": route_counts,
-            }
-        ),
-        file=sys.stderr,
-        flush=True,
+    log_route_count_chunks(route_counts)
+    log_stderr(
+        {
+            "submitted_deterministic": deterministic_submitted,
+            "submitted_total": solved,
+            "llm_calls": llm_calls,
+            "budget_seconds": budget_seconds,
+            "budget_tokens": budget_tokens,
+            "reference_seconds_per_problem": ref_seconds,
+            "per_problem_false_budget": round(per_problem_budget, 3),
+            "route_kind_count": len(route_counts),
+            "route_count_total": sum(route_counts.values()),
+        }
     )
     return 0
 

@@ -182,17 +182,48 @@ def main() -> int:
     )
     assert solver.candidate_from_llm_text(true_problem, banned_payload) is None
 
-    proof_body_payload = json.dumps({"verdict": "true", "proof": "intro x\n  exact h x x"})
-    proof_body_candidate = solver.candidate_from_llm_text(true_problem, proof_body_payload)
-    assert proof_body_candidate is not None
-    assert proof_body_candidate["route"] == "llm:true:proof_body"
+    helper_code_payload = json.dumps(
+        {
+            "verdict": "true",
+            "code": (
+                "import JudgeProblem\n\n"
+                "namespace SubmissionSupport\n\n"
+                "def helperMarker : Nat := 0\n\n"
+                "theorem helperStep {G : Type} [Magma G] "
+                "(h : ∀ x y : G, x = x ◇ y) (x : G) : x = x ◇ x := by\n"
+                "  exact h x x\n\n"
+                "end SubmissionSupport\n\n"
+                "def submission : Goal := by\n"
+                "  intro G _ h\n"
+                "  intro x\n"
+                "  exact SubmissionSupport.helperStep h x\n"
+            ),
+        }
+    )
+    helper_code_candidate = solver.candidate_from_llm_text(true_problem, helper_code_payload)
+    assert helper_code_candidate is not None
+    assert helper_code_candidate["route"] == "llm:true:raw_code"
+
     disabled_raw_candidate, disabled_raw_reason = solver.candidate_from_llm_text_with_reason(
         true_problem,
-        proof_body_payload,
+        helper_code_payload,
         allow_raw_true=False,
     )
     assert disabled_raw_candidate is None
     assert disabled_raw_reason == "raw_true_disabled"
+
+    proof_payload = json.dumps({"verdict": "true", "proof": "intro x\n  exact h x x"})
+    proof_candidate, proof_reason = solver.candidate_from_llm_text_with_reason(true_problem, proof_payload)
+    assert proof_candidate is None
+    assert proof_reason == "proof_body_unsupported"
+
+    proof_body_payload = json.dumps({"verdict": "true", "proof_body": "intro x\n  exact h x x"})
+    proof_body_candidate, proof_body_reason = solver.candidate_from_llm_text_with_reason(
+        true_problem,
+        proof_body_payload,
+    )
+    assert proof_body_candidate is None
+    assert proof_body_reason == "proof_body_unsupported"
 
     def fake_marathon_call(prompt, *, config=None, max_seconds=None):
         assert "Return exactly one JSON object" in prompt
