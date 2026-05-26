@@ -16,7 +16,7 @@ Last updated: 2026-05-25.
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `116670` bytes.
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `116248` bytes.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
 - Route motif cards: `stage2/docs/motif-cards/`.
@@ -35,10 +35,12 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 2. Emits TRUE certificates for reflexive problems, singleton/collapse implications, exact substitutions, projection-boundary laws, bridge/constancy chains, bounded rewrite chains, absorption closure, deep absorption, and bounded equational closure.
 3. Has no active broad `true:grind` fallback after playground error-rate failures; old grind ledgers are historical discovery evidence only.
 4. Escalates unresolved Solo/Marathon rows through the official LLM proxy when the runner provides an LLM path and a positive token budget; if Solo remains unresolved it makes a final schema-valid fallback judge call, while zero-token Marathon skips unresolved rows.
-5. Searches FALSE finite witnesses via named compact tables, structured families, affine/linear families, quadratic families, dualized witnesses, and bounded `Fin 2..3` enumeration.
-6. Current named witness set includes the recent `S4D`, `S4E`, and `S5D` additions.
-7. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables use `set_option maxRecDepth 20000`.
-8. Caches repeated term metadata and path/context helper work in the solver hot paths.
+5. Keeps the TRUE LLM boundary narrow: solver-owned `rewrite_chain` / `guided_chain` outputs are preferred, and any raw TRUE fallback must use `code` containing a complete Lean file.
+6. Allows raw TRUE `code` to declare helper theorems, defs, lemmas, namespaces, or notation above `submission`; legacy `proof` / `proof_body` body-only payloads are intentionally unsupported.
+7. Searches FALSE finite witnesses via named compact tables, structured families, affine/linear families, quadratic families, dualized witnesses, and bounded `Fin 2..3` enumeration.
+8. Current named witness set includes the recent `S4D`, `S4E`, and `S5D` additions.
+9. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables use `set_option maxRecDepth 20000`.
+10. Caches repeated term metadata and path/context helper work in the solver hot paths.
 
 ## Best Evidence
 
@@ -61,7 +63,8 @@ Answer-kind totals for that baseline:
 
 Latest local regression evidence after the final optimization/refactor patch:
 
-- Current package pass produced `stage2/submissions/solver.py` at `116670` bytes, still well below the 500 KB limit.
+- Current package pass produced `stage2/submissions/solver.py` at `116248` bytes, still well below the 500 KB limit.
+- Active TRUE boundary rails were cleaned up on 2026-05-25: helper-bearing full-file `code` payloads are accepted, and legacy `proof` / `proof_body` payloads are rejected as unsupported.
 - 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20`, official Solo no-key `sample_200 = 169/200`, and official zero-token Marathon `normal_100 = 74/100` accepted in `60.6s`.
 - Official harnesses passed on 2026-05-25: Solo harness had no failing buckets; Marathon harness passed `25/25` with Lean available.
 - Bounded proxy transport smoke passed on 2026-05-25: Solo `1/1` with `llm_calls=1`; Marathon `1/1` with `89/4096` tokens used.
@@ -106,6 +109,8 @@ Full public validation of the optimized package after the grind rollback is pend
 6. Local `OPENAI_API_KEY` or `OPENROUTER_API_KEY` errors are transport/setup issues, not submitted-solver protocol failures. Repo-owned probe/parity entrypoints load process env first, the ignored root `.env` second, and legacy Windows User env fallback last.
 7. Zero-token Marathon proves deterministic append-only behavior only and is not a playground-readiness gate; LLM readiness requires nonzero proxy calls, nonzero Marathon token usage, and classified failures.
 8. Solo fallback `TRUE INCORRECT` rows and Marathon `not_attempted` rows can be the same unresolved deterministic gap under different runner policies.
+9. Treat `proof` and `proof_body` as retired local TRUE boundary shapes. The only raw TRUE payload rail is complete Lean source in `code`, with helper declarations allowed above `submission`.
+10. The vendored official README still contains a stale tactic-body `proof` example. Treat that as upstream doc drift unless an explicit harness sync changes the canonical contract.
 
 ## Immediate Next Work
 

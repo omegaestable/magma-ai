@@ -31,6 +31,8 @@ The current `solver/solver.py` is still deliberately conservative, but it now ha
 
 Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. The broad `true:grind` fallback has been removed from active solver policy after playground error-rate failures.
 
+Current TRUE boundary rails are narrower than some historical prompt snippets: prefer solver-owned `rewrite_chain` or `guided_chain` outputs, and use raw TRUE only as `{"verdict":"true","code":"<complete Lean file>"}`. The Lean file may declare helper theorems, defs, lemmas, namespaces, or notation above `submission`. Legacy body-only `proof` / `proof_body` payloads are intentionally unsupported locally, even though an older vendored README prompt snippet still shows them.
+
 ## Current Public Snapshot
 
 Latest completed public refresh, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch and before the default grind rollback:
@@ -48,13 +50,14 @@ Latest local candidate evidence after the final optimization patch:
 - `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke
 - `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke
 - Marathon `normal_100` with zero token budget: `74/100` accepted in `60.6s` on 2026-05-25
-- packaged solver size: `116670` bytes after the latest local package pass
+- packaged solver size: `116248` bytes after the latest local package pass
 - May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
 - compact witness fixture: `8/8` accepted, `0` LLM calls
 - fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`, but unresolved TRUE proof quality still failed
+- boundary cleanup smoke: full-file TRUE `code` with helper declarations is accepted; legacy `proof` / `proof_body` payloads are rejected
 
 Do not treat the optimized package as promoted from zero-token evidence alone. The default small-fixture gate is positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`, and the default wide public hard-set gate is `stage2/experiments/run_playground_public_sweeps.py`; zero-token sweeps are deterministic regression only.
 For standard local LLM runs, store the rotated upstream key in the ignored
@@ -81,7 +84,7 @@ Package it with:
 
 The packaging script clears `stage2/submissions/` before copying `solver.py`, because the official Solo runner requires the submission directory to contain no extra files.
 
-Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, official proxy LLM behavior, the local no-key caveat, failure classification, the small positive-token parity runner, and the wide public playground-equivalent sweep helper.
+Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, the code-only raw TRUE boundary rails, official proxy LLM behavior, the local no-key caveat, failure classification, the small positive-token parity runner, and the wide public playground-equivalent sweep helper.
 
 See `docs/smoke-tests.md` for the latest local Python, official Solo, Lean, and Windows harness status.
 Use `docs/solver-route-ledger.md` and `docs/motif-cards/` before changing a route, and use `docs/cleanup-manifest.md` before touching scratch artifacts.

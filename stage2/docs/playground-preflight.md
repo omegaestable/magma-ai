@@ -23,7 +23,14 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Current packaged state from the latest local package pass: `116670` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest local package pass: `116248` bytes, with `stage2/submissions/` containing only `solver.py`.
+
+Current TRUE boundary rails:
+
+- Preferred TRUE LLM outputs remain solver-owned `rewrite_chain` or `guided_chain` JSON.
+- Raw TRUE fallback must use `code` containing a complete Lean file that exposes `submission`.
+- Helper theorems, defs, lemmas, namespaces, and notation above `submission` are allowed.
+- Legacy body-only `proof` / `proof_body` JSON is intentionally unsupported locally and should be treated as stale prompt drift, including the older example still present in the vendored `vendor/stage2-official/README.md`.
 
 ## Proxy Reality
 

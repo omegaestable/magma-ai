@@ -7,7 +7,7 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 ## Current Solver Snapshot
 
 - Active source: `stage2/solver/solver.py`.
-- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `116670` bytes.
+- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `116248` bytes.
 - Submission directory should contain only `solver.py`.
 - Historical public zero-token baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-retired grind wins.
 - Current durable May 21 summary: `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
@@ -15,21 +15,28 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 - Current durable May 25 cleanup/smoke summary: `stage2/results/2026-05-25-cleanup-and-smoke.md`.
 - Full public validation after the grind rollback and May 21 refactor is still pending. Do not claim the current package preserves old grind-backed totals until a new full run exists.
 
+## Current Boundary Rails
+
+- Preferred TRUE LLM outputs remain solver-owned `rewrite_chain` or `guided_chain` JSON.
+- The only raw TRUE fallback rail is `{"verdict":"true","code":"<complete Lean file>"}`.
+- The `code` field may contain helper theorems, defs, lemmas, namespaces, or notation above `def submission : Goal := ...`.
+- Legacy body-only `proof` and `proof_body` payloads are retired from the active local boundary and now reject as `proof_body_unsupported`.
+- The vendored official README still contains an older `{"verdict": "true", "proof": "<tactic body>"}` prompt snippet. Treat that as upstream doc drift; the canonical local and judge-facing contract is full Lean source in `code`.
+
 ## What Changed This Session
 
-- Refactored duplicated bidirectional TRUE closure search into `_closure_route_impl`.
-- Rebuilt `absorption_closure_route`, `deep_absorption_closure_route`, and `equational_closure_route` as thin wrappers over the shared helper.
-- Preserved route order and timing constants, especially `ABSORPTION_TIME_BUDGET = 0.05`.
-- Changed `fallback_true_certificate()` to return `reflexive_true_certificate()` instead of carrying duplicate Lean text.
-- Packaged the solver and confirmed the source and packaged hashes matched after repackaging.
-- Reproduced pasted public/evaluation fallback rows with a runner-equivalent direct probe and with official zero-token Marathon on the same 27-row manifest.
-- Added six narrow deterministic TRUE route families from held-out structural motifs: `middle_self_collapse`, `square_twist_comm`, `front_double_self_collapse`, `alternating_front_self_collapse`, `mirrored_alternating_front_self_collapse`, and `sandwich_left_projection`.
-- Preserved the local guided-chain LLM changes; Marathon raw TRUE remains disabled and deterministic certificates still run before LLM spending.
+- Retired the legacy TRUE proof-body rail from the active solver boundary.
+- Updated the LLM prompt and parser so raw TRUE now means complete Lean source in `code`, with helper declarations allowed above `submission`.
+- Added explicit rejection for `proof` and `proof_body` payloads via `proof_body_unsupported` instead of silently wrapping tactic bodies.
+- Refreshed the no-network LLM smoke to accept helper-bearing full Lean files and reject body-only payloads.
+- Updated the active route ledger, LLM motif card, and packaged submission artifact to match the new boundary rails.
+- Preserved the safer route order: deterministic certificates first, solver-owned rewrite/guided chains preferred over raw Lean, and zero-token Marathon still deterministic-only evidence.
 
 ## Latest Regression Evidence
 
 - Python syntax checks passed for source and packaged solver.
-- Packaged size: `116670` bytes.
+- Packaged size: `116248` bytes.
+- `stage2/experiments/smoke_llm_dsl.py` now accepts helper-bearing full-file TRUE `code` payloads and rejects `proof` / `proof_body` payloads.
 - 2026-05-25 no-key Solo smoke: `sample_20 = 15/20`, `sample_200 = 169/200`.
 - 2026-05-25 zero-token Marathon smoke: `normal_100 = 74/100`, `60.6s`, `0` tokens, no SIGTERM/SIGKILL.
 - 2026-05-25 bounded proxy smoke: Solo `1/1` with `llm_calls=1`; Marathon `1/1` with `89/4096` tokens used.
@@ -113,16 +120,20 @@ Answer-kind totals for that baseline:
 5. `true:grind` was a discovery route, not a deployable strategy. It found `34` public TRUE wins but caused `433` incorrect attempts and is retired from active solver policy.
 6. Do not use zero-token Marathon as LLM evidence. It is only deterministic append-only regression evidence.
 7. Positive-token local LLM evidence must prove official proxy usage: nonzero Solo LLM calls, nonzero Marathon `llm_calls`, nonzero `tokens_used`, and classified failure outcomes.
+8. Do not reopen the legacy `proof` / `proof_body` TRUE rail locally. Raw TRUE now means full Lean source in `code`.
+9. Full-file TRUE `code` may declare helper theorems, defs, lemmas, namespaces, or notation above `submission`; this is part of the supported local boundary.
+10. Treat the stale vendored `proof` example as doc drift unless an upstream sync explicitly changes the judge contract.
 
 ## Recommended Next Steps
 
-1. Continue held-out TRUE work one unseen structural family at a time; next hard80 row is `evaluation_hard_0072` (`eq1_id=86`, `eq2_id=1009`).
-2. For extra-hard, first 120 rows are clean; inspect skips after row 120 from `tmp_stage2_smoke/2026-05-23-eval-extra-hard200-after-square-twist-profile.jsonl`.
-3. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
-4. Run broader no-loss validation for the refactored closure helper and May 23 routes, especially hard TRUE closure fixtures and the full public sets.
-5. Improve unresolved TRUE proof quality; the LLM proxy works, but current outputs are rejected by the solver or judge.
-6. Run a full public no-loss validation when budget allows: `normal`, `hard1`, `hard2`, and `hard3` against the current packaged solver.
-7. Before upload or promotion, rerun `stage2/docs/playground-preflight.md` and the adversarial solver review checklist.
+1. Keep the new TRUE rails fixed: solver-owned rewrite/guided chains first, full-file `code` as the only raw TRUE fallback, and no local reintroduction of proof-body wrapping.
+2. Continue held-out TRUE work one unseen structural family at a time; next hard80 row is `evaluation_hard_0072` (`eq1_id=86`, `eq2_id=1009`).
+3. For extra-hard, first 120 rows are clean; inspect skips after row 120 from `tmp_stage2_smoke/2026-05-23-eval-extra-hard200-after-square-twist-profile.jsonl`.
+4. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
+5. Run broader no-loss validation for the refactored closure helper and May 23 routes, especially hard TRUE closure fixtures and the full public sets.
+6. Improve unresolved TRUE proof quality; the LLM proxy works, but current outputs are still rejected by the solver or judge.
+7. Run a full public no-loss validation when budget allows: `normal`, `hard1`, `hard2`, and `hard3` against the current packaged solver.
+8. Before upload or promotion, rerun `stage2/docs/playground-preflight.md` and the adversarial solver review checklist.
 
 ## Scratch Discipline
 
