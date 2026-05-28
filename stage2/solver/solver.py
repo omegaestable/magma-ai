@@ -994,6 +994,153 @@ def sandwich_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> 
     return "true:sandwich_left_projection", code
 
 
+def left_row_constancy_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        root = str(variable_side[1])
+        left = op_side[1]
+        extra = op_side[2]
+        if left[0] != "op" or extra[0] != "var":
+            continue
+        left_left = left[1]
+        left_right = left[2]
+        if left_left[0] != "op" or left_right[0] != "op":
+            continue
+        if left_left[1] != ("var", root) or left_left[2][0] != "var":
+            continue
+        bridge = str(left_left[2][1])
+        if left_right[1] != ("var", bridge) or left_right[2][0] != "var":
+            continue
+        tail = str(left_right[2][1])
+        extra_name = str(extra[1])
+        if len({root, bridge, tail, extra_name}) != 4:
+            continue
+        if set(eq1["variables"]) != {root, bridge, tail, extra_name}:
+            continue
+        return root, bridge, tail, extra_name, swapped
+    return None
+
+
+@lru_cache(maxsize=None)
+def left_row_constancy_key(term: Term) -> Term:
+    if term[0] == "var":
+        return term
+    return "op", left_row_constancy_key(term[1]), "_"
+
+
+def left_row_constancy_term_proof(src: Term, dst: Term, *, hypothesis_name: str = "hrow") -> str | None:
+    if src == dst:
+        return "rfl"
+    if left_row_constancy_key(src) != left_row_constancy_key(dst):
+        return None
+    if src[0] != "op" or dst[0] != "op":
+        return None
+    left_proof = left_row_constancy_term_proof(src[1], dst[1], hypothesis_name=hypothesis_name)
+    if left_proof is None:
+        return None
+    proof_expr: str | None = None
+    left_dst = dst[1]
+    if left_proof != "rfl":
+        proof_expr = f"congrArg (fun t => t ◇ {term_to_lean(src[2])}) ({left_proof})"
+    row_step = f"{hypothesis_name} {term_to_lean(left_dst)} {term_to_lean(src[2])} {term_to_lean(dst[2])}"
+    return chain_trans(proof_expr, row_step)
+
+
+def left_row_constancy_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = left_row_constancy_source(eq1)
+    if source is None:
+        return None
+    proof_expr = left_row_constancy_term_proof(eq2["lhs"], eq2["rhs"])
+    if proof_expr is None:
+        return None
+    root, bridge, tail, extra, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "a", bridge: "b", tail: "c", extra: "d"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsrc : ∀ a b c d : G, a = ((a ◇ b) ◇ (b ◇ c)) ◇ d := by\n"
+        "    intro a b c d\n"
+        f"    exact {call}\n"
+        "  have hrow : ∀ a b c : G, a ◇ b = a ◇ c := by\n"
+        "    intro a b c\n"
+        "    exact (hsrc (a ◇ b) (b ◇ a) a c).trans (congrArg (fun t => t ◇ c) (hsrc a b a ((b ◇ a) ◇ a))).symm\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return "true:left_row_constancy", code
+
+
+def product_constancy_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
+    for swapped, source_lhs, source_rhs in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if source_lhs[0] != "op" or source_rhs[0] != "op":
+            continue
+        if source_lhs[1][0] != "var" or source_lhs[2][0] != "var":
+            continue
+        left_name = str(source_lhs[1][1])
+        right_name = str(source_lhs[2][1])
+        square = source_rhs[1]
+        tail = source_rhs[2]
+        if left_name == right_name:
+            continue
+        if square != ("op", ("var", right_name), ("var", right_name)):
+            continue
+        if tail[0] != "op" or tail[1][0] != "var" or tail[2][0] != "var":
+            continue
+        tail_left = str(tail[1][1])
+        tail_right = str(tail[2][1])
+        if len({left_name, right_name, tail_left, tail_right}) != 4:
+            continue
+        if set(eq1["variables"]) != {left_name, right_name, tail_left, tail_right}:
+            continue
+        return left_name, right_name, tail_left, tail_right, swapped
+    return None
+
+
+def product_constancy_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = product_constancy_source(eq1)
+    if source is None or eq2["lhs"][0] != "op" or eq2["rhs"][0] != "op":
+        return None
+    left_name, right_name, tail_left, tail_right, swapped = source
+    call = call_expression_lean_args(
+        eq1["variables"],
+        {left_name: "a", right_name: "b", tail_left: "c", tail_right: "d"},
+    )
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    lhs_left = term_to_lean(eq2["lhs"][1])
+    lhs_right = term_to_lean(eq2["lhs"][2])
+    rhs_left = term_to_lean(eq2["rhs"][1])
+    rhs_right = term_to_lean(eq2["rhs"][2])
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsrc : ∀ a b c d : G, a ◇ b = (b ◇ b) ◇ (c ◇ d) := by\n"
+        "    intro a b c d\n"
+        f"    exact {call}\n"
+        "  have hprod : ∀ a b c d : G, a ◇ b = c ◇ d := by\n"
+        "    intro a b c d\n"
+        "    exact ((hsrc a b d d).trans (hsrc (b ◇ b) (d ◇ d) d d)).trans ((hsrc c d d d).trans (hsrc (d ◇ d) (d ◇ d) d d)).symm\n"
+        f"{intro_line}"
+        f"  exact hprod {lhs_left} {lhs_right} {rhs_left} {rhs_right}\n"
+    )
+    return "true:product_constancy", code
+
+
 def square_twist_comm_source(eq1: dict[str, Any]) -> tuple[str, str, bool] | None:
     for swapped, source_lhs, source_rhs in (
         (False, eq1["lhs"], eq1["rhs"]),
@@ -2055,6 +2202,10 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (1, len(eq2["text"]), "true:mirrored_alternating_front_self_collapse")
     if sandwich_left_projection_source(eq1) and projection_proof_expr_from_law(eq2, "left", hypothesis_name="hleft"):
         return (2, len(eq2["text"]), "true:sandwich_left_projection")
+    if left_row_constancy_source(eq1) and left_row_constancy_term_proof(eq2["lhs"], eq2["rhs"]):
+        return (2, len(eq2["text"]), "true:left_row_constancy")
+    if product_constancy_source(eq1) and eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op":
+        return (2, len(eq2["text"]), "true:product_constancy")
     if square_twist_comm_source(eq1) and commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"]):
         return (2, len(eq2["text"]), "true:square_twist_comm")
     if direct_substitution_route(eq1, eq2):
@@ -2205,6 +2356,24 @@ def solve_problem(
     sandwich_left_projection = sandwich_left_projection_route(eq1, eq2)
     if sandwich_left_projection is not None:
         route, code = sandwich_left_projection
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    left_row_constancy = left_row_constancy_route(eq1, eq2)
+    if left_row_constancy is not None:
+        route, code = left_row_constancy
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    product_constancy = product_constancy_route(eq1, eq2)
+    if product_constancy is not None:
+        route, code = product_constancy
         return {
             "answer": make_true_answer(problem, code),
             "route": route,
