@@ -29,8 +29,9 @@ PROMPT = """You are helping produce Lean 4 certificates for magma equation impli
 
 Return exactly one JSON object. The first character must be { and the last
 character must be }. Do not include markdown, commentary, analysis, or <think>
-blocks. Prefer the solver-owned DSL when you can give an exact chain, but a
-compact raw Lean TRUE proof is useful and may be submitted to the judge.
+blocks. Prefer the solver-owned DSL when you can give an exact chain. These
+rows have already escaped deterministic finite-countermodel search, so spend
+your effort on TRUE proof construction, not table guessing.
 
 Problem {problem.id}: does Equation{problem.eq1_id} imply Equation{problem.eq2_id}?
 Hypothesis: {problem.equation1}
@@ -51,14 +52,19 @@ Accepted JSON shapes:
    {"verdict":"true","code":"import JudgeProblem\n\ndef submission : Goal := by\n  ..."}
     The code field must be a complete Lean file and may declare helper
     theorems, defs, lemmas, namespaces, or notation above submission.
-3. FALSE finite countermodel, verified locally before Lean is emitted:
+3. FALSE finite countermodel, verified locally before Lean is emitted. Use this
+   only if you personally checked every entry of the finite magma table:
    {"verdict":"false","counterexample_table":[[0,1],[1,0]]}
+
+For raw Lean TRUE, the file must contain `def submission : Goal := by`, then
+`intro G _ h` before goal variables, and an explicit proof from h. Do not use
+automation placeholders such as aesop/grind/simp_all.
 
 Do not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,
 or Teorth theorem names. These are unresolved after deterministic search, so
-lean toward TRUE: return FALSE only when you have an actual finite table. If a
-short solver-owned chain is not enough, return a complete Lean file using only
-the local hypothesis h and ordinary equality reasoning.
+return FALSE only when you have an actual finite table. If a short solver-owned
+chain is not enough, return a complete Lean file using only the local
+hypothesis h and ordinary equality reasoning.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
@@ -81,7 +87,7 @@ ABSORPTION_DEEP_POOL_LIMIT = 12
 ABSORPTION_DEEP_FRONTIER_LIMIT = 260
 ABSORPTION_DEEP_MAX_FILLS = 120
 ABSORPTION_DEEP_TERM_SLACK = 8
-ABSORPTION_DEEP_TIME_BUDGET = 1.25
+ABSORPTION_DEEP_TIME_BUDGET = 1.6
 ABSORPTION_CONTEXT_BRIDGE_POOL_LIMIT = 16
 ABSORPTION_CONTEXT_BRIDGE_SEED_LIMIT = 8
 ABSORPTION_CONTEXT_BRIDGE_MAX_FILLS = 5000
@@ -125,7 +131,8 @@ ALLOWED_IMPORTS = {
 
 BANNED_LEAN_RE = re.compile(
     r"\b(?:sorry|admit|sorryAx|dbg_trace|dbgTrace|run_tac|mkSorry|"
-    r"initialize|builtin_initialize|axiom|unsafe|opaque|macro|elab|syntax)\b"
+    r"initialize|builtin_initialize|axiom|unsafe|opaque|macro|elab|syntax|"
+    r"aesop|grind|simp_all)\b"
     r"|#(?:eval|check|print|reduce)|\b(?:Teorth|teorth|EquationalTheories)\b"
     r"|\bEquation(?!LHS\b|RHS\b)\d+\b",
     re.IGNORECASE,
@@ -256,6 +263,19 @@ def projection_true_certificate(eq2_vars: list[str], proof_expr: str) -> str:
     )
 
 
+def grind_true_certificate(eq2_vars: list[str], *, heartbeats: int = 100000) -> str:
+    intro_vars = " ".join(eq2_vars)
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    return (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  set_option maxHeartbeats {heartbeats} in\n"
+        "  grind\n"
+    )
+
+
 Term = tuple[Any, ...]
 
 
@@ -359,6 +379,32 @@ def parse_equation(text: str) -> dict[str, Any]:
         "rhs_text": rhs_text,
         "text": text.strip(),
     }
+
+
+NARROW_GRIND_TRUE_SHAPES = (
+    ("x = y * (y * (z * (w * x)))", "x = y * (z * (w * (u * x)))"),
+    ("x = (((x * y) * y) * z) * y", "x = (((x * y) * y) * x) * z"),
+    ("x * y = z * ((x * z) * y)", "x * y = (z * z) * (x * y)"),
+    ("x * y = (y * x) * (y * z)", "x * y = y * (y * z)"),
+    ("x * y = (y * y) * (z * x)", "x * y = ((y * z) * x) * z"),
+    ("x = (y * y) * (x * y)", "x = (y * x) * (y * y)"),
+    ("x = y * (y * (x * z))", "x * y = y * (x * (z * z))"),
+    ("x = (y * (x * z)) * (z * z)", "x * y = x * ((x * y) * x)"),
+)
+
+
+def equation_shape_key(eq: dict[str, Any]) -> tuple[Term, Term]:
+    return eq["lhs"], eq["rhs"]
+
+
+@lru_cache(maxsize=1)
+def narrow_grind_true_shape_keys() -> frozenset[tuple[Term, Term, Term, Term]]:
+    keys: set[tuple[Term, Term, Term, Term]] = set()
+    for src_text, goal_text in NARROW_GRIND_TRUE_SHAPES:
+        src = parse_equation(src_text)
+        goal = parse_equation(goal_text)
+        keys.add((*equation_shape_key(src), *equation_shape_key(goal)))
+    return frozenset(keys)
 
 
 @lru_cache(maxsize=None)
@@ -1249,6 +1295,281 @@ def square_twist_comm_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[s
         f"  exact {proof_expr}\n"
     )
     return "true:square_twist_comm", code
+
+
+def projection_from_lemma_term_proof(
+    term: Term,
+    side: str,
+    *,
+    hypothesis_name: str,
+) -> tuple[str, str] | None:
+    if term[0] == "var":
+        return "rfl", str(term[1])
+    if term[0] != "op":
+        return None
+    projected = term[1] if side == "left" else term[2]
+    step = f"{hypothesis_name} {term_to_lean(term[1])} {term_to_lean(term[2])}"
+    rest = projection_from_lemma_term_proof(projected, side, hypothesis_name=hypothesis_name)
+    if rest is None:
+        return None
+    rest_proof, target_var = rest
+    if rest_proof != "rfl":
+        step = f"({step}).trans ({rest_proof})"
+    return step, target_var
+
+
+def derived_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        root = str(variable_side[1])
+        if op_side[1] != ("var", root) or op_side[2][0] != "op":
+            continue
+        tail1 = op_side[2]
+        if tail1[1][0] != "var" or tail1[2][0] != "op":
+            continue
+        lead = str(tail1[1][1])
+        tail2 = tail1[2]
+        if tail2[1] != ("var", root) or tail2[2][0] != "op":
+            continue
+        tail3 = tail2[2]
+        if tail3[1] != ("var", lead) or tail3[2][0] != "var":
+            continue
+        extra = str(tail3[2][1])
+        if len({root, lead, extra}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, extra}:
+            continue
+        return root, lead, extra, swapped
+    return None
+
+
+def derived_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = derived_left_projection_source(eq1)
+    if source is None:
+        return None
+    left = projection_from_lemma_term_proof(eq2["lhs"], "left", hypothesis_name="hleft")
+    right = projection_from_lemma_term_proof(eq2["rhs"], "left", hypothesis_name="hleft")
+    if left is None or right is None:
+        return None
+    left_proof, left_target = left
+    right_proof, right_target = right
+    if left_target != right_target:
+        return None
+    if left_proof == "rfl":
+        proof_expr = f"({right_proof}).symm" if right_proof != "rfl" else "rfl"
+    elif right_proof == "rfl":
+        proof_expr = left_proof
+    else:
+        proof_expr = f"({left_proof}).trans ({right_proof}).symm"
+    root, lead, extra, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsrc : ∀ a b c : G, a = a ◇ (b ◇ (a ◇ (b ◇ c))) := by\n"
+        "    intro a b c\n"
+        f"    exact {call}\n"
+        "  have hp : ∀ a b : G, a ◇ (b ◇ a) = a := by\n"
+        "    intro a b\n"
+        "    let T : G := a ◇ (b ◇ a)\n"
+        "    have h1 : a = a ◇ (b ◇ T) := hsrc a b a\n"
+        "    have h2 : a = a ◇ (b ◇ (a ◇ (b ◇ T))) := hsrc a b T\n"
+        "    exact (congrArg (fun t => a ◇ (b ◇ t)) h1).trans h2.symm\n"
+        "  have hmid : ∀ a b : G, a ◇ (b ◇ (a ◇ b)) = a := by\n"
+        "    intro a b\n"
+        "    have inner : b ◇ (a ◇ b) = b := hp b a\n"
+        "    have hbig : a = a ◇ (b ◇ (a ◇ (b ◇ (a ◇ b)))) := hsrc a b (a ◇ b)\n"
+        "    exact (hbig.trans (congrArg (fun t => a ◇ (b ◇ (a ◇ t))) inner)).symm\n"
+        "  have hleft : ∀ a b : G, a ◇ b = a := by\n"
+        "    intro a b\n"
+        "    have inner : b ◇ (a ◇ b) = b := hp b a\n"
+        "    exact (congrArg (fun t => a ◇ t) inner).symm.trans (hmid a b)\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return "true:derived_left_projection", code
+
+
+def right_self_absorption_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        root = str(variable_side[1])
+        if op_side[1] != ("var", root) or op_side[2][0] != "op":
+            continue
+        tail1 = op_side[2]
+        if tail1[1][0] != "var" or tail1[2][0] != "op":
+            continue
+        lead = str(tail1[1][1])
+        tail2 = tail1[2]
+        if tail2[1] != ("var", root) or tail2[2][0] != "op":
+            continue
+        tail3 = tail2[2]
+        if tail3[1] != ("var", root) or tail3[2][0] != "var":
+            continue
+        extra = str(tail3[2][1])
+        if len({root, lead, extra}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, extra}:
+            continue
+        return root, lead, extra, swapped
+    return None
+
+
+def right_self_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = right_self_absorption_source(eq1)
+    if source is None:
+        return None
+    root, lead, extra, swapped = source
+    root_term = ("var", root)
+    rhs = eq2["rhs"]
+    if eq2["lhs"] != root_term or rhs[0] != "op" or rhs[1] != ("op", root_term, root_term):
+        return None
+    if rhs[2][0] != "op" or rhs[2][2] != root_term:
+        return None
+    goal_lead = rhs[2][1]
+    if goal_lead[0] != "var":
+        return None
+    goal_lead_name = str(goal_lead[1])
+    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsrc : ∀ a b c : G, a = a ◇ (b ◇ (a ◇ (a ◇ c))) := by\n"
+        "    intro a b c\n"
+        f"    exact {call}\n"
+        f"{intro_line}"
+        f"  exact ((hsrc {root} {goal_lead_name} ({root} ◇ ({root} ◇ {root}))).trans "
+        f"(congrArg (fun t => {root} ◇ ({goal_lead_name} ◇ t)) ((hsrc {root} {root} {root}).symm))).trans "
+        f"((congrArg (fun t => (({root} ◇ t) ◇ ({goal_lead_name} ◇ {root}))) (hsrc {root} {root} {root})).trans "
+        f"(congrArg (fun t => (t ◇ ({goal_lead_name} ◇ {root}))) ((hsrc {root} {root} ({root} ◇ {root})).symm))).symm\n"
+    )
+    return "true:right_self_absorption", code
+
+
+def repeated_right_square_source(eq1: dict[str, Any]) -> tuple[str, str] | None:
+    lhs = eq1["lhs"]
+    rhs = eq1["rhs"]
+    if lhs[0] != "var" or rhs[0] != "op":
+        return None
+    root = str(lhs[1])
+    left = rhs[1]
+    right = rhs[2]
+    if right[0] != "op" or right[1][0] != "var" or right[2][0] != "var":
+        return None
+    param = str(right[1][1])
+    if right[2] != ("var", param):
+        return None
+    if left != ("op", ("op", ("var", root), ("var", param)), ("var", param)):
+        return None
+    if root == param or set(eq1["variables"]) != {root, param}:
+        return None
+    return root, param
+
+
+def repeated_right_square_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = repeated_right_square_source(eq1)
+    if source is None:
+        return None
+    root, param = source
+    root_term = ("var", root)
+    rhs = eq2["rhs"]
+    if eq2["lhs"] != root_term or rhs[0] != "op" or rhs[2][0] != "var" or rhs[1][0] != "op":
+        return None
+    goal_param = str(rhs[2][1])
+    if rhs[1] != ("op", ("op", root_term, ("op", ("var", goal_param), ("var", goal_param))), ("var", goal_param)):
+        return None
+    if root == goal_param:
+        return None
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  let v0 : G := {goal_param} ◇ {goal_param}\n"
+        f"  let v1 : G := {root} ◇ v0\n"
+        "  have p1 : "
+        f"{root} = (v1 ◇ v0) ◇ (v0 ◇ v0) := h {root} v0\n"
+        "  have p2 : v1 = ((v1 ◇ "
+        f"{goal_param}) ◇ {goal_param}) ◇ v0 := h v1 {goal_param}\n"
+        "  have p3 : (v1 ◇ v0) ◇ (v0 ◇ v0) = ((((v1 ◇ "
+        f"{goal_param}) ◇ {goal_param}) ◇ v0) ◇ v0) ◇ (v0 ◇ v0) :=\n"
+        "    congrArg (fun t => (t ◇ v0) ◇ (v0 ◇ v0)) p2\n"
+        "  have p4 : ((((v1 ◇ "
+        f"{goal_param}) ◇ {goal_param}) ◇ v0) ◇ v0) ◇ (v0 ◇ v0) = (v1 ◇ {goal_param}) ◇ {goal_param} :=\n"
+        f"    (h ((v1 ◇ {goal_param}) ◇ {goal_param}) v0).symm\n"
+        "  exact p1.trans (p3.trans p4)\n"
+    )
+    return "true:repeated_right_square", code
+
+
+def self_tail_triple_source(eq1: dict[str, Any]) -> tuple[str, str] | None:
+    lhs = eq1["lhs"]
+    rhs = eq1["rhs"]
+    if lhs[0] != "var" or rhs[0] != "op" or rhs[2] != lhs:
+        return None
+    root = str(lhs[1])
+    mid = rhs[1]
+    if mid[0] != "op" or mid[2] != lhs:
+        return None
+    head = mid[1]
+    if head[0] != "op" or head[1][0] != "var" or head[2] != ("op", ("var", head[1][1]), lhs):
+        return None
+    lead = str(head[1][1])
+    if root == lead or set(eq1["variables"]) != {root, lead}:
+        return None
+    return root, lead
+
+
+def self_tail_triple_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = self_tail_triple_source(eq1)
+    if source is None:
+        return None
+    root, _lead = source
+    root_term = ("var", root)
+    if eq2["lhs"] != root_term or eq2["rhs"] != ("op", ("op", root_term, root_term), root_term):
+        return None
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  let v2 : G := ({root} ◇ ({root} ◇ {root})) ◇ {root}\n"
+        f"  have h1 : v2 ◇ {root} = {root} := (h {root} {root}).symm\n"
+        f"  have p1 : v2 ◇ (v2 ◇ {root}) = {root} := (congrArg (fun t => v2 ◇ t) h1).trans h1\n"
+        f"  have p2 : ((v2 ◇ (v2 ◇ {root})) ◇ {root}) ◇ {root} = (({root} ◇ {root}) ◇ {root}) :=\n"
+        f"    congrArg (fun t => (t ◇ {root}) ◇ {root}) p1\n"
+        f"  exact (h {root} v2).trans p2\n"
+    )
+    return "true:self_tail_triple", code
+
+
+def narrow_grind_true_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    key = (*equation_shape_key(eq1), *equation_shape_key(eq2))
+    if key not in narrow_grind_true_shape_keys():
+        return None
+    return "true:narrow_grind", grind_true_certificate(eq2["variables"])
 
 
 def direct_substitution_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, dict[str, Term]] | None:
@@ -2208,6 +2529,8 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (2, len(eq2["text"]), "true:product_constancy")
     if square_twist_comm_source(eq1) and commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"]):
         return (2, len(eq2["text"]), "true:square_twist_comm")
+    if (*equation_shape_key(eq1), *equation_shape_key(eq2)) in narrow_grind_true_shape_keys():
+        return (2, len(eq2["text"]), "true:narrow_grind")
     if direct_substitution_route(eq1, eq2):
         return (2, len(eq2["text"]), "true:rewrite")
     if bridge_route(eq1, eq2):
@@ -2347,6 +2670,51 @@ def solve_problem(
     square_twist_comm = square_twist_comm_route(eq1, eq2)
     if square_twist_comm is not None:
         route, code = square_twist_comm
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    derived_left_projection = derived_left_projection_route(eq1, eq2)
+    if derived_left_projection is not None:
+        route, code = derived_left_projection
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    right_self_absorption = right_self_absorption_route(eq1, eq2)
+    if right_self_absorption is not None:
+        route, code = right_self_absorption
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    repeated_square = repeated_right_square_route(eq1, eq2)
+    if repeated_square is not None:
+        route, code = repeated_square
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    self_tail_triple = self_tail_triple_route(eq1, eq2)
+    if self_tail_triple is not None:
+        route, code = self_tail_triple
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    narrow_grind = narrow_grind_true_route(eq1, eq2)
+    if narrow_grind is not None:
+        route, code = narrow_grind
         return {
             "answer": make_true_answer(problem, code),
             "route": route,
@@ -2586,6 +2954,8 @@ def sanitize_lean_code(code: str, *, verdict: str) -> bool:
         return False
     has_submission = bool(re.search(r"\b(?:def|theorem)\s+submission\b", code))
     if not has_submission:
+        return False
+    if verdict == "true" and "intro G _ h" not in code:
         return False
     saw_judge_problem = False
     for raw_line in code.splitlines():
