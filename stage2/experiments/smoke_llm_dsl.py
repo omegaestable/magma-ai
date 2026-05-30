@@ -147,9 +147,30 @@ def main() -> int:
     assert unproved_candidate is None
     assert unproved_reason == "guided_chain_unproved_or_bad_endpoints"
 
+    extra_var_payload = json.dumps(
+        {
+            "verdict": "true",
+            "proof_kind": "guided_chain",
+            "chain": ["x", "z", "y"],
+        }
+    )
+    extra_var_candidate, extra_var_reason = solver.candidate_from_llm_text_with_reason(
+        unproved_problem,
+        extra_var_payload,
+    )
+    assert extra_var_candidate is None
+    assert extra_var_reason == "rewrite_chain_uses_non_goal_variables"
+
     no_json_candidate, no_json_reason = solver.candidate_from_llm_text_with_reason(false_problem, "not json")
     assert no_json_candidate is None
     assert no_json_reason == "no_json_object"
+
+    bare_false_candidate, bare_false_reason = solver.candidate_from_llm_text_with_reason(
+        false_problem,
+        json.dumps({"verdict": "false"}),
+    )
+    assert bare_false_candidate is None
+    assert bare_false_reason == "false_verdict_without_table"
 
     bad_table_payload = json.dumps({"verdict": "false", "counterexample_table": [[0, 1], [1]]})
     bad_table_candidate, bad_table_reason = solver.candidate_from_llm_text_with_reason(

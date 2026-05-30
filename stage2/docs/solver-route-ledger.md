@@ -1,6 +1,6 @@
 # Solver Route Ledger
 
-Updated: 2026-05-27
+Updated: 2026-05-30
 
 This ledger is the review map for `stage2/solver/solver.py`. It records what each route is allowed to claim, why the method is mathematically sound, what local evidence exists, and what must be rechecked before promotion.
 
@@ -45,8 +45,8 @@ This ledger is the review map for `stage2/solver/solver.py`. It records what eac
 | Route | Key functions | Status | Trigger | Validation | Evidence / checks | Review notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | Solo proxy LLM | `send_proxy_call`, `judge_via_solo_proxy`, `run_solo` | llm | Deterministic route absent or rejected. | Official proxy mediates model and judge. | Positive-token parity required. | Solver never sees real upstream key. |
-| Marathon proxy LLM | `load_marathon_llm`, `render_marathon_prompt`, `run_marathon` | llm | Positive token budget and unresolved problem. | Official helper enforces budget and proxy. | `tokens_used > 0` required for LLM evidence. | Current config mirrors official max output and reasoning effort. |
-| `llm:true:rewrite_chain` | `candidate_from_llm_text`, `parse_llm_chain_terms`, `chain_certificate_from_terms` | llm | LLM returns JSON chain. | Every adjacent step must be proved by solver-owned rewrite logic. | `smoke_llm_dsl.py`; targeted fixture after parity. | Preferred TRUE LLM shape. |
+| Marathon proxy LLM | `load_marathon_llm`, `render_marathon_prompt`, `run_marathon` | llm | Positive token budget and unresolved problem. | Official helper enforces budget and proxy. | `tokens_used > 0` required for LLM evidence; 2026-05-30 analysis-only TRUE100 spent `179936` tokens through the official proxy. | Full-reference token budgets now allow up to one LLM call per manifest row; compressed/default budgets keep the conservative cap. |
+| `llm:true:rewrite_chain`, `llm:true:guided_chain` | `candidate_from_llm_text`, `parse_llm_chain_terms_with_reason`, `chain_certificate_from_terms`, `guided_chain_certificate_from_terms` | llm | LLM returns TRUE JSON chain. | Chain terms must use only goal variables; every adjacent step must be proved by solver-owned rewrite or bounded guided-closure logic. | `smoke_llm_dsl.py`; 2026-05-30 analysis-only TRUE100 showed 67 checked LLM proposals and 0 accepted LLM certificates. | Preferred TRUE LLM shape. Current dominant reject is unsupported chain edges, not parser loss. |
 | `llm:true:raw_code` | `sanitize_lean_code` | llm | LLM returns a complete Lean file. | Allowed imports, banned tokens, size, and `submission` checked before judge. | `smoke_llm_dsl.py`; judged targeted evidence still required. | Raw Lean may include helper declarations above `submission`, but it is still riskier than solver-owned rewrite chains. |
 | `llm:false:table` | `normalize_table`, `table_is_counterexample`, `make_false_answer` | llm | LLM returns finite table. | Table shape and semantic counterexample verified before Lean. | Targeted LLM fixture. | Best FALSE LLM shape because solver verifies it locally. |
 
