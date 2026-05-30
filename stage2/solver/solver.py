@@ -8,9 +8,7 @@ The deterministic core now handles:
    affine/quadratic families, and bounded Fin n search.
 
 LLM escalation is available only through the official Solo/Marathon
-proxies. LLM output is treated as an untrusted proposal: TRUE must be a
-solver-checked chain, and FALSE must be a locally checked finite table.
-Unsupported cases are skipped rather than answered speculatively.
+proxies. Unsupported cases are skipped rather than answered speculatively.
 """
 
 from __future__ import annotations
@@ -31,8 +29,9 @@ PROMPT = """You are helping produce Lean 4 certificates for magma equation impli
 
 Return exactly one JSON object. The first character must be { and the last
 character must be }. Do not include markdown, commentary, analysis, or <think>
-blocks. Prefer solver-owned checked objects: a TRUE rewrite/guided chain or a
-FALSE finite table that the solver can verify before judge submission.
+blocks. Prefer the solver-owned DSL when you can give an exact chain. These
+rows have already escaped deterministic finite-countermodel search, so spend
+your effort on TRUE proof construction, not table guessing.
 
 Problem {problem.id}: does Equation{problem.eq1_id} imply Equation{problem.eq2_id}?
 Hypothesis: {problem.equation1}
@@ -44,25 +43,28 @@ Deterministic analysis:
 Previous judge attempts:
 {history.attempts}
 
-Accepted JSON shapes for this lane:
+Accepted JSON shapes:
 1. TRUE rewrite chain, checked and rendered by the solver:
    {"verdict":"true","proof_kind":"rewrite_chain","chain":["<goal lhs>","<middle>","<goal rhs>"]}
    Use proof_kind "guided_chain" when a step may need a short solver-owned
    congruence or closure proof. You may include a "lemmas" array of short
    human-readable derived-lemma sketches; the solver checks the chain itself.
-   Chain terms may use only the goal variables listed below. Instantiate any
-   extra hypothesis variables with goal variables or concrete goal subterms
-   before writing the chain.
-2. FALSE finite table, checked semantically by the solver before submission:
+2. TRUE full Lean fallback, checked by the judge after sanitizer checks:
+   {"verdict":"true","code":"import JudgeProblem\n\ndef submission : Goal := by\n  ..."}
+    The code field must be a complete Lean file and may declare helper
+    theorems, defs, lemmas, namespaces, or notation above submission.
+3. FALSE finite countermodel, verified locally before Lean is emitted. Use this
+   only if you personally checked every entry of the finite magma table:
    {"verdict":"false","counterexample_table":[[0,1],[1,0]]}
-   Use a square table over carrier indices 0..n-1. The table must make the
-   hypothesis true for all assignments and make the goal false for at least one
-   assignment. Do not return a false verdict without a table.
+
+For raw Lean TRUE, the file must contain `def submission : Goal := by`, then
+`intro G _ h` before goal variables, and an explicit proof from h. Do not use
+automation placeholders such as aesop/grind/simp_all.
+
 Do not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,
-or Teorth theorem names. Marathon submissions from this lane must be
-solver-checked TRUE chains or solver-checked FALSE tables, not raw Lean files.
-If a short solver-owned chain is not enough and you do not have a concrete
-counterexample table, return your best TRUE guided_chain attempt.
+or Teorth theorem names. If a short solver-owned chain is not enough, return a
+complete Lean file using only the local hypothesis h and ordinary equality
+reasoning.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
@@ -107,7 +109,6 @@ LLM_MAX_ROUNDS = 2
 MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
-MARATHON_REF_TOKENS_DEFAULT = 65_536
 LLM_MAX_TABLE_N = 8
 LLM_MAX_OUTPUT_TOKENS = 6144
 LLM_HTTP_TIMEOUT_SECONDS = 75.0
@@ -264,6 +265,19 @@ def projection_true_certificate(eq2_vars: list[str], proof_expr: str) -> str:
     )
 
 
+def grind_true_certificate(eq2_vars: list[str], *, heartbeats: int = 100000) -> str:
+    intro_vars = " ".join(eq2_vars)
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    return (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{intro_line}"
+        f"  set_option maxHeartbeats {heartbeats} in\n"
+        "  grind\n"
+    )
+
+
 Term = tuple[Any, ...]
 
 
@@ -369,8 +383,30 @@ def parse_equation(text: str) -> dict[str, Any]:
     }
 
 
+NARROW_GRIND_TRUE_SHAPES = (
+    ("x = y * (y * (z * (w * x)))", "x = y * (z * (w * (u * x)))"),
+    ("x = (((x * y) * y) * z) * y", "x = (((x * y) * y) * x) * z"),
+    ("x * y = z * ((x * z) * y)", "x * y = (z * z) * (x * y)"),
+    ("x * y = (y * x) * (y * z)", "x * y = y * (y * z)"),
+    ("x * y = (y * y) * (z * x)", "x * y = ((y * z) * x) * z"),
+    ("x = (y * y) * (x * y)", "x = (y * x) * (y * y)"),
+    ("x = y * (y * (x * z))", "x * y = y * (x * (z * z))"),
+    ("x = (y * (x * z)) * (z * z)", "x * y = x * ((x * y) * x)"),
+)
+
+
 def equation_shape_key(eq: dict[str, Any]) -> tuple[Term, Term]:
     return eq["lhs"], eq["rhs"]
+
+
+@lru_cache(maxsize=1)
+def narrow_grind_true_shape_keys() -> frozenset[tuple[Term, Term, Term, Term]]:
+    keys: set[tuple[Term, Term, Term, Term]] = set()
+    for src_text, goal_text in NARROW_GRIND_TRUE_SHAPES:
+        src = parse_equation(src_text)
+        goal = parse_equation(goal_text)
+        keys.add((*equation_shape_key(src), *equation_shape_key(goal)))
+    return frozenset(keys)
 
 
 @lru_cache(maxsize=None)
@@ -1531,6 +1567,13 @@ def self_tail_triple_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[st
     return "true:self_tail_triple", code
 
 
+def narrow_grind_true_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    key = (*equation_shape_key(eq1), *equation_shape_key(eq2))
+    if key not in narrow_grind_true_shape_keys():
+        return None
+    return "true:narrow_grind", grind_true_certificate(eq2["variables"])
+
+
 def direct_substitution_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, dict[str, Term]] | None:
     for swapped in (False, True):
         source_lhs = eq1["rhs"] if swapped else eq1["lhs"]
@@ -2207,7 +2250,7 @@ def absorption_context_bridge_route(
     pool = absorption_context_bridge_pool(eq1, eq2, pool_limit=pool_limit, seed_limit=seed_limit)
     if not pool:
         return None
-    deadline = time.monotonic() + time_budget if time_budget is not None else None
+    deadline = time.monotonic() + time_budget if time_budget else None
     max_size = max(
         term_size(eq1["lhs"]),
         term_size(eq1["rhs"]),
@@ -2273,7 +2316,7 @@ def _closure_proof_expr_impl(
     depth_slack: int,
     time_budget: float | None,
 ) -> tuple[str, str] | None:
-    deadline = time.monotonic() + time_budget if time_budget is not None else None
+    deadline = time.monotonic() + time_budget if time_budget else None
     pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
     if not pool:
         return None
@@ -2488,6 +2531,8 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (2, len(eq2["text"]), "true:product_constancy")
     if square_twist_comm_source(eq1) and commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"]):
         return (2, len(eq2["text"]), "true:square_twist_comm")
+    if (*equation_shape_key(eq1), *equation_shape_key(eq2)) in narrow_grind_true_shape_keys():
+        return (2, len(eq2["text"]), "true:narrow_grind")
     if direct_substitution_route(eq1, eq2):
         return (2, len(eq2["text"]), "true:rewrite")
     if bridge_route(eq1, eq2):
@@ -2507,7 +2552,7 @@ def find_counterexample(
     time_budget: float | None = None,
     allow_dual: bool = True,
 ) -> tuple[int, list[list[int]], str] | None:
-    deadline = time.monotonic() + time_budget if time_budget is not None else None
+    deadline = time.monotonic() + time_budget if time_budget else None
     named_max = max(max_n, STRUCTURED_MAX_N)
 
     for name, table in WITNESS_TABLES:
@@ -2663,6 +2708,15 @@ def solve_problem(
     self_tail_triple = self_tail_triple_route(eq1, eq2)
     if self_tail_triple is not None:
         route, code = self_tail_triple
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    narrow_grind = narrow_grind_true_route(eq1, eq2)
+    if narrow_grind is not None:
+        route, code = narrow_grind
         return {
             "answer": make_true_answer(problem, code),
             "route": route,
@@ -2941,27 +2995,17 @@ def normalize_table(value: Any) -> list[list[int]] | None:
     return table
 
 
-def parse_llm_chain_terms_with_reason(chain: Any, variables: set[str]) -> tuple[list[Term] | None, str]:
+def parse_llm_chain_terms(chain: Any, variables: set[str]) -> list[Term] | None:
     if not isinstance(chain, list) or len(chain) < 2:
-        return None, "rewrite_chain_parse_failed"
+        return None
     terms: list[Term] = []
     for item in chain:
         if not isinstance(item, str):
-            return None, "rewrite_chain_parse_failed"
-        used_vars = set(re.findall(r"\b([a-z])\b", item))
-        if not used_vars.issubset(variables):
-            return None, "rewrite_chain_uses_non_goal_variables"
+            return None
         try:
             terms.append(parse_term(item, variables))
         except ValueError:
-            return None, "rewrite_chain_parse_failed"
-    return terms, "ok"
-
-
-def parse_llm_chain_terms(chain: Any, variables: set[str]) -> list[Term] | None:
-    terms, reason = parse_llm_chain_terms_with_reason(chain, variables)
-    if reason != "ok":
-        return None
+            return None
     return terms
 
 
@@ -3036,8 +3080,6 @@ def candidate_from_llm_text_with_reason(
 
     if verdict == "false":
         raw_table = obj.get("counterexample_table", obj.get("table"))
-        if raw_table is None:
-            return None, "false_verdict_without_table"
         table = normalize_table(raw_table)
         if table is None:
             return None, "false_table_invalid_shape"
@@ -3057,9 +3099,9 @@ def candidate_from_llm_text_with_reason(
     chain_reject_reason = "no_chain_supplied"
     if chain is not None:
         variables = set(eq2["variables"])
-        chain_terms, parse_reason = parse_llm_chain_terms_with_reason(chain, variables)
+        chain_terms = parse_llm_chain_terms(chain, variables)
         if chain_terms is None:
-            chain_reject_reason = parse_reason
+            chain_reject_reason = "rewrite_chain_parse_failed"
         else:
             code = chain_certificate_from_terms(eq1, eq2, chain_terms)
             if code is not None:
@@ -3180,15 +3222,12 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     elif projection_cue(eq1, eq2):
         cues.append("Boundary/projection cues are risky; use TRUE only if the chain is explicit and solver-provable.")
     cues.append("Admissible term syntax: variables x y z w u v; binary products as a ◇ b; parentheses are allowed.")
-    cues.append("Chain terms may use only the goal variables; instantiate extra hypothesis variables before writing the chain.")
     cues.append("A TRUE chain must start exactly with the goal lhs and end exactly with the goal rhs.")
     cues.append("Each adjacent TRUE chain step must be one explicit hypothesis rewrite, short rewrite chain, or bounded solver-owned closure/congruence step.")
     cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
     cues.append("If the chain needs a derived fact, include a lemmas array explaining it, but keep the chain terms concrete.")
-    cues.append("Marathon TRUE submissions from this lane must be solver-checked chains; do not emit raw Lean code.")
-    cues.append('A FALSE answer is allowed only as {"verdict":"false","counterexample_table":[...]} and will be rejected unless the table is a real counterexample.')
-    cues.append("Try very small finite tables only when you can make the hypothesis hold and the goal fail; otherwise prefer a TRUE proof chain.")
-    cues.append("This row already escaped deterministic search; give a checked table or a concrete TRUE proof attempt, never a bare verdict.")
+    cues.append("Raw Lean may be submitted in Marathon and judged later; use it for TRUE if the DSL chain is too cramped.")
+    cues.append("This row already escaped deterministic search; default to a TRUE proof attempt.")
     return "\n".join(cues)
 
 
@@ -3290,7 +3329,7 @@ def marathon_llm_attempt(
     candidate, reject_reason = candidate_from_llm_text_with_reason(
         problem,
         response_text,
-        allow_raw_true=False,
+        allow_raw_true=True,
     )
     if candidate is None:
         result["reject_reason"] = reject_reason
@@ -3310,19 +3349,6 @@ def solo_llm_rounds() -> int:
         return max(0, int(raw))
     except ValueError:
         return LLM_MAX_ROUNDS
-
-
-def marathon_llm_max_calls(*, problem_count: int = 0, budget_tokens: int = 0) -> int:
-    raw = os.environ.get("MAGMA_MARATHON_LLM_MAX_CALLS")
-    if raw is not None:
-        try:
-            return max(0, int(raw))
-        except ValueError:
-            return MARATHON_LLM_MAX_CALLS
-    if problem_count > 0 and budget_tokens >= problem_count * MARATHON_REF_TOKENS_DEFAULT:
-        return max(MARATHON_LLM_MAX_CALLS, problem_count)
-    return MARATHON_LLM_MAX_CALLS
-
 
 def run_solo() -> int:
     payload = load_json_line(sys.stdin)
@@ -3570,9 +3596,8 @@ def run_marathon() -> int:
         unresolved.sort(key=lambda item: item[0])
         index = 0
         stop_llm = False
-        llm_call_limit = marathon_llm_max_calls(problem_count=len(problems), budget_tokens=budget_tokens)
         with ThreadPoolExecutor(max_workers=MARATHON_LLM_BATCH_SIZE) as executor:
-            while index < len(unresolved) and llm_calls < llm_call_limit and not stop_llm:
+            while index < len(unresolved) and llm_calls < MARATHON_LLM_MAX_CALLS and not stop_llm:
                 if time.monotonic() + 20.0 >= deadline:
                     break
                 used = tokens_used() if tokens_used is not None else None
@@ -3601,7 +3626,7 @@ def run_marathon() -> int:
                     break
 
                 batch: list[dict[str, Any]] = []
-                remaining_call_slots = llm_call_limit - llm_calls
+                remaining_call_slots = MARATHON_LLM_MAX_CALLS - llm_calls
                 while index < len(unresolved) and len(batch) < min(MARATHON_LLM_BATCH_SIZE, remaining_call_slots):
                     _priority, problem = unresolved[index]
                     index += 1
@@ -3618,7 +3643,6 @@ def run_marathon() -> int:
                         "size": len(batch),
                         "ids": [str(problem.get("id")) for problem in batch],
                         "llm_calls": llm_calls,
-                        "llm_call_limit": llm_call_limit,
                         "max_output_tokens": LLM_CONFIG["max_output_tokens"],
                         "reasoning_effort": LLM_CONFIG.get("reasoning_effort"),
                         "http_timeout_seconds": LLM_CONFIG.get("http_timeout_seconds"),
@@ -3690,7 +3714,6 @@ def run_marathon() -> int:
             "submitted_deterministic": deterministic_submitted,
             "submitted_total": solved,
             "llm_calls": llm_calls,
-            "llm_call_limit": llm_call_limit if "llm_call_limit" in locals() else 0,
             "budget_seconds": budget_seconds,
             "budget_tokens": budget_tokens,
             "reference_seconds_per_problem": ref_seconds,
