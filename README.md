@@ -26,6 +26,10 @@ The submission artifact is one Python file, `solver.py`, with a size limit of 50
 
 Scoring, final model routing, and final private problem-set composition are still TBD upstream. Keep those as configuration assumptions, not hardcoded policy.
 
+Active Marathon validation policy as of 2026-05-30: use positive token budgets
+only. Do not run or cite `--budget-tokens 0` as a guardrail, promotion signal,
+or default regression path.
+
 ## Start Here
 
 Cold-start read order:
@@ -58,17 +62,19 @@ Historical completed public total: `1201/1669` solved. This included `34` accept
 
 Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `116670` bytes, single-file submission directory after the 2026-05-25 cleanup pass.
-- May 21 prune/refactor evidence: closure-route dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior, and selected fallback reproduction is summarized in `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
+- Packaged `stage2/submissions/solver.py`: `138939` bytes, single-file submission directory after the 2026-05-30 mixed-lane resume.
+- May 21 prune/refactor evidence: closure-route dedupe preserved `normal_100 = 74/100` historical Marathon behavior, and selected fallback reproduction is summarized in `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 - Official Solo `sample_20` no-key smoke: `15/20` solved on 2026-05-25.
 - Official Solo `sample_200` no-key smoke: `169/200` solved on 2026-05-25.
-- Official Marathon `examples/problems/marathon/normal_100.jsonl` with zero token budget: `74/100` accepted in `60.6s`, with no SIGTERM/SIGKILL and `0` tokens on 2026-05-25.
 - Recent compact named FALSE witnesses include `S4D`, `S4E`, and `S5D`.
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
 - Compact witness fixture: `8/8` accepted, `0` LLM calls.
-- Fresh 150-row hard mixes with zero-token Marathon improved to `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
+- Fresh 150-row hard mixes are archived deterministic discovery evidence with `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`.
 - Positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`. Use this as transport evidence, not proof-quality promotion evidence.
-- Full public validation of the post-rollback package is pending; treat zero-token results as deterministic regression only and require positive-token proxy evidence before LLM-backed promotion.
+- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions. The remaining rows were rejected before judge submission by solver-owned LLM validation.
+- 2026-05-30 official `normal_100` positive-token Marathon guardrail with Lean on PATH: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions.
+- 2026-05-30 official `hard1` positive-token mixed-lane Marathon: `39/69` accepted, `30` not attempted, `30` LLM calls, `240164` tokens used, and no incorrect submissions. The LLM did not yet produce an accepted table or TRUE chain; rejects were malformed/prose output, unsupported guided-chain edges, bad finite tables, or proxy timeouts.
+- Full public validation of the post-rollback package is pending; require positive-token official/proxy evidence before LLM-backed promotion.
 - Pasted public/evaluation row lists are diagnostic fixtures. Do not hardcode ids; generalize fixes into reusable proof or witness families.
 
 The full generated evidence lives in:
@@ -79,6 +85,7 @@ The full generated evidence lives in:
 - `stage2/results/2026-05-17-hard-mix-witness-summary.md`
 - `stage2/results/2026-05-17-homelab-openrouter-proxy-smoke.md`
 - `stage2/results/2026-05-20-optimization-readiness.md`
+- `stage2/results/2026-05-30-positive-token-mixed-lane-resume.md`
 - `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
 - `stage2/results/2026-05-12-public-failure-ledger.jsonl`
 - `stage2/results/2026-05-12-competition-preflight.md`
@@ -151,7 +158,7 @@ Package the local scaffold from PowerShell:
 
 1. Improve deterministic certificate generation first.
 2. Validate generated Lean certificates with the official judge.
-3. Use positive-token playground parity as the active local LLM gate; keep zero-token sweeps for deterministic regression only.
+3. Use positive-token playground parity as the active local LLM gate; do not run `--budget-tokens 0` Marathon sweeps as validation.
 4. Run Solo samples for quick proof debugging.
 5. Run Marathon samples for budget, triage, cache, and append-only output behavior.
 6. Regenerate `stage2/results/` summaries and preflight notes after meaningful solver changes.

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Run reproducible Marathon sweeps across local Stage 2 corpora.
+"""Run reproducible positive-token Marathon sweeps across local Stage 2 corpora.
 
 This is a development helper, not submitted solver code. It keeps official
 public evidence and Hugging Face discovery evidence separated while using the
 same vendored Marathon runner and packaged single-file solver for every lane.
 
-Zero-token remains the default for deterministic regression, but the helper can
-also run positive-token lanes and fail closed when LLM usage is mandatory.
+As of 2026-05-30 this helper refuses nonpositive token budgets. Active Marathon
+validation must exercise the official LLM/proxy budget path even when the
+expected improvement is deterministic.
 """
 
 from __future__ import annotations
@@ -245,7 +246,7 @@ def write_combined(run_root: Path, rows: list[dict[str, Any]]) -> None:
     )
 
     lines = [
-        "# Zero-Token Sweep Summary",
+        "# Positive-Token Sweep Summary",
         "",
         f"Generated: {payload['generated_at']}",
         "",
@@ -332,8 +333,8 @@ def main() -> int:
     parser.add_argument(
         "--budget-tokens",
         type=int,
-        default=0,
-        help="Token budget passed to the official Marathon runner. Default 0 preserves zero-token sweeps; use >0 or -1 to enable LLM calls.",
+        default=131072,
+        help="Positive token budget passed to the official Marathon runner. Values <= 0 are rejected.",
     )
     parser.add_argument(
         "--budget-seconds",
@@ -350,7 +351,7 @@ def main() -> int:
     parser.add_argument("--list", action="store_true", help="List selected datasets and exit")
     args = parser.parse_args()
 
-    run_root = (args.run_root or (DEFAULT_RUN_ROOT / f"{datetime.now():%Y-%m-%d}-zero-token-sweep")).resolve()
+    run_root = (args.run_root or (DEFAULT_RUN_ROOT / f"{datetime.now():%Y-%m-%d}-positive-token-sweep")).resolve()
     specs = select_specs(args.scope, include_core_duplicates=args.include_hf_core_duplicates)
     if args.only:
         wanted = set(args.only)
@@ -373,19 +374,18 @@ def main() -> int:
         print(f"Submission dir must contain only solver.py; found {solver_entries!r}", file=sys.stderr)
         return 2
 
-    if args.require_llm and args.budget_tokens == 0:
-        print("--require-llm is incompatible with --budget-tokens 0", file=sys.stderr)
+    if args.budget_tokens <= 0:
+        print("Marathon validation with --budget-tokens <= 0 is banned in this repo.", file=sys.stderr)
         return 2
 
     key_state = local_runner_env.upstream_key_state()
-    if args.budget_tokens != 0:
-        print(
-            "llm_budget_mode=enabled budget_tokens={0} key_source={1} key_present={2}".format(
-                args.budget_tokens,
-                key_state["source"],
-                str(bool(key_state["value"])).lower(),
-            )
+    print(
+        "llm_budget_mode=enabled budget_tokens={0} key_source={1} key_present={2}".format(
+            args.budget_tokens,
+            key_state["source"],
+            str(bool(key_state["value"])).lower(),
         )
+    )
     if args.require_llm and not key_state["value"]:
         print(
             "LLM usage required but no upstream key was found in process env, repo .env, or Windows User environment.",

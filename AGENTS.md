@@ -34,6 +34,9 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
+- Active validation policy: Marathon guardrails and promotion runs must use a
+  positive token budget; do not run or cite `--budget-tokens 0` as current
+  evidence.
 - Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, bounded subterm rewrite chains, bounded absorption closure, deep absorption, and bounded equational closure.
 - Active deterministic FALSE routes: named compact witnesses, structured finite families, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
@@ -47,7 +50,8 @@ Latest completed public benchmark snapshot, before the final heartbeat/path-help
 - `hard3`: `264/400`
 - total: `1201/1669`, split `390 TRUE + 811 FALSE`, with `0` solver tokens
 
-Use `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md` and
+Use `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md` as
+archived history and
 `stage2/docs/LATEST_HANDOFF.md` as the current team-memory bridge before
 starting new solver work. Use `stage2/docs/playground-preflight.md` before any
 upload/playground check.
@@ -56,14 +60,16 @@ Latest local candidate evidence after the final optimization patch, not a full p
 
 - `sample_20`: `15/20` in the 2026-05-25 no-key Solo smoke
 - `sample_200`: `169/200` in the 2026-05-25 no-key Solo smoke
-- Marathon `normal_100` with zero tokens: `74/100` accepted in `60.6s` on 2026-05-25
 - accepted-grind fixture with heartbeat cap: `34/34` accepted only with `MAGMA_ENABLE_GRIND=1`
 - compact witness fixture: `8/8` accepted, `0` LLM calls
-- Fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
+- Fresh 150-row hard mixes, archived as deterministic discovery evidence: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - Bounded local OpenRouter proxy smoke on 2026-05-25: Solo `1/1` and Marathon `1/1` accepted through official proxy paths, with Marathon `89/4096` tokens used
-- Packaged solver size: `116670` bytes
-- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction lives at `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
-- Full public validation of the post-rollback package is pending. Treat the prior `1201/1669` as historical zero-token evidence that included `34` default-disabled grind wins; require positive-token proxy evidence before LLM-backed promotion.
+- Packaged solver size: `138939` bytes
+- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` historical Marathon behavior; selected fallback reproduction lives at `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
+- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions.
+- 2026-05-30 official `normal_100` positive-token Marathon guardrail: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions.
+- 2026-05-30 official `hard1` positive-token mixed-lane Marathon: `39/69` accepted, `30` LLM calls, `240164` tokens used, and no incorrect submissions.
+- Full public validation of the post-rollback package is pending. Treat the prior `1201/1669` as historical evidence that included `34` default-disabled grind wins; require positive-token proxy evidence before LLM-backed promotion.
 
 ## Banned Approaches
 
@@ -74,6 +80,8 @@ Latest local candidate evidence after the final optimization patch, not a full p
 5. Do not import Teorth theorem names in official certificates unless upstream allowlists them.
 6. Do not edit vendored official harness files casually; document any local patch.
 7. Do not treat live Teorth scraping, `tmp_stage2_smoke/`, or direct `verify_answer(problem, ...)` output as promotion evidence without runner-equivalent validation.
+8. Do not use `--budget-tokens 0` Marathon runs as active validation,
+   promotion evidence, or default workflow.
 
 ## Canonical Workflow
 

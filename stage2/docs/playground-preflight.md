@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-25
+Updated: 2026-05-30
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -23,13 +23,14 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Current packaged state from the latest local package pass: `116248` bytes, with `stage2/submissions/` containing only `solver.py`.
+Current packaged state from the latest local package pass: `138939` bytes, with `stage2/submissions/` containing only `solver.py`.
 
 Current TRUE boundary rails:
 
 - Preferred TRUE LLM outputs remain solver-owned `rewrite_chain` or `guided_chain` JSON.
-- Raw TRUE fallback must use `code` containing a complete Lean file that exposes `submission`.
-- Helper theorems, defs, lemmas, namespaces, and notation above `submission` are allowed.
+- Marathon TRUE LLM submissions must be solver-checked chains; raw TRUE Lean is disabled for that lane.
+- Raw TRUE fallback, where used in Solo/debug tooling, must use `code` containing a complete Lean file that exposes `submission`.
+- Helper theorems, defs, lemmas, namespaces, and notation above `submission` are allowed in that raw-file rail.
 - Legacy body-only `proof` / `proof_body` JSON is intentionally unsupported locally and should be treated as stale prompt drift, including the older example still present in the vendored `vendor/stage2-official/README.md`.
 
 ## Proxy Reality
@@ -46,10 +47,9 @@ The official proxy extracts the top-level `PROMPT` constant from `solver.py`, fi
 
 In Marathon mode, the runner injects `JUDGE_MARATHON_LIB_DIR`; the solver imports `marathon_llm` from that directory and calls `marathon_llm.call_llm` only when a token budget is available.
 
-Zero-token Marathon runs prove only deterministic append-only behavior. They do
-not exercise the LLM proxy path and must not be cited as evidence for an LLM
-strategy. Positive-token LLM evidence must show both `llm_calls > 0` from the
-solver stderr summary and `tokens_used > 0` from the official Marathon summary.
+Marathon runs with `--budget-tokens 0` are banned as active validation in this
+repo. Use positive-token official runs and record both `llm_calls` from the
+solver stderr summary and `tokens_used` from the official Marathon summary.
 
 On a local machine, the proxy still needs one upstream key in the runner environment, usually `OPENAI_API_KEY` or `OPENROUTER_API_KEY`. The repo-owned probe and parity entrypoints populate that runner environment from process env first, then the ignored root `.env`, then legacy Windows User env fallback. If neither source is configured, unresolved cases can fail with:
 
@@ -208,8 +208,7 @@ Pop-Location
 
 Use explicit Solo output paths when recording smoke evidence. The runner's
 default `pipeline/results/submissions.json` is easy to confuse with earlier
-local smoke rows. Zero-token Marathon remains useful as an optional deterministic
-regression check, but it is no longer a playground-readiness gate.
+local smoke rows. Marathon guardrails must use a positive token budget.
 
 On machines with local upstream keys configured, blank `OPENAI_API_KEY` and
 `OPENROUTER_API_KEY` for these fast deterministic Solo smokes. Otherwise
@@ -252,3 +251,11 @@ Latest local note: the 2026-05-20 positive-token parity probe proved proxy
 transport with Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon
 `tokens_used=7208`, but it is not promotion-clean because the unresolved TRUE
 row failed by judge rejection / rejected LLM output.
+
+Latest positive-token guardrail note: on 2026-05-30, official Marathon
+`normal_100` with Lean on PATH accepted `75/100`, left `25` unresolved before
+judge submission, used `47419` tokens, and made no incorrect submissions. A
+targeted TRUE red-flag run accepted `2/13`, used `22764` tokens, and rejected
+the remaining LLM proposals locally. The resumed mixed-lane `hard1` run
+accepted `39/69`, used `240164` tokens across `30` LLM calls, and made no
+incorrect submissions.

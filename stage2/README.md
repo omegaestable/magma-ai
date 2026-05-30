@@ -29,9 +29,9 @@ The current `solver/solver.py` is still deliberately conservative, but it now ha
 3. exact substitution, projection-boundary laws, short bridge/constancy chains, bounded subterm rewrite chains, and bounded absorption-closure TRUE implications
 4. deterministic FALSE implications from named witnesses, structured tables, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded finite search
 
-Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. The broad `true:grind` fallback has been removed from active solver policy after playground error-rate failures.
+Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. Active Marathon validation in this repo must use positive token budgets; do not run `--budget-tokens 0` as a guardrail. The broad `true:grind` fallback has been removed from active solver policy after playground error-rate failures.
 
-Current TRUE boundary rails are narrower than some historical prompt snippets: prefer solver-owned `rewrite_chain` or `guided_chain` outputs, and use raw TRUE only as `{"verdict":"true","code":"<complete Lean file>"}`. The Lean file may declare helper theorems, defs, lemmas, namespaces, or notation above `submission`. Legacy body-only `proof` / `proof_body` payloads are intentionally unsupported locally, even though an older vendored README prompt snippet still shows them.
+Current TRUE boundary rails are narrower than some historical prompt snippets: Marathon TRUE LLM submissions must be solver-owned `rewrite_chain` or `guided_chain` outputs. Raw TRUE Lean is disabled for Marathon and remains only a Solo/debug rail as `{"verdict":"true","code":"<complete Lean file>"}`. The Lean file may declare helper theorems, defs, lemmas, namespaces, or notation above `submission`. Legacy body-only `proof` / `proof_body` payloads are intentionally unsupported locally, even though an older vendored README prompt snippet still shows them.
 
 ## Current Public Snapshot
 
@@ -43,28 +43,30 @@ Latest completed public refresh, generated on 2026-05-18 before the final heartb
 - `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`
 - `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`
 
-Total public score: `1201/1669`, with `0` LLM calls. This is historical zero-token evidence; `34` of those wins came from `true:grind`, which is now retired from active solver policy.
+Total public score: `1201/1669`, with `0` LLM calls. This is historical deterministic evidence; `34` of those wins came from `true:grind`, which is now retired from active solver policy.
 
 Latest local candidate evidence after the final optimization patch:
 
 - `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke
 - `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke
-- Marathon `normal_100` with zero token budget: `74/100` accepted in `60.6s` on 2026-05-25
-- packaged solver size: `116248` bytes after the latest local package pass
-- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
+- packaged solver size: `138939` bytes after the latest local package pass
+- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` historical Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
 - compact witness fixture: `8/8` accepted, `0` LLM calls
-- fresh 150-row hard mixes with zero-token Marathon: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
+- fresh 150-row hard mixes, archived as deterministic discovery evidence: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
 - positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`, but unresolved TRUE proof quality still failed
+- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions
+- 2026-05-30 official `normal_100` positive-token Marathon guardrail: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions
+- 2026-05-30 official `hard1` positive-token mixed-lane Marathon: `39/69` accepted, `30` not attempted, `30` LLM calls, `240164` tokens used, and no incorrect submissions
 - boundary cleanup smoke: full-file TRUE `code` with helper declarations is accepted; legacy `proof` / `proof_body` payloads are rejected
 
-Do not treat the optimized package as promoted from zero-token evidence alone. The default small-fixture gate is positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`, and the default wide public hard-set gate is `stage2/experiments/run_playground_public_sweeps.py`; zero-token sweeps are deterministic regression only.
+Do not promote the optimized package without positive-token official/proxy evidence. The default small-fixture gate is positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`, and the default wide public hard-set gate is `stage2/experiments/run_playground_public_sweeps.py`.
 For standard local LLM runs, store the rotated upstream key in the ignored
 repo-root `.env` with `stage2/experiments/set_openrouter_repo_env.ps1`. The
 repo-owned probe and parity entrypoints load process env first, then `.env`,
 then legacy Windows User env fallback.
-Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, fallback-reproduction, and cleanup-smoke evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`, and `results/2026-05-25-cleanup-and-smoke.md`.
+Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, fallback-reproduction, cleanup-smoke, and positive-token mixed-lane evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`, `results/2026-05-25-cleanup-and-smoke.md`, and `results/2026-05-30-positive-token-mixed-lane-resume.md`.
 
 Current best route learnings:
 

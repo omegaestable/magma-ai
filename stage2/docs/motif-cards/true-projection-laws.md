@@ -50,7 +50,7 @@ Each `projection_proof_*` is built from explicit applications of `h` and congrue
 ## Evidence
 
 - Active deterministic route in `solve_problem` before generic rewrite-chain and closure search.
-- Official acceptance evidence is included inside public zero-token `true:certificate` totals.
+- Official acceptance evidence is included inside historical public `true:certificate` totals.
 
 ## Limits
 

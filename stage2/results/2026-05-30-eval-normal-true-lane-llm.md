@@ -3,6 +3,11 @@
 `evaluation_normal` is analysis-only discovery data. These runs are not public
 promotion evidence.
 
+Policy update after this session: active repo validation now forbids
+`--budget-tokens 0` Marathon guardrails. Historical no-LLM numbers below are
+kept only to explain what happened during the session; future reruns must use
+positive token budgets and record proxy outcomes.
+
 ## Fixture
 
 - Source: `data/hf_cache/evaluation_normal.jsonl`
@@ -15,7 +20,7 @@ promotion evidence.
 
 ## Solver Changes
 
-- TRUE-lane LLM prompt now forbids false verdicts and finite-table guessing.
+- The first TRUE-lane LLM prompt forbade false verdicts and finite-table guessing; the resumed mixed-lane prompt now permits FALSE only as a solver-verified table.
 - Prompt asks for concrete rewrite or guided-chain proof attempts and includes
   bounded middle-term hints from goal/hypothesis subterms plus one-step rewrites.
 - LLM guided-chain validation now uses wider LLM-only bounds than deterministic
@@ -44,7 +49,7 @@ accepted or reconstructable proof template.
 
 ## Runs
 
-### Zero-Token TRUE100 Baseline
+### Archived Deterministic TRUE100 Baseline
 
 - Output dir: `tmp_stage2_smoke/2026-05-30-eval-normal-true100-zero`
 - Score: `33/100`
@@ -66,8 +71,8 @@ accepted or reconstructable proof template.
 ### Small Positive-Token Probes After Prompt Patches
 
 - `tmp_stage2_smoke/2026-05-30-true4-after-prompt-llm`: `0/4`, `9083`
-  tokens. The prompt moved the model from false verdicts to TRUE chains, but
-  all chains were unsupported by solver-owned proof checks.
+  tokens. The first prompt moved the model from false verdicts to TRUE chains,
+  but all chains were unsupported by solver-owned proof checks.
 - `tmp_stage2_smoke/2026-05-30-true4-after-variable-discipline-llm`: `0/4`,
   `10229` tokens. Variable-discipline telemetry isolated fresh-variable chain
   errors from unsupported proof edges.
@@ -92,16 +97,35 @@ The official proxy emitted intermittent `ConnectionAbortedError [WinError
 the solver exited `rc=0`; treat this as proxy teardown noise unless it appears
 before a missing summary.
 
-## Required Guardrails After Patch
+## Required Guardrails After Policy Update
 
-- TRUE100 zero-token rerun:
-  - Output dir: `tmp_stage2_smoke/2026-05-30-eval-normal-true100-zero-after-patches`
-  - Score: `33/100`
-  - Tokens: `0`
-- Official `normal_100` zero-token guardrail:
-  - Output dir: `tmp_stage2_smoke/2026-05-30-normal100-zero-after-true-lane-patches`
+- TRUE red-flag positive-token official Marathon after trimming raw/grind TRUE behavior:
+  - Output dir: `tmp_stage2_smoke/2026-05-30-true-redflags-llm-after-trim`
+  - Score: `2/13`
+  - Accepted: `2`
+  - Not attempted: `11`
+  - LLM calls: `11`
+  - Tokens: `22764`
+  - Incorrect submissions: `0`
+  - Reject lesson: the dominant class stayed `guided_chain_unproved_or_bad_endpoints`; one response used non-goal variables. No raw TRUE Lean was submitted from Marathon.
+- Official `normal_100` positive-token Marathon guardrail:
+  - Output dir: `tmp_stage2_smoke/2026-05-30-normal100-positive-after-true-trim-leanpath`
   - Score: `75/100`
-  - Tokens: `0`
+  - Accepted: `75`
+  - Not attempted: `25`
+  - LLM calls: `25`
+  - Tokens: `47419`
+  - Incorrect submissions: `0`
+  - Environment note: a prior run without the Elan bin on `PATH` produced `harness_error` rows for every submitted answer because the judge could not find `lean`; do not use that run as solver evidence.
+- Official `hard1` positive-token mixed-lane Marathon after resuming with both TRUE and FALSE enabled:
+  - Output dir: `tmp_stage2_smoke/2026-05-30-hard1-positive-mixed-llm`
+  - Score: `39/69`
+  - Accepted: `39`
+  - Not attempted: `30`
+  - LLM calls: `30`
+  - Tokens: `240164`
+  - Incorrect submissions: `0`
+  - Reject lesson: mixed prompting caused the model to try finite tables, but local table checking rejected them as non-counterexamples. TRUE proposals still mostly failed as unsupported guided-chain edges or malformed/prose responses; several rows timed out at the proxy.
 
 ## Interpretation
 

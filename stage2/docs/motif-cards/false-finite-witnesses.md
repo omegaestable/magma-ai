@@ -54,7 +54,7 @@ For larger tables, the emitted certificate includes `set_option maxRecDepth 2000
 
 ## Evidence
 
-- Public zero-token baseline accepted 811 finite FALSE certificates.
+- Historical public baseline accepted 811 finite FALSE certificates.
 - Compact witness fixture accepted 8/8 with the recent structured table additions.
 - OpenRouter/LLM false-table path is safe only because the solver rechecks the table locally before Lean emission.
 

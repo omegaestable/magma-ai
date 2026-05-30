@@ -26,9 +26,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import analyze_zero_token_run as analyzer
+import analyze_marathon_run as analyzer
 import run_playground_parity_llm as parity
-import run_zero_token_sweeps as sweeps
+import run_positive_token_sweeps as sweeps
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

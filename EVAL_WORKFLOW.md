@@ -64,7 +64,7 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
-The current packaged smoke size is `116670` bytes as of 2026-05-25. Re-check this after every package step instead of carrying old size notes forward.
+The current packaged smoke size is `138939` bytes as of 2026-05-30. Re-check this after every package step instead of carrying old size notes forward.
 
 ## Playground Preflight Gate
 
@@ -78,11 +78,16 @@ The current solver does not expose broad `true:grind` as an active route. LLM re
 For wide official public validation under the published playground budget model,
 use `stage2/experiments/run_playground_public_sweeps.py`; it packages the
 single-file solver, applies the public `3600 s` / `65536 token` reference
-budgets per problem, and fails closed on zero-token or zero-call runs.
+budgets per problem, and fails closed on nonpositive token budgets or zero-call
+runs.
 For standard local LLM runs, configure the rotated upstream key in the ignored
 root `.env` with `stage2/experiments/set_openrouter_repo_env.ps1`. The
 repo-owned probe/parity entrypoints load process env first, root `.env`
 second, and legacy Windows User env last.
+
+Active Marathon validation in this repo must use a positive token budget. Do
+not run or promote `--budget-tokens 0` as a guardrail, regression gate, or
+readiness signal; archived no-LLM summaries are historical archaeology only.
 
 ## Solo Debug Loop
 
@@ -163,6 +168,8 @@ A candidate can be called a Stage 2 champion only if:
 5. Deterministic certificates are judge-accepted on their fixture set.
 6. Red-team review finds no blocker.
 7. The candidate has a result summary under `stage2/results/`.
+8. Marathon evidence uses a positive token budget and records the LLM/proxy
+   outcome, even when no LLM certificate is ultimately accepted.
 
 ## Banned Shortcuts
 
@@ -172,3 +179,5 @@ A candidate can be called a Stage 2 champion only if:
 4. No proof template promotion without accepted Lean evidence.
 5. No changing official reference config and calling the result official.
 6. No runtime dependence on Teorth caches, live scraping, or paper files from the submitted solver.
+7. No `--budget-tokens 0` Marathon runs as validation, promotion evidence, or
+   default workflow.

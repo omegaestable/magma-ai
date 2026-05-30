@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from analyze_zero_token_run import answer_kind, load_answers, load_json, load_problem_rows, manifest_from_launcher
+from analyze_marathon_run import answer_kind, load_answers, load_json, load_problem_rows, manifest_from_launcher
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

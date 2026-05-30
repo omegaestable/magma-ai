@@ -2,7 +2,7 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-05-25.
+Last updated: 2026-05-30.
 
 ## Stage
 
@@ -16,7 +16,7 @@ Last updated: 2026-05-25.
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `116248` bytes.
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `138939` bytes.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
 - Route motif cards: `stage2/docs/motif-cards/`.
@@ -34,9 +34,9 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 1. Handles official Marathon and Solo I/O.
 2. Emits TRUE certificates for reflexive problems, singleton/collapse implications, exact substitutions, projection-boundary laws, bridge/constancy chains, bounded rewrite chains, absorption closure, deep absorption, and bounded equational closure.
 3. Has no active broad `true:grind` fallback after playground error-rate failures; old grind ledgers are historical discovery evidence only.
-4. Escalates unresolved Solo/Marathon rows through the official LLM proxy when the runner provides an LLM path and a positive token budget; if Solo remains unresolved it makes a final schema-valid fallback judge call, while zero-token Marathon skips unresolved rows.
-5. Keeps the TRUE LLM boundary narrow: solver-owned `rewrite_chain` / `guided_chain` outputs are preferred, and any raw TRUE fallback must use `code` containing a complete Lean file.
-6. Allows raw TRUE `code` to declare helper theorems, defs, lemmas, namespaces, or notation above `submission`; legacy `proof` / `proof_body` body-only payloads are intentionally unsupported.
+4. Escalates unresolved Solo/Marathon rows through the official LLM proxy when the runner provides an LLM path and a positive token budget; repo validation no longer uses `--budget-tokens 0` Marathon runs.
+5. Keeps the Marathon TRUE LLM boundary narrow: solver-owned `rewrite_chain` / `guided_chain` outputs only, with raw TRUE Lean disabled for that lane.
+6. Allows raw TRUE `code` in Solo/debug parsing only when it contains a complete Lean file; helper theorems, defs, lemmas, namespaces, and notation above `submission` are allowed there, while legacy `proof` / `proof_body` body-only payloads are intentionally unsupported.
 7. Searches FALSE finite witnesses via named compact tables, structured families, affine/linear families, quadratic families, dualized witnesses, and bounded `Fin 2..3` enumeration.
 8. Current named witness set includes the recent `S4D`, `S4E`, and `S5D` additions.
 9. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables use `set_option maxRecDepth 20000`.
@@ -44,7 +44,7 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 
 ## Best Evidence
 
-Latest completed public zero-token Marathon baseline, from the post-witness refresh before the final heartbeat/path-helper optimization patch and before the grind rollback:
+Latest archived public Marathon baseline, from the post-witness refresh before the final heartbeat/path-helper optimization patch and before the grind rollback:
 
 | Set | Solved | TRUE | FALSE | Tokens |
 | --- | ---: | ---: | ---: | ---: |
@@ -63,20 +63,22 @@ Answer-kind totals for that baseline:
 
 Latest local regression evidence after the final optimization/refactor patch:
 
-- Current package pass produced `stage2/submissions/solver.py` at `116248` bytes, still well below the 500 KB limit.
+- Current package pass produced `stage2/submissions/solver.py` at `138939` bytes, still well below the 500 KB limit.
 - Active TRUE boundary rails were cleaned up on 2026-05-25: helper-bearing full-file `code` payloads are accepted, and legacy `proof` / `proof_body` payloads are rejected as unsupported.
-- 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20`, official Solo no-key `sample_200 = 169/200`, and official zero-token Marathon `normal_100 = 74/100` accepted in `60.6s`.
+- 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20` and official Solo no-key `sample_200 = 169/200`.
 - Official harnesses passed on 2026-05-25: Solo harness had no failing buckets; Marathon harness passed `25/25` with Lean available.
 - Bounded proxy transport smoke passed on 2026-05-25: Solo `1/1` with `llm_calls=1`; Marathon `1/1` with `89/4096` tokens used.
 - Cleanup removed repo-side generated `__pycache__` directories; `.venv/` and scratch evidence were left in place.
-- Earlier closure-route dedupe via `_closure_route_impl` preserved `normal_100 = 74/100` zero-token Marathon behavior.
+- Earlier closure-route dedupe via `_closure_route_impl` preserved `normal_100 = 74/100` historical Marathon behavior.
 - Route profile on `normal_100`: `74` deterministic candidates, `26` skips, `49.925s`.
-- Official zero-token Marathon on `normal_100`: `74/100` accepted, `26` not attempted, `0` tokens, `50.5s`.
-- Selected 27-row fallback reproduction: three `evaluation_extra_hard_false_*` rows now accepted by `false:witness:S4C`; the other 24 reproduce Solo fallback `TRUE` plus judge `incorrect`, while zero-token Marathon skips them.
+- Selected 27-row fallback reproduction: three `evaluation_extra_hard_false_*` rows now accepted by `false:witness:S4C`; the other 24 reproduce Solo fallback `TRUE` plus judge `incorrect`.
 - Exact grind ledgers reconcile to `34 accepted / 433 incorrect`.
 - Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
 - Compact witness fixture: `8/8` accepted.
 - Positive-token LLM parity on two unresolved TRUE rows reached the official proxy paths: Solo `llm_calls=2`, Marathon `llm_calls=1`, Marathon `tokens_used=7208`; promotion still blocked by judge rejection / rejected LLM output.
+- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions. The remaining proposals were rejected before judge submission by solver-owned validation.
+- 2026-05-30 official `normal_100` positive-token Marathon guardrail with Lean on PATH: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions.
+- 2026-05-30 official `hard1` positive-token mixed-lane Marathon after enabling checked FALSE table proposals and fixing zero-second budget handling: `39/69` accepted, `30` not attempted, `30` LLM calls, `240164` tokens used, and no incorrect submissions.
 - Wide public hard-set local readiness now has a dedicated playground-equivalent helper: `stage2/experiments/run_playground_public_sweeps.py` packages the single-file solver, applies the published `3600 s` / `65536 token` per-problem budget model, requires nonzero LLM usage, and writes combined gap-analysis summaries.
 - Python syntax/editor diagnostics and packaged submission syntax checks pass.
 
@@ -85,8 +87,8 @@ Full public validation of the optimized package after the grind rollback is pend
 ## Durable Session Outputs
 
 - `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`
-- `stage2/experiments/run_zero_token_sweeps.py`
-- `stage2/experiments/analyze_zero_token_run.py`
+- `stage2/experiments/run_positive_token_sweeps.py`
+- `stage2/experiments/analyze_marathon_run.py`
 - `stage2/experiments/extract_grind_ledger.py`
 - `stage2/experiments/run_playground_parity_llm.py`
 - `stage2/experiments/run_playground_public_sweeps.py`
@@ -98,6 +100,7 @@ Full public validation of the optimized package after the grind rollback is pend
 - `stage2/results/2026-05-20-optimization-readiness.md`
 - `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - `stage2/results/2026-05-25-cleanup-and-smoke.md`
+- `stage2/results/2026-05-30-positive-token-mixed-lane-resume.md`
 
 ## Operational Notes
 
@@ -107,7 +110,7 @@ Full public validation of the optimized package after the grind rollback is pend
 4. For runner-equivalent certificate debugging, use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`. Direct `verify_answer(problem, ...)` omits runner proof policy.
 5. Judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr, summaries, or ledgers.
 6. Local `OPENAI_API_KEY` or `OPENROUTER_API_KEY` errors are transport/setup issues, not submitted-solver protocol failures. Repo-owned probe/parity entrypoints load process env first, the ignored root `.env` second, and legacy Windows User env fallback last.
-7. Zero-token Marathon proves deterministic append-only behavior only and is not a playground-readiness gate; LLM readiness requires nonzero proxy calls, nonzero Marathon token usage, and classified failures.
+7. Marathon validation with `--budget-tokens 0` is banned for active guardrails and promotion. LLM readiness requires positive-token proxy calls, nonzero Marathon token usage, and classified failures.
 8. Solo fallback `TRUE INCORRECT` rows and Marathon `not_attempted` rows can be the same unresolved deterministic gap under different runner policies.
 9. Treat `proof` and `proof_body` as retired local TRUE boundary shapes. The only raw TRUE payload rail is complete Lean source in `code`, with helper declarations allowed above `submission`.
 10. The vendored official README still contains a stale tactic-body `proof` example. Treat that as upstream doc drift unless an explicit harness sync changes the canonical contract.
@@ -117,7 +120,7 @@ Full public validation of the optimized package after the grind rollback is pend
 1. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
 2. Run broader no-loss validation for the refactored closure helper, especially hard TRUE closure fixtures and the full public sets.
 3. Fill the route fixture backlog in `stage2/docs/solver-route-ledger.md` before risky refactors.
-4. Treat zero-token sweeps as optional deterministic regression only, not as the active local gate.
+4. Use positive-token official/proxy Marathon guardrails only; do not run `--budget-tokens 0` sweeps as active validation.
 5. Keep HF mirror sweeps separate from public evidence.
 
 ## Non-Goals

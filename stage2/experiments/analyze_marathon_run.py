@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze one zero-token Marathon run directory.
+"""Analyze one Marathon run directory.
 
 The vendored Marathon runner writes `answers.jsonl`, `summary.json`, and
 `run.log`. This helper joins those artifacts back to the input manifest and

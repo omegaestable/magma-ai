@@ -1,6 +1,6 @@
 # Stage 2 Smoke Tests
 
-Last smoke run: 2026-05-25.
+Last smoke run: 2026-05-30.
 
 ## Passing Locally
 
@@ -16,7 +16,7 @@ PowerShell with `.venv` Python 3.14.3:
 Observed:
 
 - Set `$env:PYTHONUTF8='1'` and `$env:PATH="$env:USERPROFILE\.elan\bin;$env:PATH"` for official runner checks.
-- Packaged `stage2/submissions/solver.py` at 116248 bytes.
+- Packaged `stage2/submissions/solver.py` at `138939` bytes.
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -42,7 +42,7 @@ Observed after cleaning and packaging `stage2/submissions/`:
 - `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke.
 - `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver is currently 116248 bytes and the submission directory contains only `solver.py`.
+- Packaged solver is currently `138939` bytes and the submission directory contains only `solver.py`.
 
 If local upstream keys are configured, blank `OPENAI_API_KEY` and
 `OPENROUTER_API_KEY` for fast deterministic Solo smokes. The official proxy
@@ -51,8 +51,9 @@ avoid accidental long LLM calls while still validating the final fallback path.
 
 May 21 focused reproduction:
 
-- Closure-route dedupe preserved `normal_100 = 74/100` zero-token Marathon behavior.
-- A 27-row pasted fallback list scored `3/27` in zero-token Marathon: the three `evaluation_extra_hard_false_*` rows accepted via `false:witness:S4C`; the other rows were `not_attempted` in Marathon and fallback `TRUE INCORRECT` in Solo-style direct probing.
+- Closure-route dedupe preserved `normal_100 = 74/100` historical Marathon behavior.
+- A 27-row pasted fallback list scored `3/27` in archived Marathon evidence: the three `evaluation_extra_hard_false_*` rows accepted via `false:witness:S4C`; the other rows were `not_attempted` in Marathon and fallback `TRUE INCORRECT` in Solo-style direct probing.
+- Active Marathon guardrails now require positive token budgets; do not use `--budget-tokens 0` as a current smoke.
 - Treat selected rows as diagnostics; generalize fixes instead of hardcoding ids.
 
 Latest local LLM transport smoke:
@@ -119,13 +120,13 @@ Command shape from `vendor/stage2-official/`:
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions --manifest examples\problems\marathon\normal_100.jsonl --budget-tokens 0
+..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions --manifest examples\problems\marathon\normal_100.jsonl --budget-tokens 6553600 --budget-seconds 360000
 Pop-Location
 ```
 
 Observed:
 
-- `normal_100`: `74/100` accepted with zero token budget in `60.6s` in the 2026-05-25 packaged smoke.
+- `normal_100`: `75/100` accepted with a positive token budget, `47419` tokens used, and no incorrect submissions in the 2026-05-30 packaged smoke.
 - All attempted certificates were accepted.
 - Treat this as pacing/smoke evidence, not a replacement for the full `normal.jsonl` benchmark.
 

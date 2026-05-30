@@ -87,9 +87,9 @@ def submission : Goal := by
 
 ## Evidence
 
-- Public zero-token runs accepted many `true:certificate` rows through these routes.
+- Historical public runs accepted many `true:certificate` rows through these routes.
 - These routes are first in `solve_problem`, so they are naturally exercised by Solo samples and public Marathon sweeps.
-- `true:left_row_constancy` accepted `hard3_0284` and `hard3_0285` in an official zero-token Marathon fixture on 2026-05-27; the normal_100 guardrail stayed `74/100`.
+- `true:left_row_constancy` accepted `hard3_0284` and `hard3_0285` in an official Marathon fixture on 2026-05-27; the historical `normal_100` guardrail stayed `74/100`.
 
 ## Limits
 
