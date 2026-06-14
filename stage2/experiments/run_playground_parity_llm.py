@@ -29,6 +29,10 @@ OFFICIAL_DIR = REPO_ROOT / "vendor" / "stage2-official"
 SUBMISSION_DIR = REPO_ROOT / "stage2" / "submissions"
 SOLVER_PATH = REPO_ROOT / "stage2" / "solver" / "solver.py"
 SMOKE_LLM_DSL = REPO_ROOT / "stage2" / "experiments" / "smoke_llm_dsl.py"
+SECRET_SCAN = REPO_ROOT / "stage2" / "experiments" / "secret_scan.py"
+PROFILE_FOCUSED_FIXTURE = REPO_ROOT / "stage2" / "experiments" / "profile_focused_fixture.py"
+MINE_FINITE_COUNTERMODEL = REPO_ROOT / "stage2" / "experiments" / "mine_finite_countermodel.py"
+TRACE_TEORTH_PATH = REPO_ROOT / "stage2" / "experiments" / "trace_teorth_path.py"
 PACKAGE_SCRIPT = REPO_ROOT / "stage2" / "solver" / "package_solver.ps1"
 OFFICIAL_CONFIG = OFFICIAL_DIR / "pipeline" / "config.json"
 DEFAULT_OUTPUT_DIR = TMP_DIR / "playground_parity_llm"
@@ -54,10 +58,23 @@ def run_command(command: list[str], cwd: Path, env: dict[str, str]) -> int:
 
 def run_python_smokes(env: dict[str, str]) -> int:
     exit_code = run_command(
-        [sys.executable, "-m", "py_compile", str(SOLVER_PATH), str(SMOKE_LLM_DSL)],
+        [
+            sys.executable,
+            "-m",
+            "py_compile",
+            str(SOLVER_PATH),
+            str(SMOKE_LLM_DSL),
+            str(SECRET_SCAN),
+            str(PROFILE_FOCUSED_FIXTURE),
+            str(MINE_FINITE_COUNTERMODEL),
+            str(TRACE_TEORTH_PATH),
+        ],
         REPO_ROOT,
         env,
     )
+    if exit_code != 0:
+        return exit_code
+    exit_code = run_command([sys.executable, str(SECRET_SCAN), "--include-untracked"], REPO_ROOT, env)
     if exit_code != 0:
         return exit_code
     return run_command([sys.executable, str(SMOKE_LLM_DSL)], REPO_ROOT, env)

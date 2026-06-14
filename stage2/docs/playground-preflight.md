@@ -183,8 +183,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\.venv\Scripts\Activate.ps1
 $env:PYTHONUTF8='1'
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
+.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py stage2\experiments\secret_scan.py stage2\experiments\profile_focused_fixture.py stage2\experiments\mine_finite_countermodel.py stage2\experiments\trace_teorth_path.py
 .\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
+.\.venv\Scripts\python.exe stage2\experiments\secret_scan.py --include-untracked
 .\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
 .\stage2\solver\package_solver.ps1
 Get-ChildItem -Force stage2\submissions

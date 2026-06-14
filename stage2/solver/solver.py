@@ -49,7 +49,10 @@ Accepted JSON shapes:
    Use proof_kind "guided_chain" when a step may need a short solver-owned
    congruence or closure proof. You may include a "lemmas" array of short
    human-readable derived-lemma sketches; the solver checks the chain itself.
-2. TRUE full Lean fallback, checked by the judge after sanitizer checks:
+2. TRUE full Lean fallback, checked by the judge after sanitizer checks in
+   Solo/debug lanes. Marathon TRUE candidates are accepted by this solver only
+   when they are solver-checked chains, unless a local debug flag enables raw
+   Lean explicitly:
    {"verdict":"true","code":"import JudgeProblem\n\ndef submission : Goal := by\n  ..."}
     The code field must be a complete Lean file and may declare helper
     theorems, defs, lemmas, namespaces, or notation above submission.
@@ -4560,7 +4563,7 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     cues.append("Each adjacent TRUE chain step must be one explicit hypothesis rewrite, short rewrite chain, or bounded solver-owned closure/congruence step.")
     cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
     cues.append("If the chain needs a derived fact, include a lemmas array explaining it, but keep the chain terms concrete.")
-    cues.append("Raw Lean may be submitted in Marathon and judged later; use it for TRUE if the DSL chain is too cramped.")
+    cues.append("Raw Lean is Solo/debug-only by default; Marathon TRUE candidates should be solver-checked chains.")
     cues.append("This row already escaped deterministic search; default to a TRUE proof attempt.")
     return "\n".join(cues)
 
@@ -4663,7 +4666,7 @@ def marathon_llm_attempt(
     candidate, reject_reason = candidate_from_llm_text_with_reason(
         problem,
         response_text,
-        allow_raw_true=True,
+        allow_raw_true=marathon_allow_raw_true(),
     )
     if candidate is None:
         result["reject_reason"] = reject_reason
@@ -4683,6 +4686,12 @@ def solo_llm_rounds() -> int:
         return max(0, int(raw))
     except ValueError:
         return LLM_MAX_ROUNDS
+
+
+def marathon_allow_raw_true() -> bool:
+    raw = os.environ.get("MAGMA_MARATHON_ALLOW_RAW_TRUE", "")
+    return raw.strip().lower() in {"1", "true", "yes", "debug"}
+
 
 def run_solo() -> int:
     payload = load_json_line(sys.stdin)
@@ -4789,7 +4798,7 @@ def run_solo() -> int:
             json.dumps(
                 {
                     "judge_status": judge_response.get("status"),
-                    "route": "fallback:final_judge_call",
+                    "route": "fallback:unsolved_exact_h",
                 }
             ),
             file=sys.stderr,
@@ -4980,6 +4989,7 @@ def run_marathon() -> int:
                         "max_output_tokens": LLM_CONFIG["max_output_tokens"],
                         "reasoning_effort": LLM_CONFIG.get("reasoning_effort"),
                         "http_timeout_seconds": LLM_CONFIG.get("http_timeout_seconds"),
+                        "allow_raw_true": marathon_allow_raw_true(),
                         "budget_remaining": remaining,
                     }
                 )

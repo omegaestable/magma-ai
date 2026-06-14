@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import tempfile
 import time
 from pathlib import Path
@@ -266,6 +267,35 @@ def main() -> int:
     )
     assert marathon_result["route"] == "llm:true:rewrite_chain"
     assert marathon_result["tokens_used_call"] == 111
+
+    previous_raw_flag = os.environ.pop("MAGMA_MARATHON_ALLOW_RAW_TRUE", None)
+    try:
+        assert solver.marathon_allow_raw_true() is False
+
+        def fake_raw_marathon_call(prompt, *, config=None, max_seconds=None):
+            return {
+                "response": helper_code_payload,
+                "tokens_used_call": 222,
+                "tokens_used_total": 333,
+                "budget_remaining": 4096,
+            }
+
+        raw_marathon_result = solver.marathon_llm_attempt(
+            fake_raw_marathon_call,
+            true_problem,
+            solver.LLM_CONFIG,
+            time.monotonic() + 30.0,
+        )
+        assert "candidate" not in raw_marathon_result
+        assert raw_marathon_result["reject_reason"] == "raw_true_disabled"
+
+        os.environ["MAGMA_MARATHON_ALLOW_RAW_TRUE"] = "debug"
+        assert solver.marathon_allow_raw_true() is True
+    finally:
+        if previous_raw_flag is None:
+            os.environ.pop("MAGMA_MARATHON_ALLOW_RAW_TRUE", None)
+        else:
+            os.environ["MAGMA_MARATHON_ALLOW_RAW_TRUE"] = previous_raw_flag
 
     duplicate = solver.candidate_from_llm_text(true_problem, true_payload)
     assert duplicate is not None
