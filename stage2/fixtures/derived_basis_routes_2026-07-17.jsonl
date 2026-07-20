@@ -1,0 +1,9 @@
+{"id":"derived_basis_deep_repeat","index":1,"difficulty":"theory-canary","eq1_id":539,"eq2_id":4329,"equation1":"x = y * (z * (x * (x * z)))","equation2":"x * (y * x) = z * (x * w)","answer":true}
+{"id":"derived_basis_reverse_deep_repeat","index":2,"difficulty":"theory-canary","eq1_id":3107,"eq2_id":4329,"equation1":"x = (((y * x) * x) * y) * z","equation2":"x * (y * x) = z * (x * w)","answer":true}
+{"id":"derived_basis_sandwich_repeat","index":3,"difficulty":"theory-canary","eq1_id":1116,"eq2_id":4329,"equation1":"x = y * ((y * (x * z)) * y)","equation2":"x * (y * x) = z * (x * w)","answer":true}
+{"id":"derived_basis_outer_sandwich","index":4,"difficulty":"theory-canary","eq1_id":2572,"eq2_id":4329,"equation1":"x = (y * ((z * x) * y)) * y","equation2":"x * (y * x) = z * (x * w)","answer":true}
+{"id":"derived_basis_product_constancy","index":5,"difficulty":"theory-canary","eq1_id":2329,"eq2_id":4329,"equation1":"x = (y * (y * (x * x))) * z","equation2":"x * (y * x) = z * (x * w)","answer":true}
+{"id":"derived_basis_tail_square_dual","index":6,"difficulty":"theory-canary","eq1_id":1283,"eq2_id":4329,"equation1":"x = y * (((x * x) * z) * z)","equation2":"x * (y * x) = z * (x * w)","answer":true}
+{"id":"derived_basis_forked_square_singleton","index":7,"difficulty":"theory-canary","eq1_id":871,"eq2_id":4268,"equation1":"x = y * ((x * x) * (x * z))","equation2":"x * (x * x) = x * (x * y)","answer":true}
+{"id":"derived_basis_crossed_pair_singleton","index":8,"difficulty":"theory-canary","eq1_id":1686,"eq2_id":39,"equation1":"x = (y * x) * ((x * y) * z)","equation2":"x * x = y * x","answer":true}
+{"id":"derived_basis_double_tail_square_product","index":9,"difficulty":"theory-canary","eq1_id":4208,"eq2_id":3879,"equation1":"x * y = ((z * y) * x) * x","equation2":"x * x = (y * (x * x)) * z","answer":true}

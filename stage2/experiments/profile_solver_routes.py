@@ -8,6 +8,7 @@ from collections import Counter, defaultdict
 import importlib.util
 import json
 from pathlib import Path
+import re
 import statistics
 import subprocess
 import sys
@@ -48,6 +49,48 @@ def load_solver(path: Path) -> Any:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def resolve_git_commit(revision: str) -> str:
+    if not revision or revision.startswith("-") or ":" in revision:
+        raise ValueError("--solver-git-ref must be a non-option Git revision without ':'")
+    completed = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{revision}^{{commit}}"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    commit = completed.stdout.strip()
+    if completed.returncode != 0 or not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+        message = completed.stderr.strip() or "git rev-parse failed"
+        raise RuntimeError(f"Cannot resolve Git revision {revision!r} to a commit: {message}")
+    return commit.lower()
+
+
+def load_solver_git_revision(revision: str, path: Path) -> tuple[Any, str]:
+    try:
+        repo_path = path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError as exc:
+        raise ValueError("--solver must be inside the repository when --solver-git-ref is used") from exc
+    commit = resolve_git_commit(revision)
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{repo_path}"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if completed.returncode != 0:
+        message = completed.stderr.strip() or "git show failed"
+        raise RuntimeError(f"Cannot load {commit}:{repo_path}: {message}")
+    module_name = "stage2_profiled_solver_git"
+    module = type(sys)(module_name)
+    module.__file__ = f"{commit}:{repo_path}"
+    exec(compile(completed.stdout, module.__file__, "exec"), module.__dict__)
+    return module, commit
 
 
 def cold_import_run(path: Path) -> float:
@@ -213,6 +256,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--solver", type=Path, default=DEFAULT_SOLVER)
+    parser.add_argument("--solver-git-ref", default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--details-output", type=Path, default=None)
@@ -236,18 +280,33 @@ def main() -> int:
     rows = load_rows(args.manifest)
     if args.limit is not None:
         rows = rows[: args.limit]
-    solver = load_solver(args.solver)
+    solver_git_commit: str | None = None
+    if args.solver_git_ref:
+        solver, solver_git_commit = load_solver_git_revision(args.solver_git_ref, args.solver)
+    else:
+        solver = load_solver(args.solver)
     rows = maybe_sort_rows(solver, rows, args.sort_by_priority)
     false_time_budget = resolve_false_time_budget(solver, args, len(rows))
     details, summary = profile_rows(solver, rows, false_time_budget=false_time_budget)
     summary.update(
         {
             "manifest": str(args.manifest.relative_to(REPO_ROOT)) if args.manifest.is_relative_to(REPO_ROOT) else str(args.manifest),
-            "solver": str(args.solver.relative_to(REPO_ROOT)) if args.solver.is_relative_to(REPO_ROOT) else str(args.solver),
+            "solver": (
+                f"{args.solver_git_ref}:"
+                + (str(args.solver.relative_to(REPO_ROOT)).replace("\\", "/") if args.solver.is_relative_to(REPO_ROOT) else str(args.solver))
+                if args.solver_git_ref
+                else (str(args.solver.relative_to(REPO_ROOT)) if args.solver.is_relative_to(REPO_ROOT) else str(args.solver))
+            ),
+            "solver_git_ref": args.solver_git_ref,
+            "solver_git_commit": solver_git_commit,
             "sort_by_priority": args.sort_by_priority,
             "marathon_budget_seconds": args.marathon_budget_seconds,
             "reference_seconds_per_problem": args.reference_seconds_per_problem,
-            "cold_import": cold_import_stats(args.solver, args.cold_import_repeats),
+            "cold_import": (
+                {"runs": [], "skipped": "solver loaded from git revision"}
+                if args.solver_git_ref
+                else cold_import_stats(args.solver, args.cold_import_repeats)
+            ),
         }
     )
     if not args.skip_family_benchmarks:

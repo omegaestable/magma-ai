@@ -827,7 +827,7 @@ def tail_square_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, st
         square = middle[1]
         if square[1] != ("var", root) or square[2] != ("var", root):
             continue
-        if len({root, lead, extra, extra_tail}) != 4:
+        if len({root, lead, extra}) != 3 or extra_tail in {root, lead}:
             continue
         if set(eq1["variables"]) != {root, lead, extra, extra_tail}:
             continue
@@ -1072,6 +1072,653 @@ def wrapped_tail_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tu
         "  exact hall _ _\n"
     )
     return "true:wrapped_tail_singleton", code
+
+
+def deep_repeat_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        root = str(variable_side[1])
+        if op_side[1][0] != "var" or op_side[2][0] != "op" or op_side[2][1][0] != "var":
+            continue
+        lead = str(op_side[1][1])
+        repeat = str(op_side[2][1][1])
+        root_term = ("var", root)
+        repeat_term = ("var", repeat)
+        expected = (
+            "op",
+            ("var", lead),
+            ("op", repeat_term, ("op", root_term, ("op", root_term, repeat_term))),
+        )
+        if op_side != expected or len({root, lead, repeat}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, lead, repeat}:
+            continue
+        return root, lead, repeat, swapped
+    return None
+
+
+def singleton_from_deep_repeat_block(source_name: str) -> str:
+    return (
+        "  have hall : ∀ x y : G, x = y := by\n"
+        "    intro x y\n"
+        "    let v0 := M x (M y (M y x))\n"
+        "    let v1 := M x (M v0 (M v0 x))\n"
+        "    have h2 := R v1\n"
+        f"    exact T (T (T ({source_name} x v1 v1) (C h2 (C h2 (T (C (R x) (S ({source_name} v0 x x))) (S ({source_name} y x x)))))) (C h2 (C h2 (T ({source_name} y y x) (C (R y) ({source_name} v0 y x)))))) (S ({source_name} y v1 v1))\n"
+    )
+
+
+def deep_repeat_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = deep_repeat_singleton_source(eq1)
+    if source is None:
+        return None
+    root, lead, repeat, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", repeat: "z"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x = y ◇ (z ◇ (x ◇ (x ◇ z))) := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{singleton_from_deep_repeat_block('hsource')}"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:deep_repeat_singleton", code
+
+
+def sandwich_repeat_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
+            continue
+        root = str(variable_side[1])
+        lead = str(op_side[1][1])
+        tail = op_side[2]
+        if tail[0] != "op" or tail[1][0] != "op" or tail[2] != ("var", lead):
+            continue
+        inner = tail[1]
+        if inner[1] != ("var", lead) or inner[2][0] != "op":
+            continue
+        root_tail = inner[2]
+        if root_tail[1] != ("var", root) or root_tail[2][0] != "var":
+            continue
+        extra = str(root_tail[2][1])
+        if len({root, lead, extra}) != 3 or set(eq1["variables"]) != {root, lead, extra}:
+            continue
+        return root, lead, extra, swapped
+    return None
+
+
+def singleton_from_sandwich_repeat_block(source_name: str) -> str:
+    return (
+        "  have hall : ∀ x y : G, x = y := by\n"
+        "    intro x y\n"
+        "    let v0 := M x x\n"
+        "    have h1 := R x\n"
+        f"    exact T (T ({source_name} x x x) (C h1 (C (C h1 ({source_name} v0 y x)) h1))) (S ({source_name} y x (M (M y (M v0 x)) y)))\n"
+    )
+
+
+def sandwich_repeat_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = sandwich_repeat_singleton_source(eq1)
+    if source is None:
+        return None
+    root, lead, extra, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x = y ◇ ((y ◇ (x ◇ z)) ◇ y) := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{singleton_from_sandwich_repeat_block('hsource')}"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:sandwich_repeat_singleton", code
+
+
+def repeated_prefix_product_constancy_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[2][0] != "var":
+            continue
+        root = str(variable_side[1])
+        tail = str(op_side[2][1])
+        prefix = op_side[1]
+        if prefix[0] != "op" or prefix[1][0] != "var" or prefix[2][0] != "op":
+            continue
+        repeat = str(prefix[1][1])
+        root_term = ("var", root)
+        repeat_term = ("var", repeat)
+        expected = (
+            "op",
+            ("op", repeat_term, ("op", repeat_term, ("op", root_term, root_term))),
+            ("var", tail),
+        )
+        if op_side != expected or len({root, repeat, tail}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, repeat, tail}:
+            continue
+        return root, repeat, tail, swapped
+    return None
+
+
+def repeated_prefix_product_constancy_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    source = repeated_prefix_product_constancy_source(eq1)
+    if source is None or eq2["lhs"][0] != "op" or eq2["rhs"][0] != "op":
+        return None
+    root, repeat, tail, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", repeat: "y", tail: "z"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        "  have hsource : ∀ x y z : G, x = (y ◇ (y ◇ (x ◇ x))) ◇ z := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        "  have hconst : ∀ a b c d : G, a ◇ b = c ◇ d := by\n"
+        "    intro a\n"
+        "    repeat intro\n"
+        "    try { rw [hsource a, ← hsource] }\n"
+        "    try { rw [hsource a a, ← hsource] }\n"
+        f"{intro_line}"
+        "  exact hconst _ _ _ _\n"
+    )
+    return "true:repeated_prefix_product_constancy", code
+
+
+def reverse_deep_repeat_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[2][0] != "var":
+            continue
+        root = str(variable_side[1])
+        tail = str(op_side[2][1])
+        prefix = op_side[1]
+        if prefix[0] != "op" or prefix[2][0] != "var" or prefix[1][0] != "op":
+            continue
+        repeat = str(prefix[2][1])
+        root_term = ("var", root)
+        repeat_term = ("var", repeat)
+        expected = (
+            "op",
+            ("op", ("op", ("op", repeat_term, root_term), root_term), repeat_term),
+            ("var", tail),
+        )
+        if op_side != expected or len({root, repeat, tail}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, repeat, tail}:
+            continue
+        return root, repeat, tail, swapped
+    return None
+
+
+def singleton_from_reverse_deep_repeat_block(source_name: str) -> str:
+    return (
+        "  have hall : ∀ x y : G, x = y := by\n"
+        "    intro x y\n"
+        "    let v0 := M (M (M x x) x) x\n"
+        "    let v1 := M (M (M x v0) v0) x\n"
+        "    have h2 := R v1\n"
+        f"    exact T (T (T ({source_name} x v1 v1) (C (C (T (C (S ({source_name} v0 x x)) (R x)) (S ({source_name} x x x))) h2) h2)) (C (C (T ({source_name} x x y) (C ({source_name} v0 x y) (R y))) h2) h2)) (S ({source_name} y v1 v1))\n"
+    )
+
+
+def reverse_deep_repeat_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = reverse_deep_repeat_singleton_source(eq1)
+    if source is None:
+        return None
+    root, repeat, tail, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", repeat: "y", tail: "z"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x = (((y ◇ x) ◇ x) ◇ y) ◇ z := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{singleton_from_reverse_deep_repeat_block('hsource')}"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:reverse_deep_repeat_singleton", code
+
+
+def outer_sandwich_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op" or op_side[2][0] != "var":
+            continue
+        root = str(variable_side[1])
+        surround = str(op_side[2][1])
+        prefix = op_side[1]
+        if prefix[0] != "op" or prefix[1] != ("var", surround) or prefix[2][0] != "op":
+            continue
+        inner = prefix[2]
+        if inner[1][0] != "op" or inner[2] != ("var", surround):
+            continue
+        pair = inner[1]
+        if pair[1][0] != "var" or pair[2] != ("var", root):
+            continue
+        extra = str(pair[1][1])
+        expected = (
+            "op",
+            (
+                "op",
+                ("var", surround),
+                ("op", ("op", ("var", extra), ("var", root)), ("var", surround)),
+            ),
+            ("var", surround),
+        )
+        if op_side != expected or len({root, surround, extra}) != 3:
+            continue
+        if set(eq1["variables"]) != {root, surround, extra}:
+            continue
+        return root, surround, extra, swapped
+    return None
+
+
+def singleton_from_outer_sandwich_block(source_name: str) -> str:
+    return (
+        "  have hall : ∀ x y : G, x = y := by\n"
+        "    intro x y\n"
+        "    let v0 := M x x\n"
+        "    have h1 := R x\n"
+        f"    exact T (T ({source_name} x x x) (C (C h1 (C ({source_name} v0 y x) h1)) h1)) (S ({source_name} y x (M y (M (M x v0) y))))\n"
+    )
+
+
+def outer_sandwich_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = outer_sandwich_singleton_source(eq1)
+    if source is None:
+        return None
+    root, surround, extra, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", surround: "y", extra: "z"})
+    if swapped:
+        call = f"({call}).symm"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x = (y ◇ ((z ◇ x) ◇ y)) ◇ y := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{singleton_from_outer_sandwich_block('hsource')}"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:outer_sandwich_singleton", code
+
+
+def forked_square_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var":
+            continue
+        root = str(variable_side[1])
+        if op_side[0] != "op" or op_side[1][0] != "var":
+            continue
+        lead = str(op_side[1][1])
+        root_term = ("var", root)
+        tail = op_side[2]
+        if tail[0] != "op" or tail[1] != ("op", root_term, root_term):
+            continue
+        fork = tail[2]
+        if fork[0] != "op" or fork[1] != root_term or fork[2][0] != "var":
+            continue
+        extra = str(fork[2][1])
+        if len({root, lead, extra}) != 3 or set(eq1["variables"]) != {root, lead, extra}:
+            continue
+        return root, lead, extra, swapped
+    return None
+
+
+def singleton_from_forked_square_block() -> str:
+    return (
+        "  have hall : ∀ x y : G, x = y := by\n"
+        "    intro x y\n"
+        "    let v0 := M x y\n"
+        "    let v1 := M x x\n"
+        "    let v2 := M v1 v0\n"
+        "    let v3 := M y y\n"
+        "    have h4 := R v3\n"
+        "    let v5 := M v1 v1\n"
+        "    have h6 := hsource x v5 x\n"
+        "    have h7 := S h6\n"
+        "    let v8 := M v3 v3\n"
+        "    have h9 := hsource x v5 (M v3 (M y x))\n"
+        "    have h10 := S h9\n"
+        "    have h11 := hsource y x x\n"
+        "    have h12 := R v1\n"
+        "    have h13 := R v5\n"
+        "    have h14 := C h13 (C h12 h11)\n"
+        "    have h15 := R y\n"
+        "    have h16 := C h13 (C h12 (S h11))\n"
+        "    have h17 := hsource x v5 v5\n"
+        "    have h18 := S h17\n"
+        "    have h19 := hsource x x x\n"
+        "    have h20 := C h13 (C h12 h19)\n"
+        "    have h21 := R x\n"
+        "    have h22 := hsource v1 y x\n"
+        "    have h23 := S h22\n"
+        "    have h24 := C h12 (S h19)\n"
+        "    have h25 := C h13 h24\n"
+        "    have h26 := T h17 h25\n"
+        "    have h27 := C h15 h26\n"
+        "    have h28 := T h27 h23\n"
+        "    have h29 := hsource x v2 y\n"
+        "    have h30 := S h29\n"
+        "    have h31 := C h30 h21\n"
+        "    have h32 := R (M v2 v2)\n"
+        "    have h33 := C h32 h30\n"
+        "    have h34 := C (T h7 h29) h29\n"
+        "    have h35 := R (M v5 v5)\n"
+        "    have h36 := C h35 h7\n"
+        "    have h37 := C (T (T h20 h18) h6) h6\n"
+        "    have h38 := T h20 h18\n"
+        "    have h39 := R (M v5 (M v1 x))\n"
+        "    have h40 := C h39 h38\n"
+        "    have h41 := T (T h7 h17) h25\n"
+        "    have h42 := C h41 h7\n"
+        "    have h43 := C h35 h6\n"
+        "    have h44 := T h30 h6\n"
+        "    have h45 := C h44 h30\n"
+        "    have h46 := C h32 h29\n"
+        "    have h47 := C h29 h21\n"
+        "    have h48 := C h39 h26\n"
+        "    have h49 := T (T (T (C (T (T (T (T (T (T (T h27 h23) h47) h46) h45) h43) h42) h48) (T (T (T (T (T (T h27 h23) h47) h46) h45) h43) h42)) (C (T h40 h37) (T h37 h36))) (C (T h36 h34) (T h34 h33))) (C (T h33 h31) h31)\n"
+        "    have h50 := C h15 h38\n"
+        "    have h51 := T h22 h50\n"
+        "    have h52 := C h51 h21\n"
+        "    have h53 := T (T (T (C (T h47 h46) h47) (C (T h45 h43) (T h46 h45))) (C (T h42 h48) (T h43 h42))) (C (T (T (T (T (T (T (T h40 h37) h36) h34) h33) h31) h22) h50) (T (T (T (T (T (T h37 h36) h34) h33) h31) h22) h50))\n"
+        "    exact T (T (hsource x v1 v5) (C h12 (T (T (T (T (T (T h24 h52) (C h28 h6)) (S (hsource v1 v1 v1))) (hsource v1 v0 v1)) (C (T (T (T (T (T (T (T (C h29 h15) (C h44 h15)) (C h41 h15)) (C (T (T (T (T h20 h18) h9) h16) (C h53 (C h51 h15))) h15)) (C (T (T (T (T (T (C h49 (C h28 h15)) h14) h10) h17) h25) (C h53 h52)) h15)) (C (T (T (T (T (C h49 (C h28 h21)) h20) h18) h9) h16) h15)) (C (T h14 h10) (T (hsource y v8 v5) (C (R v8) (C h4 (S (hsource x y x))))))) (S (hsource v3 x x))) h7)) (C h4 (hsource x y y))))) (S (hsource y v1 v2))\n"
+    )
+
+
+def forked_square_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = forked_square_singleton_source(eq1)
+    if source is None:
+        return None
+    root, lead, extra, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
+    if swapped:
+        call = f"S ({call})"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x = y ◇ ((x ◇ x) ◇ (x ◇ z)) := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{singleton_from_forked_square_block()}"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:forked_square_singleton", code
+
+
+def crossed_pair_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var":
+            continue
+        root = str(variable_side[1])
+        if op_side[0] != "op" or op_side[1][0] != "op" or op_side[2][0] != "op":
+            continue
+        left_pair = op_side[1]
+        right_pair = op_side[2]
+        if left_pair[1][0] != "var" or left_pair[2] != ("var", root):
+            continue
+        lead = str(left_pair[1][1])
+        if right_pair[1] != ("op", ("var", root), ("var", lead)) or right_pair[2][0] != "var":
+            continue
+        extra = str(right_pair[2][1])
+        if len({root, lead, extra}) != 3 or set(eq1["variables"]) != {root, lead, extra}:
+            continue
+        return root, lead, extra, swapped
+    return None
+
+
+def singleton_from_crossed_pair_block() -> str:
+    return (
+        "  have hall : ∀ x y : G, x = y := by\n"
+        "    intro x y\n"
+        "    let v0 := M x y\n"
+        "    let v1 := M y x\n"
+        "    have h2 := R y\n"
+        "    let v3 := M x x\n"
+        "    have h4 := hsource x x (M v3 x)\n"
+        "    have h5 := hsource x x x\n"
+        "    have h6 := R v3\n"
+        "    have h7 := T (C h6 h5) (S h4)\n"
+        "    have h8 := hsource y x (M v0 x)\n"
+        "    have h9 := hsource x y x\n"
+        "    have h10 := R v0\n"
+        "    have h11 := T (C h10 h9) (S h8)\n"
+        "    have h12 := T h4 (C h6 (S h5))\n"
+        "    have h13 := T h8 (C h10 (S h9))\n"
+        "    have h14 := hsource x y (M v1 x)\n"
+        "    have h15 := hsource y x x\n"
+        "    have h16 := R v1\n"
+        "    have h17 := T (C h16 h15) (S h14)\n"
+        "    have h18 := R (M y v1)\n"
+        "    have h19 := T h14 (C h16 (S h15))\n"
+        "    have h20 := C h2 h7\n"
+        "    have h21 := C h11 h12\n"
+        "    have h22 := C h13 h17\n"
+        "    let v23 := M y y\n"
+        "    have h24 := hsource y y (M v23 x)\n"
+        "    have h25 := S h24\n"
+        "    have h26 := hsource y y x\n"
+        "    have h27 := R v23\n"
+        "    have h28 := C h27 h26\n"
+        "    have h29 := T h28 h25\n"
+        "    have h30 := C h29 h19\n"
+        "    have h31 := R x\n"
+        "    have h32 := C h27 (S h26)\n"
+        "    have h33 := hsource y v23 v23\n"
+        "    have h34 := S h33\n"
+        "    have h35 := hsource v23 y x\n"
+        "    have h36 := T h24 h32\n"
+        "    have h37 := C h13 h7\n"
+        "    have h38 := C h2 h12\n"
+        "    have h39 := R (M y v23)\n"
+        "    have h40 := C h29 (T (C h39 (T (T (T h38 h37) (C h11 h19)) (C h36 h17))) (S h35))\n"
+        "    have h41 := hsource y v23 v1\n"
+        "    have h42 := C h36 (T (T (T (T h28 h25) h41) h40) (C (T h41 h40) h27))\n"
+        "    have h43 := hsource y v1 v3\n"
+        "    have h44 := hsource v1 y x\n"
+        "    have h45 := T (C h19 (T h44 (C h18 (T (T (T (C h17 h19) (C h12 h17)) (C h7 h12)) (C h31 h7))))) (S h43)\n"
+        "    have h46 := C h45 h36\n"
+        "    have h47 := C h12 h7\n"
+        "    have h48 := C h31 h12\n"
+        "    have h49 := C h17 (T (C h18 (T (T (T h48 h47) (C h7 h19)) (C h19 h17))) (S h44))\n"
+        "    have h50 := S h41\n"
+        "    have h51 := C h36 (T h35 (C h39 (T (T (T h30 h22) h21) h20)))\n"
+        "    have h52 := S (hsource v3 x x)\n"
+        "    have h53 := T h48 h47\n"
+        "    have h54 := C h7 (T (C (R (M x v3)) h53) h52)\n"
+        "    have h55 := hsource x v3 v3\n"
+        "    exact T (T (T (T (T (T h55 h54) (C (T h55 h54) h53)) h52) (C h31 (T (hsource x v0 v1) (C h11 (T (C (R (M x v0)) (T h38 h37)) (S (hsource v0 x x))))))) (C h19 (T (C (T (T (T h43 h49) (hsource (M x v1) y x)) (C (T (T (T (T (C (T (T h33 (C h29 (T (T (T (T (C (T h51 h50) h27) h51) h50) h24) h32))) (C (T h43 h49) h29)) h45) (C (T (T (T (T h46 h42) h34) h43) h49) h2)) h46) h42) h34) (T (T (T (T (C (T (T (T (T h46 h42) h34) h24) h32) h31) h30) h22) h21) h20))) (T (T (C h12 h2) (C h7 h13)) (C h19 h11))) (C h18 (T (T (C h17 h13) (C h12 h11)) (C h7 h2)))))) (S (hsource y v1 v0))\n"
+    )
+
+
+def crossed_pair_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    source = crossed_pair_singleton_source(eq1)
+    if source is None:
+        return None
+    root, lead, extra, swapped = source
+    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
+    if swapped:
+        call = f"S ({call})"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x = (y ◇ x) ◇ ((x ◇ y) ◇ z) := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{singleton_from_crossed_pair_block()}"
+        f"{intro_line}"
+        "  exact hall _ _\n"
+    )
+    return "true:crossed_pair_singleton", code
+
+
+def double_tail_square_product_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
+    for swapped, product_side, nested_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if product_side[0] != "op" or product_side[1][0] != "var" or product_side[2][0] != "var":
+            continue
+        left = str(product_side[1][1])
+        right = str(product_side[2][1])
+        if left == right or nested_side[0] != "op" or nested_side[2] != ("var", left):
+            continue
+        prefix = nested_side[1]
+        if prefix[0] != "op" or prefix[2] != ("var", left) or prefix[1][0] != "op":
+            continue
+        inner = prefix[1]
+        if inner[1][0] != "var" or inner[2] != ("var", right):
+            continue
+        extra = str(inner[1][1])
+        if len({left, right, extra}) != 3 or set(eq1["variables"]) != {left, right, extra}:
+            continue
+        return left, right, extra, swapped
+    return None
+
+
+def square_product_basis_goal(eq2: dict[str, Any]) -> tuple[Term, Term, Term, bool] | None:
+    for swapped, square_side, product_side in (
+        (False, eq2["lhs"], eq2["rhs"]),
+        (True, eq2["rhs"], eq2["lhs"]),
+    ):
+        if square_side[0] != "op" or square_side[1] != square_side[2]:
+            continue
+        if product_side[0] != "op":
+            continue
+        return square_side[1], product_side[1], product_side[2], swapped
+    return None
+
+
+def square_product_from_double_tail_block() -> str:
+    return (
+        "  have h41 : ∀ x y z : G, x ◇ x = y ◇ z := by\n"
+        "    intro x y z\n"
+        "    let v0 := M x x\n"
+        "    have h1 := R y\n"
+        "    have h2 := S (hsource (M v0 z) y x)\n"
+        "    have h3 := hsource v0 z z\n"
+        "    have h4 := R v0\n"
+        "    let v5 := M y z\n"
+        "    have h6 := hsource z z v5\n"
+        "    have h7 := R z\n"
+        "    have h8 := hsource z z y\n"
+        "    have h9 := S h8\n"
+        "    have h10 := hsource v5 z x\n"
+        "    have h11 := R v5\n"
+        "    have h12 := hsource x z x\n"
+        "    have h13 := S h12\n"
+        "    have h14 := R x\n"
+        "    let v15 := M x z\n"
+        "    have h16 := hsource x x v15\n"
+        "    have h17 := C (T h16 (C h13 h14)) h14\n"
+        "    have h18 := hsource x x x\n"
+        "    have h19 := C (S h18) h14\n"
+        "    have h20 := hsource x x v0\n"
+        "    have h21 := hsource v5 x x\n"
+        "    have h22 := hsource z x v5\n"
+        "    have h23 := hsource v0 x z\n"
+        "    have h24 := T (T (T (T h20 h19) h23) (C (C (T (T (T h22 (C (T (C (T (T h21 (C (C (T (T (T h20 h19) h17) h13) h11) h11)) (S h10)) h7) h9) h7)) (C h8 h7)) (S h6)) h4) h4)) (S h3)\n"
+        "    have h25 := C (C (T (T (T (T (T (T h20 h19) h17) h13) (hsource x z y)) (C (C (hsource y z x) h14) h14)) (S (hsource x y (M v15 y)))) h24) h24\n"
+        "    have h26 := hsource v0 x x\n"
+        "    exact T (T (T (T (T (T (T (hsource x x (M v5 x)) (C (S (hsource x x v5)) h14)) h26) h25) h2) (C (T (T h3 (C (C (T (T (T h6 (C h9 h7)) (C (T h8 (C (T (T h10 (C (C (T (T (T h12 (C (T (C h12 h14) (S h16)) h14)) (C h18 h14)) (S h20)) h11) h11)) (S h21)) h7)) h7)) (S h22)) h4) h4)) (S h23)) h1)) (C (T (T h26 h25) h2) h1)) (S (hsource y z v0))\n"
+    )
+
+
+def double_tail_square_product_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    source = double_tail_square_product_source(eq1)
+    goal = square_product_basis_goal(eq2)
+    if source is None or goal is None:
+        return None
+    left, right, extra, source_swapped = source
+    square_arg, product_left, product_right, goal_swapped = goal
+    call = call_expression_lean_args(eq1["variables"], {left: "x", right: "y", extra: "z"})
+    if source_swapped:
+        call = f"S ({call})"
+    proof_expr = (
+        f"h41 {term_to_lean(square_arg)} {term_to_lean(product_left)} {term_to_lean(product_right)}"
+    )
+    if goal_swapped:
+        proof_expr = f"S ({proof_expr})"
+    intro_vars = " ".join(eq2["variables"])
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    code = (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"{right_projection_local_helpers()}"
+        "  have hsource : ∀ x y z : G, x ◇ y = ((z ◇ y) ◇ x) ◇ x := by\n"
+        "    intro x y z\n"
+        f"    exact {call}\n"
+        f"{square_product_from_double_tail_block()}"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+    return "true:double_tail_square_product", code
 
 
 def middle_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
@@ -3720,6 +4367,18 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (0, len(eq2["text"]), "true:reflexive")
     if singleton_route(eq1):
         return (1, len(eq2["text"]), "true:singleton")
+    if deep_repeat_singleton_source(eq1):
+        return (1, len(eq2["text"]), "true:deep_repeat_singleton")
+    if reverse_deep_repeat_singleton_source(eq1):
+        return (1, len(eq2["text"]), "true:reverse_deep_repeat_singleton")
+    if sandwich_repeat_singleton_source(eq1):
+        return (1, len(eq2["text"]), "true:sandwich_repeat_singleton")
+    if outer_sandwich_singleton_source(eq1):
+        return (1, len(eq2["text"]), "true:outer_sandwich_singleton")
+    if forked_square_singleton_source(eq1):
+        return (1, len(eq2["text"]), "true:forked_square_singleton")
+    if crossed_pair_singleton_source(eq1):
+        return (1, len(eq2["text"]), "true:crossed_pair_singleton")
     if nested_square_singleton_source(eq1):
         return (1, len(eq2["text"]), "true:nested_square_singleton")
     if tail_square_singleton_source(eq1):
@@ -3746,6 +4405,10 @@ def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str
         return (2, len(eq2["text"]), "true:left_row_constancy")
     if product_constancy_source(eq1) and eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op":
         return (2, len(eq2["text"]), "true:product_constancy")
+    if repeated_prefix_product_constancy_source(eq1) and eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op":
+        return (2, len(eq2["text"]), "true:repeated_prefix_product_constancy")
+    if double_tail_square_product_source(eq1) and square_product_basis_goal(eq2):
+        return (2, len(eq2["text"]), "true:double_tail_square_product")
     if square_twist_comm_source(eq1) and commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"]):
         return (2, len(eq2["text"]), "true:square_twist_comm")
     if square_to_right_product_source(eq1) and square_to_right_product_goal(eq2):
@@ -3861,6 +4524,25 @@ def solve_problem(
             "route": "true:singleton",
             "priority": problem_priority(problem, eq1, eq2),
         }
+
+    for derived_basis_route in (
+        deep_repeat_singleton_route,
+        reverse_deep_repeat_singleton_route,
+        sandwich_repeat_singleton_route,
+        outer_sandwich_singleton_route,
+        forked_square_singleton_route,
+        crossed_pair_singleton_route,
+        repeated_prefix_product_constancy_route,
+        double_tail_square_product_route,
+    ):
+        derived_basis = derived_basis_route(eq1, eq2)
+        if derived_basis is not None:
+            route, code = derived_basis
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
 
     nested_square_singleton = nested_square_singleton_route(eq1, eq2)
     if nested_square_singleton is not None:
