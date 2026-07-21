@@ -123,12 +123,28 @@ def main() -> int:
             "chain": ["x ◇ x", "(x ◇ x) ◇ x"],
         }
     )
+    # Bad endpoints used to be a hard reject; now the chain terms seed the
+    # bidirectional closure, which still finds a valid proof for this law.
     bad_endpoint_candidate, bad_endpoint_reason = solver.candidate_from_llm_text_with_reason(
         guided_problem,
         bad_endpoint_payload,
     )
-    assert bad_endpoint_candidate is None
-    assert bad_endpoint_reason == "guided_chain_unproved_or_bad_endpoints"
+    assert bad_endpoint_candidate is not None, bad_endpoint_reason
+    assert bad_endpoint_candidate["route"] == "llm:true:seeded_closure"
+    assert bad_endpoint_candidate["answer"]["verdict"] == "true"
+
+    key_terms_payload = json.dumps(
+        {
+            "verdict": "true",
+            "key_terms": ["x ◇ x"],
+        }
+    )
+    key_terms_candidate, key_terms_reason = solver.candidate_from_llm_text_with_reason(
+        true_problem,
+        key_terms_payload,
+    )
+    assert key_terms_candidate is not None, key_terms_reason
+    assert key_terms_candidate["route"] == "llm:true:seeded_closure"
 
     unproved_payload = json.dumps(
         {
@@ -146,7 +162,7 @@ def main() -> int:
     }
     unproved_candidate, unproved_reason = solver.candidate_from_llm_text_with_reason(unproved_problem, unproved_payload)
     assert unproved_candidate is None
-    assert unproved_reason == "guided_chain_unproved_or_bad_endpoints"
+    assert unproved_reason.startswith("guided_chain_unproved_or_bad_endpoints")
 
     extra_var_payload = json.dumps(
         {
@@ -248,7 +264,7 @@ def main() -> int:
     assert proof_body_reason == "proof_body_unsupported"
 
     def fake_marathon_call(prompt, *, config=None, max_seconds=None):
-        assert "Return exactly one JSON object" in prompt
+        assert "Output exactly ONE JSON object" in prompt
         assert config is not None
         assert config["max_output_tokens"] == solver.LLM_MAX_OUTPUT_TOKENS
         assert max_seconds is not None and max_seconds > 0

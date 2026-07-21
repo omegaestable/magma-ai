@@ -5,7 +5,7 @@ Date: 2026-05-12
 ## Packaging
 
 - submission entries: ['solver.py']
-- solver size bytes: 19990
+- solver size bytes: 247239
 - single-file layout ok: True
 
 ## Data Caches

@@ -53,13 +53,25 @@ says so. Never reassociate `a ◇ (b ◇ c)` to `(a ◇ b) ◇ c`, and never reo
 exactly one subterm by matching (an instance of) one side of the hypothesis and
 replacing it with the other side. Keep the full parenthesization explicit.
 
-{"verdict":"true","proof_kind":"guided_chain","chain":["<goal-lhs>","<t1>","...","<goal-rhs>"]}
+{"verdict":"true","proof_kind":"guided_chain","chain":["<goal-lhs>","<t1>","...","<goal-rhs>"],"key_terms":["<t>","..."]}
 
 To design the chain, think of the hypothesis L = R as a two-way rewrite: anywhere
 you see (an instance of) L you may replace it by R, and vice-versa. List the terms
 you pass through. Make each step a single such replacement. Smaller steps are
 safer — the solver proves each step by search, so many small steps beat few big
 ones.
+
+"key_terms" is optional but powerful: list up to 8 extra terms (goal variables
+only, full parenthesization) that you believe appear somewhere in the derivation —
+useful hypothesis instantiations, absorbing shapes, or halfway terms. Even if your
+chain has a gap, the solver runs a bidirectional equational search SEEDED with your
+chain terms and key_terms and can finish the proof. If you are unsure of the exact
+chain, give your best chain AND generous key_terms.
+
+Also optional: "peak_term" — many of these proofs EXPAND both sides to one big
+common term and meet there. If you can name that single largest middle term, give
+it as "peak_term":"<term>"; the solver then searches goal-lhs -> peak and
+peak -> goal-rhs separately, which is much easier than the full jump.
 
 ################  FALLBACK: a full Lean proof  ################
 Only if a chain is impossible. Return {"verdict":"true","code":"<full Lean file>"}
@@ -133,6 +145,28 @@ GUIDED_CHAIN_MAX_DEPTH = 3
 GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 0.08
 LLM_GUIDED_CHAIN_MAX_DEPTH = 8
 LLM_GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 1.0
+DERIVED_CP_MAX_RULE_SIZE = 15
+DERIVED_CP_MAX_RULES = 48
+DERIVED_CP_CHAIN_MAX_DEPTH = 4
+DERIVED_CP_POOL_LIMIT = 16
+DERIVED_CP_FILL_POOL_CAP = 10
+DERIVED_CP_FRONTIER_LIMIT = 2600
+DERIVED_CP_MAX_FILLS = 1200
+DERIVED_CP_TERM_SLACK = 10
+DERIVED_CP_DEPTH_SLACK = 3
+DERIVED_CP_TIME_BUDGET = 8.0
+LLM_SEEDED_CLOSURE_CHAIN_MAX_DEPTH = 5
+LLM_SEEDED_CLOSURE_POOL_LIMIT = 20
+LLM_SEEDED_CLOSURE_FRONTIER_LIMIT = 3600
+LLM_SEEDED_CLOSURE_MAX_FILLS = 3000
+LLM_SEEDED_CLOSURE_TERM_SLACK = 10
+LLM_SEEDED_CLOSURE_DEPTH_SLACK = 3
+LLM_SEEDED_CLOSURE_TIME_BUDGET = 5.0
+LLM_SEEDED_CLOSURE_MAX_SEEDS = 24
+LLM_SEEDED_CLOSURE_FILL_POOL_CAP = 14
+LLM_SEEDED_CLOSURE_WAYPOINT_BUDGET = 1.5
+LLM_SEEDED_CLOSURE_MAX_WAYPOINTS = 5
+LLM_SEEDED_CLOSURE_TOTAL_BUDGET = 14.0
 LLM_MAX_ROUNDS = 6
 MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
@@ -4030,6 +4064,7 @@ def filled_absorption_steps(
     max_depth: int,
     max_fills: int = ABSORPTION_MAX_FILLS,
     deadline: float | None = None,
+    fill_pool: list[Term] | None = None,
 ) -> list[tuple[Term, str, str]]:
     if not pool:
         return []
@@ -4057,7 +4092,10 @@ def filled_absorption_steps(
                 continue
 
             fill_count = 0
-            fill_iter = product(pool, repeat=len(needed)) if needed else ((),)
+            # Multi-variable fills explode combinatorially; concentrate them on
+            # the prioritized fill_pool when the caller provides one.
+            fills_source = fill_pool if (fill_pool is not None and len(needed) > 1) else pool
+            fill_iter = product(fills_source, repeat=len(needed)) if needed else ((),)
             for fills in fill_iter:
                 if deadline_expired(deadline):
                     return steps
@@ -4192,24 +4230,49 @@ def _closure_proof_expr_impl(
     term_slack: int,
     depth_slack: int,
     time_budget: float | None,
+    seed_terms: list[Term] | None = None,
 ) -> tuple[str, str] | None:
     deadline = time.monotonic() + time_budget if time_budget else None
     pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
+    fill_pool: list[Term] | None = None
+    if seed_terms:
+        allowed_vars = set(eq2["variables"])
+        seed_extra: list[Term] = []
+        seed_seen: set[Term] = set()
+        for seed in seed_terms:
+            for term in term_subterms_tuple(seed):
+                if term in seed_seen or not term_vars(term).issubset(allowed_vars):
+                    continue
+                seed_seen.add(term)
+                seed_extra.append(term)
+        seed_extra.sort(key=lambda term: (term_size(term), term_depth(term), term_to_lean(term)))
+        seed_extra = seed_extra[:LLM_SEEDED_CLOSURE_MAX_SEEDS]
+        # Order matters: fills iterate the pool front-first, so put variables,
+        # then the LLM-proposed terms, ahead of the generic base pool.
+        var_terms = [term for term in pool if term[0] == "var"]
+        rest = [term for term in pool if term[0] != "var" and term not in seed_seen]
+        pool = var_terms + [term for term in seed_extra if term[0] != "var"] + rest
+        fill_pool = pool[:LLM_SEEDED_CLOSURE_FILL_POOL_CAP]
     if not pool:
         return None
 
-    max_size = max(
+    size_basis = [
         term_size(eq1["lhs"]),
         term_size(eq1["rhs"]),
         term_size(eq2["lhs"]),
         term_size(eq2["rhs"]),
-    ) + term_slack
-    max_depth = max(
+    ]
+    depth_basis = [
         term_depth(eq1["lhs"]),
         term_depth(eq1["rhs"]),
         term_depth(eq2["lhs"]),
         term_depth(eq2["rhs"]),
-    ) + depth_slack
+    ]
+    if seed_terms:
+        size_basis.extend(term_size(term) for term in seed_terms)
+        depth_basis.extend(term_depth(term) for term in seed_terms)
+    max_size = max(size_basis) + term_slack
+    max_depth = max(depth_basis) + depth_slack
 
     left_start = eq2["lhs"]
     right_start = eq2["rhs"]
@@ -4238,6 +4301,7 @@ def _closure_proof_expr_impl(
                 max_depth=max_depth,
                 max_fills=max_fills,
                 deadline=deadline,
+                fill_pool=fill_pool,
             ):
                 if deadline_expired(deadline):
                     return next_frontier, None, True
@@ -4379,6 +4443,345 @@ def equational_closure_route(
         depth_slack=depth_slack,
         time_budget=time_budget,
     )
+
+
+# --------------------------------------------------------------------------
+# Derived critical-pair rules (Knuth-Bendix-lite).
+#
+# Critical pairs of the hypothesis with itself package two exact hypothesis
+# instantiations into one reusable rewrite rule, each carrying a constructive
+# Lean proof expression. The bidirectional closure over {base rule} + derived
+# rules reaches derivations the base closure cannot at the same depth.
+# --------------------------------------------------------------------------
+
+def _kb_walk(term: Term, subst: dict[str, Term]) -> Term:
+    while term[0] == "var" and term[1] in subst:
+        term = subst[term[1]]
+    return term
+
+
+def _kb_occurs(name: str, term: Term, subst: dict[str, Term]) -> bool:
+    term = _kb_walk(term, subst)
+    if term[0] == "var":
+        return term[1] == name
+    return _kb_occurs(name, term[1], subst) or _kb_occurs(name, term[2], subst)
+
+
+def _kb_unify(a: Term, b: Term, subst: dict[str, Term]) -> dict[str, Term] | None:
+    a = _kb_walk(a, subst)
+    b = _kb_walk(b, subst)
+    if a == b:
+        return subst
+    if a[0] == "var":
+        if _kb_occurs(a[1], b, subst):
+            return None
+        out = dict(subst)
+        out[a[1]] = b
+        return out
+    if b[0] == "var":
+        if _kb_occurs(b[1], a, subst):
+            return None
+        out = dict(subst)
+        out[b[1]] = a
+        return out
+    out = _kb_unify(a[1], b[1], subst)
+    if out is None:
+        return None
+    return _kb_unify(a[2], b[2], out)
+
+
+def _kb_resolve(term: Term, subst: dict[str, Term]) -> Term:
+    term = _kb_walk(term, subst)
+    if term[0] == "var":
+        return term
+    return ("op", _kb_resolve(term[1], subst), _kb_resolve(term[2], subst))
+
+
+def _kb_rename(term: Term, suffix: str) -> Term:
+    if term[0] == "var":
+        return ("var", term[1] + suffix)
+    return ("op", _kb_rename(term[1], suffix), _kb_rename(term[2], suffix))
+
+
+def _kb_nonvar_paths(term: Term, prefix: tuple[int, ...] = ()) -> list[tuple[int, ...]]:
+    if term[0] != "op":
+        return []
+    out = [prefix]
+    out.extend(_kb_nonvar_paths(term[1], prefix + (0,)))
+    out.extend(_kb_nonvar_paths(term[2], prefix + (1,)))
+    return out
+
+
+class DerivedRule:
+    __slots__ = ("lhs", "rhs", "vars", "proof_only_vars", "builder", "label")
+
+    def __init__(self, lhs: Term, rhs: Term, builder: Any, label: str,
+                 extra_vars: set[str] | None = None):
+        self.lhs = lhs
+        self.rhs = rhs
+        pattern_vars = term_vars(lhs) | term_vars(rhs)
+        # Vars only in the proof templates: any value is sound (the hypothesis
+        # instance proves the pattern equation for every value), so they take a
+        # default fill and never join the fill product.
+        self.proof_only_vars = sorted((extra_vars or set()) - pattern_vars)
+        self.vars = sorted(pattern_vars)
+        self.builder = builder
+        self.label = label
+
+
+def _derived_base_rules(eq1: dict[str, Any]) -> list[DerivedRule]:
+    ev = list(eq1["variables"])
+
+    def fwd(subst: dict[str, Term]) -> str:
+        return call_expression(ev, subst)
+
+    def bwd(subst: dict[str, Term]) -> str:
+        return f"({call_expression(ev, subst)}).symm"
+
+    return [
+        DerivedRule(eq1["lhs"], eq1["rhs"], fwd, "base_fwd"),
+        DerivedRule(eq1["rhs"], eq1["lhs"], bwd, "base_bwd"),
+    ]
+
+
+def _canonicalize_derived_rule(lhs: Term, rhs: Term) -> tuple[Term, Term, dict[str, str]]:
+    mapping: dict[str, str] = {}
+
+    def canon(term: Term) -> Term:
+        if term[0] == "var":
+            if term[1] not in mapping:
+                mapping[term[1]] = f"v{len(mapping)}"
+            return ("var", mapping[term[1]])
+        return ("op", canon(term[1]), canon(term[2]))
+
+    return canon(lhs), canon(rhs), mapping
+
+
+_DERIVED_RULES_CACHE: dict[tuple[Term, Term], list[DerivedRule]] = {}
+
+
+def critical_pair_rules(
+    eq1: dict[str, Any],
+    *,
+    max_rule_size: int = DERIVED_CP_MAX_RULE_SIZE,
+    max_rules: int = DERIVED_CP_MAX_RULES,
+) -> list[DerivedRule]:
+    cache_key = (eq1["lhs"], eq1["rhs"])
+    cached = _DERIVED_RULES_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    ev = list(eq1["variables"])
+    L1 = _kb_rename(eq1["lhs"], "@1")
+    R1 = _kb_rename(eq1["rhs"], "@1")
+    L2 = _kb_rename(eq1["lhs"], "@2")
+    R2 = _kb_rename(eq1["rhs"], "@2")
+
+    rules: list[DerivedRule] = []
+    seen: set[tuple[Term, Term]] = set()
+
+    for s1, t1, s1_is_L in ((L1, R1, True), (R1, L1, False)):
+        for s2, t2, s2_is_L in ((L2, R2, True), (R2, L2, False)):
+            for p in _kb_nonvar_paths(s2):
+                sub = term_at_path(s2, p)
+                sigma = _kb_unify(s1, sub, {})
+                if sigma is None:
+                    continue
+                new_lhs = _kb_resolve(t2, sigma)
+                inner_repl = _kb_resolve(t1, sigma)
+                expanded = _kb_resolve(s2, sigma)
+                new_rhs = replace_subterm(expanded, p, inner_repl)
+                if new_lhs == new_rhs:
+                    continue
+                if max(term_size(new_lhs), term_size(new_rhs)) > max_rule_size:
+                    continue
+                canon_l, canon_r, mapping = _canonicalize_derived_rule(new_lhs, new_rhs)
+                if (canon_l, canon_r) in seen:
+                    continue
+                seen.add((canon_l, canon_r))
+
+                def remap(term: Term) -> Term:
+                    # Extend the mapping for vars that vanished from the rule
+                    # patterns but survive in the instantiation templates.
+                    if term[0] == "var":
+                        if term[1] not in mapping:
+                            mapping[term[1]] = f"v{len(mapping)}"
+                        return ("var", mapping[term[1]])
+                    return ("op", remap(term[1]), remap(term[2]))
+
+                tau2 = {v: remap(_kb_resolve(("var", v + "@2"), sigma)) for v in ev}
+                tau1 = {v: remap(_kb_resolve(("var", v + "@1"), sigma)) for v in ev}
+                expanded_pat = remap(expanded)
+
+                def make_builder(tau1=tau1, tau2=tau2, expanded_pat=expanded_pat,
+                                 p=p, s1_is_L=s1_is_L, s2_is_L=s2_is_L, ev=ev):
+                    def build(subst: dict[str, Term]) -> str:
+                        c2 = {v: instantiate_term(t, subst) for v, t in tau2.items()}
+                        c1 = {v: instantiate_term(t, subst) for v, t in tau1.items()}
+                        whole = instantiate_term(expanded_pat, subst)
+                        call2 = call_expression(ev, c2)
+                        step1 = f"({call2}).symm" if s2_is_L else call2
+                        call1 = call_expression(ev, c1)
+                        inner = call1 if s1_is_L else f"({call1}).symm"
+                        if p:
+                            ctx = context_to_lean(whole, p, "t")
+                            step2 = f"congrArg (fun t => {ctx}) ({inner})"
+                        else:
+                            step2 = inner
+                        return f"({step1}).trans ({step2})"
+                    return build
+
+                label = f"cp:{'L' if s1_is_L else 'R'}{'L' if s2_is_L else 'R'}:{'.'.join(map(str, p)) or 'root'}"
+                all_vars: set[str] = set()
+                for t in list(tau1.values()) + list(tau2.values()):
+                    all_vars |= term_vars(t)
+                fwd_rule = DerivedRule(canon_l, canon_r, make_builder(), label, extra_vars=all_vars)
+                rules.append(fwd_rule)
+
+                def make_rev(fwd_rule=fwd_rule):
+                    def build(subst: dict[str, Term]) -> str:
+                        return f"({fwd_rule.builder(subst)}).symm"
+                    return build
+
+                rules.append(DerivedRule(canon_r, canon_l, make_rev(), label + ":rev", extra_vars=all_vars))
+
+    rules.sort(key=lambda r: (term_size(r.lhs) + term_size(r.rhs), r.label))
+    rules = rules[:max_rules]
+    _DERIVED_RULES_CACHE[cache_key] = rules
+    if len(_DERIVED_RULES_CACHE) > 64:
+        _DERIVED_RULES_CACHE.clear()
+    return rules
+
+
+def derived_rule_steps(
+    rules: list[DerivedRule],
+    term: Term,
+    pool: list[Term],
+    fill_pool: list[Term],
+    *,
+    max_size: int,
+    max_depth: int,
+    max_fills: int,
+    deadline: float | None,
+) -> list[tuple[Term, str]]:
+    steps: list[tuple[Term, str]] = []
+    seen: set[Term] = set()
+    default_term = pool[0]
+    for path in subterm_paths(term):
+        if deadline_expired(deadline):
+            break
+        sub = term_at_path(term, path)
+        for rule in rules:
+            subst: dict[str, Term] = {}
+            if not match_term(rule.lhs, sub, subst):
+                continue
+            needed = [v for v in rule.vars if v not in subst]
+            if len(needed) > 3:
+                continue
+            fills_src = fill_pool if len(needed) > 1 else pool
+            fill_iter = product(fills_src, repeat=len(needed)) if needed else ((),)
+            count = 0
+            for fills in fill_iter:
+                count += 1
+                if count > max_fills:
+                    break
+                full = dict(subst)
+                for v, val in zip(needed, fills):
+                    full[v] = val
+                for v in rule.proof_only_vars:
+                    full[v] = default_term
+                replacement = instantiate_term(rule.rhs, full)
+                new_term = replace_subterm(term, path, replacement)
+                if new_term == term or new_term in seen:
+                    continue
+                if term_size(new_term) > max_size or term_depth(new_term) > max_depth:
+                    continue
+                proof = rule.builder(full)
+                if path:
+                    ctx = context_to_lean(term, path, "t")
+                    proof = f"congrArg (fun t => {ctx}) ({proof})"
+                seen.add(new_term)
+                steps.append((new_term, proof))
+    steps.sort(key=lambda item: (term_size(item[0]), term_depth(item[0])))
+    return steps
+
+
+def derived_cp_closure_proof_expr(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    chain_max_depth: int = DERIVED_CP_CHAIN_MAX_DEPTH,
+    pool_limit: int = DERIVED_CP_POOL_LIMIT,
+    fill_pool_cap: int = DERIVED_CP_FILL_POOL_CAP,
+    frontier_limit: int = DERIVED_CP_FRONTIER_LIMIT,
+    max_fills: int = DERIVED_CP_MAX_FILLS,
+    term_slack: int = DERIVED_CP_TERM_SLACK,
+    depth_slack: int = DERIVED_CP_DEPTH_SLACK,
+    time_budget: float = DERIVED_CP_TIME_BUDGET,
+    max_rules: int = DERIVED_CP_MAX_RULES,
+) -> str | None:
+    deadline = time.monotonic() + time_budget
+    rules = _derived_base_rules(eq1) + critical_pair_rules(eq1, max_rules=max_rules)
+    pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
+    if not pool:
+        return None
+    fill_pool = pool[:fill_pool_cap]
+
+    max_size = max(term_size(eq1["lhs"]), term_size(eq1["rhs"]),
+                   term_size(eq2["lhs"]), term_size(eq2["rhs"])) + term_slack
+    max_depth_t = max(term_depth(eq1["lhs"]), term_depth(eq1["rhs"]),
+                      term_depth(eq2["lhs"]), term_depth(eq2["rhs"])) + depth_slack
+
+    left_seen: dict[Term, str | None] = {eq2["lhs"]: None}
+    right_seen: dict[Term, str | None] = {eq2["rhs"]: None}
+    left_frontier = [eq2["lhs"]]
+    right_frontier = [eq2["rhs"]]
+
+    def expand(frontier: list[Term], seen: dict[Term, str | None],
+               other: dict[Term, str | None], from_left: bool):
+        nxt: list[Term] = []
+        for term in frontier:
+            if deadline_expired(deadline):
+                return nxt, None, True
+            prefix = seen[term]
+            for new_term, proof in derived_rule_steps(
+                rules, term, pool, fill_pool,
+                max_size=max_size, max_depth=max_depth_t,
+                max_fills=max_fills, deadline=deadline,
+            ):
+                if new_term in seen:
+                    continue
+                new_proof = chain_trans(prefix, proof)
+                if new_term in other:
+                    if from_left:
+                        return nxt, combine_meeting_proofs(new_proof, other[new_term]), False
+                    return nxt, combine_meeting_proofs(other[new_term], new_proof), False
+                seen[new_term] = new_proof
+                nxt.append(new_term)
+                if len(seen) >= frontier_limit:
+                    break
+            if len(seen) >= frontier_limit:
+                break
+        return nxt[:frontier_limit], None, False
+
+    for _ in range(chain_max_depth):
+        if deadline_expired(deadline):
+            return None
+        left_frontier, result, timed_out = expand(left_frontier, left_seen, right_seen, True)
+        if timed_out or result is not None:
+            return result
+        right_frontier, result, timed_out = expand(right_frontier, right_seen, left_seen, False)
+        if timed_out or result is not None:
+            return result
+        if not left_frontier and not right_frontier:
+            return None
+    return None
+
+
+def derived_cp_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    proof_expr = derived_cp_closure_proof_expr(eq1, eq2)
+    if proof_expr is None:
+        return None
+    return "true:derived_cp_closure", substitution_true_certificate(eq2["variables"], proof_expr)
 
 
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
@@ -4927,6 +5330,15 @@ def solve_problem(
                     "route": route,
                     "priority": problem_priority(problem, eq1, eq2),
                 }
+
+        derived_cp = derived_cp_closure_route(eq1, eq2)
+        if derived_cp is not None:
+            route, code = derived_cp
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
         return None
     n, table, route = counterexample
     return {
@@ -5095,6 +5507,91 @@ def guided_chain_certificate_from_terms(
     return substitution_true_certificate(eq2["variables"], expr)
 
 
+def parse_llm_key_terms(raw: Any, variables: set[str]) -> list[Term]:
+    terms: list[Term] = []
+    if not isinstance(raw, list):
+        return terms
+    for item in raw:
+        if not isinstance(item, str):
+            continue
+        try:
+            terms.append(parse_term(item, variables))
+        except ValueError:
+            continue
+    return terms
+
+
+def _seeded_closure_expr(
+    eq1: dict[str, Any],
+    goal_eq: dict[str, Any],
+    seed_terms: list[Term],
+    *,
+    time_budget: float,
+) -> str | None:
+    result = _closure_proof_expr_impl(
+        eq1,
+        goal_eq,
+        route_name="llm:true:seeded_closure",
+        chain_max_depth=LLM_SEEDED_CLOSURE_CHAIN_MAX_DEPTH,
+        pool_limit=LLM_SEEDED_CLOSURE_POOL_LIMIT,
+        frontier_limit=LLM_SEEDED_CLOSURE_FRONTIER_LIMIT,
+        max_fills=LLM_SEEDED_CLOSURE_MAX_FILLS,
+        term_slack=LLM_SEEDED_CLOSURE_TERM_SLACK,
+        depth_slack=LLM_SEEDED_CLOSURE_DEPTH_SLACK,
+        time_budget=time_budget,
+        seed_terms=seed_terms,
+    )
+    if result is None:
+        return None
+    return result[1]
+
+
+def seeded_closure_certificate_from_terms(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    seed_terms: list[Term],
+) -> str | None:
+    if not seed_terms:
+        return None
+    total_deadline = time.monotonic() + LLM_SEEDED_CLOSURE_TOTAL_BUDGET
+
+    proof_expr = _seeded_closure_expr(
+        eq1, eq2, seed_terms, time_budget=LLM_SEEDED_CLOSURE_TIME_BUDGET
+    )
+    if proof_expr is not None:
+        return substitution_true_certificate(eq2["variables"], proof_expr)
+
+    # Waypoint split: if a proposed term sits on the derivation path, prove
+    # goal-lhs = waypoint and waypoint = goal-rhs separately, then glue.
+    endpoints = (eq2["lhs"], eq2["rhs"])
+    waypoints: list[Term] = []
+    waypoint_seen: set[Term] = set(endpoints)
+    for term in seed_terms:
+        if term in waypoint_seen:
+            continue
+        waypoint_seen.add(term)
+        waypoints.append(term)
+    for waypoint in waypoints[:LLM_SEEDED_CLOSURE_MAX_WAYPOINTS]:
+        remaining = total_deadline - time.monotonic()
+        if remaining < 2.0 * LLM_SEEDED_CLOSURE_WAYPOINT_BUDGET:
+            break
+        left_eq = {"lhs": eq2["lhs"], "rhs": waypoint, "variables": eq2["variables"]}
+        left_expr = _seeded_closure_expr(
+            eq1, left_eq, seed_terms, time_budget=LLM_SEEDED_CLOSURE_WAYPOINT_BUDGET
+        )
+        if left_expr is None:
+            continue
+        right_eq = {"lhs": waypoint, "rhs": eq2["rhs"], "variables": eq2["variables"]}
+        right_expr = _seeded_closure_expr(
+            eq1, right_eq, seed_terms, time_budget=LLM_SEEDED_CLOSURE_WAYPOINT_BUDGET
+        )
+        if right_expr is None:
+            continue
+        glued = f"({left_expr}).trans ({right_expr})"
+        return substitution_true_certificate(eq2["variables"], glued)
+    return None
+
+
 def candidate_from_llm_text_with_reason(
     problem: dict[str, Any],
     text: str,
@@ -5135,9 +5632,18 @@ def candidate_from_llm_text_with_reason(
         if steps and all(isinstance(step, dict) for step in steps):
             chain = [steps[0].get("from")]
             chain.extend(step.get("to") for step in steps)
+    variables = set(eq2["variables"])
+    seed_terms: list[Term] = []
+    peak_raw = obj.get("peak_term")
+    if isinstance(peak_raw, str):
+        try:
+            # Peak first: the waypoint split tries seeds in order.
+            seed_terms.append(parse_term(peak_raw, variables))
+        except ValueError:
+            pass
+    seed_terms.extend(parse_llm_key_terms(obj.get("key_terms"), variables))
     chain_reject_reason = "no_chain_supplied"
     if chain is not None:
-        variables = set(eq2["variables"])
         chain_terms = None
         if isinstance(chain, list) and any(
             isinstance(item, str) and not set(re.findall(r"\b([a-z])\b", item)).issubset(variables)
@@ -5149,6 +5655,8 @@ def candidate_from_llm_text_with_reason(
         if chain_terms is None and chain_reject_reason != "rewrite_chain_uses_non_goal_variables":
             chain_reject_reason = "rewrite_chain_parse_failed"
         elif chain_terms is not None:
+            # Peak/key terms first: the waypoint split tries seeds in order.
+            seed_terms = seed_terms + chain_terms
             code = chain_certificate_from_terms(eq1, eq2, chain_terms)
             if code is not None:
                 return {
@@ -5162,6 +5670,14 @@ def candidate_from_llm_text_with_reason(
                     "route": "llm:true:guided_chain",
                 }, "ok"
             chain_reject_reason = "guided_chain_unproved_or_bad_endpoints"
+    if seed_terms:
+        code = seeded_closure_certificate_from_terms(eq1, eq2, seed_terms)
+        if code is not None:
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": "llm:true:seeded_closure",
+            }, "ok"
+        chain_reject_reason += "; seeded bidirectional closure around your terms also failed"
 
     if isinstance(obj.get("proof"), str) or isinstance(obj.get("proof_body"), str):
         return None, "proof_body_unsupported"
