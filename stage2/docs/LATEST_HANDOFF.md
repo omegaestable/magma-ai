@@ -1,8 +1,29 @@
 # Latest Handoff
 
-Updated: 2026-05-30
+Updated: 2026-07-20
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
+
+## 2026-07-20 session (most recent)
+
+Focus: a self-verifying LLM TRUE-proof loop with `openai/gpt-oss-120b` via OpenRouter.
+
+- New durable tools: `stage2/experiments/dev_true_loop.py` (repair loop: gpt-oss →
+  solver chain/parse → **local Lean judge verify** → feed the error back) and
+  `stage2/experiments/analyze_true_loop.py`. Dev-only; the shipped solver still only
+  reaches the organizer proxy. Secret-safe; prefers the fresh repo `.env` key.
+- Solver changes (all shipped, packaged at 226 676 bytes): `PROMPT` rewritten
+  chain-primary (stops FALSE-guessing, forbids `simp`/`aesop`/`grind`, warns ◇ is
+  non-associative); `sanitize_lean_code` no longer requires literal `intro G _ h`
+  (judge is the gate); guided-chain edge prover `LLM_GUIDED_CHAIN_MAX_DEPTH=8`/`1.0 s`;
+  `LLM_MAX_ROUNDS=6`; `run_solo` feeds parse rejects back via `{solver.feedback}`.
+- Findings: the loop works (A/B on a solvable set: **25% → 75%** accepted; chain
+  renderer is reliable) but gpt-oss cannot yet crack the deterministic-skip frontier
+  at low reasoning (`0/20` mixed, `0/18` normal); big-budget deterministic closure
+  cracks only `1/20`. The model gets endpoints right but botches exact instantiation
+  and assumes associativity.
+- Next lever: hybrid — LLM proposes middle/instantiation terms that seed the
+  deterministic closure pool. Full detail: `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
 
 ## Current Solver Snapshot
 

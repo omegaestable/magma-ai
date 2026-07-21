@@ -25,49 +25,74 @@ from itertools import product
 from typing import Any
 
 
-PROMPT = """You are helping produce Lean 4 certificates for magma equation implications.
+PROMPT = """You produce proofs about magmas. A magma is a type G with one binary operation
+written `a ◇ b`. You are given two equational laws and must prove the first
+implies the second.
 
-Return exactly one JSON object. The first character must be { and the last
-character must be }. Do not include markdown, commentary, analysis, or <think>
-blocks. Prefer the solver-owned DSL when you can give an exact chain. These
-rows have already escaped deterministic finite-countermodel search, so spend
-your effort on TRUE proof construction, not table guessing.
+The deterministic solver already searched for a finite magma satisfying Equation1
+but breaking Equation2 and found none, so Equation1 almost certainly IMPLIES
+Equation2. Prove it. Do not return a counterexample table.
 
-Problem {problem.id}: does Equation{problem.eq1_id} imply Equation{problem.eq2_id}?
-Hypothesis: {problem.equation1}
-Goal: {problem.equation2}
+Problem {problem.id}: prove Equation{problem.eq1_id} implies Equation{problem.eq2_id}.
+Hypothesis (Equation1):  {problem.equation1}
+Goal       (Equation2):  {problem.equation2}
 
-Deterministic analysis:
+Deterministic solver hints:
 {solver.analysis}
 
-Previous judge attempts:
+################  BEST WAY TO ANSWER: the rewrite chain  ################
+Give the sequence of terms from the goal's left side to the goal's right side,
+where EACH consecutive pair differs by exactly ONE use of the hypothesis on ONE
+subterm. THE SOLVER computes the exact effect of each hypothesis application and
+builds the Lean proof for you — so you never do term bookkeeping by hand (that is
+the #1 source of mistakes). Use only the goal's variables.
+
+CRITICAL: ◇ is NOT associative and NOT commutative unless the hypothesis itself
+says so. Never reassociate `a ◇ (b ◇ c)` to `(a ◇ b) ◇ c`, and never reorder
+`a ◇ b` to `b ◇ a`, as a chain step — those are not valid. Every step must change
+exactly one subterm by matching (an instance of) one side of the hypothesis and
+replacing it with the other side. Keep the full parenthesization explicit.
+
+{"verdict":"true","proof_kind":"guided_chain","chain":["<goal-lhs>","<t1>","...","<goal-rhs>"]}
+
+To design the chain, think of the hypothesis L = R as a two-way rewrite: anywhere
+you see (an instance of) L you may replace it by R, and vice-versa. List the terms
+you pass through. Make each step a single such replacement. Smaller steps are
+safer — the solver proves each step by search, so many small steps beat few big
+ones.
+
+################  FALLBACK: a full Lean proof  ################
+Only if a chain is impossible. Return {"verdict":"true","code":"<full Lean file>"}
+whose code field is exactly (newlines written as \\n inside the JSON string):
+
+import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro <goal vars>
+  <steps>
+
+After `intro G _ h`, `h` is the hypothesis law (fully quantified) and the goal is
+`<Eq2-LHS> = <Eq2-RHS>`. Use ONLY these tactics:
+  rw [h a b ...]           -- replace <Eq1-LHS>[a,b,...] by <Eq1-RHS>; `rw [← h ...]` reverses
+  calc ... := by rw [...]   -- an explicit equational chain
+  Eq.trans, Eq.symm, congrArg (fun t => t ◇ c) / (fun t => c ◇ t), exact, rfl
+DO NOT use `simp`, `simpa`, `simp_all`, `aesop`, or `grind`: on these laws `simp`
+loops (maximum recursion depth) and is rejected. When you write `h a b c`, the
+result is <Eq1-LHS> and <Eq1-RHS> with the variables literally replaced by a,b,c;
+substitute carefully or you will get a type mismatch.
+
+Import nothing except `import JudgeProblem`. No `sorry`/`admit`. No Mathlib.
+
+################  Learn from previous attempts ################
 {history.attempts}
+{solver.feedback}
+If a Lean error shows a type mismatch, your hypothesis instantiation was wrong —
+recompute it or switch to the rewrite chain. If a chain step was unprovable,
+split it into smaller single-rewrite steps.
 
-Accepted JSON shapes:
-1. TRUE rewrite chain, checked and rendered by the solver:
-   {"verdict":"true","proof_kind":"rewrite_chain","chain":["<goal lhs>","<middle>","<goal rhs>"]}
-   Use proof_kind "guided_chain" when a step may need a short solver-owned
-   congruence or closure proof. You may include a "lemmas" array of short
-   human-readable derived-lemma sketches; the solver checks the chain itself.
-2. TRUE full Lean fallback, checked by the judge after sanitizer checks in
-   Solo/debug lanes. Marathon TRUE candidates are accepted by this solver only
-   when they are solver-checked chains, unless a local debug flag enables raw
-   Lean explicitly:
-   {"verdict":"true","code":"import JudgeProblem\n\ndef submission : Goal := by\n  ..."}
-    The code field must be a complete Lean file and may declare helper
-    theorems, defs, lemmas, namespaces, or notation above submission.
-3. FALSE finite countermodel, verified locally before Lean is emitted. Use this
-   only if you personally checked every entry of the finite magma table:
-   {"verdict":"false","counterexample_table":[[0,1],[1,0]]}
-
-For raw Lean TRUE, the file must contain `def submission : Goal := by`, then
-`intro G _ h` before goal variables, and an explicit proof from h. Do not use
-automation placeholders such as aesop/grind/simp_all.
-
-Do not use sorry, admit, axioms, unsafe/meta commands, unsupported imports,
-or Teorth theorem names. If a short solver-owned chain is not enough, return a
-complete Lean file using only the local hypothesis h and ordinary equality
-reasoning.
+Output exactly ONE JSON object (first char {, last char }). No markdown, no
+<think>, no prose.
 """
 
 MAX_SUBMISSION_BYTES = 500_000
@@ -106,9 +131,9 @@ EQUATIONAL_CLOSURE_DEPTH_SLACK = 3
 EQUATIONAL_CLOSURE_TIME_BUDGET = 0.45
 GUIDED_CHAIN_MAX_DEPTH = 3
 GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 0.08
-LLM_GUIDED_CHAIN_MAX_DEPTH = 4
-LLM_GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 0.18
-LLM_MAX_ROUNDS = 2
+LLM_GUIDED_CHAIN_MAX_DEPTH = 8
+LLM_GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 1.0
+LLM_MAX_ROUNDS = 6
 MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
@@ -4967,8 +4992,10 @@ def sanitize_lean_code(code: str, *, verdict: str) -> bool:
     has_submission = bool(re.search(r"\b(?:def|theorem)\s+submission\b", code))
     if not has_submission:
         return False
-    if verdict == "true" and "intro G _ h" not in code:
-        return False
+    # NOTE: we no longer require the literal ``intro G _ h`` shape. The proof is
+    # always locally judge-verified before submission, so the judge — not this
+    # pre-filter — is the correctness gate. Requiring a fixed intro pattern only
+    # rejected valid proofs that intro the instance/hypothesis differently.
     saw_judge_problem = False
     for raw_line in code.splitlines():
         line = raw_line.strip()
@@ -5245,8 +5272,8 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     cues.append("Each adjacent TRUE chain step must be one explicit hypothesis rewrite, short rewrite chain, or bounded solver-owned closure/congruence step.")
     cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
     cues.append("If the chain needs a derived fact, include a lemmas array explaining it, but keep the chain terms concrete.")
-    cues.append("Raw Lean is Solo/debug-only by default; Marathon TRUE candidates should be solver-checked chains.")
-    cues.append("This row already escaped deterministic search; default to a TRUE proof attempt.")
+    cues.append("Prefer the guided_chain: give intermediate terms and let the solver build the Lean proof; a raw Lean file is only a fallback.")
+    cues.append("This row already escaped deterministic finite-countermodel search; it is almost certainly TRUE — build a proof, do not guess a counterexample.")
     return "\n".join(cues)
 
 
@@ -5415,6 +5442,7 @@ def run_solo() -> int:
             file=sys.stderr,
         )
 
+    feedback = ""
     for round_idx in range(solo_llm_rounds()):
         llm_response = send_proxy_call(
             {
@@ -5422,6 +5450,7 @@ def run_solo() -> int:
                 "context": {
                     "round": str(round_idx),
                     "analysis": analysis,
+                    "feedback": feedback,
                 },
             }
         )
@@ -5440,6 +5469,17 @@ def run_solo() -> int:
         response_text = str(llm_response.get("response", ""))
         candidate, reject_reason = candidate_from_llm_text_with_reason(problem, response_text)
         if candidate is None:
+            # Feed the parse-level rejection back to the next round. The proxy's
+            # {history.attempts} only carries judge results (candidates that
+            # reached the judge); parse rejects never do, so without this the
+            # model gets no signal about malformed / non-goal-variable / unproved
+            # chain outputs.
+            feedback = (
+                f"Previous answer rejected before judging: {reject_reason}. "
+                "Return one valid JSON object using ONLY the goal's variables; "
+                "prefer proof_kind guided_chain with small single-rewrite steps "
+                "whose first term is the goal LHS and last term is the goal RHS."
+            )
             print(
                 json.dumps(
                     {
@@ -5453,6 +5493,7 @@ def run_solo() -> int:
                 file=sys.stderr,
             )
             continue
+        feedback = ""
         answer = dict(candidate["answer"])
         key = (str(answer.get("verdict")), str(answer.get("code")))
         if key in attempted:

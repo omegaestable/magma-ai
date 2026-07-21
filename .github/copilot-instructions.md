@@ -49,6 +49,7 @@ On a cold start, read in this order:
 
 - Active solver scaffold: `stage2/solver/solver.py`
 - Packaged output: `stage2/submissions/solver.py`
+- Self-verifying LLM dev loop (OpenRouter gpt-oss + local judge): `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`); latest run `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`
 - Official harness: `vendor/stage2-official/`
 - Latest public benchmark summary: `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
 - Latest competition preflight: `stage2/results/2026-05-12-competition-preflight.md`

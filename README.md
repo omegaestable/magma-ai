@@ -50,6 +50,8 @@ Cold-start read order:
 
 ## Current Evidence
 
+2026-07-20: added a self-verifying LLM TRUE-proof loop (`stage2/experiments/dev_true_loop.py`: gpt-oss-120b via OpenRouter → solver chain/parse → local Lean judge → repair) and rewrote the solver `PROMPT` to be chain-primary. On a solvable TRUE set the LLM accept rate went 25% → 75%, but the deterministic-skip frontier remains hard for gpt-oss (≈0 at low reasoning); a big-budget deterministic closure cracks only 1/20. Details and the recommended hybrid next step: `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
+
 Latest completed full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch and before the default grind rollback:
 
 - `sample_20`: `14/20` solved, `4 TRUE + 10 FALSE`, `llm:0`

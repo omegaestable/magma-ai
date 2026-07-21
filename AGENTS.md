@@ -34,6 +34,13 @@ Follow this order exactly:
 - Official harness: `vendor/stage2-official/`.
 - Official harness commit: `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Strategy: Marathon-first, deterministic certificates first, LLM calls second.
+- LLM lane (2026-07-20): the `PROMPT` is chain-primary — the model proposes a
+  guided-chain of intermediate terms and the solver renders/verifies the Lean, since
+  gpt-oss-120b is reliable at *which terms* but not at exact Lean bookkeeping. It
+  forbids `simp`/`aesop`/`grind` and warns ◇ is non-associative. Every LLM candidate
+  is judge-verified before it counts (Solo records the last `accepted` judge call),
+  so no `incorrect` submissions. Iterate the loop with
+  `stage2/experiments/dev_true_loop.py` (local judge + OpenRouter, dev-only).
 - Active validation policy: Marathon guardrails and promotion runs must use a
   positive token budget; do not run or cite `--budget-tokens 0` as current
   evidence.
