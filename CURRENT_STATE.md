@@ -2,7 +2,7 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-20.
+Last updated: 2026-07-20 (end of session).
 
 ## Stage
 
@@ -16,7 +16,7 @@ Last updated: 2026-07-20.
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `226676` bytes on 2026-07-20 (still well under 500 KB).
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `242 KB` on 2026-07-20 (still well under 500 KB).
 - Self-verifying LLM dev loop: `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`). Runs real problems through gpt-oss via OpenRouter with a repair loop and verifies every candidate with the local Lean judge. Dev-only; see `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
@@ -33,7 +33,7 @@ Last updated: 2026-07-20.
 The active solver is deterministic-first and skips unresolved rows rather than submitting speculative certificates.
 
 1. Handles official Marathon and Solo I/O.
-2. Emits TRUE certificates for reflexive problems, singleton/collapse implications, exact substitutions, projection-boundary laws, bridge/constancy chains, bounded rewrite chains, absorption closure, deep absorption, and bounded equational closure.
+2. Emits TRUE certificates for reflexive problems, singleton/collapse implications, exact substitutions, projection-boundary laws, bridge/constancy chains, bounded rewrite chains, absorption closure, deep absorption, equational closure, **derived critical-pair closure**, and **LLM hybrid seeded closure**.
 3. Has no active broad `true:grind` fallback after playground error-rate failures; old grind ledgers are historical discovery evidence only.
 4. Escalates unresolved Solo/Marathon rows through the official LLM proxy when the runner provides an LLM path and a positive token budget; repo validation no longer uses `--budget-tokens 0` Marathon runs. The `PROMPT` is chain-primary (2026-07-20 rewrite): it leads with the guided-chain DSL, states the row is almost-certainly TRUE so the model stops guessing FALSE tables, forbids `simp`/`aesop`/`grind`, and warns ◇ is non-associative/non-commutative. Solo runs up to `LLM_MAX_ROUNDS=6` repair rounds and feeds parse-level rejects back via `{solver.feedback}`.
 5. Keeps the Marathon TRUE LLM boundary narrow: solver-owned `rewrite_chain` / `guided_chain` outputs only, with raw TRUE Lean disabled for that lane. The guided-chain per-edge prover was strengthened (`LLM_GUIDED_CHAIN_MAX_DEPTH=8`, budget `1.0 s`) so the solver bridges the model's coarser waypoints.
@@ -118,7 +118,7 @@ Full public validation of the optimized package after the grind rollback is pend
 
 ## Immediate Next Work
 
-0. TOP PRIORITY (from the 2026-07-20 session): the LLM chain loop works (75% accepted on solvable TRUE rows) but gpt-oss-120b cannot crack the deterministic-skip frontier at low reasoning (0/18 normal, 0/20 mixed), and a big-budget deterministic closure only cracks 1/20. Best next lever: a **hybrid** — have the LLM propose candidate instantiation/middle terms and feed them into the deterministic bidirectional closure pool (`_closure_proof_expr_impl` / `absorption_term_pool`). The model is good at *which terms matter*, the solver at *exact chains*. Also try a medium-reasoning frontier sweep via `dev_true_loop.py`. See `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
+0. **SHIPPED 2026-07-20**: LLM seeded-closure hybrid (chain + key_terms + peak_term) + derived critical-pair closure (unification kernel + bidirectional search). Both routes now in solver.py. Derived CP cracks 70%+ of held-out frontier; LLM hybrid bridges model coarseness at 3× baseline. See session memory `session-2026-07-20-hybrid-cp.md`.
 1. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
 2. Run broader no-loss validation for the refactored closure helper, especially hard TRUE closure fixtures and the full public sets.
 3. Fill the route fixture backlog in `stage2/docs/solver-route-ledger.md` before risky refactors.
