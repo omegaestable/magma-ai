@@ -141,16 +141,31 @@ were caught before the judge.
    (verification, processes), plus parallel deterministic probing during
    sampling. ~10x faster: 20 rows in 157 s versus 30+ min for 100 before.
 
-### After fixes (20-row check, low reasoning, standard effort)
+### After fixes (same 100 rows, same seed, low reasoning, standard effort)
 
 | Class | Before | After |
 | --- | ---: | ---: |
-| TRUE | 28% | **50%** |
-| FALSE | **0%** | **10%** |
-| Overall | 14% | **30%** |
+| TRUE | 14/50 (28%) | **17/50 (34%)** |
+| FALSE | **0/50 (0%)** | **8/50 (16%)** |
+| **Overall** | **14/100** | **25/100** |
+| Wrong verdicts submitted | 0 | **0** |
 
-`false_table_not_counterexample` now appears among rejects, confirming the
-model finally proposes tables and the verifier screens them.
+The FALSE gain is the substantive one: 8 rows that were previously unwinnable
+*by construction*. Still 40 verdict errors caught before submission, zero fatal.
+
+Runtime `646 s` for 100 problems (466 s fetch + 150 s verify) versus 30+ min
+before the two-phase split. One straggler call took ~300 s on its own.
+
+### Where the remaining headroom is
+
+`guided_chain_unproved_or_bad_endpoints` is **57 of 75** rejects: the model
+proposes plausible waypoints the bridging search cannot close. That is a
+solver-side search problem, not a model problem, and it is the next lever —
+the effort tiers make more budget available but the search itself needs to be
+smarter (see the reduction-order item below).
+
+A secondary cluster, `rewrite_chain_uses_non_goal_variables` (14), is a prompt
+issue: the model introduces variables not in the goal.
 
 **Caveat:** ~90% of randomly sampled rows are already solved deterministically,
 so these percentages measure the LLM lane *standalone*, not its marginal

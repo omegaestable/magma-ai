@@ -23,7 +23,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from itertools import product
-from typing import Any
+from typing import Any, Callable
 
 
 PROMPT = """You produce proofs about magmas. A magma is a type G with one binary operation
@@ -83,6 +83,29 @@ Also optional: "peak_term" — many of these proofs EXPAND both sides to one big
 common term and meet there. If you can name that single largest middle term, give
 it as "peak_term":"<term>"; the solver then searches goal-lhs -> peak and
 peak -> goal-rhs separately, which is much easier than the full jump.
+
+################  OFTEN EASIER: name a lemma  ################
+You do not have to prove the goal at all. If you can name a SMALL law that (a)
+follows from the hypothesis and (b) makes the goal obvious, just say so:
+
+{"verdict":"true","proof_kind":"lemma","lemma":"a ◇ b = a","lemmas":["<alt>","..."]}
+
+Use fresh variables (a, b, c...) — the lemma is its own universally quantified
+law, independent of the goal's variables. THE SOLVER proves the lemma from the
+hypothesis itself and then derives the goal from it; you supply only the idea.
+
+This is often far easier than a chain, because a small law is a much smaller
+search target than the goal. Laws worth considering, strongest first:
+  "a = b"            -- the hypothesis forces the magma to have one element
+  "a ◇ b = a"        -- left projection      "a ◇ b = b"  -- right projection
+  "a ◇ a = a"        -- idempotence
+  "a ◇ b = a ◇ c"    -- the right argument never matters
+  "a ◇ b = c ◇ b"    -- the left argument never matters
+  "a ◇ b = b ◇ a"    -- commutativity
+Any equation is allowed, not just these. Give "lemmas" as a list to offer
+several; the solver tries each and keeps the first that works. A lemma that is
+too strong to be true is discarded harmlessly, so guess boldly — but a lemma
+must genuinely IMPLY the goal, or it is useless even if true.
 
 ################  FALLBACK: a full Lean proof  ################
 Only if a chain is impossible. Return {"verdict":"true","code":"<full Lean file>"}
@@ -2362,6 +2385,33 @@ def commutative_term_key(term: Term) -> Term:
     return "op", left, right
 
 
+# Unbounded term-utility memoisation: fast within a problem, but the keys are
+# `Term` tuples that different problems essentially never share, so in a
+# long-lived Marathon process the entries accumulate for the life of the run
+# (measured 11.2 GB RSS partway through a 200-row set on 2026-07-22). Clearing
+# between problems costs nothing and keeps the hot path unbounded-cache fast.
+_TERM_CACHE_FUNCS = (
+    term_vars_tuple,
+    term_size,
+    term_depth,
+    term_to_lean,
+    dual_term,
+    term_subterms_tuple,
+    boundary_vars,
+    subterm_paths_tuple,
+    term_at_path,
+    replace_subterm,
+    context_to_lean,
+    left_row_constancy_key,
+    commutative_term_key,
+)
+
+
+def clear_term_caches() -> None:
+    for cached in _TERM_CACHE_FUNCS:
+        cached.cache_clear()
+
+
 def combine_binary_congr(
     left_src: Term,
     right_src: Term,
@@ -3986,11 +4036,213 @@ def projection_true_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str
     return f"true:projection:{side}", projection_true_certificate(eq2["variables"], proof_expr)
 
 
+UNIVERSAL_IDENTITY_MAX_PATTERN_VARS = 6
+UNIVERSAL_IDENTITY_MAX_CODE = 60000
+
+
+def universal_identity_source(eq1: dict[str, Any]) -> tuple[str, str, Term, bool] | None:
+    """Detect a universal one-sided identity family in eq1.
+
+    `("right", root, A, swapped)` means eq1 says `root = root ◇ A` with `root`
+    absent from `A`, i.e. every element of the form `A(...)` is a right
+    identity; `"left"` is the mirror. `swapped` records that the bare variable
+    sits on eq1's right-hand side.
+    """
+    for swapped, variable_side, op_side in (
+        (False, eq1["lhs"], eq1["rhs"]),
+        (True, eq1["rhs"], eq1["lhs"]),
+    ):
+        if variable_side[0] != "var" or op_side[0] != "op":
+            continue
+        root = str(variable_side[1])
+        left, right = op_side[1], op_side[2]
+        if left == ("var", root) and root not in term_vars(right):
+            return "right", root, right, swapped
+        if right == ("var", root) and root not in term_vars(left):
+            return "left", root, left, swapped
+    return None
+
+
+class UniversalIdentityCalculus:
+    """Derives a projection law from a universal one-sided identity family.
+
+    Every proof string produced here is a *group* — parenthesised, with a
+    well-formed spine inside — so it can be dropped into `congrArg` or `.trans`
+    argument position without re-bracketing.
+    """
+
+    def __init__(
+        self,
+        eq1: dict[str, Any],
+        side: str,
+        root: str,
+        pattern: Term,
+        swapped: bool,
+        goal_vars: list[str],
+    ) -> None:
+        self.eq1 = eq1
+        self.side = side
+        self.root = root
+        self.pattern = pattern
+        self.swapped = swapped
+        self.pattern_vars = sorted(term_vars(pattern))
+        self.binder = next(
+            (name for name in ("t", "s", "q", "tt", "ss", "zz") if name not in set(goal_vars)),
+            "zz",
+        )
+
+    def hypothesis(self, carrier: Term, subst: dict[str, Term]) -> str:
+        """Prove `carrier ◇ A[subst] = carrier` (right) or its mirror (left)."""
+        full: dict[str, Term] = {self.root: carrier}
+        full.update(subst)
+        for name in self.eq1["variables"]:
+            full.setdefault(name, carrier)
+        call = call_expression(self.eq1["variables"], full, "h")
+        return f"({call})" if self.swapped else f"(({call}).symm)"
+
+    def _congr(self, context: str, proof: str) -> str:
+        return f"(congrArg (fun {self.binder} => {context}) {proof})"
+
+    @staticmethod
+    def _symm(proof: str) -> str:
+        return f"(({proof}).symm)"
+
+    @staticmethod
+    def _trans(first: str | None, second: str) -> str:
+        return second if first is None else f"(({first}).trans {second})"
+
+    def _identity_instance(self, term: Term) -> dict[str, Term] | None:
+        subst: dict[str, Term] = {}
+        if match_term(self.pattern, term, subst):
+            return subst
+        return None
+
+    def reduce(self, term: Term) -> tuple[Term, str | None]:
+        """Normalise by deleting one-sided identity factors.
+
+        Returns the normal form and a proof that `term` equals it (`None` when
+        the term is already normal).
+        """
+        if term[0] != "op":
+            return term, None
+        left, left_proof = self.reduce(term[1])
+        right, right_proof = self.reduce(term[2])
+        proof: str | None = None
+        if left_proof is not None:
+            proof = self._congr(f"{self.binder} ◇ {term_to_lean(term[2])}", left_proof)
+        if right_proof is not None:
+            proof = self._trans(
+                proof, self._congr(f"{term_to_lean(left)} ◇ {self.binder}", right_proof))
+        cut, keep = (right, left) if self.side == "right" else (left, right)
+        subst = self._identity_instance(cut)
+        if subst is None:
+            return ("op", left, right), proof
+        return keep, self._trans(proof, self.hypothesis(keep, subst))
+
+    def projection_proof(self, left: Term, right: Term, identity: Term) -> str | None:
+        """Prove `left ◇ right = left` (right family) or `= right` (left family).
+
+        Instantiates the identity family with the surviving side and with
+        `identity`, then checks the normal form is exactly that side. Every
+        such instance is a one-sided identity, so the step is sound by
+        construction; the offline kernel re-checks the emitted proof.
+        """
+        target = right if self.side == "right" else left
+        for choice in product((identity, target), repeat=len(self.pattern_vars)):
+            subst = dict(zip(self.pattern_vars, choice))
+            normal, proof = self.reduce(instantiate_term(self.pattern, subst))
+            if normal != target:
+                continue
+            carrier = left if self.side == "right" else right
+            applied = self.hypothesis(carrier, subst)
+            if proof is None:
+                return applied
+            if self.side == "right":
+                context = f"{term_to_lean(left)} ◇ {self.binder}"
+            else:
+                context = f"{self.binder} ◇ {term_to_lean(right)}"
+            return self._trans(self._congr(context, self._symm(proof)), applied)
+        return None
+
+
+def universal_identity_term_proof(
+    term: Term,
+    keep_left: bool,
+    projection: Callable[[Term, Term], str | None],
+) -> tuple[str, str] | None:
+    if term[0] == "var":
+        return "rfl", str(term[1])
+    if term[0] != "op":
+        return None
+    projected = term[1] if keep_left else term[2]
+    step = projection(term[1], term[2])
+    if step is None:
+        return None
+    rest = universal_identity_term_proof(projected, keep_left, projection)
+    if rest is None:
+        return None
+    rest_proof, target_var = rest
+    if rest_proof != "rfl":
+        step = f"({step}).trans ({rest_proof})"
+    return step, target_var
+
+
+def universal_identity_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    """Prove eq2 from a universal one-sided identity family in eq1.
+
+    If eq1 states `x = x ◇ A(ȳ)` with `x` absent from `A`, then every `A(ȳ)` is
+    a right identity. Writing `E` for `A` with all its variables set to a goal
+    variable, `E` is itself such an identity, so instantiating `A`'s variables
+    with `E` and with an arbitrary `b` and cancelling identity factors can
+    collapse `A` to `b` alone — which upgrades the hypothesis to the left
+    projection law `a ◇ b = a`. The mirror shape yields right projection.
+    Under a projection law eq2 holds exactly when both sides project to the
+    same variable.
+    """
+    source = universal_identity_source(eq1)
+    if source is None:
+        return None
+    side, root, pattern, swapped = source
+    goal_vars = list(eq2["variables"])
+    if not goal_vars:
+        return None
+    calculus = UniversalIdentityCalculus(eq1, side, root, pattern, swapped, goal_vars)
+    if len(calculus.pattern_vars) > UNIVERSAL_IDENTITY_MAX_PATTERN_VARS:
+        return None
+    seed: Term = ("var", goal_vars[0])
+    identity = instantiate_term(pattern, {name: seed for name in calculus.pattern_vars})
+
+    def projection(left: Term, right: Term) -> str | None:
+        return calculus.projection_proof(left, right, identity)
+
+    keep_left = side == "right"
+    left = universal_identity_term_proof(eq2["lhs"], keep_left, projection)
+    right = universal_identity_term_proof(eq2["rhs"], keep_left, projection)
+    if left is None or right is None:
+        return None
+    left_proof, left_target = left
+    right_proof, right_target = right
+    if left_target != right_target:
+        return None
+    if left_proof == "rfl":
+        proof_expr = f"({right_proof}).symm" if right_proof != "rfl" else "rfl"
+    elif right_proof == "rfl":
+        proof_expr = left_proof
+    else:
+        proof_expr = f"({left_proof}).trans ({right_proof}).symm"
+    code = projection_true_certificate(goal_vars, proof_expr)
+    if len(code) > UNIVERSAL_IDENTITY_MAX_CODE:
+        return None
+    law = "left" if keep_left else "right"
+    return f"true:universal_identity:{law}", code
+
+
 def find_rewrite_chain(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
     *,
     max_depth: int = REWRITE_CHAIN_MAX_DEPTH,
+    hypothesis_name: str = "h",
 ) -> tuple[list[str], str] | None:
     target = eq2["rhs"]
     queue: list[tuple[Term, list[str], list[str]]] = [(eq2["lhs"], [], [])]
@@ -3998,7 +4250,8 @@ def find_rewrite_chain(
     for _depth in range(max_depth):
         next_queue: list[tuple[Term, list[str], list[str]]] = []
         for term, proofs, routes in queue:
-            for new_term, proof, route in rewrite_steps_from_term(eq1, term):
+            for new_term, proof, route in rewrite_steps_from_term(
+                    eq1, term, hypothesis_name=hypothesis_name):
                 if new_term in seen:
                     continue
                 new_proofs = proofs + [proof]
@@ -4872,6 +5125,183 @@ def derived_cp_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[
     return "true:derived_cp_closure", substitution_true_certificate(eq2["variables"], proof_expr)
 
 
+PROJECTION_LEMMA_TEXT = {"left": "a ◇ b = a", "right": "a ◇ b = b"}
+
+# Small laws worth trying as proof targets in their own right. A lemma earns a
+# place here only by winning rows: it has to be derivable from real hypotheses
+# *and* strong enough to close real goals. Order is cheapest-and-strongest
+# first, since the first one that works wins.
+LEMMA_LIBRARY_TEXT = (
+    ("trivial", "a = b"),
+    ("idempotent", "a ◇ a = a"),
+    ("left_row_constant", "a ◇ b = a ◇ c"),
+    ("right_col_constant", "a ◇ b = c ◇ b"),
+    ("product_constant", "a ◇ b = c ◇ d"),
+    ("commutative", "a ◇ b = b ◇ a"),
+)
+
+LEMMA_APPLY_CHAIN_MAX_DEPTH = 3
+
+# Budget per lemma search, by how much a hit is worth paying for. The two
+# projection lemmas keep the full budget: only two candidates, a high hit rate,
+# and cutting them to the library budget measurably lost 5 rows. The six-entry
+# library and LLM proposals are speculative and numerous, so they get less —
+# a lemma that will land usually lands almost immediately. Scaled by the effort
+# tier inside `derived_cp_closure_proof_expr`.
+LEMMA_LIBRARY_CLOSURE_TIME_BUDGET = 1.5
+LLM_LEMMA_CLOSURE_TIME_BUDGET = 4.0
+
+
+LEMMA_FILTER_FIN3_SAMPLES = 200
+LEMMA_FILTER_SEED = 20260722
+
+
+@lru_cache(maxsize=8)
+def _lemma_filter_models(lhs: Term, rhs: Term, variables: tuple[str, ...]) -> tuple[tuple[tuple[int, ...], ...], ...]:
+    """Small magmas satisfying eq1: every Fin2, plus a fixed Fin3 sample."""
+    eq1 = {"lhs": lhs, "rhs": rhs, "variables": list(variables)}
+    models: list[tuple[tuple[int, ...], ...]] = []
+    for encoding in product(range(2), repeat=4):
+        table = [list(encoding[:2]), list(encoding[2:])]
+        if equation_holds(eq1, table):
+            models.append(tuple(tuple(row) for row in table))
+    rng = random.Random(LEMMA_FILTER_SEED)
+    for _ in range(LEMMA_FILTER_FIN3_SAMPLES):
+        table = [[rng.randrange(3) for _ in range(3)] for _ in range(3)]
+        if equation_holds(eq1, table):
+            models.append(tuple(tuple(row) for row in table))
+    return tuple(models)
+
+
+def lemma_survives_models(eq1: dict[str, Any], lemma: dict[str, Any]) -> bool:
+    """False as soon as one eq1-model refutes the lemma, so it cannot follow.
+
+    Measured 2026-07-22: 6 of 13 lemmas the LLM proposed were refutable this
+    way, and none of the survivors became derivable with 22x the search budget.
+    Filtering first therefore costs milliseconds and saves the whole closure
+    budget on the cases that could never have worked.
+    """
+    models = _lemma_filter_models(
+        eq1["lhs"], eq1["rhs"], tuple(eq1["variables"]))
+    return all(equation_holds(lemma, [list(row) for row in table]) for table in models)
+
+
+def lemma_closure_proof(
+    eq1: dict[str, Any],
+    lemma: dict[str, Any],
+    *,
+    time_budget: float = DERIVED_CP_TIME_BUDGET,
+) -> str | None:
+    if not lemma_survives_models(eq1, lemma):
+        return None
+    return derived_cp_closure_proof_expr(eq1, lemma, time_budget=time_budget)
+
+
+@lru_cache(maxsize=16)
+def lemma_goal(text: str) -> dict[str, Any]:
+    return parse_equation(text)
+
+
+def lemma_certificate(
+    lemma: dict[str, Any],
+    lemma_proof: str,
+    eq2_vars: list[str],
+    proof_expr: str,
+) -> str:
+    """A certificate that proves a named lemma, then the goal from it.
+
+    Both halves stay inside the offline kernel's grammar, so
+    `oracles.check_true_lemma_certificate` can verify each independently.
+    """
+    binders = " ".join(lemma["variables"])
+    intro_vars = " ".join(eq2_vars)
+    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
+    statement = f"{term_to_lean(lemma['lhs'])} = {term_to_lean(lemma['rhs'])}"
+    return (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        f"  have hlem : ∀ {binders} : G, {statement} := by\n"
+        f"    intro {binders}\n"
+        f"    exact {lemma_proof}\n"
+        f"{intro_line}"
+        f"  exact {proof_expr}\n"
+    )
+
+
+def lemma_applies_to_goal(lemma: dict[str, Any], eq2: dict[str, Any]) -> str | None:
+    """Prove eq2 from the lemma alone. Cheap: the lemma is a tiny equation."""
+    simple = simple_true_proof_expr(lemma, eq2, hypothesis_name="hlem")
+    if simple is not None:
+        return simple[1]
+    chain = find_rewrite_chain(
+        lemma, eq2, max_depth=LEMMA_APPLY_CHAIN_MAX_DEPTH, hypothesis_name="hlem")
+    if chain is not None:
+        return chain[1]
+    return None
+
+
+def projection_bootstrap_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    """Prove eq2 by deriving a projection law as a standalone lemma first.
+
+    A projection law closes any goal whose two sides project to the same
+    variable, and `a ◇ b = a` is a far smaller target for the critical-pair
+    closure than the real goal: on rows where that engine cannot reach the goal
+    at any budget it still lands the lemma in milliseconds. Applying the law to
+    the goal is a free syntactic check, so it is done first and the closure runs
+    only when it could actually finish the proof.
+    """
+    for side in ("left", "right"):
+        proof_expr = projection_from_lemma_goal_proof(eq2, side, hypothesis_name="hlem")
+        if proof_expr is None:
+            continue
+        lemma = lemma_goal(PROJECTION_LEMMA_TEXT[side])
+        lemma_proof = lemma_closure_proof(eq1, lemma)
+        if lemma_proof is None:
+            continue
+        return (
+            f"true:projection_bootstrap:{side}",
+            lemma_certificate(lemma, lemma_proof, eq2["variables"], proof_expr),
+        )
+    return None
+
+
+def lemma_bootstrap_route(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    candidates: tuple[tuple[str, str], ...] = LEMMA_LIBRARY_TEXT,
+) -> tuple[str, str] | None:
+    """Prove eq2 via a small intermediate lemma instead of head-on.
+
+    Proof search cost scales with the size of the goal, so a small law that
+    happens to imply the goal can be reachable when the goal itself is not.
+    The library is fixed, but `candidates` is a parameter so LLM-proposed
+    lemmas can use exactly the same verified path.
+
+    Ordering matters: the cheap direction (goal from lemma) runs first and
+    rejects most candidates outright, so the expensive direction (lemma from
+    eq1) is only ever paid for when it would finish the proof.
+    """
+    for name, text in candidates:
+        try:
+            lemma = lemma_goal(text)
+        except ValueError:
+            continue
+        proof_expr = lemma_applies_to_goal(lemma, eq2)
+        if proof_expr is None:
+            continue
+        lemma_proof = lemma_closure_proof(
+            eq1, lemma, time_budget=LEMMA_LIBRARY_CLOSURE_TIME_BUDGET)
+        if lemma_proof is None:
+            continue
+        return (
+            f"true:lemma_bootstrap:{name}",
+            lemma_certificate(lemma, lemma_proof, eq2["variables"], proof_expr),
+        )
+    return None
+
+
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
     eq2_left, eq2_right = boundary_vars(eq2["rhs"])
@@ -5463,6 +5893,15 @@ def solve_problem(
             "priority": problem_priority(problem, eq1, eq2),
         }
 
+    universal_identity = universal_identity_route(eq1, eq2)
+    if universal_identity is not None:
+        route, code = universal_identity
+        return {
+            "answer": make_true_answer(problem, code),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
     absorption_context_bridge = absorption_context_bridge_route(eq1, eq2)
     if absorption_context_bridge is not None:
         route, code = absorption_context_bridge
@@ -5516,6 +5955,24 @@ def solve_problem(
         derived_cp = derived_cp_closure_route(eq1, eq2)
         if derived_cp is not None:
             route, code = derived_cp
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
+
+        projection_bootstrap = projection_bootstrap_route(eq1, eq2)
+        if projection_bootstrap is not None:
+            route, code = projection_bootstrap
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
+
+        lemma_bootstrap = lemma_bootstrap_route(eq1, eq2)
+        if lemma_bootstrap is not None:
+            route, code = lemma_bootstrap
             return {
                 "answer": make_true_answer(problem, code),
                 "route": route,
@@ -5789,6 +6246,100 @@ def seeded_closure_certificate_from_terms(
     return None
 
 
+LLM_MAX_LEMMAS = 6
+LLM_LEMMA_MAX_TERM_SIZE = 13
+
+
+LLM_LEMMA_BINDER_PREFIX = re.compile(r"^\s*(?:∀|forall\b)[^,]*,\s*")
+
+
+def usable_llm_lemma(text: str) -> dict[str, Any] | None:
+    """Parse a model-proposed lemma, or None if it cannot be used safely.
+
+    Binders are emitted verbatim into `∀ ... : G,` and `intro ...`, so they must
+    be single lowercase letters and must not shadow the hypothesis `h` — the
+    lemma's own proof refers to it. Size is bounded because the lemma becomes a
+    proof-search target.
+
+    A leading explicit quantifier is stripped first: the model writes
+    `∀ a b, a ◇ b = b ◇ b` often enough to be worth accepting, and the lemma is
+    universally quantified over its own variables either way.
+    """
+    if not isinstance(text, str):
+        return None
+    text = LLM_LEMMA_BINDER_PREFIX.sub("", text).strip().rstrip(".")
+    try:
+        lemma = parse_equation(text)
+    except (ValueError, TypeError):
+        return None
+    variables = list(lemma["variables"])
+    if not 1 <= len(variables) <= 4:
+        return None
+    if any(len(name) != 1 or not name.isalpha() or not name.islower() for name in variables):
+        return None
+    if "h" in variables:
+        return None
+    if max(term_size(lemma["lhs"]), term_size(lemma["rhs"])) > LLM_LEMMA_MAX_TERM_SIZE:
+        return None
+    return lemma
+
+
+def llm_lemma_candidate(
+    problem: dict[str, Any],
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    obj: dict[str, Any],
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Turn a model-proposed lemma into a fully verified certificate.
+
+    The model contributes only the *idea* of which law to aim at; the solver
+    proves the lemma from eq1 and the goal from the lemma, and the offline
+    kernel re-checks both halves. Three sessions of evidence say this is the
+    right split: the model proposes plausible structure but botches exact
+    instantiation, which is precisely the part it no longer has to do.
+    """
+    raw = obj.get("lemma")
+    extra = obj.get("lemmas")
+    proposals: list[Any] = []
+    if isinstance(raw, str):
+        proposals.append(raw)
+    if isinstance(extra, list):
+        proposals.extend(extra)
+    elif isinstance(extra, str):
+        proposals.append(extra)
+    if not proposals:
+        return None, None
+
+    reason = "lemma_unparsable"
+    seen: set[str] = set()
+    for proposal in proposals:
+        if not isinstance(proposal, str) or proposal in seen:
+            continue
+        seen.add(proposal)
+        if len(seen) > LLM_MAX_LEMMAS:
+            break
+        lemma = usable_llm_lemma(proposal)
+        if lemma is None:
+            continue
+        proof_expr = lemma_applies_to_goal(lemma, eq2)
+        if proof_expr is None:
+            reason = "lemma_does_not_imply_goal"
+            continue
+        lemma_proof = lemma_closure_proof(
+            eq1, lemma, time_budget=LLM_LEMMA_CLOSURE_TIME_BUDGET)
+        if lemma_proof is None:
+            reason = "lemma_not_derivable_from_hypothesis"
+            continue
+        return {
+            "answer": make_true_answer(
+                problem,
+                lemma_certificate(lemma, lemma_proof, eq2["variables"], proof_expr),
+            ),
+            "route": "llm:true:lemma",
+        }, None
+    return None, reason
+
+
 def candidate_from_llm_text_with_reason(
     problem: dict[str, Any],
     text: str,
@@ -5822,6 +6373,10 @@ def candidate_from_llm_text_with_reason(
             "answer": make_false_answer(problem, len(table), table),
             "route": "llm:false:table",
         }, "ok"
+
+    lemma_candidate, lemma_reject = llm_lemma_candidate(problem, eq1, eq2, obj)
+    if lemma_candidate is not None:
+        return lemma_candidate, "ok"
 
     chain = obj.get("chain")
     if chain is None and isinstance(obj.get("steps"), list):
@@ -5875,6 +6430,9 @@ def candidate_from_llm_text_with_reason(
                 "route": "llm:true:seeded_closure",
             }, "ok"
         chain_reject_reason += "; seeded bidirectional closure around your terms also failed"
+
+    if lemma_reject is not None:
+        chain_reject_reason = f"{lemma_reject}; {chain_reject_reason}"
 
     if isinstance(obj.get("proof"), str) or isinstance(obj.get("proof_body"), str):
         return None, "proof_body_unsupported"
@@ -6350,6 +6908,7 @@ def run_marathon() -> int:
     for priority, problem in prioritized:
         if time.monotonic() + 5.0 >= min(deterministic_deadline, deadline):
             break
+        clear_term_caches()
         answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
         if answer_record is None:
             continue

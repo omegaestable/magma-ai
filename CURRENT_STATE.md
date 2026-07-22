@@ -2,12 +2,20 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-21 (end of session).
+Last updated: 2026-07-22 (session 2, end of session).
 
-## Read This First (2026-07-21)
+## Read This First (2026-07-22)
 
-1. There is now an **offline correctness gate**: `pytest stage2/tests` (254
-   tests, ~12 s). It proof-checks certificates with an independent kernel and
+0. **Three new TRUE routes shipped** — `true:universal_identity`,
+   `true:projection_bootstrap`, `true:lemma_bootstrap` — taking official TRUE
+   rows `659 → 706`. All rest on one fact worth internalising: **proof-search
+   cost scales with goal size, so a small law that implies the goal can be
+   reachable when the goal is not.** The LLM lane can now propose such a lemma
+   too (`{"verdict":"true","lemma":"..."}`); the solver proves it and the
+   kernel checks it, so nothing the model says is trusted. Detail:
+   `stage2/results/2026-07-22-universal-identity-route-and-cache-bound.md`.
+1. There is an **offline correctness gate**: `pytest stage2/tests` (273
+   tests, ~27 s). It proof-checks certificates with an independent kernel and
    model-checks every TRUE verdict, with no Lean required.
    `package_solver.ps1` refuses to package if it fails. See
    `stage2/tests/README.md`.
@@ -43,7 +51,7 @@ Last updated: 2026-07-21 (end of session).
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `242 KB` on 2026-07-20 (still well under 500 KB).
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `277918` bytes on 2026-07-22 (still well under 500 KB).
 - Self-verifying LLM dev loop: `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`). Runs real problems through gpt-oss via OpenRouter with a repair loop and verifies every candidate with the local Lean judge. Dev-only; see `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
@@ -97,21 +105,34 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 
 ## Best Evidence
 
-Current measured baseline (2026-07-21, `fast` effort tier, offline oracles;
-regenerate with `stage2/experiments/audit_corpus.py --all`):
+Current measured baseline (2026-07-22 session 2, `fast` effort tier, offline
+oracles; regenerate with `stage2/experiments/audit_corpus.py --all`):
 
-| Set | Solved | Previously documented |
-| --- | ---: | ---: |
-| `normal` | `934/1000` | `803/1000` |
-| `hard1` | `59/69` | `42/69` |
-| `hard2` | `150/200` | `92/200` |
-| `hard3` | `344/400` | `264/400` |
-| **Total** | **`1487/1669`** | `1201/1669` |
+| Set | Solved | 2026-07-21 | Pre-2026-07-21 doc |
+| --- | ---: | ---: | ---: |
+| `normal` | `957/1000` | `934/1000` | `803/1000` |
+| `hard1` | `61/69` | `57/69` | `42/69` |
+| `hard2` | `155/200` | `146/200` | `92/200` |
+| `hard3` | `361/400` | `343/400` | `264/400` |
+| **Total** | **`1534/1669`** | `1480/1669` | `1201/1669` |
 
-HF evaluation sets: `707/800`. Zero oracle failures across all 2,689 problems.
+HF evaluation sets: `727/800` (was `707/800`). Zero oracle failures across all
+2,689 problems.
 
-Frontier by ground-truth label (before the model finder): TRUE `659/819`
-(160 missed), FALSE `821/850` (29 missed). The frontier is TRUE-heavy.
+**Compare TRUE counts, not solved counts.** The FALSE search is wall-clock
+bounded, so solved totals carry a run-to-run noise band of roughly ±7 on the
+official sets at this tier — the 2026-07-21 session quoted `1487` from one run
+while its own stored `audit-2026-07-21.json` says `1480`. The TRUE column is
+stable and is the number to quote for a route change.
+
+Frontier by ground-truth label (before the model finder): TRUE `706/819`
+(113 missed, was 160), FALSE `828/850`. The frontier remains TRUE-heavy.
+
+The 2026-07-22 gain (**+47 official TRUE**) comes from three new routes —
+`true:universal_identity`, `true:projection_bootstrap`, `true:lemma_bootstrap`
+— all exploiting one fact: **proof-search cost scales with goal size, so a
+small law that implies the goal can be reachable when the goal is not.** See
+`stage2/results/2026-07-22-universal-identity-route-and-cache-bound.md`.
 
 This is **offline** evidence (proof kernel + finite-model oracles), an upper
 bound on judge acceptance. A cloud judge sweep is still required before
@@ -127,7 +148,7 @@ Answer-kind totals for that baseline:
 
 Latest local regression evidence after the final optimization/refactor patch:
 
-- Current package pass produced `stage2/submissions/solver.py` at `138939` bytes, still well below the 500 KB limit.
+- Current package pass (2026-07-22 session 2) produced `stage2/submissions/solver.py` at `277918` bytes, still well below the 500 KB limit.
 - Active TRUE boundary rails were cleaned up on 2026-05-25: helper-bearing full-file `code` payloads are accepted, and legacy `proof` / `proof_body` payloads are rejected as unsupported.
 - 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20` and official Solo no-key `sample_200 = 169/200`.
 - Official harnesses passed on 2026-05-25: Solo harness had no failing buckets; Marathon harness passed `25/25` with Lean available.

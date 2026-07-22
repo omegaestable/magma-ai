@@ -299,6 +299,18 @@ _SINGLETON_CERT_RE = re.compile(
     r"  exact hall _ _\n\Z",
 )
 
+_LEMMA_CERT_RE = re.compile(
+    r"\Aimport JudgeProblem\n\n"
+    r"def submission : Goal := by\n"
+    r"  intro G _ h\n"
+    r"  have hlem : ∀ ([a-z](?: [a-z])*) : G, ([^\n]+) := by\n"
+    r"    intro (?:[a-z](?: [a-z])*)\n"
+    r"    exact ([^\n]+)\n"
+    r"(?:  intro ([a-z](?: [a-z])*)\n)?"
+    r"  exact (.+)\n\Z",
+    re.DOTALL,
+)
+
 _TABLE_RE = re.compile(r'finOpTable "(\[\[.*?\]\])"')
 _FIN_RE = re.compile(r"Exists\.intro \(Fin (\d+)\)")
 
@@ -309,6 +321,8 @@ def classify_true_certificate(code: str) -> str:
         return "exact_expr"
     if _SINGLETON_CERT_RE.match(code):
         return "singleton"
+    if _LEMMA_CERT_RE.match(code):
+        return "lemma"
     return "other"
 
 
@@ -354,6 +368,61 @@ def check_true_exact_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, 
     if proved != (eq2["lhs"], eq2["rhs"]):
         raise OracleError(
             "proved wrong equation: "
+            f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, wanted "
+            f"{term_to_str(eq2['lhs'])} = {term_to_str(eq2['rhs'])}")
+
+
+def check_true_lemma_certificate(
+        code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
+    """Kernel-check a certificate that proves a named lemma, then the goal.
+
+    Two independent kernel runs, so neither half is taken on trust: the lemma
+    body must prove exactly the lemma the certificate *states* from instances
+    of eq1, and the goal body must prove exactly `eq2.lhs = eq2.rhs` treating
+    that stated lemma as its hypothesis. The lemma statement is read back out
+    of the certificate text rather than assumed, so a builder that proves one
+    law and applies a different one cannot pass.
+    """
+    m = _LEMMA_CERT_RE.match(code)
+    if m is None:
+        raise OracleError("certificate does not match the lemma shape")
+    binder_group, statement, lemma_expr, intro_group, body = m.groups()
+    lemma_vars = binder_group.split()
+    intro_vars = intro_group.split() if intro_group else []
+    if intro_vars != list(eq2["variables"]):
+        raise OracleError(
+            f"intro variables {intro_vars} != goal variables {eq2['variables']}")
+
+    lhs_text, sep, rhs_text = statement.partition(" = ")
+    if not sep:
+        raise OracleError(f"lemma statement is not an equation: {statement!r}")
+    lemma_lhs = parse_lean_term(lhs_text, set(lemma_vars))
+    lemma_rhs = parse_lean_term(rhs_text, set(lemma_vars))
+
+    lemma_kernel = ProofKernel(
+        list(eq1["variables"]), eq1["lhs"], eq1["rhs"], set(lemma_vars), "h")
+    proved = lemma_kernel.prove(lemma_expr.strip())
+    if proved == _REFL:
+        if lemma_lhs != lemma_rhs:
+            raise OracleError("rfl offered for a non-reflexive lemma")
+    elif proved != (lemma_lhs, lemma_rhs):
+        raise OracleError(
+            "lemma body proved "
+            f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, but the "
+            f"certificate states {term_to_str(lemma_lhs)} = {term_to_str(lemma_rhs)}")
+
+    goal_kernel = ProofKernel(
+        lemma_vars, lemma_lhs, lemma_rhs,
+        set(eq2["variables"]) or set(lemma_vars), "hlem",
+    )
+    proved = goal_kernel.prove(body.strip())
+    if proved == _REFL:
+        if eq2["lhs"] != eq2["rhs"]:
+            raise OracleError("rfl offered for a non-reflexive goal")
+        return
+    if proved != (eq2["lhs"], eq2["rhs"]):
+        raise OracleError(
+            "goal body proved wrong equation: "
             f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, wanted "
             f"{term_to_str(eq2['lhs'])} = {term_to_str(eq2['rhs'])}")
 

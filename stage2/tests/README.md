@@ -39,6 +39,19 @@ Certificates outside this grammar (the hand-written `*_block` proof terms,
 which use `let`/`have` chains and the `M/R/S/T/C` combinators) are reported as
 shape `other` and fall back to model-checking only.
 
+One `have`-chain shape *is* fully checked: `lemma`, emitted by
+`true:projection_bootstrap`, `true:lemma_bootstrap` and the LLM's
+`llm:true:lemma`. These prove a small law as a named lemma and then derive the
+goal from it, so `check_true_lemma_certificate` runs the kernel twice: the
+lemma body must prove exactly the law the certificate *states* from instances
+of eq1, and the goal body must prove exactly `eq2.lhs = eq2.rhs` treating that
+stated law as its hypothesis. The statement is parsed back out of the
+certificate rather than assumed, so a builder that proves one law and applies a
+different one cannot pass. Neither half is taken on trust.
+
+The same technique would extend to the other lemma-shaped certificates
+(`derived_left_projection` and friends), which are still `other`.
+
 ## The finite-model oracle
 
 Independent of proof syntax: build finite magmas satisfying `eq1`, then check

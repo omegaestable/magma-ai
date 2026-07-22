@@ -1,0 +1,5 @@
+{"id":"hard1_0007","index":7,"difficulty":"hard","eq1_id":2343,"eq2_id":3446,"equation1":"x = (y ◇ (y ◇ (y ◇ z))) ◇ x","equation2":"x ◇ y = z ◇ (w ◇ (w ◇ y))","answer":true}
+{"id":"evaluation_normal_0018","index":18,"difficulty":"normal","eq1_id":1065,"eq2_id":3,"equation1":"x = x * ((y * (z * z)) * z)","equation2":"x = x * x","answer":true}
+{"id":"evaluation_normal_0082","index":82,"difficulty":"normal","eq1_id":857,"eq2_id":3670,"equation1":"x = x * ((y * z) * (y * y))","equation2":"x * x = (x * y) * (z * x)","answer":true}
+{"id":"evaluation_normal_0088","index":88,"difficulty":"normal","eq1_id":1066,"eq2_id":3732,"equation1":"x = x * ((y * (z * z)) * w)","equation2":"x * y = (x * z) * (x * y)","answer":true}
+{"id":"evaluation_normal_0112","index":112,"difficulty":"normal","eq1_id":2546,"eq2_id":4209,"equation1":"x = (y * ((y * y) * z)) * x","equation2":"x * y = ((z * y) * x) * y","answer":true}

@@ -126,6 +126,9 @@ def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
             elif shape == "singleton":
                 oracles.check_true_singleton_certificate(code, eq1)
                 checks.append("collapse_kernel_verified")
+            elif shape == "lemma":
+                oracles.check_true_lemma_certificate(code, eq1, eq2)
+                checks.append("lemma_kernel_verified")
             else:
                 checks.append("proof_kernel_skipped_unsupported_shape")
             battery = build_battery(eq1)
