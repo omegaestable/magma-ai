@@ -1,0 +1,423 @@
+"""Offline certificate oracles: no Lean required.
+
+Two independent soundness gates for solver-emitted certificates:
+
+1. A *proof-expression kernel*: a pure-Python checker for the restricted Lean
+   proof grammar the solver's closure/CP builders emit —
+
+       h t1 .. tk | (E).symm | (E1).trans (E2) | congrArg (fun t => CTX) (E) | rfl
+
+   Each expression is evaluated to the equation it proves (a pair of terms).
+   A certificate passes iff its `exact` expression proves exactly
+   `eq2.lhs = eq2.rhs` from hypothesis instances of eq1. This catches builder
+   bugs (wrong substitution, wrong congruence context, broken trans-chain)
+   at the same place Lean would fail with a type mismatch.
+
+2. A *finite-model oracle*: batteries of finite magmas satisfying eq1; any
+   TRUE verdict whose goal fails in one such model is unsound (would be
+   FALSE), independent of proof syntax.
+
+Everything here is deliberately implemented independently of solver.py
+internals (own term parser, own equation evaluator) so a bug in a solver
+primitive cannot hide itself in the oracle.
+"""
+
+from __future__ import annotations
+
+import json
+import random
+import re
+from itertools import product
+from typing import Any
+
+Term = tuple[Any, ...]
+
+OP_CHARS = {"◇", "*"}
+
+
+class OracleError(Exception):
+    """A certificate failed oracle checking."""
+
+
+# ---------------------------------------------------------------------------
+# Independent term parsing / evaluation
+# ---------------------------------------------------------------------------
+
+def _strip_parens(s: str) -> str:
+    s = s.strip()
+    while len(s) >= 2 and s[0] == "(" and s[-1] == ")":
+        depth = 0
+        wraps = True
+        for i, ch in enumerate(s):
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+            if depth == 0 and i < len(s) - 1:
+                wraps = False
+                break
+        if not wraps:
+            break
+        s = s[1:-1].strip()
+    return s
+
+
+def parse_lean_term(text: str, variables: set[str]) -> Term:
+    """Parse a magma term over `variables` (multi-char identifiers allowed)."""
+    s = _strip_parens(text)
+    depth = 0
+    last_op = -1
+    for i, ch in enumerate(s):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch in OP_CHARS and depth == 0:
+            last_op = i
+    if last_op >= 0:
+        return (
+            "op",
+            parse_lean_term(s[:last_op], variables),
+            parse_lean_term(s[last_op + 1:], variables),
+        )
+    name = s.strip()
+    if name and name in variables:
+        return ("var", name)
+    raise OracleError(f"cannot parse term: {text!r}")
+
+
+def term_to_str(term: Term) -> str:
+    if term[0] == "var":
+        return str(term[1])
+    return f"({term_to_str(term[1])} ◇ {term_to_str(term[2])})"
+
+
+def substitute(term: Term, subst: dict[str, Term]) -> Term:
+    if term[0] == "var":
+        try:
+            return subst[term[1]]
+        except KeyError as exc:
+            raise OracleError(f"unbound variable {term[1]!r}") from exc
+    return ("op", substitute(term[1], subst), substitute(term[2], subst))
+
+
+def eval_term(term: Term, env: dict[str, int], table: list[list[int]]) -> int:
+    if term[0] == "var":
+        return env[term[1]]
+    return table[eval_term(term[1], env, table)][eval_term(term[2], env, table)]
+
+
+def equation_holds(lhs: Term, rhs: Term, variables: list[str], table: list[list[int]]) -> bool:
+    n = len(table)
+    for values in product(range(n), repeat=len(variables)):
+        env = dict(zip(variables, values))
+        if eval_term(lhs, env, table) != eval_term(rhs, env, table):
+            return False
+    return True
+
+
+# ---------------------------------------------------------------------------
+# Proof-expression kernel
+# ---------------------------------------------------------------------------
+
+_REFL = ("refl",)
+
+
+def _tokenize_units(s: str) -> list[str]:
+    """Split a proof expression into top-level units.
+
+    A unit is a maximal space-free run at paren depth 0; parenthesized groups
+    (with attached `.symm`/`.trans` suffixes) stay together, e.g.
+    `((h x y).symm).trans` is one unit, `(z ◇ w)` is one unit.
+    """
+    units: list[str] = []
+    depth = 0
+    cur: list[str] = []
+    for ch in s.strip():
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth < 0:
+                raise OracleError(f"unbalanced parens in {s!r}")
+        if ch.isspace() and depth == 0:
+            if cur:
+                units.append("".join(cur))
+                cur = []
+            continue
+        cur.append(ch)
+    if depth != 0:
+        raise OracleError(f"unbalanced parens in {s!r}")
+    if cur:
+        units.append("".join(cur))
+    return units
+
+
+def _split_unit(unit: str) -> tuple[str, list[str]]:
+    """Split `(base).symm.trans` into ('(base)', ['symm', 'trans'])."""
+    if not unit.startswith("("):
+        return unit, []
+    depth = 0
+    end = -1
+    for i, ch in enumerate(unit):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end < 0:
+        raise OracleError(f"unbalanced unit: {unit!r}")
+    base = unit[: end + 1]
+    rest = unit[end + 1:]
+    suffixes: list[str] = []
+    while rest:
+        if rest.startswith(".symm"):
+            suffixes.append("symm")
+            rest = rest[len(".symm"):]
+        elif rest.startswith(".trans"):
+            suffixes.append("trans")
+            rest = rest[len(".trans"):]
+        else:
+            raise OracleError(f"unsupported suffix {rest!r} in unit {unit!r}")
+    return base, suffixes
+
+
+class ProofKernel:
+    """Evaluates a solver proof expression to the equation it proves."""
+
+    def __init__(self, eq1_vars: list[str], eq1_lhs: Term, eq1_rhs: Term,
+                 goal_vars: set[str], hyp_name: str = "h"):
+        self.eq1_vars = eq1_vars
+        self.eq1_lhs = eq1_lhs
+        self.eq1_rhs = eq1_rhs
+        self.goal_vars = goal_vars
+        self.hyp_name = hyp_name
+
+    def prove(self, expr: str) -> tuple[Term, Term] | tuple[str]:
+        units = _tokenize_units(expr)
+        if not units:
+            raise OracleError("empty proof expression")
+        if units == ["rfl"]:
+            return _REFL
+        value, nxt = self._eval_spine(units, 0)
+        if nxt != len(units):
+            raise OracleError(f"trailing units {units[nxt:]!r} in {expr!r}")
+        return value
+
+    # -- internals ---------------------------------------------------------
+
+    def _eval_spine(self, units: list[str], i: int) -> tuple[tuple[Term, Term], int]:
+        base, suffixes = _split_unit(units[i])
+        if base == self.hyp_name and not suffixes:
+            args = units[i + 1:]
+            if len(args) != len(self.eq1_vars):
+                raise OracleError(
+                    f"hypothesis arity {len(args)} != {len(self.eq1_vars)}")
+            subst = {
+                v: parse_lean_term(a, self.goal_vars)
+                for v, a in zip(self.eq1_vars, args)
+            }
+            return (substitute(self.eq1_lhs, subst), substitute(self.eq1_rhs, subst)), len(units)
+        if base == "congrArg" and not suffixes:
+            if len(units) - i != 3:
+                raise OracleError("congrArg expects exactly two arguments")
+            lam = _strip_parens(units[i + 1])
+            m = re.fullmatch(r"fun\s+(\w+)\s*=>\s*(.+)", lam, re.DOTALL)
+            if m is None:
+                raise OracleError(f"unsupported lambda {lam!r}")
+            placeholder, body = m.group(1), m.group(2)
+            if placeholder in self.goal_vars:
+                raise OracleError(
+                    f"congrArg binder {placeholder!r} shadows a goal variable")
+            ctx = parse_lean_term(body, self.goal_vars | {placeholder})
+            inner = self._eval_group(units[i + 2])
+            a, b = inner
+            return (
+                substitute(ctx, {placeholder: a} | {v: ("var", v) for v in self.goal_vars}),
+                substitute(ctx, {placeholder: b} | {v: ("var", v) for v in self.goal_vars}),
+            ), i + 3
+        # Parenthesized proof with suffixes: (E) [.symm]* [.trans (F)]
+        value = self._eval_group(base)
+        j = i + 1
+        for k, suf in enumerate(suffixes):
+            if suf == "symm":
+                value = (value[1], value[0])
+            elif suf == "trans":
+                if k != len(suffixes) - 1:
+                    raise OracleError(".trans must be the final suffix of a unit")
+                if j >= len(units):
+                    raise OracleError(".trans missing its argument")
+                arg_base, arg_sufs = _split_unit(units[j])
+                arg = self._eval_group(arg_base)
+                for asuf in arg_sufs:
+                    if asuf == "symm":
+                        arg = (arg[1], arg[0])
+                    else:
+                        raise OracleError("chained .trans on argument unit unsupported")
+                j += 1
+                if value[1] != arg[0]:
+                    raise OracleError(
+                        "trans mismatch: "
+                        f"{term_to_str(value[1])} != {term_to_str(arg[0])}")
+                value = (value[0], arg[1])
+        return value, j
+
+    def _eval_group(self, group: str) -> tuple[Term, Term]:
+        if not (group.startswith("(") and group.endswith(")")):
+            raise OracleError(f"expected parenthesized proof, got {group!r}")
+        inner = group[1:-1].strip()
+        units = _tokenize_units(inner)
+        value, nxt = self._eval_spine(units, 0)
+        if nxt != len(units):
+            raise OracleError(f"trailing units in group {group!r}")
+        return value
+
+
+# ---------------------------------------------------------------------------
+# Certificate-level checks
+# ---------------------------------------------------------------------------
+
+_EXACT_CERT_RE = re.compile(
+    r"\Aimport JudgeProblem\n\n"
+    r"def submission : Goal := by\n"
+    r"  intro G _ h\n"
+    r"(?:  intro ([a-z](?: [a-z])*)\n)?"
+    r"  exact (.+)\n\Z",
+    re.DOTALL,
+)
+
+_SINGLETON_CERT_RE = re.compile(
+    r"\Aimport JudgeProblem\n\n"
+    r"def submission : Goal := by\n"
+    r"  intro G _ h\n"
+    r"  have hall : ∀ a b : G, a = b := by\n"
+    r"    intro a b\n"
+    r"    exact ([^\n]+)\n"
+    r"(?:  intro (?:[a-z](?: [a-z])*)\n)?"
+    r"  exact hall _ _\n\Z",
+)
+
+_TABLE_RE = re.compile(r'finOpTable "(\[\[.*?\]\])"')
+_FIN_RE = re.compile(r"Exists\.intro \(Fin (\d+)\)")
+
+
+def classify_true_certificate(code: str) -> str:
+    """Which offline checker applies to this TRUE certificate."""
+    if _EXACT_CERT_RE.match(code):
+        return "exact_expr"
+    if _SINGLETON_CERT_RE.match(code):
+        return "singleton"
+    return "other"
+
+
+def check_true_singleton_certificate(code: str, eq1: dict[str, Any]) -> None:
+    """Kernel-check a collapse certificate: its body must prove a = b.
+
+    A singleton certificate claims eq1 forces the magma to be trivial, which
+    closes any goal. The checkable content is the collapse proof itself.
+    """
+    m = _SINGLETON_CERT_RE.match(code)
+    if m is None:
+        raise OracleError("certificate does not match the singleton shape")
+    kernel = ProofKernel(
+        list(eq1["variables"]), eq1["lhs"], eq1["rhs"], {"a", "b"}, "h")
+    proved = kernel.prove(m.group(1).strip())
+    if proved == _REFL:
+        raise OracleError("rfl cannot prove a = b for distinct a, b")
+    if proved != (("var", "a"), ("var", "b")):
+        raise OracleError(
+            "collapse proof proved "
+            f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, wanted a = b")
+
+
+def check_true_exact_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
+    """Kernel-check a substitution-style TRUE certificate. Raises OracleError."""
+    m = _EXACT_CERT_RE.match(code)
+    if m is None:
+        raise OracleError("certificate does not match the exact-expr shape")
+    intro_vars = m.group(1).split() if m.group(1) else []
+    if intro_vars != list(eq2["variables"]):
+        raise OracleError(
+            f"intro variables {intro_vars} != goal variables {eq2['variables']}")
+    expr = m.group(2).strip()
+    kernel = ProofKernel(
+        list(eq1["variables"]), eq1["lhs"], eq1["rhs"],
+        set(eq2["variables"]) or set(eq1["variables"]), "h",
+    )
+    proved = kernel.prove(expr)
+    if proved == _REFL:
+        if eq2["lhs"] != eq2["rhs"]:
+            raise OracleError("rfl offered for a non-reflexive goal")
+        return
+    if proved != (eq2["lhs"], eq2["rhs"]):
+        raise OracleError(
+            "proved wrong equation: "
+            f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, wanted "
+            f"{term_to_str(eq2['lhs'])} = {term_to_str(eq2['rhs'])}")
+
+
+def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
+    """Independently re-verify a FALSE certificate's finite witness table."""
+    tm = _TABLE_RE.search(code)
+    fm = _FIN_RE.search(code)
+    if tm is None or fm is None:
+        raise OracleError("FALSE certificate missing finOpTable/Fin markers")
+    table = json.loads(tm.group(1))
+    n = int(fm.group(1))
+    if len(table) != n or any(len(row) != n for row in table):
+        raise OracleError(f"table shape does not match Fin {n}")
+    if any(not (0 <= v < n) for row in table for v in row):
+        raise OracleError("table entries out of range")
+    if not equation_holds(eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table):
+        raise OracleError("witness does not satisfy eq1")
+    if equation_holds(eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table):
+        raise OracleError("witness does not refute eq2")
+
+
+# ---------------------------------------------------------------------------
+# Finite-model oracle
+# ---------------------------------------------------------------------------
+
+def _all_tables(n: int):
+    for encoding in product(range(n), repeat=n * n):
+        yield [list(encoding[r * n:(r + 1) * n]) for r in range(n)]
+
+
+def model_battery(eq1: dict[str, Any], extra_tables: list[list[list[int]]],
+                  *, fin3_samples: int = 1500, seed: int = 0) -> list[list[list[int]]]:
+    """Finite magmas satisfying eq1: all Fin2, sampled Fin3, plus extras."""
+    lhs, rhs, variables = eq1["lhs"], eq1["rhs"], list(eq1["variables"])
+    # Fin1 satisfies every law: keeps the battery non-empty for singleton
+    # laws whose only model is trivial, and never causes a false failure.
+    battery: list[list[list[int]]] = [[[0]]]
+    for table in _all_tables(2):
+        if equation_holds(lhs, rhs, variables, table):
+            battery.append(table)
+    rng = random.Random(seed)
+    for _ in range(fin3_samples):
+        table = [[rng.randrange(3) for _ in range(3)] for _ in range(3)]
+        if equation_holds(lhs, rhs, variables, table):
+            battery.append(table)
+    if not battery:
+        # Rare laws (e.g. central groupoids, model orders k^2) have no small
+        # random models; sweep Fin3 exhaustively before giving up.
+        for table in _all_tables(3):
+            if equation_holds(lhs, rhs, variables, table):
+                battery.append(table)
+                if len(battery) >= 64:
+                    break
+    for table in extra_tables:
+        if equation_holds(lhs, rhs, variables, table):
+            battery.append(table)
+    return battery
+
+
+def model_check_true(eq2: dict[str, Any], battery: list[list[list[int]]]) -> None:
+    """Raise if any eq1-model refutes eq2 (TRUE verdict would be unsound)."""
+    lhs, rhs, variables = eq2["lhs"], eq2["rhs"], list(eq2["variables"])
+    for table in battery:
+        if not equation_holds(lhs, rhs, variables, table):
+            raise OracleError(
+                f"TRUE verdict refuted by finite model {json.dumps(table)}")

@@ -50,6 +50,34 @@ Cold-start read order:
 
 ## Current Evidence
 
+2026-07-21: added an **offline correctness gate** (`pytest stage2/tests`, 254
+tests, ~12 s) that proof-checks certificates with an independent kernel and
+model-checks every TRUE verdict without needing Lean; `package_solver.ps1`
+refuses to package on failure. A full audit found **zero unsound routes across
+2,689 problems** and showed the documented baseline was stale by ~280 rows:
+the official sets now measure **`1487/1669`** (was `1201/1669`). Also found the
+engines were using ~1% of the available wall-clock and added budget-scaled
+effort tiers. Details:
+`stage2/results/2026-07-21-correctness-harness-and-budget-scaling.md`.
+
+The same session ran a real-LLM balanced evaluation (`gpt-oss-120b` via
+OpenRouter, 50 TRUE + 50 FALSE) and found the `PROMPT` forbade counterexample
+tables while the parser verified them — so the model answered "true" on 47/50
+genuinely-FALSE rows. Fixed, along with a guided-chain edge prover stuck at a
+1.0 s budget. Zero wrong verdicts ever reached submission.
+
+Rules that came out of that work and are easy to get wrong:
+
+- **HF evaluation sets are first-class evidence.** They caught 29 routes that
+  look dead on the official sets but are live there.
+- **Subsumption is not a deletion licence.** Several routes a general engine
+  can replace are cheap high-volume fast paths worth keeping.
+- **Keep `PROMPT` consistent with `candidate_from_llm_text_with_reason`** — it
+  accepts and re-verifies `verdict:false` tables.
+- **Never mix LLM calls and certificate verification in one thread pool**;
+  verification is CPU-bound and the GIL serialises it (~10x slowdown).
+
+
 2026-07-20: added a self-verifying LLM TRUE-proof loop (`stage2/experiments/dev_true_loop.py`: gpt-oss-120b via OpenRouter → solver chain/parse → local Lean judge → repair) and rewrote the solver `PROMPT` to be chain-primary. On a solvable TRUE set the LLM accept rate went 25% → 75%, but the deterministic-skip frontier remains hard for gpt-oss (≈0 at low reasoning); a big-budget deterministic closure cracks only 1/20. Details and the recommended hybrid next step: `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
 
 Latest completed full public benchmark snapshot from the packaged deterministic solver, generated on 2026-05-18 before the final heartbeat/path-helper optimization patch and before the default grind rollback:

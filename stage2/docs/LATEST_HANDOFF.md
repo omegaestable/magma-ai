@@ -1,10 +1,63 @@
 # Latest Handoff
 
-Updated: 2026-07-20
+Updated: 2026-07-21
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
-## 2026-07-20 session (most recent)
+## 2026-07-21 session (most recent)
+
+Focus: readiness audit across math / AI / software, then act on the biggest gaps.
+Full detail: `stage2/results/2026-07-21-correctness-harness-and-budget-scaling.md`.
+
+**Shipped**
+
+- **Offline correctness gate** — `pytest stage2/tests` (262 tests, ~12 s), no Lean
+  needed. An independent proof kernel evaluates the Lean grammar the closure/CP
+  builders emit and checks each certificate proves exactly `eq2.lhs = eq2.rhs`;
+  a finite-model oracle independently refutes unsound TRUE verdicts; mutation
+  tests prove the oracles reject corrupted certificates. `package_solver.ps1`
+  refuses to package on failure. See `stage2/tests/README.md`.
+- **Local-search finite model finder** (`local_model_counterexample`), run after
+  the TRUE routes so solved rows pay nothing; gated by `table_is_counterexample`
+  so it cannot emit an unsound witness. **+7 rows**.
+- **Effort scaling** (`EFFORT_TIERS`, `set_effort`, `effort_for_seconds`). The
+  engines were using ~1% of the available clock: `marathon_per_problem_budget`
+  was hard-capped at 4 s and the CP closure at 8 s while Marathon affords
+  ~1800 s/problem. `fast` reproduces old behaviour exactly.
+  `MARATHON_DETERMINISTIC_SHARE=0.6` stops the hungrier engines starving the LLM lane.
+- **Prompt/parser fix** — `PROMPT` used to forbid counterexample tables while the
+  parser verified them; the model answered "true" on 47/50 FALSE rows (0% FALSE).
+  Now it states the search is non-exhaustive and invites a verified table.
+- **Guided-chain edge prover** was fixed at 1.0 s; now effort-scaled.
+
+**Measured**
+
+- Zero oracle failures across **2,689 problems** (1,889 official + 800 HF).
+- Official sets **1487/1669** (docs previously claimed `1201/1669` — stale by ~280).
+  `standard` tier: hard1 60/69, hard2 154/200. This is offline evidence; a cloud
+  judge sweep is still required before promotion.
+- Frontier by label: TRUE 659/819 (160 missed), FALSE 821/850 (29 missed).
+- Real-LLM balanced eval (gpt-oss-120b): baseline 14/100 (TRUE 28%, FALSE 0%),
+  **0 wrong verdicts submitted**, 47 verdict errors caught pre-submission.
+  After fixes on a 20-row check: TRUE 50%, FALSE 10%, overall 30%.
+
+**Rails learned the hard way**
+
+1. **HF evaluation sets are first-class evidence.** 29 routes look dead on the
+   official sets but are live on HF. Never delete or refactor without them.
+2. **Subsumption is not a deletion licence.** 35 routes are subsumed by the
+   general engines, but several are cheap high-volume fast paths (`true:rewrite`,
+   52 rows) whose removal would push rows onto the 8 s CP engine.
+3. **File size is not binding** — 251 KB of 500 KB. De-bloat buys maintainability,
+   not points. The aggressive-deletion plan was abandoned on evidence.
+4. **Route selection is wall-clock nondeterministic**, so a slower eval machine
+   can skip rows that solve locally. The golden gate compares engine *families*.
+   Step-count budgets remain open.
+5. **Never mix LLM calls and certificate verification in one `ThreadPoolExecutor`**
+   — verification is CPU-bound and the GIL serialises it. Use the two-phase shape
+   in `llm_balanced_eval.py` (threads for network, processes for verify): ~10x.
+
+## 2026-07-20 session
 
 Focus: a self-verifying LLM TRUE-proof loop with `openai/gpt-oss-120b` via OpenRouter.
 
@@ -28,7 +81,10 @@ Focus: a self-verifying LLM TRUE-proof loop with `openai/gpt-oss-120b` via OpenR
 ## Current Solver Snapshot
 
 - Active source: `stage2/solver/solver.py`.
-- Packaged artifact: `stage2/submissions/solver.py`, last packaged at `138939` bytes.
+- **Before any solver change: run `pytest stage2/tests` (it is also the
+  pre-package gate). After an intentional route change, regenerate the golden
+  fixture with `stage2/experiments/audit_corpus.py` + `make_golden.py`.**
+- Packaged artifact: `stage2/submissions/solver.py`, ~251 KB (limit 500 KB).
 - Submission directory should contain only `solver.py`.
 - Historical public no-LLM baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-retired grind wins.
 - Active validation policy now forbids `--budget-tokens 0` Marathon guardrails. Use positive-token official/proxy runs and record LLM calls, token usage, and rejection classes.

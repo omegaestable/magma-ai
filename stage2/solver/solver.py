@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import importlib
 import os
+import random
 import re
 import sys
 import time
@@ -30,8 +31,18 @@ written `a ◇ b`. You are given two equational laws and must prove the first
 implies the second.
 
 The deterministic solver already searched for a finite magma satisfying Equation1
-but breaking Equation2 and found none, so Equation1 almost certainly IMPLIES
-Equation2. Prove it. Do not return a counterexample table.
+but breaking Equation2 -- named tables, structured/affine/quadratic families,
+every magma of order <= 3, duals, and a randomized order 4-6 search -- and found
+none. So Equation1 very likely IMPLIES Equation2: prove it.
+
+That search is NOT exhaustive. If you can actually exhibit a finite magma where
+Equation1 HOLDS and Equation2 FAILS, send that instead of a proof:
+{"verdict":"false","table":[[...],[...]]}
+giving the full n x n Cayley table over {0,...,n-1} (rows = left argument).
+The solver re-checks every table exhaustively before submitting, so a wrong
+table is discarded harmlessly and a correct one wins the problem outright.
+Only do this if you have actually verified both conditions on the table;
+otherwise prove TRUE.
 
 Problem {problem.id}: prove Equation{problem.eq1_id} implies Equation{problem.eq2_id}.
 Hypothesis (Equation1):  {problem.equation1}
@@ -115,6 +126,10 @@ AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
 AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
 STRUCTURED_MAX_N = 7
+LOCAL_MODEL_SIZES = (4, 5)
+LOCAL_MODEL_TIME_BUDGET = 6.0
+LOCAL_MODEL_MAX_FLIPS = 4000
+LOCAL_MODEL_NOISE = 0.25
 REWRITE_CHAIN_MAX_DEPTH = 2
 ABSORPTION_CHAIN_MAX_DEPTH = 3
 ABSORPTION_POOL_LIMIT = 10
@@ -171,9 +186,70 @@ LLM_MAX_ROUNDS = 6
 MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
+MARATHON_DETERMINISTIC_SHARE = 0.6
 LLM_MAX_TABLE_N = 8
 LLM_MAX_OUTPUT_TOKENS = 6144
 LLM_HTTP_TIMEOUT_SECONDS = 75.0
+
+# --------------------------------------------------------------------------
+# Effort scaling.
+#
+# The deterministic engines were tuned as if wall-clock were scarce, but both
+# tracks are generous: Solo affords 3600 s per problem and Marathon's default
+# global budget is compression x N x 3600 s (~1800 s per problem at N=100,
+# compression 0.5). At the fixed constants the solver used roughly 1% of that.
+#
+# EFFORT is a single multiplier the entrypoints set once from the real budget.
+# Engine limits below derive from it, so raising the tier widens time *and*
+# search caps together - the sweep showed both bind, and widening only one
+# leaves rows on the table.
+# --------------------------------------------------------------------------
+EFFORT_TIERS = {
+    #        time x   frontier x  fills x   pool +   depth +
+    "fast": (1.0, 1.0, 1.0, 0, 0),
+    "standard": (7.5, 4.6, 3.3, 6, 0),
+    "deep": (22.0, 11.5, 6.6, 10, 1),
+}
+_EFFORT = "fast"
+
+
+def set_effort(tier: str) -> None:
+    global _EFFORT
+    if tier in EFFORT_TIERS:
+        _EFFORT = tier
+
+
+def effort_tier() -> str:
+    return _EFFORT
+
+
+def effort_for_seconds(per_problem_seconds: float) -> str:
+    """Pick a tier from the wall-clock actually available per problem."""
+    if per_problem_seconds >= 240.0:
+        return "deep"
+    if per_problem_seconds >= 45.0:
+        return "standard"
+    return "fast"
+
+
+def _eff_time(base: float) -> float:
+    return base * EFFORT_TIERS[_EFFORT][0]
+
+
+def _eff_frontier(base: int) -> int:
+    return int(base * EFFORT_TIERS[_EFFORT][1])
+
+
+def _eff_fills(base: int) -> int:
+    return int(base * EFFORT_TIERS[_EFFORT][2])
+
+
+def _eff_pool(base: int) -> int:
+    return base + EFFORT_TIERS[_EFFORT][3]
+
+
+def _eff_depth(base: int) -> int:
+    return base + EFFORT_TIERS[_EFFORT][4]
 
 LLM_CONFIG = {
     "model": "openai/gpt-oss-120b",
@@ -4232,6 +4308,12 @@ def _closure_proof_expr_impl(
     time_budget: float | None,
     seed_terms: list[Term] | None = None,
 ) -> tuple[str, str] | None:
+    if time_budget:
+        time_budget = _eff_time(time_budget)
+    frontier_limit = _eff_frontier(frontier_limit)
+    max_fills = _eff_fills(max_fills)
+    pool_limit = _eff_pool(pool_limit)
+
     deadline = time.monotonic() + time_budget if time_budget else None
     pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
     fill_pool: list[Term] | None = None
@@ -4719,6 +4801,12 @@ def derived_cp_closure_proof_expr(
     time_budget: float = DERIVED_CP_TIME_BUDGET,
     max_rules: int = DERIVED_CP_MAX_RULES,
 ) -> str | None:
+    time_budget = _eff_time(time_budget)
+    frontier_limit = _eff_frontier(frontier_limit)
+    max_fills = _eff_fills(max_fills)
+    pool_limit = _eff_pool(pool_limit)
+    chain_max_depth = _eff_depth(chain_max_depth)
+
     deadline = time.monotonic() + time_budget
     rules = _derived_base_rules(eq1) + critical_pair_rules(eq1, max_rules=max_rules)
     pool = absorption_term_pool(eq1, eq2, pool_limit=pool_limit)
@@ -4920,6 +5008,100 @@ def find_counterexample(
         if dual is not None:
             n, table, route = dual
             return n, transpose_table(table), f"false:dual:{route}"
+    return None
+
+
+def _lm_eval(term: Term, env: dict[str, int], table: list[list[int]]) -> int:
+    if term[0] == "var":
+        return env[term[1]]
+    return table[_lm_eval(term[1], env, table)][_lm_eval(term[2], env, table)]
+
+
+def _lm_envs(equation: dict[str, Any], n: int) -> list[dict[str, int]]:
+    variables = list(equation["variables"])
+    return [dict(zip(variables, values))
+            for values in product(range(n), repeat=len(variables))]
+
+
+def _lm_cells(term: Term, env: dict[str, int], table: list[list[int]],
+              out: set[tuple[int, int]]) -> int:
+    if term[0] == "var":
+        return env[term[1]]
+    a = _lm_cells(term[1], env, table, out)
+    b = _lm_cells(term[2], env, table, out)
+    out.add((a, b))
+    return table[a][b]
+
+
+def local_model_counterexample(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    sizes: tuple[int, ...] = LOCAL_MODEL_SIZES,
+    time_budget: float = LOCAL_MODEL_TIME_BUDGET,
+    max_flips: int = LOCAL_MODEL_MAX_FLIPS,
+    noise: float = LOCAL_MODEL_NOISE,
+    seed: int = 0,
+) -> tuple[int, list[list[int]], str] | None:
+    """Randomized repair search for a finite magma separating eq1 from eq2.
+
+    Last resort after the named tables, structured/affine/quadratic families,
+    bounded enumeration, and duals have all missed. Every candidate is
+    re-checked by `table_is_counterexample`, so this can only ever return a
+    genuine witness.
+    """
+    deadline = time.monotonic() + _eff_time(time_budget)
+    rng = random.Random(seed)
+    lhs1, rhs1 = eq1["lhs"], eq1["rhs"]
+    lhs2, rhs2 = eq2["lhs"], eq2["rhs"]
+    if _EFFORT != "fast":
+        # Frequent restarts beat long walks on these laws (sweep evidence),
+        # and the extra size only pays once there is clock to spend.
+        sizes = sizes + (6,)
+        max_flips = 800
+
+    for n in sizes:
+        envs1 = _lm_envs(eq1, n)
+        envs2 = _lm_envs(eq2, n)
+
+        def bad_envs(table: list[list[int]]) -> list[dict[str, int]]:
+            return [env for env in envs1
+                    if _lm_eval(lhs1, env, table) != _lm_eval(rhs1, env, table)]
+
+        def breaks_goal(table: list[list[int]]) -> bool:
+            return any(_lm_eval(lhs2, env, table) != _lm_eval(rhs2, env, table)
+                       for env in envs2)
+
+        while time.monotonic() < deadline:
+            table = [[rng.randrange(n) for _ in range(n)] for _ in range(n)]
+            for _ in range(max_flips):
+                if time.monotonic() >= deadline:
+                    break
+                bad = bad_envs(table)
+                if not bad:
+                    if breaks_goal(table) and table_is_counterexample(eq1, eq2, table):
+                        return n, table, f"false:local_model{n}"
+                    row, col = rng.randrange(n), rng.randrange(n)
+                    table[row][col] = rng.randrange(n)
+                    continue
+                env = bad[rng.randrange(len(bad))]
+                cells: set[tuple[int, int]] = set()
+                _lm_cells(lhs1, env, table, cells)
+                _lm_cells(rhs1, env, table, cells)
+                if not cells:
+                    break
+                row, col = sorted(cells)[rng.randrange(len(cells))]
+                if rng.random() < noise:
+                    table[row][col] = rng.randrange(n)
+                    continue
+                best, best_score = table[row][col], len(bad) + 1
+                for value in range(n):
+                    previous, table[row][col] = table[row][col], value
+                    score = len(bad_envs(table))
+                    if score < best_score:
+                        best, best_score = value, score
+                    table[row][col] = previous
+                table[row][col] = best
     return None
 
 
@@ -5339,6 +5521,18 @@ def solve_problem(
                 "route": route,
                 "priority": problem_priority(problem, eq1, eq2),
             }
+
+        # Last resort: the row is unresolved either way, so a randomized
+        # model search costs nothing that was already being won. Runs after
+        # the TRUE routes so solved implications never pay for it.
+        late = local_model_counterexample(eq1, eq2)
+        if late is not None:
+            n, table, route = late
+            return {
+                "answer": make_false_answer(problem, n, table),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
         return None
     n, table, route = counterexample
     return {
@@ -5488,13 +5682,16 @@ def guided_chain_certificate_from_terms(
         return None
     proofs: list[str] = []
     for src, dst in zip(chain_terms, chain_terms[1:]):
+        # The model supplies coarse waypoints; bridging them is the solver's
+        # job, so this per-edge search scales with the budget like the other
+        # engines. At the old fixed 1.0 s it gave up on edges it could close.
         step = proof_between_terms_guided(
             eq1,
             eq2["variables"],
             src,
             dst,
-            max_depth=LLM_GUIDED_CHAIN_MAX_DEPTH,
-            closure_time_budget=LLM_GUIDED_CHAIN_CLOSURE_TIME_BUDGET,
+            max_depth=_eff_depth(LLM_GUIDED_CHAIN_MAX_DEPTH),
+            closure_time_budget=_eff_time(LLM_GUIDED_CHAIN_CLOSURE_TIME_BUDGET),
         )
         if step is None:
             return None
@@ -5789,7 +5986,7 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
     cues.append("If the chain needs a derived fact, include a lemmas array explaining it, but keep the chain terms concrete.")
     cues.append("Prefer the guided_chain: give intermediate terms and let the solver build the Lean proof; a raw Lean file is only a fallback.")
-    cues.append("This row already escaped deterministic finite-countermodel search; it is almost certainly TRUE — build a proof, do not guess a counterexample.")
+    cues.append("This row escaped deterministic finite-countermodel search, which is thorough but NOT exhaustive, so it is very likely TRUE — build a proof. Claim FALSE only with a concrete Cayley table you have actually verified; the solver re-checks it.")
     return "\n".join(cues)
 
 
@@ -5926,6 +6123,11 @@ def run_solo() -> int:
     problem = payload.get("problem", payload)
     if not isinstance(problem, dict):
         return 0
+
+    # Solo affords one problem per subprocess (reference 3600 s), so the
+    # deterministic engines should run at their widest setting.
+    set_effort(effort_for_seconds(
+        float(os.environ.get("JUDGE_SOLO_BUDGET_SECONDS", "3600"))))
 
     attempted: set[tuple[str, str]] = set()
     solved = solve_problem(problem)
@@ -6080,10 +6282,20 @@ def marathon_reference_seconds() -> float:
 
 
 def marathon_per_problem_budget(total_budget: float, problem_count: int, ref_seconds: float) -> float:
+    """Wall-clock the FALSE portfolio may spend on one problem.
+
+    Previously hard-capped at 4 s, which threw away most of the Marathon
+    clock: at N=100 with the reference 180000 s budget this returned 4 s while
+    ~1800 s per problem was available. The cap now scales with the real budget
+    and only the share reserved for the cheap portfolio is taken here; the
+    TRUE engines scale separately via the effort tier.
+    """
     if problem_count <= 0:
         return 0.25
+    share = total_budget / max(1, problem_count)
     compression = total_budget / max(1.0, ref_seconds * problem_count)
-    return max(0.2, min(4.0, 0.5 + 5.0 * compression))
+    floor = max(0.2, min(4.0, 0.5 + 5.0 * compression))
+    return max(floor, min(60.0, 0.05 * share))
 
 
 def load_marathon_llm() -> tuple[Any | None, Any | None, Any | None]:
@@ -6112,6 +6324,13 @@ def run_marathon() -> int:
     deadline = time.monotonic() + budget_seconds
     ref_seconds = marathon_reference_seconds()
     per_problem_budget = marathon_per_problem_budget(budget_seconds, len(problems), ref_seconds)
+    # Reserve roughly half the clock for the deterministic pass; the LLM lane
+    # and the output grace period get the rest.
+    set_effort(effort_for_seconds(0.5 * budget_seconds / max(1, len(problems))))
+    # Hard stop for the deterministic pass. The engines scale with the budget
+    # now, so without this a hard manifest could spend the entire run in
+    # closure search and never reach the LLM lane.
+    deterministic_deadline = time.monotonic() + MARATHON_DETERMINISTIC_SHARE * budget_seconds
 
     prioritized: list[tuple[tuple[int, int, str], dict[str, Any]]] = []
     for problem in problems:
@@ -6129,7 +6348,7 @@ def run_marathon() -> int:
     deterministic_submitted = 0
     solved_ids: set[str] = set()
     for priority, problem in prioritized:
-        if time.monotonic() + 5.0 >= deadline:
+        if time.monotonic() + 5.0 >= min(deterministic_deadline, deadline):
             break
         answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
         if answer_record is None:

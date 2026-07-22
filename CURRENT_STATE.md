@@ -2,7 +2,34 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-20 (end of session).
+Last updated: 2026-07-21 (end of session).
+
+## Read This First (2026-07-21)
+
+1. There is now an **offline correctness gate**: `pytest stage2/tests` (254
+   tests, ~12 s). It proof-checks certificates with an independent kernel and
+   model-checks every TRUE verdict, with no Lean required.
+   `package_solver.ps1` refuses to package if it fails. See
+   `stage2/tests/README.md`.
+2. **The old baselines in this file were stale by ~280 rows.** Measured
+   `1487/1669` on the official sets (was documented `1201/1669`), with **zero
+   oracle failures across 2,689 problems**. Numbers below are updated.
+3. **HF evaluation sets are now first-class evidence.** They caught 29 routes
+   that look dead on the official sets but are live there; never make a
+   deletion or refactor decision without running them.
+4. **Do not bulk-delete "unused" routes.** Subsumption by a general engine is
+   not a deletion licence: several subsumed routes are cheap high-volume fast
+   paths whose removal would push rows onto the expensive CP engine.
+5. **The `PROMPT` used to forbid counterexample tables** while the parser
+   verified them, so the LLM answered "true" on 47/50 genuinely-FALSE rows
+   (0% FALSE accuracy). Fixed. If you touch `PROMPT`, keep it consistent with
+   `candidate_from_llm_text_with_reason`, which accepts and re-verifies
+   `verdict:false` tables.
+6. **Never run LLM calls and certificate verification in the same
+   `ThreadPoolExecutor`** — verification is CPU-bound and the GIL serialises
+   it. `llm_balanced_eval.py` is the reference two-phase shape (threads for
+   network, processes for verification): ~10x faster.
+7. Full detail: `stage2/results/2026-07-21-correctness-harness-and-budget-scaling.md`.
 
 ## Stage
 
@@ -28,6 +55,27 @@ Last updated: 2026-07-20 (end of session).
 - Shared theory/provenance data: `data/exports/` and `data/teorth_cache/`.
 - Stage 1 archive: `stage1/`; do not treat it as the active workflow.
 
+## Effort Scaling (new 2026-07-21)
+
+The engines were tuned as if wall-clock were scarce and used roughly **1%** of
+the available budget: `marathon_per_problem_budget` was hard-capped at `4.0 s`
+and the critical-pair closure at `8.0 s`, while Marathon's reference
+configuration affords ~`1800 s` per problem.
+
+`EFFORT_TIERS` + `set_effort()` now scale time *and* search caps together
+(a budget sweep showed both bind; widening one alone leaves rows unclaimed).
+Solo and Marathon pick a tier from their real budget via
+`effort_for_seconds()`; `fast` reproduces the previous behaviour exactly.
+
+| Tier | CP time | frontier | fills | pool | depth |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `fast` | 8 s | 2600 | 1200 | 16 | 4 |
+| `standard` | 60 s | 11959 | 3960 | 22 | 4 |
+| `deep` | 176 s | 29900 | 7920 | 26 | 5 |
+
+The Marathon deterministic pass is capped at `MARATHON_DETERMINISTIC_SHARE`
+(0.6) of the run so the hungrier engines cannot starve the LLM lane.
+
 ## Current Solver Capability
 
 The active solver is deterministic-first and skips unresolved rows rather than submitting speculative certificates.
@@ -39,21 +87,36 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 5. Keeps the Marathon TRUE LLM boundary narrow: solver-owned `rewrite_chain` / `guided_chain` outputs only, with raw TRUE Lean disabled for that lane. The guided-chain per-edge prover was strengthened (`LLM_GUIDED_CHAIN_MAX_DEPTH=8`, budget `1.0 s`) so the solver bridges the model's coarser waypoints.
 6. Allows raw TRUE `code` in Solo/debug parsing when it is a complete Lean file (helper decls above `submission` allowed; legacy `proof`/`proof_body` unsupported). `sanitize_lean_code` no longer requires the literal `intro G _ h` shape — the local judge is the correctness gate, so the pre-filter only checks banned tokens, the import allowlist, size, and that `submission` is declared.
 7. Searches FALSE finite witnesses via named compact tables, structured families, affine/linear families, quadratic families, dualized witnesses, and bounded `Fin 2..3` enumeration.
+7b. Falls back to `local_model_counterexample`, a randomized repair search over
+   Cayley tables (`Fin 4..6`), run **after** the TRUE routes so solved rows pay
+   nothing. Gated by `table_is_counterexample`, so it cannot emit an unsound
+   witness. Worth `+7` rows on the official sets.
 8. Current named witness set includes the recent `S4D`, `S4E`, and `S5D` additions.
 9. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables use `set_option maxRecDepth 20000`.
 10. Caches repeated term metadata and path/context helper work in the solver hot paths.
 
 ## Best Evidence
 
-Latest archived public Marathon baseline, from the post-witness refresh before the final heartbeat/path-helper optimization patch and before the grind rollback:
+Current measured baseline (2026-07-21, `fast` effort tier, offline oracles;
+regenerate with `stage2/experiments/audit_corpus.py --all`):
 
-| Set | Solved | TRUE | FALSE | Tokens |
-| --- | ---: | ---: | ---: | ---: |
-| `normal` | `803/1000` | 305 | 498 | 0 |
-| `hard1` | `42/69` | 6 | 36 | 0 |
-| `hard2` | `92/200` | 16 | 76 | 0 |
-| `hard3` | `264/400` | 63 | 201 | 0 |
-| **Total** | `1201/1669` | 390 | 811 | 0 |
+| Set | Solved | Previously documented |
+| --- | ---: | ---: |
+| `normal` | `934/1000` | `803/1000` |
+| `hard1` | `59/69` | `42/69` |
+| `hard2` | `150/200` | `92/200` |
+| `hard3` | `344/400` | `264/400` |
+| **Total** | **`1487/1669`** | `1201/1669` |
+
+HF evaluation sets: `707/800`. Zero oracle failures across all 2,689 problems.
+
+Frontier by ground-truth label (before the model finder): TRUE `659/819`
+(160 missed), FALSE `821/850` (29 missed). The frontier is TRUE-heavy.
+
+This is **offline** evidence (proof kernel + finite-model oracles), an upper
+bound on judge acceptance. A cloud judge sweep is still required before
+promotion. The superseded pre-2026-07-21 archived Marathon baseline was
+`1201/1669` with `34` accepted `true:grind` rows.
 
 Answer-kind totals for that baseline:
 
