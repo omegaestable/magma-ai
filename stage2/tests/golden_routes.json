@@ -12,7 +12,7 @@
     "sample_20",
     "sample_200"
   ],
-  "routes": 126,
+  "routes": 154,
   "entries": [
     {
       "id": "hard3_0161",
@@ -80,19 +80,6 @@
       "cert_shape": null
     },
     {
-      "id": "hard2_0084",
-      "problem": {
-        "id": "hard2_0084",
-        "eq1_id": 4545,
-        "eq2_id": 4534,
-        "equation1": "x ◇ (y ◇ z) = (z ◇ y) ◇ y",
-        "equation2": "x ◇ (y ◇ z) = (y ◇ z) ◇ w"
-      },
-      "verdict": "false",
-      "route": "false:dual:false:witness:S5B",
-      "cert_shape": null
-    },
-    {
       "id": "hard1_0002",
       "problem": {
         "id": "hard1_0002",
@@ -100,6 +87,19 @@
         "eq2_id": 4437,
         "equation1": "x ◇ (y ◇ z) = (z ◇ w) ◇ w",
         "equation2": "x ◇ (y ◇ x) = (x ◇ y) ◇ z"
+      },
+      "verdict": "false",
+      "route": "false:dual:false:witness:S5B",
+      "cert_shape": null
+    },
+    {
+      "id": "hard2_0084",
+      "problem": {
+        "id": "hard2_0084",
+        "eq1_id": 4545,
+        "eq2_id": 4534,
+        "equation1": "x ◇ (y ◇ z) = (z ◇ y) ◇ y",
+        "equation2": "x ◇ (y ◇ z) = (y ◇ z) ◇ w"
       },
       "verdict": "false",
       "route": "false:dual:false:witness:S5B",
@@ -119,13 +119,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard2_0016",
+      "id": "normal_0326",
       "problem": {
-        "id": "hard2_0016",
+        "id": "normal_0326",
         "eq1_id": 646,
-        "eq2_id": 4127,
+        "eq2_id": 2855,
         "equation1": "x = x ◇ (y ◇ ((y ◇ z) ◇ y))",
-        "equation2": "x ◇ y = ((x ◇ y) ◇ x) ◇ x"
+        "equation2": "x = ((x ◇ (x ◇ y)) ◇ y) ◇ x"
       },
       "verdict": "false",
       "route": "false:dual:false:witness:S6A",
@@ -145,16 +145,29 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0358",
+      "id": "hard3_0391",
       "problem": {
-        "id": "hard3_0358",
-        "eq1_id": 3476,
-        "eq2_id": 4470,
-        "equation1": "x ◇ x = y ◇ ((x ◇ y) ◇ z)",
-        "equation2": "x ◇ (y ◇ y) = (x ◇ x) ◇ y"
+        "id": "hard3_0391",
+        "eq1_id": 4392,
+        "eq2_id": 4677,
+        "equation1": "x ◇ (x ◇ x) = (y ◇ z) ◇ y",
+        "equation2": "(x ◇ y) ◇ z = (y ◇ x) ◇ z"
       },
       "verdict": "false",
       "route": "false:enum_fin3",
+      "cert_shape": null
+    },
+    {
+      "id": "evaluation_order5_0103",
+      "problem": {
+        "id": "evaluation_order5_0103",
+        "eq1_id": 37512,
+        "eq2_id": 34099,
+        "equation1": "x = ((y * (y * (x * y))) * y) * y",
+        "equation2": "x = ((y * y) * (z * (z * x))) * y"
+      },
+      "verdict": "false",
+      "route": "false:linear:z3:1,2",
       "cert_shape": null
     },
     {
@@ -165,19 +178,6 @@
         "eq2_id": 530,
         "equation1": "x = (y ◇ (x ◇ y)) ◇ (x ◇ y)",
         "equation2": "x = y ◇ (y ◇ (z ◇ (z ◇ z)))"
-      },
-      "verdict": "false",
-      "route": "false:linear:z3:1,2",
-      "cert_shape": null
-    },
-    {
-      "id": "evaluation_order5_0043",
-      "problem": {
-        "id": "evaluation_order5_0043",
-        "eq1_id": 37348,
-        "eq2_id": 39106,
-        "equation1": "x = ((y * (x * (x * x))) * x) * y",
-        "equation2": "x = (((y * x) * (x * x)) * y) * z"
       },
       "verdict": "false",
       "route": "false:linear:z3:1,2",
@@ -197,29 +197,16 @@
       "cert_shape": null
     },
     {
-      "id": "evaluation_order5_0063",
+      "id": "false_1922_125",
       "problem": {
-        "id": "evaluation_order5_0063",
-        "eq1_id": 37539,
-        "eq2_id": 6851,
-        "equation1": "x = ((y * (y * (y * x))) * y) * y",
-        "equation2": "x = y * (y * ((y * y) * (x * y)))"
+        "id": "false_1922_125",
+        "eq1_id": 1922,
+        "eq2_id": 125,
+        "equation1": "x = (y ◇ (y ◇ x)) ◇ (x ◇ y)",
+        "equation2": "x = y ◇ ((y ◇ x) ◇ y)"
       },
       "verdict": "false",
       "route": "false:linear:z3:2,1",
-      "cert_shape": null
-    },
-    {
-      "id": "hard3_0072",
-      "problem": {
-        "id": "hard3_0072",
-        "eq1_id": 511,
-        "eq2_id": 3211,
-        "equation1": "x = y ◇ (y ◇ (y ◇ (x ◇ y)))",
-        "equation2": "x = (((y ◇ z) ◇ z) ◇ x) ◇ y"
-      },
-      "verdict": "false",
-      "route": "false:linear:z4:1,1",
       "cert_shape": null
     },
     {
@@ -230,6 +217,19 @@
         "eq2_id": 1075,
         "equation1": "x = y ◇ (y ◇ ((y ◇ x) ◇ y))",
         "equation2": "x = y ◇ ((x ◇ (x ◇ y)) ◇ x)"
+      },
+      "verdict": "false",
+      "route": "false:linear:z4:1,1",
+      "cert_shape": null
+    },
+    {
+      "id": "hard3_0072",
+      "problem": {
+        "id": "hard3_0072",
+        "eq1_id": 511,
+        "eq2_id": 3211,
+        "equation1": "x = y ◇ (y ◇ (y ◇ (x ◇ y)))",
+        "equation2": "x = (((y ◇ z) ◇ z) ◇ x) ◇ y"
       },
       "verdict": "false",
       "route": "false:linear:z4:1,1",
@@ -249,13 +249,13 @@
       "cert_shape": null
     },
     {
-      "id": "evaluation_hard_0167",
+      "id": "evaluation_order5_0077",
       "problem": {
-        "id": "evaluation_hard_0167",
-        "eq1_id": 1460,
-        "eq2_id": 3542,
-        "equation1": "x = (x * y) * (y * (z * w))",
-        "equation2": "x * y = x * ((z * w) * z)"
+        "id": "evaluation_order5_0077",
+        "eq1_id": 19718,
+        "eq2_id": 19638,
+        "equation1": "x = (x * y) * ((y * (z * y)) * y)",
+        "equation2": "x = (x * x) * ((y * (y * z)) * w)"
       },
       "verdict": "false",
       "route": "false:linear:z4:1,2",
@@ -275,19 +275,6 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0383",
-      "problem": {
-        "id": "hard3_0383",
-        "eq1_id": 3972,
-        "eq2_id": 4168,
-        "equation1": "x ◇ y = (y ◇ (z ◇ x)) ◇ y",
-        "equation2": "x ◇ y = ((y ◇ y) ◇ y) ◇ y"
-      },
-      "verdict": "false",
-      "route": "false:linear:z4:2,1",
-      "cert_shape": null
-    },
-    {
       "id": "hard3_0141",
       "problem": {
         "id": "hard3_0141",
@@ -295,6 +282,19 @@
         "eq2_id": 4093,
         "equation1": "x = y ◇ ((x ◇ (y ◇ y)) ◇ x)",
         "equation2": "x ◇ x = ((y ◇ y) ◇ y) ◇ x"
+      },
+      "verdict": "false",
+      "route": "false:linear:z4:2,1",
+      "cert_shape": null
+    },
+    {
+      "id": "hard3_0383",
+      "problem": {
+        "id": "hard3_0383",
+        "eq1_id": 3972,
+        "eq2_id": 4168,
+        "equation1": "x ◇ y = (y ◇ (z ◇ x)) ◇ y",
+        "equation2": "x ◇ y = ((y ◇ y) ◇ y) ◇ y"
       },
       "verdict": "false",
       "route": "false:linear:z4:2,1",
@@ -327,19 +327,6 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0263",
-      "problem": {
-        "id": "hard3_0263",
-        "eq1_id": 2493,
-        "eq2_id": 3052,
-        "equation1": "x = (y ◇ ((x ◇ x) ◇ x)) ◇ x",
-        "equation2": "x = (((x ◇ x) ◇ x) ◇ y) ◇ x"
-      },
-      "verdict": "false",
-      "route": "false:linear:z4:2,3",
-      "cert_shape": null
-    },
-    {
       "id": "evaluation_order5_0061",
       "problem": {
         "id": "evaluation_order5_0061",
@@ -347,6 +334,19 @@
         "eq2_id": 33310,
         "equation1": "x = ((y * (x * y)) * (y * x)) * x",
         "equation2": "x = (y * (((z * x) * z) * w)) * x"
+      },
+      "verdict": "false",
+      "route": "false:linear:z4:2,3",
+      "cert_shape": null
+    },
+    {
+      "id": "hard3_0263",
+      "problem": {
+        "id": "hard3_0263",
+        "eq1_id": 2493,
+        "eq2_id": 3052,
+        "equation1": "x = (y ◇ ((x ◇ x) ◇ x)) ◇ x",
+        "equation2": "x = (((x ◇ x) ◇ x) ◇ y) ◇ x"
       },
       "verdict": "false",
       "route": "false:linear:z4:2,3",
@@ -444,39 +444,39 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0078",
+      "id": "normal_0700",
       "problem": {
-        "id": "hard3_0078",
-        "eq1_id": 556,
-        "eq2_id": 4396,
-        "equation1": "x = y ◇ (z ◇ (y ◇ (x ◇ z)))",
-        "equation2": "x ◇ (x ◇ y) = (x ◇ x) ◇ y"
+        "id": "normal_0700",
+        "eq1_id": 2511,
+        "eq2_id": 4477,
+        "equation1": "x = (y ◇ ((x ◇ y) ◇ z)) ◇ z",
+        "equation2": "x ◇ (y ◇ y) = (x ◇ z) ◇ z"
       },
       "verdict": "false",
       "route": "false:linear:z5:2,2",
       "cert_shape": null
     },
     {
-      "id": "hard2_0177",
+      "id": "hard2_0077",
       "problem": {
-        "id": "hard2_0177",
+        "id": "hard2_0077",
         "eq1_id": 2531,
-        "eq2_id": 2314,
+        "eq2_id": 3065,
         "equation1": "x = (y ◇ ((y ◇ x) ◇ x)) ◇ y",
-        "equation2": "x = (y ◇ (x ◇ (z ◇ y))) ◇ x"
+        "equation2": "x = (((x ◇ y) ◇ x) ◇ x) ◇ x"
       },
       "verdict": "false",
       "route": "false:linear:z5:2,4",
       "cert_shape": null
     },
     {
-      "id": "hard2_0013",
+      "id": "hard2_0102",
       "problem": {
-        "id": "hard2_0013",
+        "id": "hard2_0102",
         "eq1_id": 2531,
-        "eq2_id": 1230,
+        "eq2_id": 2985,
         "equation1": "x = (y ◇ ((y ◇ x) ◇ x)) ◇ y",
-        "equation2": "x = x ◇ (((x ◇ y) ◇ x) ◇ z)"
+        "equation2": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ x"
       },
       "verdict": "false",
       "route": "false:linear:z5:2,4",
@@ -496,39 +496,39 @@
       "cert_shape": null
     },
     {
-      "id": "evaluation_order5_0151",
+      "id": "hard2_0142",
       "problem": {
-        "id": "evaluation_order5_0151",
-        "eq1_id": 7066,
-        "eq2_id": 23884,
-        "equation1": "x = y * (z * ((y * z) * (x * y)))",
-        "equation2": "x = ((y * z) * w) * (y * (z * x))"
+        "id": "hard2_0142",
+        "eq1_id": 271,
+        "eq2_id": 4307,
+        "equation1": "x = ((y ◇ x) ◇ x) ◇ y",
+        "equation2": "x ◇ (x ◇ y) = z ◇ (z ◇ y)"
       },
       "verdict": "false",
       "route": "false:linear:z5:3,3",
       "cert_shape": null
     },
     {
-      "id": "hard2_0038",
+      "id": "evaluation_order5_0073",
       "problem": {
-        "id": "hard2_0038",
-        "eq1_id": 1076,
-        "eq2_id": 519,
-        "equation1": "x = y ◇ ((x ◇ (x ◇ y)) ◇ y)",
-        "equation2": "x = y ◇ (y ◇ (y ◇ (z ◇ w)))"
+        "id": "evaluation_order5_0073",
+        "eq1_id": 15463,
+        "eq2_id": 8916,
+        "equation1": "x = y * (((x * (y * x)) * y) * y)",
+        "equation2": "x = y * (z * (((z * w) * x) * w))"
       },
       "verdict": "false",
       "route": "false:linear:z5:4,2",
       "cert_shape": null
     },
     {
-      "id": "hard2_0122",
+      "id": "hard2_0031",
       "problem": {
-        "id": "hard2_0122",
-        "eq1_id": 1119,
-        "eq2_id": 1349,
-        "equation1": "x = y ◇ ((y ◇ (y ◇ x)) ◇ x)",
-        "equation2": "x = y ◇ (((z ◇ x) ◇ x) ◇ x)"
+        "id": "hard2_0031",
+        "eq1_id": 1076,
+        "eq2_id": 3046,
+        "equation1": "x = y ◇ ((x ◇ (x ◇ y)) ◇ y)",
+        "equation2": "x = ((y ◇ (z ◇ w)) ◇ u) ◇ z"
       },
       "verdict": "false",
       "route": "false:linear:z5:4,2",
@@ -548,13 +548,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard1_0030",
+      "id": "hard2_0167",
       "problem": {
-        "id": "hard1_0030",
-        "eq1_id": 2301,
-        "eq2_id": 4303,
-        "equation1": "x = (y ◇ (x ◇ (y ◇ x))) ◇ y",
-        "equation2": "x ◇ (x ◇ y) = z ◇ (y ◇ x)"
+        "id": "hard2_0167",
+        "eq1_id": 2460,
+        "eq2_id": 3520,
+        "equation1": "x = (x ◇ ((y ◇ x) ◇ y)) ◇ y",
+        "equation2": "x ◇ y = x ◇ ((y ◇ x) ◇ z)"
       },
       "verdict": "false",
       "route": "false:linear:z7:2,6",
@@ -574,19 +574,6 @@
       "cert_shape": null
     },
     {
-      "id": "false_907_2534",
-      "problem": {
-        "id": "false_907_2534",
-        "eq1_id": 907,
-        "eq2_id": 2534,
-        "equation1": "x = y ◇ ((y ◇ x) ◇ (x ◇ y))",
-        "equation2": "x = (y ◇ ((y ◇ x) ◇ y)) ◇ y"
-      },
-      "verdict": "false",
-      "route": "false:linear:z7:4,1",
-      "cert_shape": null
-    },
-    {
       "id": "hard1_0021",
       "problem": {
         "id": "hard1_0021",
@@ -594,6 +581,19 @@
         "eq2_id": 221,
         "equation1": "x = y ◇ ((y ◇ x) ◇ (x ◇ y))",
         "equation2": "x = (y ◇ (x ◇ y)) ◇ x"
+      },
+      "verdict": "false",
+      "route": "false:linear:z7:4,1",
+      "cert_shape": null
+    },
+    {
+      "id": "false_907_2534",
+      "problem": {
+        "id": "false_907_2534",
+        "eq1_id": 907,
+        "eq2_id": 2534,
+        "equation1": "x = y ◇ ((y ◇ x) ◇ (x ◇ y))",
+        "equation2": "x = (y ◇ ((y ◇ x) ◇ y)) ◇ y"
       },
       "verdict": "false",
       "route": "false:linear:z7:4,1",
@@ -717,19 +717,6 @@
       "cert_shape": null
     },
     {
-      "id": "hard2_0156",
-      "problem": {
-        "id": "hard2_0156",
-        "eq1_id": 3069,
-        "eq2_id": 3080,
-        "equation1": "x = (((x ◇ y) ◇ x) ◇ y) ◇ y",
-        "equation2": "x = (((x ◇ y) ◇ y) ◇ y) ◇ z"
-      },
-      "verdict": "false",
-      "route": "false:linear:z9:4,6",
-      "cert_shape": null
-    },
-    {
       "id": "hard2_0112",
       "problem": {
         "id": "hard2_0112",
@@ -737,6 +724,19 @@
         "eq2_id": 3467,
         "equation1": "x = (((x ◇ y) ◇ y) ◇ x) ◇ y",
         "equation2": "x ◇ x = x ◇ ((y ◇ z) ◇ x)"
+      },
+      "verdict": "false",
+      "route": "false:linear:z9:4,6",
+      "cert_shape": null
+    },
+    {
+      "id": "hard2_0156",
+      "problem": {
+        "id": "hard2_0156",
+        "eq1_id": 3069,
+        "eq2_id": 3080,
+        "equation1": "x = (((x ◇ y) ◇ x) ◇ y) ◇ y",
+        "equation2": "x = (((x ◇ y) ◇ y) ◇ y) ◇ z"
       },
       "verdict": "false",
       "route": "false:linear:z9:4,6",
@@ -834,13 +834,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0327",
+      "id": "hard3_0332",
       "problem": {
-        "id": "hard3_0327",
-        "eq1_id": 3062,
-        "eq2_id": 1462,
-        "equation1": "x = (((x ◇ x) ◇ y) ◇ z) ◇ y",
-        "equation2": "x = (x ◇ y) ◇ (z ◇ (x ◇ y))"
+        "id": "hard3_0332",
+        "eq1_id": 3095,
+        "eq2_id": 2465,
+        "equation1": "x = (((x ◇ y) ◇ z) ◇ z) ◇ z",
+        "equation2": "x = (x ◇ ((y ◇ x) ◇ z)) ◇ w"
       },
       "verdict": "false",
       "route": "false:spine:leftsucc:z4",
@@ -860,39 +860,39 @@
       "cert_shape": null
     },
     {
-      "id": "evaluation_order5_0037",
+      "id": "normal_0368",
       "problem": {
-        "id": "evaluation_order5_0037",
-        "eq1_id": 24502,
-        "eq2_id": 7985,
-        "equation1": "x = ((y * z) * x) * ((x * z) * x)",
-        "equation2": "x = y * (z * ((z * (x * x)) * x))"
+        "id": "normal_0368",
+        "eq1_id": 583,
+        "eq2_id": 3201,
+        "equation1": "x = y ◇ (z ◇ (z ◇ (w ◇ x)))",
+        "equation2": "x = (((y ◇ z) ◇ y) ◇ z) ◇ x"
       },
       "verdict": "false",
       "route": "false:spine:rightsucc:z2",
       "cert_shape": null
     },
     {
-      "id": "false_395_3271",
+      "id": "evaluation_hard_0021",
       "problem": {
-        "id": "false_395_3271",
-        "eq1_id": 395,
-        "eq2_id": 3271,
-        "equation1": "x ◇ y = (z ◇ x) ◇ y",
-        "equation2": "x ◇ x = y ◇ (x ◇ (y ◇ x))"
+        "id": "evaluation_hard_0021",
+        "eq1_id": 388,
+        "eq2_id": 3288,
+        "equation1": "x * y = (y * y) * y",
+        "equation2": "x * x = y * (z * (x * x))"
       },
       "verdict": "false",
       "route": "false:spine:rightsucc:z3",
       "cert_shape": null
     },
     {
-      "id": "evaluation_hard_0027",
+      "id": "evaluation_hard_0023",
       "problem": {
-        "id": "evaluation_hard_0027",
+        "id": "evaluation_hard_0023",
         "eq1_id": 388,
-        "eq2_id": 3367,
+        "eq2_id": 3300,
         "equation1": "x * y = (y * y) * y",
-        "equation2": "x * y = y * (z * (y * y))"
+        "equation2": "x * x = y * (z * (w * x))"
       },
       "verdict": "false",
       "route": "false:spine:rightsucc:z3",
@@ -912,13 +912,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0073",
+      "id": "hard3_0074",
       "problem": {
-        "id": "hard3_0073",
-        "eq1_id": 541,
-        "eq2_id": 1366,
-        "equation1": "x = y ◇ (z ◇ (x ◇ (y ◇ x)))",
-        "equation2": "x = y ◇ (((z ◇ y) ◇ x) ◇ x)"
+        "id": "hard3_0074",
+        "eq1_id": 545,
+        "eq2_id": 1832,
+        "equation1": "x = y ◇ (z ◇ (x ◇ (z ◇ x)))",
+        "equation2": "x = (x ◇ (x ◇ x)) ◇ (x ◇ x)"
       },
       "verdict": "false",
       "route": "false:spine:rightsucc:z4",
@@ -1107,13 +1107,13 @@
       "cert_shape": null
     },
     {
-      "id": "normal_0044",
+      "id": "normal_0025",
       "problem": {
-        "id": "normal_0044",
-        "eq1_id": 4406,
-        "eq2_id": 638,
-        "equation1": "x ◇ (x ◇ y) = (y ◇ x) ◇ y",
-        "equation2": "x = x ◇ (y ◇ ((x ◇ z) ◇ w))"
+        "id": "normal_0025",
+        "eq1_id": 315,
+        "eq2_id": 2051,
+        "equation1": "x ◇ x = y ◇ (y ◇ x)",
+        "equation2": "x = ((x ◇ y) ◇ x) ◇ (x ◇ y)"
       },
       "verdict": "false",
       "route": "false:witness:RP",
@@ -1133,6 +1133,19 @@
       "cert_shape": null
     },
     {
+      "id": "hard3_0342",
+      "problem": {
+        "id": "hard3_0342",
+        "eq1_id": 3270,
+        "eq2_id": 3736,
+        "equation1": "x ◇ x = y ◇ (x ◇ (x ◇ z))",
+        "equation2": "x ◇ y = (x ◇ z) ◇ (y ◇ y)"
+      },
+      "verdict": "false",
+      "route": "false:witness:S4B",
+      "cert_shape": null
+    },
+    {
       "id": "hard3_0348",
       "problem": {
         "id": "hard3_0348",
@@ -1143,32 +1156,6 @@
       },
       "verdict": "false",
       "route": "false:witness:S4B",
-      "cert_shape": null
-    },
-    {
-      "id": "hard3_0369",
-      "problem": {
-        "id": "hard3_0369",
-        "eq1_id": 3676,
-        "eq2_id": 4682,
-        "equation1": "x ◇ x = (y ◇ x) ◇ (x ◇ z)",
-        "equation2": "(x ◇ y) ◇ z = (y ◇ w) ◇ z"
-      },
-      "verdict": "false",
-      "route": "false:witness:S4B",
-      "cert_shape": null
-    },
-    {
-      "id": "hard2_0047",
-      "problem": {
-        "id": "hard2_0047",
-        "eq1_id": 3958,
-        "eq2_id": 4067,
-        "equation1": "x ◇ y = (y ◇ (x ◇ z)) ◇ y",
-        "equation2": "x ◇ x = ((x ◇ x) ◇ y) ◇ x"
-      },
-      "verdict": "false",
-      "route": "false:witness:S4C",
       "cert_shape": null
     },
     {
@@ -1185,16 +1172,16 @@
       "cert_shape": null
     },
     {
-      "id": "hard1_0015",
+      "id": "hard2_0047",
       "problem": {
-        "id": "hard1_0015",
-        "eq1_id": 3265,
-        "eq2_id": 4269,
-        "equation1": "x ◇ x = x ◇ (y ◇ (z ◇ y))",
-        "equation2": "x ◇ (x ◇ x) = x ◇ (y ◇ x)"
+        "id": "hard2_0047",
+        "eq1_id": 3958,
+        "eq2_id": 4067,
+        "equation1": "x ◇ y = (y ◇ (x ◇ z)) ◇ y",
+        "equation2": "x ◇ x = ((x ◇ x) ◇ y) ◇ x"
       },
       "verdict": "false",
-      "route": "false:witness:S4D",
+      "route": "false:witness:S4C",
       "cert_shape": null
     },
     {
@@ -1205,6 +1192,19 @@
         "eq2_id": 4093,
         "equation1": "x ◇ x = y ◇ (x ◇ (x ◇ z))",
         "equation2": "x ◇ x = ((y ◇ y) ◇ y) ◇ x"
+      },
+      "verdict": "false",
+      "route": "false:witness:S4D",
+      "cert_shape": null
+    },
+    {
+      "id": "hard3_0349",
+      "problem": {
+        "id": "hard3_0349",
+        "eq1_id": 3283,
+        "eq2_id": 4316,
+        "equation1": "x ◇ x = y ◇ (y ◇ (y ◇ z))",
+        "equation2": "x ◇ (y ◇ x) = x ◇ (z ◇ x)"
       },
       "verdict": "false",
       "route": "false:witness:S4D",
@@ -1315,13 +1315,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard2_0087",
+      "id": "hard1_0012",
       "problem": {
-        "id": "hard2_0087",
-        "eq1_id": 4422,
-        "eq2_id": 4297,
-        "equation1": "x ◇ (x ◇ y) = (z ◇ y) ◇ w",
-        "equation2": "x ◇ (x ◇ y) = y ◇ (z ◇ z)"
+        "id": "hard1_0012",
+        "eq1_id": 4653,
+        "eq2_id": 4270,
+        "equation1": "(x ◇ y) ◇ x = (z ◇ w) ◇ u",
+        "equation2": "x ◇ (x ◇ x) = x ◇ (y ◇ y)"
       },
       "verdict": "false",
       "route": "false:witness:S5B",
@@ -1354,19 +1354,6 @@
       "cert_shape": null
     },
     {
-      "id": "hard2_0195",
-      "problem": {
-        "id": "hard2_0195",
-        "eq1_id": 4422,
-        "eq2_id": 4460,
-        "equation1": "x ◇ (x ◇ y) = (z ◇ y) ◇ w",
-        "equation2": "x ◇ (y ◇ x) = (z ◇ z) ◇ x"
-      },
-      "verdict": "false",
-      "route": "false:witness:S5D",
-      "cert_shape": null
-    },
-    {
       "id": "hard3_0392",
       "problem": {
         "id": "hard3_0392",
@@ -1374,6 +1361,19 @@
         "eq2_id": 4433,
         "equation1": "x ◇ (x ◇ y) = (x ◇ z) ◇ w",
         "equation2": "x ◇ (y ◇ x) = (x ◇ x) ◇ y"
+      },
+      "verdict": "false",
+      "route": "false:witness:S5D",
+      "cert_shape": null
+    },
+    {
+      "id": "hard2_0007",
+      "problem": {
+        "id": "hard2_0007",
+        "eq1_id": 4422,
+        "eq2_id": 4296,
+        "equation1": "x ◇ (x ◇ y) = (z ◇ y) ◇ w",
+        "equation2": "x ◇ (x ◇ y) = y ◇ (z ◇ y)"
       },
       "verdict": "false",
       "route": "false:witness:S5D",
@@ -1406,26 +1406,26 @@
       "cert_shape": null
     },
     {
-      "id": "hard2_0042",
+      "id": "hard1_0004",
       "problem": {
-        "id": "hard2_0042",
-        "eq1_id": 4468,
-        "eq2_id": 4560,
-        "equation1": "x ◇ (y ◇ x) = (z ◇ w) ◇ u",
-        "equation2": "x ◇ (y ◇ z) = (w ◇ x) ◇ w"
+        "id": "hard1_0004",
+        "eq1_id": 4634,
+        "eq2_id": 4340,
+        "equation1": "(x ◇ y) ◇ x = (x ◇ z) ◇ w",
+        "equation2": "x ◇ (y ◇ y) = x ◇ (z ◇ y)"
       },
       "verdict": "false",
       "route": "false:witness:T3L",
       "cert_shape": null
     },
     {
-      "id": "hard2_0046",
+      "id": "hard3_0055",
       "problem": {
-        "id": "hard2_0046",
-        "eq1_id": 4692,
-        "eq2_id": 4281,
-        "equation1": "(x ◇ y) ◇ z = (w ◇ z) ◇ u",
-        "equation2": "x ◇ (x ◇ x) = y ◇ (z ◇ w)"
+        "id": "hard3_0055",
+        "eq1_id": 363,
+        "eq2_id": 4118,
+        "equation1": "x ◇ x = (x ◇ y) ◇ z",
+        "equation2": "x ◇ y = ((x ◇ x) ◇ x) ◇ y"
       },
       "verdict": "false",
       "route": "false:witness:T3L",
@@ -1497,13 +1497,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0026",
+      "id": "evaluation_hard_0137",
       "problem": {
-        "id": "hard3_0026",
-        "eq1_id": 127,
-        "eq2_id": 2148,
-        "equation1": "x = y ◇ ((y ◇ y) ◇ x)",
-        "equation2": "x = ((y ◇ y) ◇ z) ◇ (y ◇ x)"
+        "id": "evaluation_hard_0137",
+        "eq1_id": 125,
+        "eq2_id": 1571,
+        "equation1": "x = y * ((y * x) * y)",
+        "equation2": "x = (y * z) * (y * (x * z))"
       },
       "verdict": "false",
       "route": "false:witness:Z3A",
@@ -1523,13 +1523,13 @@
       "cert_shape": null
     },
     {
-      "id": "hard3_0357",
+      "id": "false_3749_4320",
       "problem": {
-        "id": "hard3_0357",
-        "eq1_id": 3417,
-        "eq2_id": 3737,
-        "equation1": "x ◇ y = z ◇ (z ◇ (y ◇ x))",
-        "equation2": "x ◇ y = (x ◇ z) ◇ (y ◇ z)"
+        "id": "false_3749_4320",
+        "eq1_id": 3749,
+        "eq2_id": 4320,
+        "equation1": "x ◇ y = (y ◇ x) ◇ (x ◇ y)",
+        "equation2": "x ◇ (y ◇ x) = y ◇ (x ◇ x)"
       },
       "verdict": "false",
       "route": "false:witness:Z3B",
@@ -1549,29 +1549,16 @@
       "cert_shape": "exact_expr"
     },
     {
-      "id": "hard3_0002",
+      "id": "evaluation_extra_hard_0139",
       "problem": {
-        "id": "hard3_0002",
-        "eq1_id": 9,
-        "eq2_id": 2441,
-        "equation1": "x = x ◇ (x ◇ y)",
-        "equation2": "x = (x ◇ ((x ◇ x) ◇ x)) ◇ x"
+        "id": "evaluation_extra_hard_0139",
+        "eq1_id": 24,
+        "eq2_id": 2488,
+        "equation1": "x = (x * x) * y",
+        "equation2": "x = (x * ((y * z) * w)) * x"
       },
       "verdict": "true",
       "route": "true:absorption_closure",
-      "cert_shape": "exact_expr"
-    },
-    {
-      "id": "evaluation_extra_hard_0153",
-      "problem": {
-        "id": "evaluation_extra_hard_0153",
-        "eq1_id": 259,
-        "eq2_id": 2865,
-        "equation1": "x = ((x * x) * y) * z",
-        "equation2": "x = ((x * (y * x)) * y) * x"
-      },
-      "verdict": "true",
-      "route": "true:absorption_closure:deep",
       "cert_shape": "exact_expr"
     },
     {
@@ -1582,6 +1569,19 @@
         "eq2_id": 583,
         "equation1": "x = (((y ◇ x) ◇ z) ◇ x) ◇ w",
         "equation2": "x = y ◇ (z ◇ (z ◇ (w ◇ x)))"
+      },
+      "verdict": "true",
+      "route": "true:absorption_closure:deep",
+      "cert_shape": "exact_expr"
+    },
+    {
+      "id": "normal_0809",
+      "problem": {
+        "id": "normal_0809",
+        "eq1_id": 1565,
+        "eq2_id": 4192,
+        "equation1": "x = (y ◇ z) ◇ (x ◇ (w ◇ y))",
+        "equation2": "x ◇ y = ((z ◇ x) ◇ x) ◇ y"
       },
       "verdict": "true",
       "route": "true:absorption_closure:deep",
@@ -1614,26 +1614,26 @@
       "cert_shape": "exact_expr"
     },
     {
-      "id": "evaluation_hard_0048",
+      "id": "evaluation_hard_0050",
       "problem": {
-        "id": "evaluation_hard_0048",
+        "id": "evaluation_hard_0050",
         "eq1_id": 67,
-        "eq2_id": 135,
+        "eq2_id": 161,
         "equation1": "x = y * (x * (y * z))",
-        "equation2": "x = y * ((z * x) * y)"
+        "equation2": "x = (x * y) * (y * z)"
       },
       "verdict": "true",
       "route": "true:alternating_front_self_collapse",
       "cert_shape": "other"
     },
     {
-      "id": "evaluation_hard_0028",
+      "id": "evaluation_hard_0026",
       "problem": {
-        "id": "evaluation_hard_0028",
+        "id": "evaluation_hard_0026",
         "eq1_id": 67,
-        "eq2_id": 275,
+        "eq2_id": 119,
         "equation1": "x = y * (x * (y * z))",
-        "equation2": "x = ((y * x) * y) * z"
+        "equation2": "x = y * ((x * y) * z)"
       },
       "verdict": "true",
       "route": "true:alternating_front_self_collapse",
@@ -1731,13 +1731,13 @@
       "cert_shape": "exact_expr"
     },
     {
-      "id": "hard3_0061",
+      "id": "hard3_0352",
       "problem": {
-        "id": "hard3_0061",
-        "eq1_id": 404,
-        "eq2_id": 3339,
-        "equation1": "x ◇ y = (z ◇ z) ◇ z",
-        "equation2": "x ◇ y = x ◇ (z ◇ (w ◇ z))"
+        "id": "hard3_0352",
+        "eq1_id": 3328,
+        "eq2_id": 3313,
+        "equation1": "x ◇ y = x ◇ (z ◇ (x ◇ w))",
+        "equation2": "x ◇ y = x ◇ (x ◇ (z ◇ z))"
       },
       "verdict": "true",
       "route": "true:constancy:00",
@@ -1822,13 +1822,13 @@
       "cert_shape": "exact_expr"
     },
     {
-      "id": "true_4082_4109",
+      "id": "evaluation_extra_hard_0149",
       "problem": {
-        "id": "true_4082_4109",
-        "eq1_id": 4082,
-        "eq2_id": 4109,
-        "equation1": "x ◇ x = ((y ◇ x) ◇ x) ◇ z",
-        "equation2": "x ◇ x = ((y ◇ z) ◇ z) ◇ y"
+        "id": "evaluation_extra_hard_0149",
+        "eq1_id": 204,
+        "eq2_id": 3089,
+        "equation1": "x = (x * (x * x)) * y",
+        "equation2": "x = (((x * y) * z) * y) * x"
       },
       "verdict": "true",
       "route": "true:derived_cp_closure",
@@ -1900,19 +1900,6 @@
       "cert_shape": "other"
     },
     {
-      "id": "evaluation_extra_hard_0060",
-      "problem": {
-        "id": "evaluation_extra_hard_0060",
-        "eq1_id": 336,
-        "eq2_id": 3264,
-        "equation1": "x * y = y * (y * y)",
-        "equation2": "x * x = x * (y * (z * x))"
-      },
-      "verdict": "true",
-      "route": "true:equational_closure",
-      "cert_shape": "exact_expr"
-    },
-    {
       "id": "evaluation_extra_hard_0154",
       "problem": {
         "id": "evaluation_extra_hard_0154",
@@ -1920,6 +1907,19 @@
         "eq2_id": 3659,
         "equation1": "x * x = y * (x * y)",
         "equation2": "x * x = (x * x) * (x * x)"
+      },
+      "verdict": "true",
+      "route": "true:equational_closure",
+      "cert_shape": "exact_expr"
+    },
+    {
+      "id": "evaluation_extra_hard_0072",
+      "problem": {
+        "id": "evaluation_extra_hard_0072",
+        "eq1_id": 336,
+        "eq2_id": 3467,
+        "equation1": "x * y = y * (y * y)",
+        "equation2": "x * x = x * ((y * z) * x)"
       },
       "verdict": "true",
       "route": "true:equational_closure",
@@ -2056,6 +2056,188 @@
       "cert_shape": "other"
     },
     {
+      "id": "true_2111_1755",
+      "problem": {
+        "id": "true_2111_1755",
+        "eq1_id": 2111,
+        "eq2_id": 1755,
+        "equation1": "x = ((y ◇ x) ◇ z) ◇ (y ◇ x)",
+        "equation2": "x = (y ◇ z) ◇ ((x ◇ x) ◇ x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum102",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard2_0103",
+      "problem": {
+        "id": "hard2_0103",
+        "eq1_id": 3568,
+        "eq2_id": 3866,
+        "equation1": "x ◇ y = y ◇ ((z ◇ x) ◇ w)",
+        "equation2": "x ◇ x = (x ◇ (x ◇ y)) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum1033",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard2_0083",
+      "problem": {
+        "id": "hard2_0083",
+        "eq1_id": 2178,
+        "eq2_id": 3431,
+        "equation1": "x = ((y ◇ z) ◇ y) ◇ (x ◇ x)",
+        "equation2": "x ◇ y = z ◇ (w ◇ (x ◇ y))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum17",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard3_0183",
+      "problem": {
+        "id": "hard3_0183",
+        "eq1_id": 1642,
+        "eq2_id": 1432,
+        "equation1": "x = (x ◇ x) ◇ ((y ◇ z) ◇ z)",
+        "equation2": "x = (x ◇ x) ◇ (y ◇ (x ◇ y))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum22",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "evaluation_order5_0124",
+      "problem": {
+        "id": "evaluation_order5_0124",
+        "eq1_id": 21548,
+        "eq2_id": 16976,
+        "equation1": "x = (x * (y * z)) * (w * (z * w))",
+        "equation2": "x = (x * x) * (x * (x * (y * y)))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum22",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard3_0160",
+      "problem": {
+        "id": "hard3_0160",
+        "eq1_id": 1433,
+        "eq2_id": 4631,
+        "equation1": "x = (x ◇ x) ◇ (y ◇ (x ◇ z))",
+        "equation2": "(x ◇ y) ◇ x = (x ◇ z) ◇ x"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum23",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "evaluation_extra_hard_0147",
+      "problem": {
+        "id": "evaluation_extra_hard_0147",
+        "eq1_id": 158,
+        "eq2_id": 2246,
+        "equation1": "x = (x * y) * (x * z)",
+        "equation2": "x = (x * (x * (y * y))) * x"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum23",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard3_0162",
+      "problem": {
+        "id": "hard3_0162",
+        "eq1_id": 1462,
+        "eq2_id": 4135,
+        "equation1": "x = (x ◇ y) ◇ (z ◇ (x ◇ y))",
+        "equation2": "x ◇ y = ((x ◇ y) ◇ z) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum24",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "evaluation_extra_hard_0148",
+      "problem": {
+        "id": "evaluation_extra_hard_0148",
+        "eq1_id": 158,
+        "eq2_id": 3058,
+        "equation1": "x = (x * y) * (x * z)",
+        "equation2": "x = (((x * x) * y) * y) * x"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum25",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard2_0160",
+      "problem": {
+        "id": "hard2_0160",
+        "eq1_id": 887,
+        "eq2_id": 2494,
+        "equation1": "x = y ◇ ((x ◇ y) ◇ (z ◇ z))",
+        "equation2": "x = (y ◇ ((x ◇ x) ◇ x)) ◇ y"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum27",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "normal_0153",
+      "problem": {
+        "id": "normal_0153",
+        "eq1_id": 2585,
+        "eq2_id": 223,
+        "equation1": "x = (y ◇ ((z ◇ y) ◇ x)) ◇ y",
+        "equation2": "x = (y ◇ (x ◇ y)) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum30",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "normal_0404",
+      "problem": {
+        "id": "normal_0404",
+        "eq1_id": 1499,
+        "eq2_id": 3250,
+        "equation1": "x = (y ◇ x) ◇ (z ◇ (x ◇ y))",
+        "equation2": "x = (((y ◇ z) ◇ w) ◇ u) ◇ w"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum30",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "evaluation_normal_0092",
+      "problem": {
+        "id": "evaluation_normal_0092",
+        "eq1_id": 1555,
+        "eq2_id": 123,
+        "equation1": "x = (y * z) * (x * (x * w))",
+        "equation2": "x = y * ((x * z) * w)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum4",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "hard2_0004",
+      "problem": {
+        "id": "hard2_0004",
+        "eq1_id": 3141,
+        "eq2_id": 1091,
+        "equation1": "x = (((y ◇ y) ◇ x) ◇ x) ◇ z",
+        "equation2": "x = y ◇ ((x ◇ (y ◇ z)) ◇ w)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_bootstrap:enum4",
+      "cert_shape": "lemma"
+    },
+    {
       "id": "hard3_0355",
       "problem": {
         "id": "hard3_0355",
@@ -2069,30 +2251,355 @@
       "cert_shape": "lemma"
     },
     {
-      "id": "normal_0260",
+      "id": "normal_0906",
       "problem": {
-        "id": "normal_0260",
-        "eq1_id": 1808,
-        "eq2_id": 3695,
-        "equation1": "x = (y ◇ z) ◇ ((w ◇ x) ◇ z)",
-        "equation2": "x ◇ x = (y ◇ z) ◇ (x ◇ y)"
+        "id": "normal_0906",
+        "eq1_id": 2698,
+        "eq2_id": 944,
+        "equation1": "x = ((y ◇ x) ◇ (x ◇ x)) ◇ z",
+        "equation2": "x = y ◇ ((z ◇ x) ◇ (x ◇ y))"
       },
       "verdict": "true",
       "route": "true:lemma_bootstrap:trivial",
       "cert_shape": "lemma"
     },
     {
-      "id": "evaluation_normal_0166",
+      "id": "evaluation_normal_0164",
       "problem": {
-        "id": "evaluation_normal_0166",
-        "eq1_id": 1994,
-        "eq2_id": 4524,
-        "equation1": "x = (y * (z * z)) * (x * z)",
-        "equation2": "x * (y * z) = (y * x) * y"
+        "id": "evaluation_normal_0164",
+        "eq1_id": 1961,
+        "eq2_id": 1824,
+        "equation1": "x = (y * (z * x)) * (x * w)",
+        "equation2": "x = (y * z) * ((w * w) * w)"
       },
       "verdict": "true",
       "route": "true:lemma_bootstrap:trivial",
       "cert_shape": "lemma"
+    },
+    {
+      "id": "hard1_0067",
+      "problem": {
+        "id": "hard1_0067",
+        "eq1_id": 1927,
+        "eq2_id": 3409,
+        "equation1": "x = (y ◇ (y ◇ x)) ◇ (z ◇ x)",
+        "equation2": "x ◇ y = z ◇ (y ◇ (w ◇ y))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:direct_goal",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0231",
+      "problem": {
+        "id": "hard3_0231",
+        "eq1_id": 2105,
+        "eq2_id": 2300,
+        "equation1": "x = ((y ◇ x) ◇ y) ◇ (z ◇ z)",
+        "equation2": "x = (y ◇ (x ◇ (y ◇ x))) ◇ x"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:direct_goal",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0194",
+      "problem": {
+        "id": "hard3_0194",
+        "eq1_id": 1709,
+        "eq2_id": 1941,
+        "equation1": "x = (y ◇ x) ◇ ((z ◇ z) ◇ x)",
+        "equation2": "x = (y ◇ (y ◇ z)) ◇ (x ◇ x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum11",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard2_0138",
+      "problem": {
+        "id": "hard2_0138",
+        "eq1_id": 1125,
+        "eq2_id": 483,
+        "equation1": "x = y ◇ ((y ◇ (y ◇ z)) ◇ x)",
+        "equation2": "x = y ◇ (x ◇ (z ◇ (x ◇ x)))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum17",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0158",
+      "problem": {
+        "id": "hard3_0158",
+        "eq1_id": 1332,
+        "eq2_id": 1146,
+        "equation1": "x = y ◇ (((y ◇ z) ◇ x) ◇ x)",
+        "equation2": "x = y ◇ ((z ◇ (x ◇ x)) ◇ x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum17",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "normal_0140",
+      "problem": {
+        "id": "normal_0140",
+        "eq1_id": 2399,
+        "eq2_id": 1832,
+        "equation1": "x = (y ◇ (z ◇ (z ◇ x))) ◇ y",
+        "equation2": "x = (x ◇ (x ◇ x)) ◇ (x ◇ x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum24",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0308",
+      "problem": {
+        "id": "hard3_0308",
+        "eq1_id": 2884,
+        "eq2_id": 2045,
+        "equation1": "x = ((x ◇ (y ◇ z)) ◇ x) ◇ z",
+        "equation2": "x = ((x ◇ x) ◇ y) ◇ (y ◇ z)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum244",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "evaluation_normal_0024",
+      "problem": {
+        "id": "evaluation_normal_0024",
+        "eq1_id": 1462,
+        "eq2_id": 4136,
+        "equation1": "x = (x * y) * (z * (x * y))",
+        "equation2": "x * y = ((x * y) * z) * w"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum25",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0199",
+      "problem": {
+        "id": "hard3_0199",
+        "eq1_id": 1844,
+        "eq2_id": 2448,
+        "equation1": "x = (x ◇ (x ◇ y)) ◇ (z ◇ y)",
+        "equation2": "x = (x ◇ ((x ◇ y) ◇ x)) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum25",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0307",
+      "problem": {
+        "id": "hard3_0307",
+        "eq1_id": 2874,
+        "eq2_id": 2857,
+        "equation1": "x = ((x ◇ (y ◇ y)) ◇ x) ◇ z",
+        "equation2": "x = ((x ◇ (x ◇ y)) ◇ y) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum254",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard1_0061",
+      "problem": {
+        "id": "hard1_0061",
+        "eq1_id": 447,
+        "eq2_id": 1247,
+        "equation1": "x = x ◇ (y ◇ (z ◇ (x ◇ y)))",
+        "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ w)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum291",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard2_0060",
+      "problem": {
+        "id": "hard2_0060",
+        "eq1_id": 636,
+        "eq2_id": 1070,
+        "equation1": "x = x ◇ (y ◇ ((x ◇ z) ◇ y))",
+        "equation2": "x = x ◇ ((y ◇ (z ◇ w)) ◇ w)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum291",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "evaluation_order5_0078",
+      "problem": {
+        "id": "evaluation_order5_0078",
+        "eq1_id": 39227,
+        "eq2_id": 22253,
+        "equation1": "x = (((y * x) * (z * w)) * x) * y",
+        "equation2": "x = (x * (x * y)) * ((x * y) * x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum292",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "normal_0818",
+      "problem": {
+        "id": "normal_0818",
+        "eq1_id": 2376,
+        "eq2_id": 307,
+        "equation1": "x = (y ◇ (z ◇ (x ◇ w))) ◇ x",
+        "equation2": "x ◇ x = x ◇ (x ◇ x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum304",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard2_0117",
+      "problem": {
+        "id": "hard2_0117",
+        "eq1_id": 3354,
+        "eq2_id": 4064,
+        "equation1": "x ◇ y = y ◇ (y ◇ (x ◇ z))",
+        "equation2": "x ◇ y = (z ◇ (w ◇ u)) ◇ v"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum333",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "evaluation_hard_0096",
+      "problem": {
+        "id": "evaluation_hard_0096",
+        "eq1_id": 447,
+        "eq2_id": 4077,
+        "equation1": "x = x * (y * (z * (x * y)))",
+        "equation2": "x * x = ((x * y) * z) * y"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum348",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard1_0013",
+      "problem": {
+        "id": "hard1_0013",
+        "eq1_id": 4208,
+        "eq2_id": 3356,
+        "equation1": "x ◇ y = ((z ◇ y) ◇ x) ◇ x",
+        "equation2": "x ◇ y = y ◇ (y ◇ (y ◇ y))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum370",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard2_0107",
+      "problem": {
+        "id": "hard2_0107",
+        "eq1_id": 1941,
+        "eq2_id": 1038,
+        "equation1": "x = (y ◇ (y ◇ z)) ◇ (x ◇ x)",
+        "equation2": "x = x ◇ ((y ◇ (x ◇ y)) ◇ x)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum8",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0203",
+      "problem": {
+        "id": "hard3_0203",
+        "eq1_id": 1882,
+        "eq2_id": 4125,
+        "equation1": "x = (x ◇ (y ◇ z)) ◇ (w ◇ w)",
+        "equation2": "x ◇ y = ((x ◇ x) ◇ z) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum927",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0115",
+      "problem": {
+        "id": "hard3_0115",
+        "eq1_id": 926,
+        "eq2_id": 1502,
+        "equation1": "x = y ◇ ((y ◇ z) ◇ (x ◇ x))",
+        "equation2": "x = (y ◇ x) ◇ (z ◇ (y ◇ x))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:enum98",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard2_0170",
+      "problem": {
+        "id": "hard2_0170",
+        "eq1_id": 3960,
+        "eq2_id": 3903,
+        "equation1": "x ◇ y = (y ◇ (x ◇ z)) ◇ w",
+        "equation2": "x ◇ x = (y ◇ (z ◇ y)) ◇ z"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:product_constant",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard1_0046",
+      "problem": {
+        "id": "hard1_0046",
+        "eq1_id": 3550,
+        "eq2_id": 3282,
+        "equation1": "x ◇ y = y ◇ ((x ◇ y) ◇ z)",
+        "equation2": "x ◇ x = y ◇ (y ◇ (y ◇ y))"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:product_constant",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "hard3_0205",
+      "problem": {
+        "id": "hard3_0205",
+        "eq1_id": 1890,
+        "eq2_id": 3873,
+        "equation1": "x = (y ◇ (x ◇ x)) ◇ (z ◇ x)",
+        "equation2": "x ◇ x = (x ◇ (y ◇ z)) ◇ x"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:right_col_constant",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "normal_0253",
+      "problem": {
+        "id": "normal_0253",
+        "eq1_id": 2780,
+        "eq2_id": 4363,
+        "equation1": "x = ((y ◇ z) ◇ (x ◇ z)) ◇ z",
+        "equation2": "x ◇ (y ◇ z) = y ◇ (x ◇ w)"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:trivial",
+      "cert_shape": "lemma_chain"
+    },
+    {
+      "id": "normal_0698",
+      "problem": {
+        "id": "normal_0698",
+        "eq1_id": 1906,
+        "eq2_id": 4016,
+        "equation1": "x = (y ◇ (x ◇ z)) ◇ (x ◇ z)",
+        "equation2": "x ◇ y = (z ◇ (y ◇ z)) ◇ w"
+      },
+      "verdict": "true",
+      "route": "true:lemma_chain:trivial",
+      "cert_shape": "lemma_chain"
     },
     {
       "id": "normal_0747",
@@ -2144,32 +2651,6 @@
       },
       "verdict": "true",
       "route": "true:mirrored_alternating_front_self_collapse",
-      "cert_shape": "other"
-    },
-    {
-      "id": "hard1_0061",
-      "problem": {
-        "id": "hard1_0061",
-        "eq1_id": 447,
-        "eq2_id": 1247,
-        "equation1": "x = x ◇ (y ◇ (z ◇ (x ◇ y)))",
-        "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ w)"
-      },
-      "verdict": "true",
-      "route": "true:narrow_grind",
-      "cert_shape": "other"
-    },
-    {
-      "id": "evaluation_normal_0012",
-      "problem": {
-        "id": "evaluation_normal_0012",
-        "eq1_id": 532,
-        "eq2_id": 608,
-        "equation1": "x = y * (y * (z * (w * x)))",
-        "equation2": "x = y * (z * (w * (u * x)))"
-      },
-      "verdict": "true",
-      "route": "true:narrow_grind",
       "cert_shape": "other"
     },
     {
@@ -2316,29 +2797,42 @@
       "cert_shape": "exact_expr"
     },
     {
-      "id": "hard2_0119",
+      "id": "normal_0876",
       "problem": {
-        "id": "hard2_0119",
-        "eq1_id": 478,
-        "eq2_id": 257,
-        "equation1": "x = y ◇ (x ◇ (y ◇ (y ◇ z)))",
-        "equation2": "x = ((x ◇ x) ◇ y) ◇ x"
+        "id": "normal_0876",
+        "eq1_id": 688,
+        "eq2_id": 3470,
+        "equation1": "x = y ◇ (x ◇ ((z ◇ x) ◇ z))",
+        "equation2": "x ◇ x = x ◇ ((y ◇ z) ◇ w)"
       },
       "verdict": "true",
       "route": "true:projection_bootstrap:left",
       "cert_shape": "lemma"
     },
     {
-      "id": "evaluation_normal_0082",
+      "id": "evaluation_hard_0180",
       "problem": {
-        "id": "evaluation_normal_0082",
-        "eq1_id": 857,
-        "eq2_id": 3670,
-        "equation1": "x = x * ((y * z) * (y * y))",
-        "equation2": "x * x = (x * y) * (z * x)"
+        "id": "evaluation_hard_0180",
+        "eq1_id": 1062,
+        "eq2_id": 3084,
+        "equation1": "x = x * ((y * (z * y)) * w)",
+        "equation2": "x = (((x * y) * y) * z) * w"
       },
       "verdict": "true",
       "route": "true:projection_bootstrap:left",
+      "cert_shape": "lemma"
+    },
+    {
+      "id": "evaluation_normal_0172",
+      "problem": {
+        "id": "evaluation_normal_0172",
+        "eq1_id": 2213,
+        "eq2_id": 4559,
+        "equation1": "x = ((y * z) * w) * (x * y)",
+        "equation2": "x * (y * z) = (w * x) * z"
+      },
+      "verdict": "true",
+      "route": "true:projection_bootstrap:right",
       "cert_shape": "lemma"
     },
     {
@@ -2349,19 +2843,6 @@
         "eq2_id": 3034,
         "equation1": "x = y ◇ (x ◇ (y ◇ (y ◇ z)))",
         "equation2": "x = ((y ◇ (z ◇ w)) ◇ z) ◇ x"
-      },
-      "verdict": "true",
-      "route": "true:projection_bootstrap:right",
-      "cert_shape": "lemma"
-    },
-    {
-      "id": "hard3_0335",
-      "problem": {
-        "id": "hard3_0335",
-        "eq1_id": 3130,
-        "eq2_id": 2119,
-        "equation1": "x = (((y ◇ x) ◇ z) ◇ z) ◇ x",
-        "equation2": "x = ((y ◇ x) ◇ z) ◇ (w ◇ x)"
       },
       "verdict": "true",
       "route": "true:projection_bootstrap:right",
@@ -2719,13 +3200,13 @@
       "cert_shape": "exact_expr"
     },
     {
-      "id": "hard3_0137",
+      "id": "normal_0187",
       "problem": {
-        "id": "hard3_0137",
-        "eq1_id": 1065,
-        "eq2_id": 1647,
-        "equation1": "x = x ◇ ((y ◇ (z ◇ z)) ◇ z)",
-        "equation2": "x = (x ◇ y) ◇ ((x ◇ y) ◇ x)"
+        "id": "normal_0187",
+        "eq1_id": 1268,
+        "eq2_id": 1426,
+        "equation1": "x = x ◇ (((y ◇ z) ◇ z) ◇ z)",
+        "equation2": "x = (x ◇ x) ◇ (x ◇ (x ◇ x))"
       },
       "verdict": "true",
       "route": "true:universal_identity:left",

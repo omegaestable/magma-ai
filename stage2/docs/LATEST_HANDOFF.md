@@ -1,17 +1,32 @@
 # Latest Handoff
 
-Updated: 2026-07-22
+Updated: 2026-07-22 (session 4 — playground failure triage).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
-## Current status (read first)
+## Session 4 (newest — read first)
+
+A real playground Solo run exposed 13 `TRUE INCORRECT` + 1 `ERROR`; all 14
+were root-caused and fixed or mitigated in one pass — full story in
+`stage2/results/2026-07-22-playground-failure-fixes.md`. Highlights: the
+ERROR was an **OOM kill** (2048 MB sandbox vs 5–17 GB deep-tier closures) —
+Solo now runs a global hard deadline + armed memory guard + insurance judge
+call + guaranteed grind fallback; `true:narrow_grind` was **judge-rejected in
+the field** and is demoted behind kernel-verified engines; the new
+**enumerated lemma library + multi-hop `lemma_chain` route** (free CP-rule
+helpers, iterative harvest, direct-goal fallback) took official TRUE
+**706 → 773** and HF TRUE **357 → 379** with zero lost rows and a
+multi-hypothesis kernel check for every chain cert.
+
+## Current status
 
 - **Offline score** (`fast` tier, oracles; regenerate via `audit_corpus.py --all`/`--hf`):
-  official **1534/1669** (TRUE **706/819**), HF **727/800**. **Zero oracle
-  failures across all 2,689 problems.** Offline is an upper bound — a cloud judge
-  sweep is still owed before promotion.
-- **Packaged**: `stage2/submissions/solver.py`, **277,918 bytes** (limit 500 KB).
-  Gate: `pytest stage2/tests` = **273 passed, 2 skipped**, ~30 s, no Lean.
+  official **1601/1669** (TRUE **773/819**), HF **749/800** (TRUE **379**).
+  **Zero oracle failures across all 2,689 problems.** Offline is an upper
+  bound — a cloud judge sweep is still owed before promotion.
+- **Packaged**: `stage2/submissions/solver.py`, **308,306 bytes** (limit 500 KB).
+  Gate: `pytest stage2/tests` = **310 passed, 2 skipped**, ~11 min (golden
+  entries re-solve through the lemma-chain routes now), no Lean.
   `package_solver.ps1` runs it and refuses to package on failure.
 - **The standing loop**: `python stage2/experiments/spotcheck.py` — randomized
   cross-source accuracy hunt; auto-pins any mistake into the gate. Run it, fix

@@ -185,15 +185,27 @@ def _split_unit(unit: str) -> tuple[str, list[str]]:
 
 
 class ProofKernel:
-    """Evaluates a solver proof expression to the equation it proves."""
+    """Evaluates a solver proof expression to the equation it proves.
+
+    `extra_hyps` maps additional hypothesis names to `(vars, lhs, rhs)` laws,
+    so lemma-chain certificates can cite previously proven helper lemmas.
+    """
 
     def __init__(self, eq1_vars: list[str], eq1_lhs: Term, eq1_rhs: Term,
-                 goal_vars: set[str], hyp_name: str = "h"):
+                 goal_vars: set[str], hyp_name: str = "h",
+                 extra_hyps: dict[str, tuple[list[str], Term, Term]] | None = None):
         self.eq1_vars = eq1_vars
         self.eq1_lhs = eq1_lhs
         self.eq1_rhs = eq1_rhs
         self.goal_vars = goal_vars
         self.hyp_name = hyp_name
+        self.hyps: dict[str, tuple[list[str], Term, Term]] = {
+            hyp_name: (eq1_vars, eq1_lhs, eq1_rhs)
+        }
+        for name, law in (extra_hyps or {}).items():
+            if name in self.hyps:
+                raise OracleError(f"duplicate hypothesis name {name!r}")
+            self.hyps[name] = law
 
     def prove(self, expr: str) -> tuple[Term, Term] | tuple[str]:
         units = _tokenize_units(expr)
@@ -210,16 +222,17 @@ class ProofKernel:
 
     def _eval_spine(self, units: list[str], i: int) -> tuple[tuple[Term, Term], int]:
         base, suffixes = _split_unit(units[i])
-        if base == self.hyp_name and not suffixes:
+        if base in self.hyps and not suffixes:
+            hyp_vars, hyp_lhs, hyp_rhs = self.hyps[base]
             args = units[i + 1:]
-            if len(args) != len(self.eq1_vars):
+            if len(args) != len(hyp_vars):
                 raise OracleError(
-                    f"hypothesis arity {len(args)} != {len(self.eq1_vars)}")
+                    f"hypothesis {base!r} arity {len(args)} != {len(hyp_vars)}")
             subst = {
                 v: parse_lean_term(a, self.goal_vars)
-                for v, a in zip(self.eq1_vars, args)
+                for v, a in zip(hyp_vars, args)
             }
-            return (substitute(self.eq1_lhs, subst), substitute(self.eq1_rhs, subst)), len(units)
+            return (substitute(hyp_lhs, subst), substitute(hyp_rhs, subst)), len(units)
         if base == "congrArg" and not suffixes:
             if len(units) - i != 3:
                 raise OracleError("congrArg expects exactly two arguments")
@@ -314,6 +327,45 @@ _LEMMA_CERT_RE = re.compile(
 _TABLE_RE = re.compile(r'finOpTable "(\[\[.*?\]\])"')
 _FIN_RE = re.compile(r"Exists\.intro \(Fin (\d+)\)")
 
+_LEMMA_CHAIN_HEAD = "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n"
+
+_HAVE_BLOCK_RE = re.compile(
+    r"\A  have (hlem\d*) : ∀ ([a-z](?: [a-z])*) : G, ([^\n]+) := by\n"
+    r"    intro ([a-z](?: [a-z])*)\n"
+    r"    exact ([^\n]+)\n")
+
+_LEMMA_CHAIN_TAIL_RE = re.compile(
+    r"\A(?:  intro ([a-z](?: [a-z])*)\n)?  exact (.+)\n\Z", re.DOTALL)
+
+
+def _parse_lemma_chain(code: str):
+    """Split a lemma-chain certificate into have-blocks and the goal tail.
+
+    Returns (blocks, intro_vars, goal_expr) or None when the code is not
+    chain-shaped. Each block is (name, binder_list, statement, proof_expr).
+    """
+    if not code.startswith(_LEMMA_CHAIN_HEAD):
+        return None
+    rest = code[len(_LEMMA_CHAIN_HEAD):]
+    blocks: list[tuple[str, list[str], str, str]] = []
+    while True:
+        m = _HAVE_BLOCK_RE.match(rest)
+        if m is None:
+            break
+        name, binder_group, statement, intro_group, expr = m.groups()
+        if intro_group.split() != binder_group.split():
+            return None
+        blocks.append((name, binder_group.split(), statement, expr))
+        rest = rest[m.end():]
+    if not blocks:
+        return None
+    tail = _LEMMA_CHAIN_TAIL_RE.match(rest)
+    if tail is None:
+        return None
+    intro_group, goal_expr = tail.groups()
+    intro_vars = intro_group.split() if intro_group else []
+    return blocks, intro_vars, goal_expr.strip()
+
 
 def classify_true_certificate(code: str) -> str:
     """Which offline checker applies to this TRUE certificate."""
@@ -323,7 +375,64 @@ def classify_true_certificate(code: str) -> str:
         return "singleton"
     if _LEMMA_CERT_RE.match(code):
         return "lemma"
+    if _parse_lemma_chain(code) is not None:
+        return "lemma_chain"
     return "other"
+
+
+def check_true_lemma_chain_certificate(
+        code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
+    """Kernel-check a certificate that proves helper lemmas, then the goal.
+
+    Each have-block is verified in the scope of `h` plus every previously
+    verified lemma, and the goal body in the scope of all of them, so the
+    whole chain is sound by induction: nothing is taken on trust beyond eq1.
+    """
+    parsed = _parse_lemma_chain(code)
+    if parsed is None:
+        raise OracleError("certificate does not match the lemma-chain shape")
+    blocks, intro_vars, goal_expr = parsed
+    if intro_vars != list(eq2["variables"]):
+        raise OracleError(
+            f"intro variables {intro_vars} != goal variables {eq2['variables']}")
+
+    proven: dict[str, tuple[list[str], Term, Term]] = {}
+    for name, binders, statement, expr in blocks:
+        if name in proven or name == "h":
+            raise OracleError(f"duplicate or reserved lemma name {name!r}")
+        lhs_text, sep, rhs_text = statement.partition(" = ")
+        if not sep:
+            raise OracleError(f"lemma statement is not an equation: {statement!r}")
+        lemma_lhs = parse_lean_term(lhs_text, set(binders))
+        lemma_rhs = parse_lean_term(rhs_text, set(binders))
+        kernel = ProofKernel(
+            list(eq1["variables"]), eq1["lhs"], eq1["rhs"],
+            set(binders), "h", extra_hyps=dict(proven))
+        proved = kernel.prove(expr.strip())
+        if proved == _REFL:
+            if lemma_lhs != lemma_rhs:
+                raise OracleError("rfl offered for a non-reflexive lemma")
+        elif proved != (lemma_lhs, lemma_rhs):
+            raise OracleError(
+                f"lemma {name!r} body proved "
+                f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, but the "
+                f"certificate states {term_to_str(lemma_lhs)} = {term_to_str(lemma_rhs)}")
+        proven[name] = (list(binders), lemma_lhs, lemma_rhs)
+
+    goal_kernel = ProofKernel(
+        list(eq1["variables"]), eq1["lhs"], eq1["rhs"],
+        set(eq2["variables"]) or set(eq1["variables"]), "h",
+        extra_hyps=proven)
+    proved = goal_kernel.prove(goal_expr)
+    if proved == _REFL:
+        if eq2["lhs"] != eq2["rhs"]:
+            raise OracleError("rfl offered for a non-reflexive goal")
+        return
+    if proved != (eq2["lhs"], eq2["rhs"]):
+        raise OracleError(
+            "goal body proved wrong equation: "
+            f"{term_to_str(proved[0])} = {term_to_str(proved[1])}, wanted "
+            f"{term_to_str(eq2['lhs'])} = {term_to_str(eq2['rhs'])}")
 
 
 def check_true_singleton_certificate(code: str, eq1: dict[str, Any]) -> None:

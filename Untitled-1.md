@@ -1,0 +1,1 @@
+https://competition.sair.foundation/competitions/mathematics-distillation-challenge-equational-theories-stage2/overview

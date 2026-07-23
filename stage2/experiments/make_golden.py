@@ -49,6 +49,13 @@ def main() -> int:
             for row in payload["rows"]:
                 if row.get("status") != "solved" or row.get("oracle") != "ok":
                     continue
+                # narrow_grind is a last-ditch speculative lane: its certs are
+                # model-check-only locally and the cloud judge rejected one in
+                # the field (2026-07-22 session 4), and the budgeted lemma
+                # routes ahead of it win its rows nondeterministically. Not
+                # golden material on either count.
+                if row["route"].startswith("true:narrow_grind"):
+                    continue
                 by_route[row["route"]].append(row)
 
     entries = []

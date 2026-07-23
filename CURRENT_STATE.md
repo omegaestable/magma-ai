@@ -2,9 +2,36 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-22 (session 3, end of session).
+Last updated: 2026-07-22 (session 4, playground-failure triage).
 
-## Read This First (2026-07-22)
+## Read This First (2026-07-22, session 4)
+
+A real playground Solo run surfaced 13 `TRUE INCORRECT` + 1 `ERROR`. All 14
+were reproduced and root-caused; see
+`stage2/results/2026-07-22-playground-failure-fixes.md`. Non-negotiables now
+built into the solver:
+
+- **ERROR class eliminated**: Solo parses `budget.timeout_seconds`, sets a
+  global hard deadline every engine deadline clamps to, banks an insurance
+  judge status before the LLM loop, and always submits a final fallback
+  (now a grind cert — no wrong-answer penalty exists). A **memory guard**
+  (default cap 1600 MB, `MAGMA_MEMORY_CAP_MB`) models the 2048 MB sandbox:
+  deep-tier closures measured 5–17 GB RSS locally, which means the
+  playground was OOM-killing them. The guard is armed only in the
+  Solo/Marathon entry points.
+- **`true:narrow_grind` is demoted** behind the kernel-verified engines: the
+  official judge rejected its cert on a shape the local judge accepts. Treat
+  "local Lean accepted a grind proof" as non-evidence for the cloud judge.
+- **New TRUE power**: `enumerated_lemma_library()` (~600 small laws) and
+  `lemma_chain_bootstrap_route` (multi-hop: free CP-rule helpers + iterative
+  harvest + pivot-or-direct-goal). Certificates are multi-`have` chain
+  proofs; the offline kernel verifies them (`lemma_chain` shape, multi-
+  hypothesis `ProofKernel`). 8 of the 14 playground misses now emit
+  judge-accepted certs at the `fast` tier.
+- **FALSE misses 0093/0123/0190 have no order ≤ 4 witness** (DFS-exhausted);
+  larger orders still open.
+
+## Read This First (2026-07-22, session 3)
 
 0. **Three new TRUE routes shipped** — `true:universal_identity`,
    `true:projection_bootstrap`, `true:lemma_bootstrap` — taking official TRUE
@@ -64,7 +91,7 @@ Last updated: 2026-07-22 (session 3, end of session).
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `277918` bytes on 2026-07-22 (still well under 500 KB).
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `308306` bytes on 2026-07-22 session 4 (gate: 310 passed, 2 skipped; still well under 500 KB).
 - Self-verifying LLM dev loop: `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`). Runs real problems through gpt-oss via OpenRouter with a repair loop and verifies every candidate with the local Lean judge. Dev-only; see `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
@@ -118,19 +145,23 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 
 ## Best Evidence
 
-Current measured baseline (2026-07-22 session 2, `fast` effort tier, offline
-oracles; regenerate with `stage2/experiments/audit_corpus.py --all`):
+Current measured baseline (2026-07-22 **session 4**, `fast` effort tier,
+offline oracles; regenerate with `stage2/experiments/audit_corpus.py --all`):
 
-| Set | Solved | 2026-07-21 | Pre-2026-07-21 doc |
+| Set | Solved | Session 2 | 2026-07-21 |
 | --- | ---: | ---: | ---: |
-| `normal` | `957/1000` | `934/1000` | `803/1000` |
-| `hard1` | `61/69` | `57/69` | `42/69` |
-| `hard2` | `155/200` | `146/200` | `92/200` |
-| `hard3` | `361/400` | `343/400` | `264/400` |
-| **Total** | **`1534/1669`** | `1480/1669` | `1201/1669` |
+| `normal` | `984/1000` | `957/1000` | `934/1000` |
+| `hard1` | `64/69` | `61/69` | `57/69` |
+| `hard2` | `172/200` | `155/200` | `146/200` |
+| `hard3` | `381/400` | `361/400` | `343/400` |
+| **Total** | **`1601/1669`** | `1534/1669` | `1480/1669` |
 
-HF evaluation sets: `727/800` (was `707/800`). Zero oracle failures across all
-2,689 problems.
+Official TRUE count: **`773`** (session 2: `706`; +67 from the enumerated
+lemma library + multi-hop lemma chains). HF evaluation sets: `749/800`,
+TRUE `379` (was `727/800` / `357`), zero lost rows. Zero oracle failures
+across all 2,689 problems. Evidence:
+`stage2/results/2026-07-22-playground-failure-fixes.md`,
+`audit-2026-07-22-session4.json`, `audit-hf-2026-07-22-session4.json`.
 
 **Compare TRUE counts, not solved counts.** The FALSE search is wall-clock
 bounded, so solved totals carry a run-to-run noise band of roughly ±7 on the
@@ -215,11 +246,23 @@ Full public validation of the optimized package after the grind rollback is pend
 
 ## Immediate Next Work
 
-0. **SHIPPED 2026-07-20**: LLM seeded-closure hybrid (chain + key_terms + peak_term) + derived critical-pair closure (unification kernel + bidirectional search). Both routes now in solver.py. Derived CP cracks 70%+ of held-out frontier; LLM hybrid bridges model coarseness at 3× baseline. See session memory `session-2026-07-20-hybrid-cp.md`.
-1. Fix remaining fallback rows by adding reusable TRUE proof templates, finite witness families, or judged LLM certificate quality; do not special-case ids.
-2. Run broader no-loss validation for the refactored closure helper, especially hard TRUE closure fixtures and the full public sets.
-3. Fill the route fixture backlog in `stage2/docs/solver-route-ledger.md` before risky refactors.
-4. Use positive-token official/proxy Marathon guardrails only; do not run `--budget-tokens 0` sweeps as active validation.
+0. **SHIPPED 2026-07-22 session 4**: Solo hard-deadline + memory guard +
+   insurance judge call (ERROR class eliminated); `narrow_grind` demotion;
+   enumerated lemma library + multi-hop `lemma_chain` route (+67 official
+   TRUE, +22 HF TRUE, zero losses). See
+   `stage2/results/2026-07-22-playground-failure-fixes.md`.
+1. Open playground rows: TRUE `normal_0582` (trivializer — ETP says
+   Eq1923 ⇒ x = y; chain still can't harvest a first helper), `hard2_0178`,
+   `evaluation_normal_0040`; FALSE `hard2_0093`/`hard2_0123`/
+   `evaluation_extra_hard_0190` (no witness ≤ 4 exists — try ETP
+   explicit-ancestor countermodel tables, which need fetching upstream).
+2. Rerun the playground simulation to confirm the field results match the
+   local evidence (expected: the 8 fixed rows accept; 0 ERRORs).
+3. Fix remaining fallback rows by adding reusable TRUE proof templates,
+   finite witness families, or judged LLM certificate quality; do not
+   special-case ids.
+4. Use positive-token official/proxy Marathon guardrails only; do not run
+   `--budget-tokens 0` sweeps as active validation.
 5. Keep HF mirror sweeps separate from public evidence.
 
 ## Non-Goals

@@ -135,6 +135,9 @@ def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
             elif shape == "lemma":
                 oracles.check_true_lemma_certificate(code, eq1, eq2)
                 checks.append("lemma_kernel_verified")
+            elif shape == "lemma_chain":
+                oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+                checks.append("lemma_chain_kernel_verified")
             else:
                 checks.append("proof_kernel_skipped_unsupported_shape")
             battery = build_battery(eq1)
