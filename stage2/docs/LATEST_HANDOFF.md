@@ -1,10 +1,69 @@
 # Latest Handoff
 
-Updated: 2026-07-22 (session 4 — playground failure triage).
+Updated: 2026-07-23 (spotcheck batches + e-graph frontier study).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
-## Session 4 (newest — read first)
+## 2026-07-23 session (newest — read first)
+
+**Shipped a new engine, `true:egg_closure`** — ground equality saturation
+with kernel-checkable proof extraction, the mechanism four prior sessions were
+missing. Full detail:
+`stage2/results/2026-07-23-spotcheck-batches-and-egg-frontier-study.md`.
+
+- **Result: official TRUE `773 → 789` (+16), HF TRUE `379 → 384` (+5), zero
+  oracle failures across all 2,689 problems.** Attribution: `egg_closure`
+  fired 13 official + 4 HF times; **15 of those are previously-`skip` rows
+  (genuine new coverage)**, the rest of the +21 are lemma_chain/derived_cp
+  flipping on the timing band. These are `fast`-tier (10 s/row) numbers; Solo
+  runs egg at `standard`/`deep` (75–220 s), where the prototype reached 21–23
+  of these rows, so the deployed Solo ceiling is higher.
+- **Why this was the right lever (root cause).** The oracle-pivot experiment
+  handed the CP closure the exact ETP-verified intermediate laws as
+  lemma-chain helpers; it **failed every genuine explicit edge**. So candidate
+  generation was never the constraint — closure *mechanism* was. Do NOT widen
+  the enumerated lemma library; that is measured-dead. The ETP's own proofs of
+  these edges are MagmaEgg (egg) proofs that instantiate eq1 at composite
+  ground terms over the goal's variables — the move egg makes and CP
+  unification cannot.
+- **How the engine stays sound.** A ground e-graph + congruence closure over
+  goal-variable terms; eq1 applied by e-matching. A proof forest records the
+  `h`-instance behind each merge; when the goal sides merge, the explanation
+  is extracted, cycle-cut + greedily bridged to a short chain, and **every step
+  is replayed syntactically against the concrete term before a character is
+  emitted** — a bug anywhere fails closed (route returns None). Certificate is
+  a balanced `.trans` tree of `congrArg`-wrapped `h`-instances: plain
+  `exact_expr`, checked by the existing `ProofKernel`, **no new oracle surface**.
+- **Validated four ways:** offline kernel 21–23/67 frontier rows; **real local
+  Lean judge 8/9** on a 700 B–48 KB size ladder (the 1 failure was oversized —
+  the real judge caps code at 50 KB, not the solver's 100 KB; route now caps
+  certs at 49.5 KB); **0/25** ETP-FALSE negative controls through the full
+  extract+render path; and **real end-to-end rounds** (`real_rounds.py`,
+  solve→`verify_answer` through Lean): **69/69 emitted certs accepted, 0
+  rejected, 0 wrong verdicts** across a broad mixed round (50) and the egg
+  frontier — **18/18 egg certs Lean-accepted**, 480 B–34.9 KB.
+- **Placement & gate discipline.** Route is last among TRUE engines (pure
+  addition, honors `local_deadline`/`memory_exceeded`). Excluded from the
+  golden fixture like `narrow_grind` — it is wall-clock nondeterministic and
+  last, so an egg-only row can time out under load and read as a false coverage
+  regression; its certs are kernel-checked in every audit/spotcheck instead.
+- **`make_golden` now groups by route family, not full label** (2026-07-23).
+  The port's golden regen briefly captured a `lemma_chain:enum319` row that
+  solved at its 10 s ceiling and then flaked the gate; full-label grouping had
+  force-pinned that marginal singleton. Family grouping pins the fastest
+  representative per engine instead. Fixture is now 136 entries / 52 families;
+  all re-solve under 8-worker parallel stress.
+- **Standing loop before the port: 4 spotcheck batches, 358 rows, 100%
+  accuracy, 0 pinned.** Prototype + drivers kept at
+  `stage2/experiments/egg_saturation.py` / `egg_prove.py` / `egg_real_rows.py`
+  / `egg_false_controls.py`.
+- **Next levers (ranked):** (1) egg is budget-bound at `fast` — a `standard`
+  Solo sweep should land the remaining ~8 prototype-provable rows; (2) shrink
+  extraction further (some proofs still hit the 46 KB cap and are dropped —
+  smaller certs = more shippable rows); (3) re-run the LLM lemma lane, whose
+  ceiling egg now raises (model names a law, egg derives it).
+
+## 2026-07-22 session 4
 
 A real playground Solo run exposed 13 `TRUE INCORRECT` + 1 `ERROR`; all 14
 were root-caused and fixed or mitigated in one pass — full story in
@@ -21,26 +80,27 @@ multi-hypothesis kernel check for every chain cert.
 ## Current status
 
 - **Offline score** (`fast` tier, oracles; regenerate via `audit_corpus.py --all`/`--hf`):
-  official **1601/1669** (TRUE **773/819**), HF **749/800** (TRUE **379**).
+  official **1617/1669** (TRUE **789/819**), HF **754/800** (TRUE **384**).
   **Zero oracle failures across all 2,689 problems.** Offline is an upper
   bound — a cloud judge sweep is still owed before promotion.
-- **Packaged**: `stage2/submissions/solver.py`, **308,306 bytes** (limit 500 KB).
-  Gate: `pytest stage2/tests` = **310 passed, 2 skipped**, ~11 min (golden
-  entries re-solve through the lemma-chain routes now), no Lean.
-  `package_solver.ps1` runs it and refuses to package on failure.
+- **Packaged**: `stage2/submissions/solver.py` (repackaged 2026-07-23 with the
+  egg engine; ~332 KB source, limit 500 KB).
+  Gate: `pytest stage2/tests`, no Lean. `package_solver.ps1` runs it and
+  refuses to package on failure.
 - **The standing loop**: `python stage2/experiments/spotcheck.py` — randomized
   cross-source accuracy hunt; auto-pins any mistake into the gate. Run it, fix
   what it pins. See `stage2/docs/spotcheck.md`.
-- **Three levers that keep paying** (all from the "small law is a smaller search
-  target than the goal" insight): `true:universal_identity`,
-  `true:projection_bootstrap`, `true:lemma_bootstrap`, plus an LLM lemma lane.
-  The open frontier is making small proposed lemmas *derivable* — see
-  "Recommended Next Steps".
+- **Levers that keep paying**: the "small law is a smaller search target"
+  routes (`true:universal_identity`, `true:projection_bootstrap`,
+  `true:lemma_bootstrap`) plus an LLM lemma lane, and now **`true:egg_closure`**
+  — the equality-saturation engine that reaches the ETP's MagmaEgg proofs the
+  CP closure structurally cannot. The lemma-derivability wall is solved by egg;
+  see the session block above.
 - **Never delete solver routes to "debloat"** — 2026-07-21 disproved that with
   evidence (subsumed routes are cheap fast paths; 29 look dead on official but
   live on HF). Debloat = junk files and stale docs only.
 
-## 2026-07-22 session 3 (most recent)
+## 2026-07-22 session 3
 
 Focus: a randomized cross-source **spot-check harness** to hunt solver mistakes
 over many sessions, heading toward 100% accuracy. Full design:
@@ -397,32 +457,22 @@ Answer-kind totals for that baseline:
 
 ## Recommended Next Steps
 
-All three 2026-07-22 session-1 starters are **done**, plus the lemma-library
-generalisation and the LLM lemma lane. Remaining, ranked by evidence:
+Updated 2026-07-23 (after shipping `true:egg_closure`). Ranked by evidence:
 
 0. **Standing loop first**: run `python stage2/experiments/spotcheck.py` a few
-   times; fix anything it pins. The term-cache leak is now fixed, so a full
-   `other`-shape Fin4 soundness sweep is cheap to re-run too
-   (`scratch: hunt_other_shape.py` pattern, or just larger spotcheck batches).
-1. **Make small lemmas derivable — the single blocking problem.** Measured
-   today: of the lemmas gpt-oss proposed that survive finite-model checking,
-   **0 of 7 became derivable with 22x the search budget.** The closure is not
-   narrowly missing them; it is structurally unable to reach them, and more
-   time provably does not help. This is the same wall as
-   `guided_chain_unproved_or_bad_endpoints` (dominant across 3 sessions), but
-   now exposed on targets small enough to derive by hand. **Take one of the 7
-   and work it out manually** — that is exactly how `universal_identity` was
-   found today, and it converted a 3-session dead end into +47 rows.
-2. **Mine the lemma library from data.** Five of six library entries earned
-   nothing; every win came from `a = b`. Instead of guessing more laws, for
-   each unsolved row enumerate small laws that hold in every finite model of
-   eq1 *and* imply the goal; recurring ones are evidence-backed candidates.
-   Both halves reuse machinery that now exists (`lemma_survives_models`,
-   `lemma_applies_to_goal`).
+   times; fix anything it pins.
+1. **Give egg more budget where it pays.** The +21 is `fast` tier (10 s/row).
+   The prototype reached 21–23 official frontier rows at 20 s; a `standard`
+   Solo sweep (75 s) should land the ~8 currently timing out. Cheapest win.
+2. **Shrink egg extraction further.** Some proofs still hit the 46 KB byte cap
+   and get dropped (`hard3_0208`, `evaluation_order5_0022` were 126 KB / 186 KB
+   pre-shortening). Better cycle-cutting / common-subproof sharing = more
+   shippable rows at the same saturation power.
 3. **Step-count budgets** instead of wall-clock, so route selection is
-   deterministic and the golden gate can go back to strict equality.
-4. Re-run the LLM lemma lane after (1) — its ceiling is set by what the closure
-   can derive, not by the prompt.
+   deterministic and the golden gate can go back to strict equality (this is
+   also what would let `egg_closure` back into the golden fixture).
+4. **Re-run the LLM lemma lane** — egg raises its ceiling: the model names a
+   law, egg derives it, the kernel checks it.
 
 Older items (LLM rails discipline, no raw-TRUE Marathon Lean, no proof-body
 rewrapping) remain true as ongoing constraints, not active TODOs — see

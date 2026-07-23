@@ -1,15 +1,4 @@
-"""Stage 2 solver for SAIR Equational Theories.
-
-The deterministic core now handles:
-1. reflexive TRUE implications;
-2. singleton/collapse TRUE implications;
-3. direct substitution, bounded rewrite chains, and subterm congruence TRUE implications;
-4. finite FALSE witnesses from named small magmas, structured table families,
-   affine/quadratic families, and bounded Fin n search.
-
-LLM escalation is available only through the official Solo/Marathon
-proxies. Unsupported cases are skipped rather than answered speculatively.
-"""
+"""Stage 2 solver: deterministic + LLM equational theory prover."""
 
 from __future__ import annotations
 
@@ -26,8 +15,6 @@ from itertools import product
 from typing import Any, Callable
 
 
-# Wall-clock zero for the whole process. The Solo proxy starts the budget
-# clock at spawn, so deadlines must be anchored here, not at first message.
 _PROCESS_START = time.monotonic()
 
 
@@ -211,10 +198,6 @@ LLM_SEEDED_CLOSURE_WAYPOINT_BUDGET = 1.5
 LLM_SEEDED_CLOSURE_MAX_WAYPOINTS = 5
 LLM_SEEDED_CLOSURE_TOTAL_BUDGET = 14.0
 LLM_MAX_ROUNDS = 6
-# Solo wall-clock policy (all anchored at _PROCESS_START):
-# reserve the tail for the guaranteed fallback judge call, cap the
-# deterministic pass so slow sandbox hardware cannot starve the LLM lane,
-# and refuse to open an LLM round without room to finish it.
 SOLO_FALLBACK_RESERVE_SECONDS = 90.0
 SOLO_DETERMINISTIC_SHARE = 0.55
 SOLO_LLM_ROUND_MIN_SECONDS = 150.0
@@ -226,19 +209,6 @@ LLM_MAX_TABLE_N = 8
 LLM_MAX_OUTPUT_TOKENS = 6144
 LLM_HTTP_TIMEOUT_SECONDS = 75.0
 
-# --------------------------------------------------------------------------
-# Effort scaling.
-#
-# The deterministic engines were tuned as if wall-clock were scarce, but both
-# tracks are generous: Solo affords 3600 s per problem and Marathon's default
-# global budget is compression x N x 3600 s (~1800 s per problem at N=100,
-# compression 0.5). At the fixed constants the solver used roughly 1% of that.
-#
-# EFFORT is a single multiplier the entrypoints set once from the real budget.
-# Engine limits below derive from it, so raising the tier widens time *and*
-# search caps together - the sweep showed both bind, and widening only one
-# leaves rows on the table.
-# --------------------------------------------------------------------------
 EFFORT_TIERS = {
     #        time x   frontier x  fills x   pool +   depth +
     "fast": (1.0, 1.0, 1.0, 0, 0),
@@ -267,13 +237,6 @@ def effort_for_seconds(per_problem_seconds: float) -> str:
     return "fast"
 
 
-# --------------------------------------------------------------------------
-# Global hard deadline. The playground killed a Solo run mid-search because
-# the deterministic engines plus LLM rounds crossed the 3600 s wall clock
-# before any judge call was issued (result: harness ERROR, not a verdict).
-# Entry points set this once from the real budget; every engine-local
-# deadline is clamped to it, so no search loop can outlive the run.
-# --------------------------------------------------------------------------
 _HARD_DEADLINE: float | None = None
 
 
@@ -2437,11 +2400,6 @@ def commutative_term_key(term: Term) -> Term:
     return "op", left, right
 
 
-# Unbounded term-utility memoisation: fast within a problem, but the keys are
-# `Term` tuples that different problems essentially never share, so in a
-# long-lived Marathon process the entries accumulate for the life of the run
-# (measured 11.2 GB RSS partway through a 200-row set on 2026-07-22). Clearing
-# between problems costs nothing and keeps the hot path unbounded-cache fast.
 _TERM_CACHE_FUNCS = (
     term_vars_tuple,
     term_size,
@@ -4432,20 +4390,10 @@ def absorption_context_bridge_pool(
     return extended[:pool_limit]
 
 
-# --------------------------------------------------------------------------
-# Memory guard. The production sandbox caps the solver at 2048 MB; a deep-tier
-# closure frontier can pass 5 GB on permissive hypotheses (measured on the
-# 2026-07-22 playground ERROR row), and an OOM kill leaves no judge status at
-# all. Every long search loop already polls `deadline_expired`, so the guard
-# lives there: over the cap, all budgeted loops wind down gracefully.
-# --------------------------------------------------------------------------
 MEMORY_CAP_MB_DEFAULT = 1600.0
 _MEM_CHECK_EVERY = 4096
 _mem_check_counter = 0
 _mem_exceeded = False
-# The guard models the production sandbox: one solver process per problem
-# with a 2048 MB cap. Long-lived dev processes (pytest, audits) legitimately
-# grow past that across many problems, so entry points arm it explicitly.
 _MEMORY_GUARD_ARMED = False
 
 
@@ -5750,6 +5698,603 @@ def lemma_chain_bootstrap_route(
     return None
 
 
+# ---------------------------------------------------------------------------
+# Ground equality saturation with proof extraction ("egg with receipts").
+#
+# The 2026-07-23 frontier study proved the critical-pair closure cannot
+# traverse single ETP explicit edges even when handed the exact intermediate
+# lemma (oracle-pivot experiment), while the ETP's own MagmaEgg proofs reach
+# them by instantiating eq1 at composite ground terms over the goal's
+# variables — a move CP unification never makes. This engine is that
+# mechanism: a ground e-graph over goal-variable terms, congruence closure,
+# eq1 applied by e-matching with pool-drawn instantiations, and a proof
+# forest that renders the discovered equality into the same
+# h/.symm/.trans/congrArg grammar the offline kernel checks.
+#
+# Soundness: the renderer REPLAYS every extracted step syntactically on the
+# concrete term before emitting anything — a bug anywhere in the e-graph or
+# explanation code fails closed (route returns None); it cannot emit a wrong
+# proof. Validated 2026-07-23: 21-23 of the 67 then-unreachable TRUE rows
+# extract and pass the offline kernel; 9/9 shippable-size certificates were
+# accepted by the real local Lean judge; 0/25 false positives on ETP-FALSE
+# negative controls (see stage2/results/2026-07-23-*.md).
+
+EGG_TIME_BUDGET = 10.0
+EGG_ROUNDS = 30
+EGG_POOL_MAX = 36
+EGG_EXPAND_CAP = 900
+EGG_MAX_ENODES = 60_000
+# The production judge rejects code over MAX_CODE_LENGTH = 50_000 UTF-8
+# bytes as malformed (vendor judge/verify.py) — smaller than this module's
+# MAX_LEAN_CODE_BYTES. Measured 2026-07-23: 59,820-byte cert bounced,
+# 48,526-byte cert accepted.
+EGG_MAX_PROOF_BYTES = 46_000
+EGG_MAX_CERT_BYTES = 49_500
+
+_EGG_BINDER_CANDIDATES = ("t", "q", "p", "s", "r", "m", "n", "k")
+
+
+class _EggProvenanceError(Exception):
+    pass
+
+
+def _egg_term_size(t: Term) -> int:
+    if t[0] == "var":
+        return 1
+    return _egg_term_size(t[1]) + _egg_term_size(t[2]) + 1
+
+
+def _egg_substitute(term: Term, subst: dict[str, Term]) -> Term:
+    if term[0] == "var":
+        return subst[term[1]]
+    return ("op", _egg_substitute(term[1], subst), _egg_substitute(term[2], subst))
+
+
+def _egg_subterms(t: Term, acc: list[Term]) -> list[Term]:
+    acc.append(t)
+    if t[0] == "op":
+        _egg_subterms(t[1], acc)
+        _egg_subterms(t[2], acc)
+    return acc
+
+
+def _egg_pattern_vars(t: Term, acc: set[str] | None = None) -> set[str]:
+    if acc is None:
+        acc = set()
+    if t[0] == "var":
+        acc.add(t[1])
+    else:
+        _egg_pattern_vars(t[1], acc)
+        _egg_pattern_vars(t[2], acc)
+    return acc
+
+
+def _egg_subterm_at(t: Term, pos: tuple) -> Term:
+    for step in pos:
+        t = t[1] if step == "L" else t[2]
+    return t
+
+
+def _egg_replace_at(t: Term, pos: tuple, new: Term) -> Term:
+    if not pos:
+        return new
+    if pos[0] == "L":
+        return ("op", _egg_replace_at(t[1], pos[1:], new), t[2])
+    return ("op", t[1], _egg_replace_at(t[2], pos[1:], new))
+
+
+def _egg_upper_patterns(eq1: dict[str, Any]) -> tuple[Term, Term, list[str]]:
+    """eq1 with vars renamed to uppercase so they never collide with the
+    goal's lowercase variables."""
+    def walk(t: Term) -> Term:
+        if t[0] == "var":
+            return ("var", t[1].upper())
+        return ("op", walk(t[1]), walk(t[2]))
+    return walk(eq1["lhs"]), walk(eq1["rhs"]), [v.upper() for v in eq1["variables"]]
+
+
+class _EggProver:
+    """Term-registered e-graph with a proof forest.
+
+    Forest edges (one per class merge, plus redundant alternatives):
+      rule edge (a, b): a = eq1.lhs[σ], b = eq1.rhs[σ] — a root h-instance;
+      congr edge (a, b): same top op, children pairwise merged earlier.
+    """
+
+    def __init__(self) -> None:
+        self.parent: list[int] = []
+        self.size_rep: list[int] = []
+        self.enodes: dict[tuple, int] = {}
+        self.witness: dict[tuple, Term] = {}
+        self.term_class: dict[Term, int] = {}
+        self.class_repr: dict[int, Term] = {}
+        self.adj: dict[Term, list[tuple[Term, tuple, bool]]] = {}
+
+    def find(self, a: int) -> int:
+        while self.parent[a] != a:
+            self.parent[a] = self.parent[self.parent[a]]
+            a = self.parent[a]
+        return a
+
+    def canon(self, node: tuple) -> tuple:
+        if node[0] == "op":
+            return ("op", self.find(node[1]), self.find(node[2]))
+        return node
+
+    def _register(self, t: Term, cid: int) -> None:
+        if t not in self.term_class:
+            self.term_class[t] = cid
+        root = self.find(cid)
+        best = self.class_repr.get(root)
+        if best is None or _egg_term_size(t) < _egg_term_size(best):
+            self.class_repr[root] = t
+
+    def _add_edge(self, a: Term, b: Term, reason: tuple) -> None:
+        self.adj.setdefault(a, []).append((b, reason, False))
+        self.adj.setdefault(b, []).append((a, reason, True))
+
+    def add_term(self, t: Term) -> int:
+        # A registered term's class is authoritative: re-deriving it bottom-up
+        # between rebuilds would miss the stale hashcons key and spawn a
+        # duplicate class (found the hard way against the v2 engine).
+        known = self.term_class.get(t)
+        if known is not None:
+            return self.find(known)
+        if t[0] == "var":
+            key: tuple = t
+            sz = 1
+        else:
+            a = self.add_term(t[1])
+            b = self.add_term(t[2])
+            key = ("op", self.find(a), self.find(b))
+            sz = self.size_rep[self.find(a)] + self.size_rep[self.find(b)] + 1
+        existing = self.enodes.get(key)
+        if existing is not None:
+            cid = self.find(existing)
+            if sz < self.size_rep[cid]:
+                self.size_rep[cid] = sz
+            w = self.witness.get(key)
+            if w is not None and w != t:
+                self._add_edge(t, w, ("congr",))
+            self._register(t, cid)
+            return cid
+        cid = len(self.parent)
+        self.parent.append(cid)
+        self.size_rep.append(sz)
+        self.enodes[key] = cid
+        self.witness[key] = t
+        self._register(t, cid)
+        return cid
+
+    def merge_terms(self, a_term: Term, b_term: Term, reason: tuple) -> bool:
+        a = self.find(self.term_class[a_term])
+        b = self.find(self.term_class[b_term])
+        if a_term != b_term:
+            # keep redundant justifications: they are alternative paths and
+            # the BFS picks the shortest — without them explanations wander
+            # the whole merge history
+            self._add_edge(a_term, b_term, reason)
+        if a == b:
+            return False
+        self.parent[a] = b
+        self.size_rep[b] = min(self.size_rep[b], self.size_rep[a])
+        ra, rb = self.class_repr.get(a), self.class_repr.get(b)
+        if ra is not None and (rb is None or _egg_term_size(ra) < _egg_term_size(rb)):
+            self.class_repr[b] = ra
+        return True
+
+    def rebuild(self) -> None:
+        changed = True
+        while changed:
+            changed = False
+            fresh: dict[tuple, int] = {}
+            fresh_wit: dict[tuple, Term] = {}
+            for node, cid in self.enodes.items():
+                node2 = self.canon(node)
+                cid = self.find(cid)
+                wit = self.witness.get(node)
+                other = fresh.get(node2)
+                if other is None:
+                    fresh[node2] = cid
+                    if wit is not None:
+                        fresh_wit[node2] = wit
+                elif self.find(other) != cid:
+                    ow = fresh_wit.get(node2)
+                    if wit is not None and ow is not None:
+                        self.merge_terms(ow, wit, ("congr",))
+                    else:
+                        # unexplained merge: any explanation crossing it
+                        # fails closed later
+                        self.parent[self.find(other)] = cid
+                    changed = True
+            self.enodes = fresh
+            self.witness = fresh_wit
+
+    def class_of(self, t: Term) -> int:
+        return self.find(self.term_class[t])
+
+    def _tree_path(self, s: Term, t: Term) -> list[tuple[Term, Term, tuple, bool]]:
+        if s == t:
+            return []
+        prev: dict[Term, tuple[Term, tuple, bool]] = {s: (s, (), False)}
+        queue = [s]
+        while queue:
+            nxt: list[Term] = []
+            for u in queue:
+                for v, reason, flipped in self.adj.get(u, ()):
+                    if v in prev:
+                        continue
+                    prev[v] = (u, reason, flipped)
+                    if v == t:
+                        path: list[tuple[Term, Term, tuple, bool]] = []
+                        cur = t
+                        while cur != s:
+                            p, r, f = prev[cur]
+                            path.append((p, cur, r, f))
+                            cur = p
+                        path.reverse()
+                        return path
+                    nxt.append(v)
+            queue = nxt
+        raise _EggProvenanceError("terms not connected in proof forest")
+
+    def explain(self, s: Term, t: Term, *, depth: int = 0,
+                budget: list[int] | None = None) -> list[tuple]:
+        if depth > 300:
+            raise _EggProvenanceError("explanation recursion too deep")
+        if budget is None:
+            budget = [200000]
+        steps: list[tuple] = []
+        cur = s
+        for a, b, reason, flipped in self._tree_path(s, t):
+            if a != cur:
+                raise _EggProvenanceError("path does not chain")
+            budget[0] -= 1
+            if budget[0] < 0:
+                raise _EggProvenanceError("explanation too long")
+            if reason and reason[0] == "rule":
+                _, subst_items = reason
+                # edge (x, y): x = eq1.lhs[σ], y = eq1.rhs[σ]; walking
+                # backwards (flipped) is rhs -> lhs, i.e. .symm
+                steps.append(((), dict(subst_items), flipped))
+                cur = b
+            elif reason and reason[0] == "congr":
+                if a[0] != "op" or b[0] != "op":
+                    raise _EggProvenanceError("congr edge on non-op terms")
+                for sub in self.explain(a[1], b[1], depth=depth + 1, budget=budget):
+                    steps.append((("L",) + sub[0], sub[1], sub[2]))
+                for sub in self.explain(a[2], b[2], depth=depth + 1, budget=budget):
+                    steps.append((("R",) + sub[0], sub[1], sub[2]))
+                cur = b
+            else:
+                raise _EggProvenanceError(f"unknown reason {reason!r}")
+        if cur != t:
+            raise _EggProvenanceError("explanation does not reach target")
+        return steps
+
+
+def _egg_match_pattern(pattern: Term, term: Term,
+                       subst: dict[str, Term]) -> dict[str, Term] | None:
+    if pattern[0] == "var":
+        bound = subst.get(pattern[1])
+        if bound is None:
+            s2 = dict(subst)
+            s2[pattern[1]] = term
+            return s2
+        return subst if bound == term else None
+    if term[0] != "op":
+        return None
+    s1 = _egg_match_pattern(pattern[1], term[1], subst)
+    if s1 is None:
+        return None
+    return _egg_match_pattern(pattern[2], term[2], s1)
+
+
+def _egg_diff_pos(a: Term, b: Term) -> tuple | None:
+    if a == b:
+        return None
+    if a[0] == "op" and b[0] == "op":
+        left = a[1] != b[1]
+        right = a[2] != b[2]
+        if left and not right:
+            sub = _egg_diff_pos(a[1], b[1])
+            return ("L",) + sub if sub is not None else ("L",)
+        if right and not left:
+            sub = _egg_diff_pos(a[2], b[2])
+            return ("R",) + sub if sub is not None else ("R",)
+    return ()
+
+
+def _egg_one_step_between(s: Term, t: Term, lhs_p: Term, rhs_p: Term):
+    if s == t:
+        return None
+    pos = _egg_diff_pos(s, t)
+    if pos is None:
+        return None
+    sub_s = _egg_subterm_at(s, pos)
+    sub_t = _egg_subterm_at(t, pos)
+    for symm, (frm, to) in ((False, (lhs_p, rhs_p)), (True, (rhs_p, lhs_p))):
+        subst = _egg_match_pattern(frm, sub_s, {})
+        if subst is None:
+            continue
+        subst2 = _egg_match_pattern(to, sub_t, dict(subst))
+        if subst2 is not None and _egg_substitute(frm, subst2) == sub_s:
+            return (pos, subst2, symm)
+    return None
+
+
+def _egg_bridge_steps(start: Term, steps: list, lhs_p: Term, rhs_p: Term):
+    """Greedy shortcutting: jump to the farthest later state reachable in one
+    eq1 rewrite. Every emitted step is a checked instance; the renderer
+    replays everything again anyway."""
+    states: list[Term] = [start]
+    cur = start
+    for pos, subst, symm in steps:
+        to_t = _egg_substitute(lhs_p if symm else rhs_p, subst)
+        cur = _egg_replace_at(cur, pos, to_t)
+        states.append(cur)
+    out: list = []
+    i = 0
+    while i < len(states) - 1:
+        jumped = False
+        for j in range(len(states) - 1, i, -1):
+            if j == i + 1:
+                break
+            step = _egg_one_step_between(states[i], states[j], lhs_p, rhs_p)
+            if step is not None:
+                out.append(step)
+                i = j
+                jumped = True
+                break
+        if not jumped:
+            if len(steps) != len(states) - 1:
+                return None
+            out.append(steps[i])
+            i += 1
+    return out
+
+
+def _egg_shorten_steps(start: Term, steps: list, lhs_p: Term, rhs_p: Term):
+    """Replay the chain and cut every cycle in the term-state sequence; also
+    validates every incoming step."""
+    kept: list = []
+    states: list[Term] = [start]
+    index: dict[Term, int] = {start: 0}
+    cur = start
+    for pos, subst, symm in steps:
+        from_t = _egg_substitute(rhs_p if symm else lhs_p, subst)
+        try:
+            if _egg_subterm_at(cur, pos) != from_t:
+                return None
+        except (IndexError, TypeError):
+            return None
+        to_t = _egg_substitute(lhs_p if symm else rhs_p, subst)
+        nxt = _egg_replace_at(cur, pos, to_t)
+        seen = index.get(nxt)
+        if seen is not None:
+            for t in states[seen + 1:]:
+                index.pop(t, None)
+            del kept[seen:]
+            del states[seen + 1:]
+        else:
+            kept.append((pos, subst, symm))
+            states.append(nxt)
+            index[nxt] = len(states) - 1
+        cur = nxt
+    return kept
+
+
+def _egg_balanced_trans(parts: list[str]) -> str:
+    if len(parts) == 1:
+        return parts[0]
+    mid = len(parts) // 2
+    return f"({_egg_balanced_trans(parts[:mid])}).trans ({_egg_balanced_trans(parts[mid:])})"
+
+
+def _egg_render_steps(start: Term, target: Term, steps: list,
+                      lhs_p: Term, rhs_p: Term, eq1_vars: list[str],
+                      goal_vars: list[str]) -> str | None:
+    """Render flat steps into one proof expression, replaying each step:
+    the subterm at the recorded position must equal the instantiated eq1
+    side, or the whole extraction is discarded."""
+    binder = next((b for b in _EGG_BINDER_CANDIDATES if b not in goal_vars), None)
+    if binder is None:
+        return None
+    cur = start
+    parts: list[str] = []
+    total = 0
+    for pos, subst, symm in steps:
+        from_t = _egg_substitute(rhs_p if symm else lhs_p, subst)
+        to_t = _egg_substitute(lhs_p if symm else rhs_p, subst)
+        try:
+            if _egg_subterm_at(cur, pos) != from_t:
+                return None
+        except (IndexError, TypeError):
+            return None
+        args = " ".join(term_to_lean(subst[v]) for v in eq1_vars)
+        inner = f"(h {args})" if args else "(h)"
+        if symm:
+            inner = f"{inner}.symm"
+        if pos:
+            ctx = _egg_replace_at(cur, pos, ("var", binder))
+            step_proof = f"congrArg (fun {binder} => {term_to_lean(ctx)}) ({inner})"
+        else:
+            step_proof = inner
+        cur = _egg_replace_at(cur, pos, to_t)
+        parts.append(step_proof)
+        total += len(step_proof.encode("utf-8")) + 10
+        if total > EGG_MAX_PROOF_BYTES:
+            return None
+    if cur != target:
+        return None
+    if not parts:
+        return "rfl"
+    return _egg_balanced_trans(parts)
+
+
+def _egg_ematch(egg: _EggProver, pattern: Term, cid: int, subst: dict,
+                by_class: dict[int, list[tuple]]):
+    cid = egg.find(cid)
+    if pattern[0] == "var":
+        v = pattern[1]
+        bound = subst.get(v)
+        if bound is not None:
+            if egg.find(bound) == cid:
+                yield subst
+            return
+        s2 = dict(subst)
+        s2[v] = cid
+        yield s2
+        return
+    for node in by_class.get(cid, ()):
+        if node[0] != "op":
+            continue
+        for s1 in _egg_ematch(egg, pattern[1], node[1], subst, by_class):
+            yield from _egg_ematch(egg, pattern[2], node[2], s1, by_class)
+
+
+def egg_saturate_prove(eq1: dict[str, Any], eq2: dict[str, Any], *,
+                       time_budget: float) -> str | None:
+    """Saturate a ground e-graph from the goal's terms under eq1; if the goal
+    sides merge, extract, shorten, and render a replayed proof expression."""
+    lhs_p, rhs_p, eq1_vars = _egg_upper_patterns(eq1)
+    goal_vars = list(eq2["variables"])
+    L, R = eq2["lhs"], eq2["rhs"]
+
+    egg = _EggProver()
+    pool: list[int] = []
+    for t in _egg_subterms(L, []) + _egg_subterms(R, []):
+        cid = egg.add_term(t)
+        if cid not in pool:
+            pool.append(cid)
+
+    orientations = []
+    for symm, (a, b) in ((False, (lhs_p, rhs_p)), (True, (rhs_p, lhs_p))):
+        free = sorted(_egg_pattern_vars(b) - _egg_pattern_vars(a))
+        orientations.append((a, b, free, symm))
+
+    deadline = local_deadline(time_budget)
+    done: set = set()
+
+    proved = egg.class_of(L) == egg.class_of(R)
+    for rnd in range(EGG_ROUNDS):
+        if proved or deadline_expired(deadline) or len(egg.enodes) > EGG_MAX_ENODES:
+            break
+        expand_targets = min(EGG_POOL_MAX, 10 + 6 * rnd)
+        free_pool = min(18, 8 + 2 * rnd)
+
+        cur_pool = sorted({egg.find(c) for c in pool},
+                          key=lambda c: egg.size_rep[c])
+        pool = cur_pool[:EGG_POOL_MAX]
+        prods = []
+        for p in pool[:expand_targets]:
+            for q in pool[:expand_targets]:
+                prods.append(egg.add_term(
+                    ("op", egg.class_repr[egg.find(p)],
+                     egg.class_repr[egg.find(q)])))
+        for c in prods:
+            c = egg.find(c)
+            if c not in pool and len(pool) < EGG_POOL_MAX:
+                pool.append(c)
+
+        by_class: dict[int, list[tuple]] = {}
+        for node, cid in egg.enodes.items():
+            by_class.setdefault(egg.find(cid), []).append(egg.canon(node))
+
+        apps = []
+        for oi, (a, b, free, symm) in enumerate(orientations):
+            classes = pool[:expand_targets] if a[0] == "var" else list(by_class)
+            for cid in classes:
+                if deadline_expired(deadline):
+                    break
+                for subst in _egg_ematch(egg, a, cid, {}, by_class):
+                    key = (oi, egg.find(cid),
+                           tuple(sorted((v, egg.find(c)) for v, c in subst.items())))
+                    if not free:
+                        if key in done:
+                            continue
+                        apps.append((0, key, a, b, subst, symm))
+                    else:
+                        for combo in product(pool[:free_pool], repeat=len(free)):
+                            key2 = key + (tuple(egg.find(c) for c in combo),)
+                            if key2 in done:
+                                continue
+                            s2 = dict(subst)
+                            s2.update(zip(free, combo))
+                            cost = sum(egg.size_rep[egg.find(c)]
+                                       for c in s2.values())
+                            apps.append((cost, key2, a, b, s2, symm))
+        apps.sort(key=lambda x: x[0])
+
+        merged_any = False
+        capped = False
+        applied_now = 0
+        for cost, key, lhs_pat, rhs_pat, subst_cls, symm in apps:
+            if applied_now > EGG_EXPAND_CAP and cost > 0:
+                capped = True
+                break
+            if deadline_expired(deadline) or len(egg.enodes) > EGG_MAX_ENODES:
+                capped = True
+                break
+            if key in done:
+                continue
+            done.add(key)
+            applied_now += 1
+            subst_terms = {v: egg.class_repr[egg.find(c)]
+                           for v, c in subst_cls.items()}
+            l_term = _egg_substitute(lhs_pat, subst_terms)
+            r_term = _egg_substitute(rhs_pat, subst_terms)
+            egg.add_term(l_term)
+            egg.add_term(r_term)
+            edge = (r_term, l_term) if symm else (l_term, r_term)
+            subst_items = tuple(sorted(subst_terms.items()))
+            if egg.merge_terms(edge[0], edge[1], ("rule", subst_items)):
+                merged_any = True
+            if egg.class_of(L) == egg.class_of(R):
+                proved = True
+                break
+        egg.rebuild()
+        if egg.class_of(L) == egg.class_of(R):
+            proved = True
+        if proved or (not merged_any and not capped):
+            break
+
+    if egg.class_of(L) != egg.class_of(R):
+        return None
+    try:
+        steps = egg.explain(L, R)
+    except (_EggProvenanceError, RecursionError):
+        return None
+    shortened = _egg_shorten_steps(L, steps, lhs_p, rhs_p)
+    if shortened is None:
+        return None
+    # shorten+bridge to fixpoint: bridging creates new states, which open
+    # new cycle cuts and new shortcuts
+    for _ in range(4):
+        before = len(shortened)
+        bridged = _egg_bridge_steps(L, shortened, lhs_p, rhs_p)
+        if bridged is None:
+            break
+        cut = _egg_shorten_steps(L, bridged, lhs_p, rhs_p)
+        if cut is None:
+            break
+        shortened = cut
+        if len(shortened) >= before:
+            break
+    return _egg_render_steps(L, R, shortened, lhs_p, rhs_p, eq1_vars, goal_vars)
+
+
+def egg_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+    proof_expr = egg_saturate_prove(
+        eq1, eq2, time_budget=_eff_time(EGG_TIME_BUDGET))
+    if proof_expr is None:
+        return None
+    code = substitution_true_certificate(eq2["variables"], proof_expr)
+    if len(code.encode("utf-8")) > EGG_MAX_CERT_BYTES:
+        return None
+    return "true:egg_closure", code
+
+
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
     eq2_left, eq2_right = boundary_vars(eq2["rhs"])
@@ -6448,6 +6993,20 @@ def solve_problem(
         lemma_chain = lemma_chain_bootstrap_route(eq1, eq2)
         if lemma_chain is not None:
             route, code = lemma_chain
+            return {
+                "answer": make_true_answer(problem, code),
+                "route": route,
+                "priority": problem_priority(problem, eq1, eq2),
+            }
+
+        # Ground equality saturation with kernel-checkable extraction — the
+        # only engine that reaches the ETP's MagmaEgg-style proofs. Placed
+        # after every other TRUE engine as a pure addition (2026-07-23).
+        if _engine_gate():
+            return None
+        egg_closure = egg_closure_route(eq1, eq2)
+        if egg_closure is not None:
+            route, code = egg_closure
             return {
                 "answer": make_true_answer(problem, code),
                 "route": route,
