@@ -175,6 +175,11 @@ GUIDED_CHAIN_MAX_DEPTH = 3
 GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 0.08
 LLM_GUIDED_CHAIN_MAX_DEPTH = 8
 LLM_GUIDED_CHAIN_CLOSURE_TIME_BUDGET = 1.0
+# Frontier cap for the guided per-edge rewrite search. The model can hand us
+# an unprovable edge (it sometimes answers "true" on a FALSE row), and with a
+# size-increasing eq1 the depth-8 BFS then grows without bound - measured at
+# 21.5 GB RSS on hard1_0022, with the memory guard armed but never consulted.
+GUIDED_CHAIN_FRONTIER_LIMIT = 4000
 DERIVED_CP_MAX_RULE_SIZE = 15
 DERIVED_CP_MAX_RULES = 48
 DERIVED_CP_CHAIN_MAX_DEPTH = 4
@@ -206,7 +211,7 @@ MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
 MARATHON_DETERMINISTIC_SHARE = 0.6
 LLM_MAX_TABLE_N = 8
-LLM_MAX_OUTPUT_TOKENS = 6144
+LLM_MAX_OUTPUT_TOKENS = 16384
 LLM_HTTP_TIMEOUT_SECONDS = 75.0
 
 EFFORT_TIERS = {
@@ -4253,13 +4258,28 @@ def find_rewrite_chain(
     *,
     max_depth: int = REWRITE_CHAIN_MAX_DEPTH,
     hypothesis_name: str = "h",
+    deadline: float | None = None,
+    frontier_limit: int | None = None,
 ) -> tuple[list[str], str] | None:
+    """Breadth-first rewrite search from eq2.lhs to eq2.rhs.
+
+    `deadline` / `frontier_limit` default to None, which reproduces the
+    original unbounded behaviour for the shallow callers (depth 2-3). They
+    exist for the guided-chain path, which runs at depth 8+: on a
+    size-increasing eq1 every level both multiplies the frontier and grows
+    the terms, so an unbounded search there can allocate tens of GB before
+    any wall-clock check would have fired.
+    """
     target = eq2["rhs"]
     queue: list[tuple[Term, list[str], list[str]]] = [(eq2["lhs"], [], [])]
     seen: set[Term] = {eq2["lhs"]}
     for _depth in range(max_depth):
         next_queue: list[tuple[Term, list[str], list[str]]] = []
         for term, proofs, routes in queue:
+            # Bounded work per check: rewrite_steps_from_term is finite in the
+            # size of `term`, so polling once per frontier node is enough.
+            if deadline_expired(deadline):
+                return None
             for new_term, proof, route in rewrite_steps_from_term(
                     eq1, term, hypothesis_name=hypothesis_name):
                 if new_term in seen:
@@ -4273,6 +4293,8 @@ def find_rewrite_chain(
                     return new_routes, expr
                 seen.add(new_term)
                 next_queue.append((new_term, new_proofs, new_routes))
+            if frontier_limit is not None and len(next_queue) >= frontier_limit:
+                break
         queue = next_queue
     return None
 
@@ -4295,7 +4317,13 @@ def proof_between_terms_guided(
         return proof, route
 
     edge_eq = {"lhs": src, "rhs": dst, "variables": variables}
-    chain = find_rewrite_chain(eq1, edge_eq, max_depth=max_depth)
+    chain = find_rewrite_chain(
+        eq1,
+        edge_eq,
+        max_depth=max_depth,
+        deadline=local_deadline(closure_time_budget),
+        frontier_limit=GUIDED_CHAIN_FRONTIER_LIMIT,
+    )
     if chain is not None:
         routes, proof_expr = chain
         return proof_expr, "guided:rewrite_chain:" + ",".join(routes)
