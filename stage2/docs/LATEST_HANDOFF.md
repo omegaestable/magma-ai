@@ -4,7 +4,46 @@ Updated: 2026-07-22
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
-## 2026-07-22 session 2 (most recent)
+## 2026-07-22 session 3 (most recent)
+
+Focus: a randomized cross-source **spot-check harness** to hunt solver mistakes
+over many sessions, heading toward 100% accuracy. Full design:
+`stage2/docs/spotcheck.md`.
+
+- **`stage2/experiments/spotcheck.py`** draws balanced random batches (default
+  5 TRUE + 5 FALSE per source) across the 8 distinct benchmark sets plus a new
+  **`etp`** source: the Equational Theories Project matrix in `data/exports/`,
+  ~22M validated labelled pairs the solver has never been sampled against.
+- **Correction worth knowing:** the HF `normal/hard*` files are notational
+  mirrors (`*` vs `◇`) of the official sets — zero new content. There are only
+  2,669 distinct benchmark problems and the audit already covers them all. The
+  ETP matrix is the genuinely new, essentially unlimited source (agrees with
+  2,269/2,269 in-range benchmark rows).
+- Every row runs through the existing `audit_corpus.audit_row` (solve + offline
+  oracles + label cross-check). A caught mistake — wrong verdict, unsound
+  certificate, or crash — is auto-pinned to the git-tracked
+  `stage2/fixtures/spotcheck_failures.jsonl` and replayed forever by
+  `test_spotcheck_regressions.py` inside the pre-package gate. A skip is safe
+  (coverage, not accuracy).
+- A gitignored coverage ledger steers each batch toward untested rows, so
+  repeated runs fan out across the corpus; `--pure-random` disables it.
+- **Put to work same session:** 13 batches + an ETP-only sweep + a
+  `standard`-effort hard-set sweep = **1,189 distinct rows tested, 100% accuracy
+  on every batch, 0 mistakes, nothing pinned** (216 of them from the novel `etp`
+  source). Also swept the one model-check-only surface (`other`-shape TRUE
+  certs) with a heavy exhaustive-Fin2/Fin3 + 4,000-sample-Fin4 battery. Detail:
+  `stage2/results/2026-07-22-spotcheck-baseline-and-soundness-sweep.md`.
+  `pytest stage2/tests`: 273 passed, 2 skipped (the spot-check fixture starts
+  empty).
+- Soundness surface is fully mapped: FALSE certs are exhaustively re-verified
+  and TRUE `exact_expr`/`singleton`/`lemma` are proof-kernel exact (zero gap);
+  only TRUE `other`-shape (`*_block` combinator proofs) is model-check-only, and
+  that is what the heavy Fin4 sweep targets.
+- **Next session:** just run `python stage2/experiments/spotcheck.py` a few
+  times (optionally `--effort standard`, `--true 10 --false 10`, or `--sources
+  etp`); fix anything it pins. This is the standing accuracy loop now.
+
+## 2026-07-22 session 2
 
 Focus: executed starters 1 and 2 from the session below, plus a third route the
 theory produced. All shipped. Full detail:

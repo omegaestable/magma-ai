@@ -19,6 +19,19 @@ Last updated: 2026-07-22 (session 2, end of session).
    model-checks every TRUE verdict, with no Lean required.
    `package_solver.ps1` refuses to package if it fails. See
    `stage2/tests/README.md`.
+1b. **Spot-check harness** (new 2026-07-22): `stage2/experiments/spotcheck.py`
+   runs randomized balanced batches (default 5 TRUE + 5 FALSE per source) across
+   the 8 distinct benchmark sets **and** an `etp` source drawn from the
+   Equational Theories Project matrix (`data/exports/`, ~22M validated labelled
+   pairs the solver has never been trained on). Any mistake it catches — wrong
+   verdict, unsound certificate, or crash — is auto-pinned to the git-tracked
+   `stage2/fixtures/spotcheck_failures.jsonl` and replayed forever by
+   `test_spotcheck_regressions.py` in the gate above. Skips are safe (coverage,
+   not accuracy). First run: **1,189 distinct rows, 100% accuracy, 0 mistakes**
+   (2026-07-22 session 3), plus a heavy Fin4 sweep of the one model-check-only
+   surface. Run it every session; a coverage ledger steers each batch toward
+   untested rows (`--pure-random` to disable). Design: `stage2/docs/spotcheck.md`;
+   evidence: `stage2/results/2026-07-22-spotcheck-baseline-and-soundness-sweep.md`.
 2. **The old baselines in this file were stale by ~280 rows.** Measured
    `1487/1669` on the official sets (was documented `1201/1669`), with **zero
    oracle failures across 2,689 problems**. Numbers below are updated.
