@@ -2,7 +2,7 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-22 (session 2, end of session).
+Last updated: 2026-07-22 (session 3, end of session).
 
 ## Read This First (2026-07-22)
 

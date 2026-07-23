@@ -77,6 +77,12 @@ def build_battery(eq1: dict) -> list[list[list[int]]]:
 def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
               effort: str = "fast") -> dict:
     S.set_effort(effort)
+    # Pool workers process many rows each; the solver's module-level term caches
+    # are unbounded and never share keys across problems, so without this a long
+    # sweep (or a big spotcheck batch on few workers) grows to double-digit GB.
+    # run_marathon() clears per problem for the same reason; this is the audit /
+    # spotcheck equivalent. Clearing between rows is free (see clear_term_caches).
+    S.clear_term_caches()
     row: dict = {"id": str(problem.get("id", "")), "status": "skip"}
     started = time.monotonic()
     try:

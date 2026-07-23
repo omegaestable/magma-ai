@@ -4,6 +4,27 @@ Updated: 2026-07-22
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
+## Current status (read first)
+
+- **Offline score** (`fast` tier, oracles; regenerate via `audit_corpus.py --all`/`--hf`):
+  official **1534/1669** (TRUE **706/819**), HF **727/800**. **Zero oracle
+  failures across all 2,689 problems.** Offline is an upper bound — a cloud judge
+  sweep is still owed before promotion.
+- **Packaged**: `stage2/submissions/solver.py`, **277,918 bytes** (limit 500 KB).
+  Gate: `pytest stage2/tests` = **273 passed, 2 skipped**, ~30 s, no Lean.
+  `package_solver.ps1` runs it and refuses to package on failure.
+- **The standing loop**: `python stage2/experiments/spotcheck.py` — randomized
+  cross-source accuracy hunt; auto-pins any mistake into the gate. Run it, fix
+  what it pins. See `stage2/docs/spotcheck.md`.
+- **Three levers that keep paying** (all from the "small law is a smaller search
+  target than the goal" insight): `true:universal_identity`,
+  `true:projection_bootstrap`, `true:lemma_bootstrap`, plus an LLM lemma lane.
+  The open frontier is making small proposed lemmas *derivable* — see
+  "Recommended Next Steps".
+- **Never delete solver routes to "debloat"** — 2026-07-21 disproved that with
+  evidence (subsumed routes are cheap fast paths; 29 look dead on official but
+  live on HF). Debloat = junk files and stale docs only.
+
 ## 2026-07-22 session 3 (most recent)
 
 Focus: a randomized cross-source **spot-check harness** to hunt solver mistakes
@@ -38,10 +59,22 @@ over many sessions, heading toward 100% accuracy. Full design:
 - Soundness surface is fully mapped: FALSE certs are exhaustively re-verified
   and TRUE `exact_expr`/`singleton`/`lemma` are proof-kernel exact (zero gap);
   only TRUE `other`-shape (`*_block` combinator proofs) is model-check-only, and
-  that is what the heavy Fin4 sweep targets.
+  that is what the heavy Fin4 sweep targets (0 unsound in 20 certs / 463 rows
+  before it was stopped).
+- **Shipped fix — audit/spotcheck term-cache leak.** The Fin4 sweep hit 16 GB
+  RSS by calling `solve_problem` in a loop without clearing the unbounded term
+  caches — the same leak session-2 fixed *only* inside `run_marathon()`. Added
+  `clear_term_caches()` to `audit_corpus.audit_row` (the shared per-row entry
+  for the corpus audit and the spot-check), so long sweeps and big batches stay
+  flat. Pure memoisation clear; no behaviour change.
 - **Next session:** just run `python stage2/experiments/spotcheck.py` a few
   times (optionally `--effort standard`, `--true 10 --false 10`, or `--sources
   etp`); fix anything it pins. This is the standing accuracy loop now.
+- **Do NOT debloat solver routes.** The solver looks big but every route earns
+  its place: the 2026-07-21 session proved with evidence that "subsumed" routes
+  are cheap high-volume fast paths and that 29 routes look dead on the official
+  sets yet are live on the HF `evaluation_*` sets. Deleting routes loses points.
+  Debloat means junk files and stale docs, never solver coverage.
 
 ## 2026-07-22 session 2
 
@@ -262,7 +295,10 @@ Focus: a self-verifying LLM TRUE-proof loop with `openai/gpt-oss-120b` via OpenR
 - Legacy body-only `proof` and `proof_body` payloads are retired from the active local boundary and now reject as `proof_body_unsupported`.
 - The vendored official README still contains an older `{"verdict": "true", "proof": "<tactic body>"}` prompt snippet. Treat that as upstream doc drift; the canonical local and judge-facing contract is full Lean source in `code`.
 
-## What Changed This Session
+## Historical Boundary Changes (2026-05-30 mixed-lane era)
+
+Kept as durable context for the LLM contract; NOT this session's changes (see the
+dated session blocks above for recent work).
 
 - Retired the broad/raw TRUE Marathon behavior that produced playground errors; Marathon TRUE now accepts only solver-checked chains.
 - Updated the LLM prompt for the mixed lane: TRUE proof-chain proposals are still checked locally, and FALSE is allowed only as a finite table that passes `table_is_counterexample`.
@@ -270,10 +306,9 @@ Focus: a self-verifying LLM TRUE-proof loop with `openai/gpt-oss-120b` via OpenR
 - Replaced the old tokenless sweep/analyzer helpers with positive-token Marathon helpers that fail closed on nonpositive budgets.
 - Refreshed the no-network LLM smoke, package artifact, route ledger, LLM motif card, and durable result summaries to match the current rails.
 
-## Latest Regression Evidence
+## Historical Regression Evidence (2026-05 era — see "Current status" for live numbers)
 
 - Python syntax checks passed for source, experiment helpers, and packaged solver.
-- Packaged size: `138939` bytes.
 - `stage2/experiments/smoke_llm_dsl.py` now accepts helper-bearing full-file TRUE `code` payloads and rejects `proof` / `proof_body` payloads.
 - `theory/tools/smoke_problem_sets.py` passed and confirmed public/HF mirror counts.
 - 2026-05-25 no-key Solo smoke: `sample_20 = 15/20`, `sample_200 = 169/200`.
@@ -350,6 +385,10 @@ Answer-kind totals for that baseline:
 All three 2026-07-22 session-1 starters are **done**, plus the lemma-library
 generalisation and the LLM lemma lane. Remaining, ranked by evidence:
 
+0. **Standing loop first**: run `python stage2/experiments/spotcheck.py` a few
+   times; fix anything it pins. The term-cache leak is now fixed, so a full
+   `other`-shape Fin4 soundness sweep is cheap to re-run too
+   (`scratch: hunt_other_shape.py` pattern, or just larger spotcheck batches).
 1. **Make small lemmas derivable — the single blocking problem.** Measured
    today: of the lemmas gpt-oss proposed that survive finite-model checking,
    **0 of 7 became derivable with 22x the search budget.** The closure is not

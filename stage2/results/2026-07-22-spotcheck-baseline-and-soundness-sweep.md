@@ -34,10 +34,23 @@ else is exact and cannot pass an unsound certificate:
 
 The spot-check already model-checks every TRUE verdict, `other`-shapes included,
 via the audit battery (exhaustive Fin2 + 300 Fin3 samples + the named
-witness/structured/affine families). On top of that, swept that one surface
-directly with a **heavy** battery — exhaustive Fin2 + Fin3 plus a 4,000-table
-random Fin4 sample of eq1-models — across `other`-shape TRUE certificates from
-every source. <HEAVY_SWEEP_RESULT>
+witness/structured/affine families). On top of that, a dedicated sweep re-checks
+that one surface with a **heavy** battery — exhaustive Fin2 + Fin3 plus a
+4,000-table random Fin4 sample of eq1-models — across `other`-shape TRUE
+certificates. It confirmed **0 unsound across the first 20 `other`-shape certs
+(463 rows scanned)** before it was stopped — because it surfaced a real bug
+(below), not because it found an unsound proof.
+
+### The sweep surfaced (and we fixed) a scalability bug
+
+The sweep called `solve_problem` in a tight loop and climbed to **16 GB RSS** —
+the same unbounded module-level term caches the 2026-07-21 session found in
+Marathon. The session-2 fix (`clear_term_caches()` per problem) only lived
+inside `run_marathon()`. This session added the same clear to
+`audit_corpus.audit_row` — the shared per-row entry point for the corpus audit
+*and* the new spot-check harness — so long sweeps and large batches stay flat
+instead of leaking to double-digit GB. A full `other`-shape Fin4 sweep is cheap
+to re-run next session now that the leak is closed.
 
 ## Takeaway
 
