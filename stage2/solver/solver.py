@@ -603,12 +603,17 @@ def equation_pair_shape_key(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[T
     )
 
 
-LARGE_WITNESS_SHAPE_KEYS = {
-    "S9A": equation_pair_shape_key(
-        parse_equation("x = (y * x) * (x * z)"),
-        parse_equation("x * (y * y) = x * (y * z)"),
-    ),
-}
+# Removed 2026-07-23: `LARGE_WITNESS_SHAPE_KEYS` pinned the 9-element witness
+# `S9A` to the exact (eq1, eq2) pair it was discovered on, so it was never
+# tried on any other goal. A witness table is a property of the *hypothesis*
+# alone -- whether it refutes the goal is what `table_is_counterexample`
+# already decides, and it short-circuits on `equation_holds(eq1, table)`, so
+# the guard bought 0.021 ms/problem. It cost eight playground rows: the whole
+# `eq1 = Eq168` (central groupoid) family has no model of order <= 3 and none
+# in the structured/affine/quadratic families, so `S9A` was the only witness
+# the solver owned for them and the gate hid it. Gate large tables on measured
+# cost if they ever matter -- never on a full equation-pair shape, which is a
+# benchmark id in disguise (Operational Note 2).
 
 
 @lru_cache(maxsize=1)
@@ -798,6 +803,46 @@ def table_is_counterexample(
     table: list[list[int]],
 ) -> bool:
     return equation_holds(eq1, table) and not equation_holds(eq2, table)
+
+
+# How many models of the *hypothesis* the FALSE search has inspected for the
+# current problem. A failed witness search means "no counterexample among the
+# models we looked at", which is evidence the row is TRUE only if we looked at
+# some. On `eq1 = Eq168` the enumerated orders (<= 3) and every canned family
+# contain zero models, so the search is vacuous and reports the same "None" it
+# would after examining ten thousand models. Anything that reads a failed
+# search as a TRUE signal has to consult this first.
+_HYPOTHESIS_MODELS_SEEN = 0
+
+
+def reset_hypothesis_model_count() -> None:
+    global _HYPOTHESIS_MODELS_SEEN
+    _HYPOTHESIS_MODELS_SEEN = 0
+
+
+def hypothesis_models_seen() -> int:
+    return _HYPOTHESIS_MODELS_SEEN
+
+
+def note_hypothesis_model() -> None:
+    global _HYPOTHESIS_MODELS_SEEN
+    _HYPOTHESIS_MODELS_SEEN += 1
+
+
+def witness_check(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    table: list[list[int]],
+) -> bool:
+    """`table_is_counterexample` plus the model bookkeeping above.
+
+    Same short-circuit as the plain check -- a table that fails `eq1` never
+    costs an `eq2` evaluation -- so the counter is free.
+    """
+    if not equation_holds(eq1, table):
+        return False
+    note_hypothesis_model()
+    return not equation_holds(eq2, table)
 
 
 def enumerate_tables(n: int):
@@ -6404,44 +6449,37 @@ def find_counterexample(
     allow_dual: bool = True,
 ) -> tuple[int, list[list[int]], str] | None:
     deadline = local_deadline(time_budget)
-    pair_shape = None
 
     for name, table in WITNESS_TABLES:
         if deadline is not None and time.monotonic() >= deadline:
             return None
-        shape_key = LARGE_WITNESS_SHAPE_KEYS.get(name)
-        if shape_key is not None:
-            if pair_shape is None:
-                pair_shape = equation_pair_shape_key(eq1, eq2)
-            if pair_shape != shape_key:
-                continue
-        if table_is_counterexample(eq1, eq2, table):
+        if witness_check(eq1, eq2, table):
             return len(table), table, f"false:witness:{name}"
 
     family_max = max(max_n, STRUCTURED_MAX_N)
     for route, table in structured_family_tables(max_n=family_max):
         if deadline is not None and time.monotonic() >= deadline:
             return None
-        if table_is_counterexample(eq1, eq2, table):
+        if witness_check(eq1, eq2, table):
             return len(table), table, route
 
     for route, table in affine_family_tables(max_n=max(max_n, max(AFFINE_LINEAR_SIZES))):
         if deadline is not None and time.monotonic() >= deadline:
             return None
-        if table_is_counterexample(eq1, eq2, table):
+        if witness_check(eq1, eq2, table):
             return len(table), table, route
 
     for route, table in quadratic_family_tables(max_n=family_max):
         if deadline is not None and time.monotonic() >= deadline:
             return None
-        if table_is_counterexample(eq1, eq2, table):
+        if witness_check(eq1, eq2, table):
             return len(table), table, route
 
     for n in range(2, max_n + 1):
         for table in enumerate_tables(n):
             if deadline is not None and time.monotonic() >= deadline:
                 return None
-            if table_is_counterexample(eq1, eq2, table):
+            if witness_check(eq1, eq2, table):
                 return n, table, f"false:enum_fin{n}"
     if allow_dual:
         remaining_budget = None
@@ -6530,6 +6568,9 @@ def local_model_counterexample(
                     break
                 bad = bad_envs(table)
                 if not bad:
+                    # A table with no bad env is a model of the hypothesis, so
+                    # it counts toward the evidence the fallback policy reads.
+                    note_hypothesis_model()
                     if breaks_goal(table) and table_is_counterexample(eq1, eq2, table):
                         return n, table, f"false:local_model{n}"
                     row, col = rng.randrange(n), rng.randrange(n)
@@ -6574,6 +6615,7 @@ def solve_problem(
     *,
     false_time_budget: float | None = None,
 ) -> dict[str, Any] | None:
+    reset_hypothesis_model_count()
     try:
         eq1 = parse_equation(str(problem["equation1"]))
         eq2 = parse_equation(str(problem["equation2"]))
@@ -7927,10 +7969,32 @@ def run_solo() -> int:
             )
             if judge_response.get("status") == "accepted":
                 return 0
-    # Final fallback: with no wrong-answer penalty, one speculative grind
-    # attempt beats the never-passing reflexive cert (historical grind
-    # acceptance on unresolved TRUE rows is small but nonzero). The judge's
-    # Lean timeout is clamped by the proxy to the remaining wall clock.
+    # Final fallback: one speculative grind attempt beats the never-passing
+    # reflexive cert (historical grind acceptance on unresolved TRUE rows is
+    # small but nonzero). The judge's Lean timeout is clamped by the proxy to
+    # the remaining wall clock.
+    #
+    # But it is only a guess about a row we think is TRUE, and it is worth
+    # making only where TRUE is still open. If the FALSE search never found a
+    # single model of the hypothesis, it refuted nothing and proved nothing --
+    # a `verdict: "true"` there is a coin flip we have no reason to take, and
+    # on a genuinely FALSE row it is a guaranteed miss that also burns the
+    # judge's full Lean timeout. Measured 2026-07-23: seven `Eq168` playground
+    # rows returned `TRUE INCORRECT` this way in 400-630 s each.
+    if hypothesis_models_seen() == 0:
+        print(
+            json.dumps(
+                {
+                    "route": "fallback:skip_no_model_evidence",
+                    "reason": (
+                        "FALSE search inspected 0 models of the hypothesis; "
+                        "a speculative TRUE verdict has no evidence behind it."
+                    ),
+                }
+            ),
+            file=sys.stderr,
+        )
+        return 0
     fallback_route = "fallback:unsolved_grind"
     try:
         fallback_code = grind_true_certificate(

@@ -1,10 +1,48 @@
 # Latest Handoff
 
-Updated: 2026-07-23 (spotcheck batches + e-graph frontier study).
+Updated: 2026-07-23 (session 2 — playground `TRUE INCORRECT` triage).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
-## 2026-07-23 session (newest — read first)
+## 2026-07-23 session 2 (newest — read first)
+
+A real playground Solo run returned eight `TRUE INCORRECT` rows at 400–630 s
+each, all submitting the `fallback:unsolved_grind` cert. Seven were labelled
+FALSE, so that verdict could never be accepted. Full detail:
+`stage2/results/2026-07-23-s9a-witness-gate-and-fallback-evidence.md`.
+
+- **Root cause: `LARGE_WITNESS_SHAPE_KEYS` pinned the 9-element witness `S9A`
+  to the exact `(eq1, eq2)` pair it was discovered on.** All seven rows share
+  `eq1_id = 168` (central groupoid) with different goals, so the gate skipped
+  the one witness the solver owned for them. `S9A` refutes all eight. The
+  guard bought **0.021 ms/problem**. It is deleted; every named table is now
+  tried on every problem. A full equation-pair shape key is a benchmark id in
+  disguise — do not reintroduce one (Operational Note 2).
+- **Result: HF `754 → 783` (+30 / −1 by row id), all 30 `false:witness:S9A`;
+  official sets bit-identical (`1617`, TRUE `789`, +0/−0); 0 oracle failures.**
+  `hf_evaluation_extra_hard` goes `170/200 → 200/200` and `185.3 s → 24.7 s`.
+- **`Fin 9` `decideFin!` certs are judge-validated.** This shape had no prior
+  real-judge evidence, so 5 were run through `judge.verify.verify_answer`:
+  **5/5 `accepted`**, 14–16 s warm against the judge's 120 s Lean timeout,
+  462-byte certs against the 10 KB FALSE cap. Kernel reduction transfers;
+  see [[grind-local-accept-is-not-cloud-evidence]].
+- **"No counterexample found" now has to mean something.**
+  `hypothesis_models_seen()` counts models of `eq1` the FALSE search actually
+  inspected. On an `Eq168` row it is **2** — orders ≤ 3 hold *zero* models and
+  the structured/affine/quadratic families hold zero, so the search was
+  vacuous. `run_solo` no longer submits a speculative `verdict: "true"` when
+  the count is 0 (`fallback:skip_no_model_evidence`).
+- **`evaluation_extra_hard_0190` is closed** — it was recorded on 2026-07-22 as
+  an open playground FALSE miss with "no witness ≤ 4 exists". True, but the
+  witness lives at order 9 and `S9A` is it; judge-accepted in 14.3 s.
+- **Still open: `evaluation_hard_0116`** (TRUE, `models_seen = 3691`). Real
+  frontier row, not a bug; the grind lottery ticket is kept there.
+- **Noise amendment:** `evaluation_hard_0178` flipped solved→skip→solved across
+  three runs of identical code (45.7 s / 17.2 s / 10.0 s). Budget-marginal TRUE
+  routes like `projection_bootstrap` are *not* run-to-run stable, so diff row
+  ids, not TRUE totals.
+
+## 2026-07-23 session 1
 
 **Shipped a new engine, `true:egg_closure`** — ground equality saturation
 with kernel-checkable proof extraction, the mechanism four prior sessions were

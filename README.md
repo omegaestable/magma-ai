@@ -50,14 +50,35 @@ Cold-start read order:
 
 ## Current Evidence
 
-2026-07-21: added an **offline correctness gate** (`pytest stage2/tests`, 254
-tests, ~12 s) that proof-checks certificates with an independent kernel and
-model-checks every TRUE verdict without needing Lean; `package_solver.ps1`
-refuses to package on failure. A full audit found **zero unsound routes across
-2,689 problems** and showed the documented baseline was stale by ~280 rows:
-the official sets now measure **`1487/1669`** (was `1201/1669`). Also found the
-engines were using ~1% of the available wall-clock and added budget-scaled
-effort tiers. Details:
+Current `fast`-tier baseline (offline oracles, zero oracle failures):
+official sets **`1617/1669`** (TRUE `789`), HF evaluation sets **`783/800`**
+(TRUE `383`). Regenerate with `stage2/experiments/audit_corpus.py --all` and
+`--hf`.
+
+2026-07-23 (session 2): a playground Solo run returned eight `TRUE INCORRECT`
+rows at 400–630 s each. Root cause was `LARGE_WITNESS_SHAPE_KEYS`, which
+pinned the 9-element witness `S9A` to the single `(eq1, eq2)` pair it was
+discovered on; the reported rows all share `eq1_id = 168` with different
+goals, and `S9A` refutes every one of them. Deleting the gate cost
+0.021 ms/problem and took `hf_evaluation_extra_hard` from `170/200` to
+`200/200` with the official sets unchanged row-for-row. `Fin 9` `decideFin!`
+certs were validated 5/5 against the real Lean judge. `run_solo` also stopped
+guessing `verdict: "true"` on rows where the FALSE search inspected zero
+models of the hypothesis. Details:
+`stage2/results/2026-07-23-s9a-witness-gate-and-fallback-evidence.md`.
+
+2026-07-23 (session 1): shipped `true:egg_closure`, a ground
+equality-saturation engine with kernel-checkable proof extraction, taking
+official TRUE `773 → 789`. Details:
+`stage2/results/2026-07-23-spotcheck-batches-and-egg-frontier-study.md`.
+
+2026-07-21: added an **offline correctness gate** (`pytest stage2/tests`) that
+proof-checks certificates with an independent kernel and model-checks every
+TRUE verdict without needing Lean; `package_solver.ps1` refuses to package on
+failure. A full audit found **zero unsound routes across 2,689 problems** and
+showed the documented baseline was stale by ~280 rows. Also found the engines
+were using ~1% of the available wall-clock and added budget-scaled effort
+tiers. Details:
 `stage2/results/2026-07-21-correctness-harness-and-budget-scaling.md`.
 
 The same session ran a real-LLM balanced evaluation (`gpt-oss-120b` via

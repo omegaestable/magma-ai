@@ -2,7 +2,41 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-22 (session 4, playground-failure triage).
+Last updated: 2026-07-23 (session 2, playground `TRUE INCORRECT` triage).
+
+## Read This First (2026-07-23, session 2)
+
+A real playground Solo run returned eight `TRUE INCORRECT` rows at 400–630 s
+each, all submitting the `fallback:unsolved_grind` certificate; seven were
+labelled FALSE, where that verdict can never be accepted. Detail:
+`stage2/results/2026-07-23-s9a-witness-gate-and-fallback-evidence.md`.
+
+- **`LARGE_WITNESS_SHAPE_KEYS` is deleted.** It pinned the 9-element named
+  witness `S9A` to the exact `(eq1, eq2)` pair it was discovered on. All seven
+  FALSE rows share `eq1_id = 168` (central groupoid) with different goals, so
+  the gate hid the only witness the solver had for them — and `S9A` refutes
+  all eight. Ungating cost **0.021 ms/problem**. **Never gate a sound witness
+  on a full equation-pair shape**: it is a hardcoded benchmark id (Operational
+  Note 2), and it fails *closed* on a route that should fail open.
+- **HF `754/800 → 783/800`** (+30 / −1 diffed by row id, all 30
+  `false:witness:S9A`); **official sets unchanged row-for-row** at
+  `1617/1669`, TRUE `789`; **0 oracle failures** across 2,469 audited rows.
+  `hf_evaluation_extra_hard`: `170/200 → 200/200`, `185.3 s → 24.7 s`.
+- **`Fin 9` `decideFin!` certificates are real-judge validated** — 5/5
+  `accepted` via `judge.verify.verify_answer`, 14–16 s warm (judge cap 120 s),
+  462 bytes (cap 10 KB). This shape had no prior judge evidence.
+- **A failed FALSE search is not evidence of TRUE unless it looked.**
+  `hypothesis_models_seen()` counts models of `eq1` actually inspected; on an
+  `Eq168` row it is `2`, because orders ≤ 3 and every canned family contain
+  **zero** models of that law. `run_solo` now emits
+  `fallback:skip_no_model_evidence` and submits nothing rather than guessing
+  `true` when the count is `0`.
+- **Closed**: `evaluation_extra_hard_0190`, previously logged as an open FALSE
+  miss with "no witness ≤ 4 exists" (correct — it lives at order 9).
+  **Still open**: `evaluation_hard_0116` (TRUE, `models_seen = 3691`).
+- **Noise amendment**: `evaluation_hard_0178` flipped solved/skip/solved across
+  three runs of identical code. Budget-marginal TRUE routes are not run-to-run
+  stable; diff row ids, never TRUE totals alone.
 
 ## Read This First (2026-07-22, session 4)
 
@@ -91,7 +125,7 @@ built into the solver:
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
 - Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `308306` bytes on 2026-07-22 session 4 (gate: 310 passed, 2 skipped; still well under 500 KB).
+- Packaged submission: `stage2/submissions/solver.py`, last packaged at `333007` bytes on 2026-07-23 session 2 (gate: 196 passed, 2 skipped; still well under 500 KB).
 - Self-verifying LLM dev loop: `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`). Runs real problems through gpt-oss via OpenRouter with a repair loop and verifies every candidate with the local Lean judge. Dev-only; see `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
 - Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
 - Solver route ledger: `stage2/docs/solver-route-ledger.md`.
@@ -145,23 +179,35 @@ The active solver is deterministic-first and skips unresolved rows rather than s
 
 ## Best Evidence
 
-Current measured baseline (2026-07-22 **session 4**, `fast` effort tier,
+Current measured baseline (2026-07-23 **session 2**, `fast` effort tier,
 offline oracles; regenerate with `stage2/experiments/audit_corpus.py --all`):
 
-| Set | Solved | Session 2 | 2026-07-21 |
+| Set | Solved | 2026-07-23 s1 (egg) | 2026-07-22 s4 |
 | --- | ---: | ---: | ---: |
-| `normal` | `984/1000` | `957/1000` | `934/1000` |
-| `hard1` | `64/69` | `61/69` | `57/69` |
-| `hard2` | `172/200` | `155/200` | `146/200` |
-| `hard3` | `381/400` | `361/400` | `343/400` |
-| **Total** | **`1601/1669`** | `1534/1669` | `1480/1669` |
+| `normal` | `989/1000` | `989/1000` | `984/1000` |
+| `hard1` | `64/69` | `64/69` | `64/69` |
+| `hard2` | `177/200` | `177/200` | `172/200` |
+| `hard3` | `387/400` | `387/400` | `381/400` |
+| **Total** | **`1617/1669`** | `1617/1669` | `1601/1669` |
 
-Official TRUE count: **`773`** (session 2: `706`; +67 from the enumerated
-lemma library + multi-hop lemma chains). HF evaluation sets: `749/800`,
-TRUE `379` (was `727/800` / `357`), zero lost rows. Zero oracle failures
-across all 2,689 problems. Evidence:
-`stage2/results/2026-07-22-playground-failure-fixes.md`,
-`audit-2026-07-22-session4.json`, `audit-hf-2026-07-22-session4.json`.
+Official TRUE count: **`789`**, unchanged from session 1 and **identical row
+for row** (the session-2 fix targets FALSE witnesses, and the `Eq168` family
+lives in the HF sets).
+
+HF evaluation sets: **`783/800`** (was `754/800`), TRUE `383`. The `+30 / −1`
+is diffed by row id: all 30 gains are `false:witness:S9A` on
+`hf_evaluation_extra_hard` (`170/200 → 200/200`, `185.3 s → 24.7 s`); the one
+loss is wall-clock noise on a budget-marginal `projection_bootstrap` row, not
+a code effect.
+
+Zero oracle failures. Evidence:
+`stage2/results/2026-07-23-s9a-witness-gate-and-fallback-evidence.md`,
+`audit-2026-07-23-s9a.json`, `audit-hf-2026-07-23-s9a.json`.
+
+`false:witness:S9A` (`Fin 9`, `decideFin!`) is the first cert of that size with
+**real Lean judge evidence**: 5/5 `accepted` via `judge.verify.verify_answer`,
+14–16 s warm against the judge's `LEAN_TIMEOUT_SECONDS = 120`, 462 bytes
+against `MAX_FALSE_CERT_BYTES = 10_000`.
 
 **Compare TRUE counts, not solved counts.** The FALSE search is wall-clock
 bounded, so solved totals carry a run-to-run noise band of roughly ±7 on the
