@@ -7,14 +7,43 @@ This is the short team-memory note for the current Stage 2 solver state. Use the
 **Start at `CLAUDE.md`** for current numbers, commands and rails; this file is the
 dated session log.
 
-## 2026-07-29 v4 coverage push (newest — read first)
+## 2026-07-29 v4b: wide-domain witnesses + a node-cap bug (newest — read first)
+
+Direct follow-up to v4 below. Full detail:
+`stage2/results/2026-07-29-v4b-wide-domain-and-node-cap.md`.
+
+User pushed back on "unreachable" for `hard2_0051`/`hard2_0093`/`hard2_0123`.
+The pushback was partly right:
+
+- **The order-10 claim was imprecise.** `finOpTable`'s real invariant is
+  single-digit *cell values*, not order — order ≤ 10 is only a corollary for a
+  *complete* table. Confirmed against the real judge: `Fin 13`,
+  `op(i,j)=(i+j) mod 10`, `accepted` in 78.1 s. Shipped as
+  `constraint_countermodel_wide_domain` (orders up to 60, value-capped at 10),
+  end-to-end validated.
+- **But it provably cannot help this frontier.** Every unsolved FALSE row has
+  `eq1: x = F(...)` — a bare variable alone on one side, universally quantified
+  over the *full* carrier. Once it exceeds 9, `F(...) = x >= 10` is impossible
+  for an output capped at 9. `_eq1_has_bare_variable_side()` detects this for
+  free; all 5 remaining FALSE misses have this shape.
+- **Chasing it anyway found a real bug.** A decisive 120 s/order search (vs the
+  40 s used before) found genuine order-8 witnesses for `hard1_0062` and
+  `hard2_0123` — but the *shipped* solver still missed them. Cause:
+  `CONSTRAINT_MAX_NODES = 60000` cut the search off before the (already
+  correct) wall-clock deadline. Raised to 3,000,000 — a pure safety net now.
+  **Both now judge-accepted**, 4.7 s / 5.3 s.
+- **The other 3** (`hard2_0027`, `hard2_0051`, `hard2_0093`) ran an uncapped,
+  721–737 s search across every order and found nothing — much stronger
+  negative evidence, though not a formal proof of non-existence.
+
+## 2026-07-29 v4 coverage push
 
 Triggered by 16 playground `TRUE INCORRECT` rows from v3. Full detail:
 `stage2/results/2026-07-29-v4-coverage-push.md`.
 
-**Official `1616 → 1647/1669` (98.7%), TRUE `788 → 803`, FALSE `828 → 844`,
+**Official `1616 → 1650/1669` (98.9%), TRUE `788 → 806`, FALSE `828 → 844`,
 0 rows lost, 0 oracle failures, 0 crashes, 0 label mismatches. HF `782 → 788`.**
-22 official rows remain open (14 TRUE, 8 FALSE).
+19 official rows remain open at `fast` tier (14 TRUE, 5 FALSE).
 
 - **The six FALSE-labelled reported rows were guaranteed misses**: the Solo grind
   fallback answered `true` on rows labelled FALSE, at 363–847 s each.

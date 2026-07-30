@@ -570,19 +570,20 @@ def check_no_banned_tactics(code: str, route: str = "") -> None:
 
 
 # The judge reads the table with `MemoFinOp.finOpTable`, whose parser
-# (`extractDigits`) keeps one value per *digit character*. A cell holding `10`
-# becomes two cells, `1` and `0`, shifting everything after it — so the magma Lean
-# checks is not the magma we sent. Orders 2..10 use only single-digit entries and
-# round-trip cleanly; order 11+ is silently corrupted.
+# (`extractDigits`) keeps one value per *digit character* and computes
+# `(vals.getD idx 0) % n`. Since every extracted digit is 0-9 and `d % n == d`
+# whenever `n > d`, **the real invariant is single-digit cell VALUES, not order
+# <= 10** — order <= 10 is only a corollary for a *complete* table (entries
+# spanning the full `0..n-1`), which is what every current FALSE route except the
+# wide-domain tier produces.
 #
-# Found 2026-07-29 by a `Fin 13` witness for `hard2_0051` that was mathematically
-# correct (verified by hand and by this module) and still came back
-# `LEAN_REJECTED`, with `decide` reporting the conjunction *false*. Every check in
-# this file reads the parsed Python table, so nothing here could see it. This is
+# Found 2026-07-29 by a `Fin 13` witness for `hard2_0051` (entries spanning
+# 0..12) that was mathematically correct and still came back `LEAN_REJECTED`,
+# `decide` reporting the conjunction *false*. Confirmed the same day: a `Fin 13`
+# table whose entries are capped to 0..9 (order 13, values < 10) round-trips
+# correctly and was `accepted`. Every check in this file reads the parsed Python
+# table, so nothing here could see the rendering distinction on its own — this is
 # the one place that models the judge's *parser* rather than its logic.
-MAX_RENDERABLE_ORDER = 10
-
-
 def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
     """Independently re-verify a FALSE certificate's finite witness table."""
     tm = _TABLE_RE.search(code)
@@ -595,11 +596,11 @@ def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any])
         raise OracleError(f"table shape does not match Fin {n}")
     if any(not (0 <= v < n) for row in table for v in row):
         raise OracleError("table entries out of range")
-    if n > MAX_RENDERABLE_ORDER or any(v > 9 for row in table for v in row):
+    if any(v > 9 for row in table for v in row):
         raise OracleError(
             f"Fin {n} witness has multi-digit entries; the judge's finOpTable "
             f"parser reads one value per digit character, so this table cannot "
-            f"round-trip (max renderable order is {MAX_RENDERABLE_ORDER})")
+            f"round-trip")
     if not equation_holds(eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table):
         raise OracleError("witness does not satisfy eq1")
     if equation_holds(eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table):

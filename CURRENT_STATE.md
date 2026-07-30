@@ -5,16 +5,18 @@ This is the short-lived operational truth for the Stage 2 lab. Update it when th
 **Headline numbers and commands now live in `CLAUDE.md`.** This file keeps the
 dated session history and the operational detail behind them.
 
-Last updated: 2026-07-29 (QA pass: soundness gaps, judge-verified pinning, dispatcher refactor).
+Last updated: 2026-07-29 (v4b: wide-domain witnesses, node-cap fix).
 
 ## Read This First (2026-07-29, v4 coverage push)
 
 Triggered by 16 playground `TRUE INCORRECT` rows. Detail:
 `stage2/results/2026-07-29-v4-coverage-push.md`.
 
-**Official `1616 → 1647/1669` (98.7%), TRUE `788 → 803`, FALSE `828 → 844`;
-0 rows lost, 0 oracle failures, 0 crashes. HF `782 → 788`.** 22 official rows
-open: 14 TRUE, 8 FALSE.
+**Official `1616 → 1650/1669` (98.9%), TRUE `788 → 806`, FALSE `828 → 844`;
+0 rows lost, 0 oracle failures, 0 crashes. HF `782 → 788`.** 19 official rows
+open at `fast` tier: 14 TRUE, 5 FALSE. Two more FALSE rows
+(`hard1_0062`, `hard2_0123`) are real, judge-accepted, but need `standard`
+effort's scaled budget — see `stage2/results/2026-07-29-v4b-wide-domain-and-node-cap.md`.
 
 - **Three new engines.** `false:constraint_fin*` (Mace4-style propagation search
   for the quasigroup-forcing `x = F(x, ȳ)` family the whole FALSE portfolio was

@@ -45,19 +45,27 @@ still an accurate reference for its own topic.
 
 **Read `CLAUDE.md` for the authoritative current numbers and the four standing
 commands.** Summary as of 2026-07-29 (v4): official sets
-**`1647/1669` (98.7%)**, TRUE `803`, FALSE `844`; HF evaluation sets
+**`1650/1669` (98.9%)**, TRUE `806`, FALSE `844`; HF evaluation sets
 **`788/800`**; zero oracle failures, zero crashes. Regenerate with
 `stage2/experiments/audit_corpus.py --all` and `--hf`.
+
+2026-07-29 (v4b): pushed on whether the order-10 witness limit was really a hard
+wall. It's more precise than that: the parser's real invariant is single-digit
+*cell values*, not order — a `Fin 13` table with every output capped `<10`
+round-trips and was judge-`accepted`. Shipped
+`constraint_countermodel_wide_domain` for the general corpus, though it
+provably cannot help laws shaped `eq1: x = F(...)` (every current FALSE miss).
+Chasing that investigation surfaced a real bug — a search node cap was cutting
+searches off before their own time budget — fixed, and it judge-verified two
+more rows. Details:
+`stage2/results/2026-07-29-v4b-wide-domain-and-node-cap.md`.
 
 2026-07-29 (v4): shipped three engines after triaging 16 playground
 `TRUE INCORRECT` rows — `false:constraint_fin*` (Mace4-style propagation search;
 17/22 unsolved FALSE rows, 17/17 judge-accepted), `true:egg_collapse` (equality
 saturation aimed at `x = y`, which ETP pivot mining showed is what 14 of 31
 unsolved TRUE rows actually need; 10 rows, 10/10 judge-accepted) and
-`true:egg_bootstrap`. Also found a hard rail: the judge's `finOpTable` parser
-keeps one value per digit character, so **FALSE witnesses above order 10 are
-silently corrupted** — a hand-verified `Fin 13` witness passed every offline
-oracle and was still rejected. Details:
+`true:egg_bootstrap`. Details:
 `stage2/results/2026-07-29-v4-coverage-push.md`.
 
 2026-07-29 (QA pass): removed the last `grind` from a deterministic route (judge

@@ -709,8 +709,15 @@ def test_false_certificate_rejects_unrenderable_order(solver):
     assert solver.table_is_renderable(ten)
 
 
-def test_no_route_emits_an_unrenderable_witness_order(solver):
-    """Every witness-order constant must respect the parser ceiling."""
+def test_no_complete_table_route_exceeds_the_order_ceiling(solver):
+    """Every *complete-table* engine's order constants must stay <= 10.
+
+    `MAX_WITNESS_ORDER = 10` is the ceiling for a complete Cayley table (entries
+    spanning the full `0..n-1`), which is what every one of these produces. It is
+    NOT a ceiling on renderable order in general — `WIDE_DOMAIN_ORDERS` legally
+    exceeds it because that engine caps cell *values*, not order. See
+    `test_wide_domain_orders_are_value_capped_not_order_capped`.
+    """
     assert solver.MAX_WITNESS_ORDER == 10
     for name in ("CONSTRAINT_ORDERS", "CONSTRAINT_WIDE_ORDERS",
                  "AFFINE_LINEAR_SIZES", "AFFINE_QUADRATIC_SIZES",
@@ -721,6 +728,37 @@ def test_no_route_emits_an_unrenderable_witness_order(solver):
             f"{orders}")
     assert all(len(table) <= solver.MAX_WITNESS_ORDER
                for _name, table in solver.WITNESS_TABLES)
+
+
+def test_wide_domain_orders_are_value_capped_not_order_capped(solver):
+    """`WIDE_DOMAIN_ORDERS` may exceed 10 — the invariant it must respect is
+    `table_is_renderable`, not `MAX_WITNESS_ORDER`."""
+    assert max(solver.WIDE_DOMAIN_ORDERS) > solver.MAX_WITNESS_ORDER
+    assert solver.WIDE_DOMAIN_VALUE_CAP == 10
+    # A table this engine could plausibly emit: large carrier, values < 10.
+    n = max(solver.WIDE_DOMAIN_ORDERS)
+    table = [[(i + j) % solver.WIDE_DOMAIN_VALUE_CAP for j in range(n)]
+             for i in range(n)]
+    assert solver.table_is_renderable(table)
+    # Cert bytes must still clear the judge's FALSE cap.
+    assert len(solver.false_certificate(n, table).encode("utf-8")) <= \
+        solver.JUDGE_MAX_FALSE_CERT_BYTES
+
+
+def test_bare_variable_eq1_blocks_wide_domain_search(solver):
+    """`eq1: x = F(...)` can never have a wide-domain witness: the bare
+    variable ranges over the full carrier, but the RHS is capped < 10, so the
+    equation is unsatisfiable the moment the carrier exceeds 10. This is exactly
+    the shape of every currently-unsolved FALSE row, confirmed 2026-07-29.
+    """
+    bare = solver.parse_equation("x = (y ◇ ((y ◇ x) ◇ x)) ◇ y")
+    assert solver._eq1_has_bare_variable_side(bare)
+    not_bare = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ u) ◇ u")
+    assert not solver._eq1_has_bare_variable_side(not_bare)
+
+    eq2 = solver.parse_equation("x ◇ (x ◇ y) = z ◇ (z ◇ y)")
+    solver.set_effort("fast")
+    assert solver.constraint_countermodel_wide_domain(bare, eq2) is None
 
 
 def test_nontrivial_model_count_ignores_the_trivial_magma():

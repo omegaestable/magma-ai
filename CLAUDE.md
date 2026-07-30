@@ -23,22 +23,37 @@ and must emit **Lean 4 certificates the official judge accepts**:
 
 | Metric | Value |
 | --- | --- |
-| Official sets (`normal`+`hard1`+`hard2`+`hard3`) | **1647 / 1669 (98.7%)** |
-| Official TRUE | **803 / 819** |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1650 / 1669 (98.9%)** |
+| Official TRUE | **806 / 819** |
 | Official FALSE | **844 / 850** |
-| Remaining unsolved | **22** (14 TRUE, 8 FALSE) |
-| HF evaluation sets | **788 / 800**, TRUE 388 |
+| Remaining unsolved at `fast` | **19** (14 TRUE, 5 FALSE) |
 | Oracle failures / crashes / label mismatches | **0 / 0 / 0** |
-| Offline gate | **194 passed, 2 skipped, ~42 s** (`-n auto`) |
-| Real-judge evidence | 34/34 block certs, 10/10 collapse certs, **17/17** constraint witnesses |
-| Packaged size | 346,822 bytes of 500,000 (size is not binding) |
+| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, **19/19** constraint witnesses |
+| Offline gate | **196 passed, 2 skipped, ~45-67 s** (`-n auto`) |
+| Packaged size | 354,071 bytes of 500,000 (size is not binding) |
 
-Per set: `hard1` 68/69, `hard2` 191/200, `hard3` 392/400, `normal` 996/1000.
+Confirmed by a clean, isolated full audit (no concurrent jobs): **row-for-row
+identical** to the pre-node-cap-fix baseline — 0 lost, 0 gained, 0 oracle
+failures. An earlier contaminated run (an unrelated diagnostic audit
+accidentally overlapping this one) showed 16 spurious "losses", all
+budget-marginal `egg_*`/`lemma_chain` routes; reproduced each in isolation and
+confirmed they solve identically — pure CPU-contention noise from testing
+methodology, not a code regression. **Lesson: never run two `audit_corpus.py`
+sweeps concurrently on the same machine** — the `fast`-tier headline number
+is only trustworthy from an isolated run.
 
-`egg_priority_bootstrap_route` landed after that audit and solves three more of
-the 22 (`hard2_0082`, `hard3_0131`, `hard3_0271`, each verified individually,
-kernel-OK) — so expect ~1650 on the next full run. Quote the audited 1647 until
-that run exists.
+**Effort tier matters and is easy to conflate.** `egg_priority_bootstrap`
+solves three TRUE rows (`hard2_0082`, `hard3_0131`, `hard3_0271`) at `fast` —
+counted in the 1650 above. Two more rows (`hard1_0062`, `hard2_0123`, ~75 s
+each) are real, judge-accepted (4.7 s / 5.3 s) fixes from the node-cap bug
+below, but need `standard` effort's scaled budget (45 s × 7.5 = 337.5 s) to
+finish within the wide constraint tier — they do **not** appear in the
+`fast`-tier 1650, only in Solo/Marathon or a `--effort standard` sweep.
+
+Root cause of the constraint fix: `CONSTRAINT_MAX_NODES = 60000` was cutting
+`_cp_search` off *before* the time deadline that already bounds it correctly —
+both rows needed ~140K search nodes. Raised to 3,000,000 (a pure safety net
+now; the wall-clock deadline is the real stopping criterion).
 
 The ranges are not vagueness — they are the measured run-to-run noise band on
 identical code. Solved totals swing by up to ±7 because the FALSE search and the
@@ -86,17 +101,28 @@ judge** (see below). It is the only thing that is not an upper bound.
    judge rejected a `grind` cert the local judge accepted. Broad grind scored 34
    accepted against **433 incorrect** before retirement. Certificates must be
    kernel-checkable, not tactic-backed.
-3b. **FALSE witness order is hard-capped at 10.** The judge builds the magma with
-   `MemoFinOp.finOpTable`, whose parser (`extractDigits`) keeps **one value per
-   digit character** — a cell holding `10` is read as two cells and the whole table
-   shifts, so Lean checks a different magma than you sent. A hand-verified `Fin 13`
-   linear witness (`x ◇ y = 7x + 7y mod 13`) passed every offline oracle and came
-   back `LEAN_REJECTED` with `decide` calling the conjunction *false*. Building the
-   magma from a formula instead fails the proof policy (`HAdd.hAdd` / `HMul.hMul`
-   are not allowlisted), so `finOpTable` is the only sanctioned constructor.
-   `MAX_WITNESS_ORDER = 10`, enforced in `table_is_counterexample` via
-   `table_is_renderable()`. A row whose smallest countermodel exceeds order 10 is
-   unreachable — do not spend budget on it.
+3b. **A *complete* FALSE witness table is capped at order 10, but that is not the
+   whole story.** The judge builds the magma with `MemoFinOp.finOpTable`, whose
+   parser (`extractDigits`) keeps **one value per digit character** and computes
+   `(vals.getD idx 0) % n` — so the real invariant is single-digit *cell values*,
+   not order. A hand-verified `Fin 13` linear witness with entries spanning
+   0..12 (`x ◇ y = 7x + 7y mod 13`) passed every offline oracle and came back
+   `LEAN_REJECTED`, `decide` calling the conjunction *false* — that is what forces
+   a **complete** table (entries spanning the full `0..n-1`) to order ≤ 10.
+   Building the magma from a formula instead fails the proof policy
+   (`HAdd.hAdd`/`HMul.hMul` not allowlisted), so `finOpTable` is the only
+   sanctioned constructor. `MAX_WITNESS_ORDER = 10` covers every complete-table
+   route, enforced via `table_is_renderable()` inside `table_is_counterexample`.
+3b-ii. **A table with cell values deliberately restricted to 0..9 can exceed
+   order 10** — confirmed against the real judge: `Fin 13`, `op(i,j)=(i+j)%10`,
+   `accepted` in 78.1 s. `constraint_countermodel_wide_domain` searches this space
+   (orders up to 60, `WIDE_DOMAIN_VALUE_CAP=10`). It provably **cannot** help any
+   law shaped `eq1: x = F(...)` — a bare variable alone on one side is
+   universally quantified over the *full* carrier, so once it exceeds 9 the
+   equation demands `F(...) = x ≥ 10`, impossible for an output capped at 9.
+   `_eq1_has_bare_variable_side()` detects this for free before spending any
+   search. That shape is every currently-unsolved FALSE row (2026-07-29), so this
+   engine ships for the *general* corpus, not today's frontier.
 3c. **A sound witness is not automatically a shippable one.** Every local check
    reads the parsed Python table, so all of them are blind to rendering. When a
    witness route changes, verify against the real judge.
@@ -123,6 +149,22 @@ judge** (see below). It is the only thing that is not an upper bound.
    collapses the magma and the goal is irrelevant. `true:egg_collapse` proves 10 of
    them; the critical-pair closure proves none. When a row resists, ask what the
    smallest sufficient law is, not how to push harder on the goal.
+5e. **Never run two `audit_corpus.py` sweeps concurrently.** All engines below
+   `equational_closure` are wall-clock-budgeted, so 16-worker pools competing
+   for the same cores starve each other and produce spurious "losses" on
+   budget-marginal rows (`egg_*`, `lemma_chain`, wide constraint tiers) — 16
+   of them in one measured case, 0 of them real. Always confirm a surprising
+   diff with a clean, isolated re-run before trusting it; reproduce any single
+   "lost" row standalone (3 clean repeats, same route) before calling it a
+   regression.
+5f. **A node budget alongside a per-node time-deadline check is redundant when
+   harmless and wrong when it fires first.** `_cp_search`'s `CONSTRAINT_MAX_NODES
+   = 60000` cut two genuine, judge-accepted witnesses (`hard1_0062`,
+   `hard2_0123`, ~140K nodes each) off before their own time budget was spent.
+   The dev-tool twin (`mace_finder.py`) never had this cap and found both. If a
+   search is time-bounded, that is the real stopping criterion; a node cap
+   should be a safety net far above measured throughput, not a second binding
+   constraint.
 6. **Never mix LLM calls and certificate verification in one `ThreadPoolExecutor`.**
    Verification is CPU-bound and the GIL serialises it (~10x slowdown). Use the
    two-phase shape in `llm_balanced_eval.py`: threads for network, processes for

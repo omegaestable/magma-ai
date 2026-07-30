@@ -815,17 +815,29 @@ def table_is_renderable(table: list[list[int]]) -> bool:
     """Can the judge actually read this table back?
 
     `MemoFinOp.finOpTable` parses the table string with `extractDigits`, which
-    keeps one value per *digit character*. A cell holding `10` is therefore read
-    as two cells, `1` and `0`, silently shifting everything after it. So only
-    single-digit entries survive the round trip, which caps witness order at 10.
+    keeps one value per *digit character*: `(vals.getD idx 0) % n`. Every
+    extracted digit is 0-9, and `d % n == d` whenever `n > d`, so **the real
+    invariant is single-digit cell values, not order <= 10**. Order <= 10 was
+    only a corollary for a *complete* Cayley table, whose entries must span the
+    full `0..n-1` and therefore hit a two-digit value the moment `n > 10`.
 
-    This is checked here, at the gate every FALSE witness passes through, because
-    every other local check reads the Python table and is blind to it: a `Fin 13`
-    witness for `hard2_0051` passed both offline oracles and was still
-    `LEAN_REJECTED`, with `decide` calling the conjunction false (2026-07-29).
+    A `Fin 13` witness for `hard2_0051` demonstrated the failure mode: its
+    entries used the full 0..12 range and was `LEAN_REJECTED`, with `decide`
+    calling the conjunction false (2026-07-29). But confirmed the same day
+    against the real judge: a `Fin 13` table whose entries are *deliberately
+    restricted* to 0..9 (e.g. `(i + j) % 10`, carrier size 13) round-trips
+    correctly and was `accepted` in 78.1s. So order can exceed 10 as long as
+    every cell stays a single digit — see `constraint_countermodel_wide_domain`
+    for where that space is actually searched, and its docstring for the one
+    equation shape (`eq1: x = F(...)`, a bare variable alone on one side) that
+    can *never* be satisfied by such a table, no matter how large: the
+    universally-quantified bare variable ranges over the full carrier, so once
+    it exceeds 9 no digit-only lookup can equal it.
+
+    This is checked here, at the gate every FALSE witness passes through,
+    because every other local check reads the Python table and is blind to
+    parser semantics.
     """
-    if len(table) > MAX_WITNESS_ORDER:
-        return False
     return all(0 <= value <= 9 for row in table for value in row)
 
 
@@ -6792,26 +6804,42 @@ def constraint_search_exhausted() -> bool:
     return _CONSTRAINT_EXHAUSTED
 
 
-# HARD CEILING ON WITNESS ORDER: 10.
+# CEILING ON *COMPLETE* WITNESS ORDER: 10.
 #
 # The judge builds the magma with `MemoFinOp.finOpTable`, whose parser is
 # `extractDigits`: it walks the table string character by character and keeps each
 # *digit* as one value (vendor/stage2-official/judge/JudgeFinOp/MemoFinOp.lean).
 # A cell holding `10` therefore becomes two cells, `1` and `0`, and the whole
-# table shifts. Orders 2..10 use only single-digit entries and are safe; order 11+
-# is silently corrupted.
+# table shifts, so only single-digit cell VALUES survive the round trip
+# (`table_is_renderable`). For a *complete* Cayley table — entries spanning the
+# full `0..n-1`, which is every route below except the wide-domain tier — that
+# forces order <= 10, since order 11 needs an entry of at least 10.
 #
 # Confirmed the hard way (2026-07-29): a genuine `Fin 13` witness for `hard2_0051`
-# — the linear model `x ◇ y = 7x + 7y (mod 13)`, verified by hand and by both
-# offline oracles — came back `LEAN_REJECTED` with `decide` reporting the
-# conjunction *false*, because Lean was reading a different table than we sent.
-# Nothing in the offline harness could see this, since every local check reads the
-# Python table rather than the rendered string.
+# — the linear model `x ◇ y = 7x + 7y (mod 13)`, entries spanning 0..12, verified
+# by hand and by both offline oracles — came back `LEAN_REJECTED` with `decide`
+# reporting the conjunction *false*. Nothing in the offline harness could see
+# this, since every local check reads the Python table rather than the rendered
+# string.
+#
+# This does NOT mean order > 10 is categorically unrenderable — see
+# `constraint_countermodel_wide_domain` below for the deliberately
+# range-restricted construction that can exceed it, and why it cannot help the
+# `eq1: x = F(...)` family that is our entire current FALSE-frontier.
 MAX_WITNESS_ORDER = 10
 
 CONSTRAINT_ORDERS = (8, 9, 6, 4, 10)
 CONSTRAINT_TIME_BUDGET = 3.0
-CONSTRAINT_MAX_NODES = 60000
+# Pure safety net, not the real stopping criterion — every node already checks
+# the wall-clock deadline (`time.monotonic() >= deadline`), which is the correct
+# thing to bound a search on. Was 60000, which fires *before* that deadline and
+# is strictly more restrictive: measured 2026-07-29, `hard1_0062` needed 138,225
+# nodes / 83.1 s at order 8 and `hard2_0123` a similar amount — both real, judge-
+# verifiable witnesses the search would have found had the (redundant, too-low)
+# node cap not cut it off first. At measured throughput (~1,650 nodes/s) this
+# cap would not fire before a `deep`-effort per-order deadline (990 s) even in
+# the worst case, so it is now purely defensive.
+CONSTRAINT_MAX_NODES = 3_000_000
 # Wide tier, reached only when nothing else claimed the row. 5 and 7 are the
 # expensive orders for this family (they fit the algebra badly, so the search
 # explores instead of propagating), which is exactly why they belong here and not
@@ -6855,8 +6883,14 @@ def _cp_instances(eq: dict[str, Any], n: int) -> list[tuple[dict[str, int], Term
             for values in product(range(n), repeat=len(variables))]
 
 
-def _cp_propagate(table: list[int], n: int, instances) -> bool:
-    """Unit-propagate to a fixpoint. False on conflict."""
+def _cp_propagate(table: list[int], n: int, instances, value_cap: int) -> bool:
+    """Unit-propagate to a fixpoint. False on conflict.
+
+    `value_cap` matters beyond branching: propagation can force a cell above the
+    cap on its own — the structural reason a wide-domain (order > 10) table can
+    never satisfy `eq1: x = F(...)` with a bare variable on one side. See
+    `constraint_countermodel_wide_domain`.
+    """
     changed = True
     while changed:
         changed = False
@@ -6868,19 +6902,25 @@ def _cp_propagate(table: list[int], n: int, instances) -> bool:
                     return False
                 continue
             if lv is not None and rroot is not None:
+                if lv >= value_cap:
+                    return False
                 table[rroot] = lv
                 changed = True
             elif rv is not None and lroot is not None:
+                if rv >= value_cap:
+                    return False
                 table[lroot] = rv
                 changed = True
     return True
 
 
 def _cp_search(eq1: dict[str, Any], eq2: dict[str, Any], n: int,
-               deadline: float | None, budget: list[int]) -> list[list[int]] | None:
+               deadline: float | None, budget: list[int],
+               value_cap: int | None = None) -> list[list[int]] | None:
     instances = _cp_instances(eq1, n)
     eq2_vars = list(eq2["variables"])
     eq2_lhs, eq2_rhs = eq2["lhs"], eq2["rhs"]
+    cap = n if value_cap is None else min(n, value_cap)
 
     def branch(table: list[int]) -> list[list[int]] | None:
         budget[0] -= 1
@@ -6889,7 +6929,7 @@ def _cp_search(eq1: dict[str, Any], eq2: dict[str, Any], n: int,
         if deadline is not None and time.monotonic() >= deadline:
             return None
         work = table[:]
-        if not _cp_propagate(work, n, instances):
+        if not _cp_propagate(work, n, instances, cap):
             return None
         lv, _lr, _lroot = _cp_eval(eq2_lhs, tenv, work, n)
         rv, _rr, _rroot = _cp_eval(eq2_rhs, tenv, work, n)
@@ -6915,7 +6955,7 @@ def _cp_search(eq1: dict[str, Any], eq2: dict[str, Any], n: int,
                 return None
             filled = [0 if v == _CELL_UNKNOWN else v for v in work]
             return [filled[r * n:(r + 1) * n] for r in range(n)]
-        for value in range(n):
+        for value in range(cap):
             trial = work[:]
             trial[cell] = value
             got = branch(trial)
@@ -6924,8 +6964,9 @@ def _cp_search(eq1: dict[str, Any], eq2: dict[str, Any], n: int,
         return None
 
     # Commit to one violating assignment of eq2 at a time: much stronger pruning
-    # than finding any model and testing eq2 afterwards.
-    for target in product(range(n), repeat=len(eq2_vars)):
+    # than finding any model and testing eq2 afterwards. The target only makes
+    # sense over values the search can place, so it is capped too.
+    for target in product(range(cap), repeat=len(eq2_vars)):
         if budget[0] <= 0:
             return None
         if deadline is not None and time.monotonic() >= deadline:
@@ -6980,6 +7021,84 @@ def constraint_countermodel(
             return n, table, f"false:constraint_fin{n}"
     if complete:
         _CONSTRAINT_EXHAUSTED = True
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Wide-domain, narrow-range countermodel search.
+#
+# Real capability, real judge evidence, but does NOT help the current FALSE
+# frontier — kept and documented anyway because it is a genuine algebraic
+# construction the FALSE portfolio lacked, and the frontier will not always
+# look like it does today.
+#
+# The insight (2026-07-29): `MAX_WITNESS_ORDER = 10` is the ceiling for a
+# *complete* Cayley table, whose entries must span the full `0..n-1`. But
+# `finOpTable`'s parser only cares that each cell VALUE is a single digit — the
+# carrier size `n` is unconstrained. So a table with a much larger carrier,
+# whose operation is deliberately restricted to output values `< 10`, still
+# round-trips. Confirmed against the real judge: a `Fin 13` magma
+# `op(i, j) = (i + j) mod 10` — order 13, every entry < 10 — was `accepted` in
+# 78.1 s, where the unrestricted `Fin 13` linear model that started this
+# investigation was rejected.
+#
+# Why this cannot rescue the current frontier: every unsolved FALSE row has
+# `eq1: x = F(...)` — a bare variable alone on one side. That variable is
+# universally quantified over the *full* carrier `Fin n`, so once it exceeds 9
+# the equation demands `F(...) = x >= 10`, impossible for an output capped at 9.
+# `_eq1_has_bare_variable_side` detects this syntactically and skips the tier
+# for free, rather than let `_cp_propagate`'s value-cap conflict discover the
+# same impossibility the slow way (measured: 74,787 search nodes in 15 s on
+# `hard2_0051` without resolving, because propagation only reaches the fatal
+# instance once enough of the table happens to be filled in).
+#
+# For the equation shapes this restriction does NOT rule out (no bare variable
+# on either side — e.g. `F(...) = G(...)`), it is a real expansion of the
+# search space and may crack rows on future frontiers, official or hidden.
+WIDE_DOMAIN_ORDERS = (13, 16, 20, 25, 30, 40, 50, 60)
+WIDE_DOMAIN_VALUE_CAP = 10
+WIDE_DOMAIN_PER_ORDER_BUDGET = 20.0
+# Certs must clear the judge's 10 KB FALSE cap. JSON table size is roughly
+# n*(2n+1) bytes (brackets, commas, n single-digit entries per row) plus ~250
+# bytes of boilerplate; order 60 lands near 7.4 KB, order 65 crosses 8.6 KB —
+# leaving headroom is safer than chasing the exact byte count.
+
+
+def _eq1_has_bare_variable_side(eq1: dict[str, Any]) -> bool:
+    """True if eq1 is `var = F(...)` or `F(...) = var` — the shape no
+    wide-domain (order > 10) witness can ever satisfy, since the bare variable
+    ranges over the full carrier while `F(...)` is capped by construction."""
+    return eq1["lhs"][0] == "var" or eq1["rhs"][0] == "var"
+
+
+def constraint_countermodel_wide_domain(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    orders: tuple[int, ...] = WIDE_DOMAIN_ORDERS,
+    value_cap: int = WIDE_DOMAIN_VALUE_CAP,
+    time_budget: float = WIDE_DOMAIN_PER_ORDER_BUDGET,
+) -> tuple[int, list[list[int]], str] | None:
+    """Countermodel search at orders > 10, with cell values capped so the
+    table stays renderable. See the module note above for what this can and
+    cannot do."""
+    if len(eq1["variables"]) > 3 or len(eq2["variables"]) > 3:
+        return None  # n^k instance blow-up dominates fast at these orders
+    if _eq1_has_bare_variable_side(eq1):
+        return None
+    for n in orders:
+        deadline = local_deadline(_eff_time(time_budget))
+        if deadline is not None and time.monotonic() >= deadline:
+            return None
+        if memory_exceeded() and not try_reclaim_memory():
+            return None
+        budget = [CONSTRAINT_MAX_NODES]
+        table = _cp_search(eq1, eq2, n, deadline, budget, value_cap=value_cap)
+        if table is None:
+            continue
+        note_hypothesis_model()
+        if table_is_counterexample(eq1, eq2, table):
+            return n, table, f"false:constraint_wide_fin{n}"
     return None
 
 
@@ -7333,6 +7452,17 @@ def solve_problem(
         time_budget=CONSTRAINT_WIDE_PER_ORDER_BUDGET, per_order=True)
     if wide is not None:
         n, table, route = wide
+        return false_record(n, table, route)
+
+    # Wide-domain, narrow-range tier: reachable orders beyond 10 for equation
+    # shapes without a bare variable alone on one side of eq1 (that shape rules
+    # this out structurally, and `constraint_countermodel_wide_domain` checks it
+    # for free before spending any search). Last, because it is the widest net.
+    if _engine_gate():
+        return None
+    wide_domain = constraint_countermodel_wide_domain(eq1, eq2)
+    if wide_domain is not None:
+        n, table, route = wide_domain
         return false_record(n, table, route)
     return None
 

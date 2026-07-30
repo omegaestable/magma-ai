@@ -91,8 +91,16 @@ def eval_partial(term: Term, env: dict[str, int], table: list[int], n: int):
 
 
 def propagate(table: list[int], n: int, instances: list[tuple[dict, Term, Term]],
-              stats: dict) -> None:
-    """Unit-propagate eq1's ground instances until nothing changes."""
+              stats: dict, value_cap: int) -> None:
+    """Unit-propagate eq1's ground instances until nothing changes.
+
+    `value_cap` matters here, not just at branch time: propagation can force a
+    cell to a value that exceeds the render cap — e.g. for `eq1: x = F(...)`
+    with a *bare variable* on one side, forcing that root cell to equal x's own
+    substituted domain value, which ranges over all of `Fin n`, not just
+    `range(value_cap)`. That is the structural reason wide-domain search cannot
+    help this equation family: see WIDE_DOMAIN_NARROW_RANGE below.
+    """
     changed = True
     while changed:
         changed = False
@@ -106,10 +114,14 @@ def propagate(table: list[int], n: int, instances: list[tuple[dict, Term, Term]]
             # Exactly one side known and the other blocked at its own root:
             # that root cell is forced to the known side's value.
             if lv is not None and rroot is not None:
+                if lv >= value_cap:
+                    raise Conflict
                 table[rroot] = lv
                 stats["propagations"] += 1
                 changed = True
             elif rv is not None and lroot is not None:
+                if rv >= value_cap:
+                    raise Conflict
                 table[lroot] = rv
                 stats["propagations"] += 1
                 changed = True
@@ -125,20 +137,29 @@ def _instances(eq: dict, n: int) -> list[tuple[dict, Term, Term]]:
 
 
 def search(eq1: dict, eq2: dict, n: int, *, deadline: float,
-           stats: dict) -> list[list[int]] | None:
-    """Find an order-n model of eq1 refuting eq2, or None."""
+           stats: dict, value_cap: int | None = None) -> list[list[int]] | None:
+    """Find an order-n model of eq1 refuting eq2, or None.
+
+    `value_cap`: restrict every cell to `range(min(n, value_cap))`. Pass 10 to
+    search only for tables the judge's `finOpTable` parser can render at any
+    order — see the WIDE_DOMAIN_NARROW_RANGE note below for why that is a real,
+    much larger search space and not just "order <= 10 renamed".
+    """
     eq1_instances = _instances(eq1, n)
     eq2_vars = list(eq2["variables"])
+    cap = n if value_cap is None else min(n, value_cap)
 
     # Commit to one violating assignment of eq2 at a time: far stronger pruning
-    # than "find any model, then test eq2".
-    for target in product(range(n), repeat=len(eq2_vars)):
+    # than "find any model, then test eq2". The target assignment only makes
+    # sense over values the search can actually place, so it is capped too.
+    for target in product(range(cap), repeat=len(eq2_vars)):
         if time.monotonic() >= deadline:
             return None
         tenv = dict(zip(eq2_vars, target))
         table = [UNKNOWN] * (n * n)
         try:
-            found = _branch(table, n, eq1_instances, eq2, tenv, deadline, stats)
+            found = _branch(table, n, eq1_instances, eq2, tenv, deadline, stats,
+                            value_cap=cap)
         except Conflict:
             continue
         if found is not None:
@@ -172,12 +193,13 @@ def _cell_choice(table: list[int], n: int,
 
 
 def _branch(table: list[int], n: int, eq1_instances, eq2: dict,
-            tenv: dict, deadline: float, stats: dict) -> list[list[int]] | None:
+            tenv: dict, deadline: float, stats: dict,
+            value_cap: int) -> list[list[int]] | None:
     if time.monotonic() >= deadline:
         return None
     stats["nodes"] += 1
     work = table[:]
-    propagate(work, n, eq1_instances, stats)
+    propagate(work, n, eq1_instances, stats, value_cap)
 
     # Is the committed eq2 violation still achievable?
     lv, _lr, _lroot = eval_partial(eq2["lhs"], tenv, work, n)
@@ -199,11 +221,12 @@ def _branch(table: list[int], n: int, eq1_instances, eq2: dict,
     # nothing pins specific domain elements, and the committed eq2 violation
     # pins several — so it would make "no countermodel <= N" unsound, which is a
     # conclusion this tool is used to draw.
-    for value in range(n):
+    for value in range(value_cap):
         trial = work[:]
         trial[cell] = value
         try:
-            got = _branch(trial, n, eq1_instances, eq2, tenv, deadline, stats)
+            got = _branch(trial, n, eq1_instances, eq2, tenv, deadline, stats,
+                         value_cap=value_cap)
         except Conflict:
             continue
         if got is not None:
