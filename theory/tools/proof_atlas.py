@@ -19,7 +19,6 @@ STAGE1_EVAL_DIR = REPO_ROOT / "stage1" / "eval"
 if str(STAGE1_EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(STAGE1_EVAL_DIR))
 
-import scoreboard
 
 ROOT = REPO_ROOT
 EXPORT_DIR = REPO_ROOT / "data" / "exports"

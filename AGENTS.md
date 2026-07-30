@@ -1,6 +1,10 @@
 # AGENTS.md
 
-This file is the repo-wide navigation contract for coding agents.
+Role playbooks and navigation for coding agents.
+
+**Read `CLAUDE.md` first.** It holds the current measured state, the four
+commands that matter, and the rails. This file adds role-specific file maps on
+top of it. If the two disagree, `CLAUDE.md` wins.
 
 ## Mission
 
@@ -10,22 +14,17 @@ Stage 1 prompt-cheatsheet work is archived under `stage1/` and is not the active
 
 ## Cold-Start Read Order
 
-Follow this order exactly:
+The old mandatory 13-file order cost ~36k tokens before any work could start,
+and the files contradicted each other. Read on demand instead:
 
-1. `README.md`
-2. `CURRENT_STATE.md`
-3. `AGENTS.md`
-4. `.github/copilot-instructions.md`
-5. `RESTART_CHECKLIST.md`
-6. `EVAL_WORKFLOW.md`
-7. `BENCHMARK_MANIFEST.md`
-8. `stage2/README.md`
-9. `stage2/docs/playground-preflight.md`
-10. `theory/README.md`
-11. `theory/TEORTH_WORKFLOW.md`
-12. `theory/tools/README.md`
-13. `stage2/docs/LATEST_HANDOFF.md`
-14. Only then inspect solver code, theory tools, or archived Stage 1 files.
+1. `CLAUDE.md` — always. Current numbers, commands, rails, gotchas.
+2. `stage2/docs/LATEST_HANDOFF.md` — latest session detail and ranked next levers.
+3. Then only what the task needs, via the "Going deeper" table in `CLAUDE.md`.
+
+`README.md`, `CURRENT_STATE.md`, `RESTART_CHECKLIST.md`, `EVAL_WORKFLOW.md`,
+`BENCHMARK_MANIFEST.md`, `stage2/README.md`, `theory/*` and
+`stage2/docs/playground-preflight.md` remain accurate references for their own
+topics; none is required reading to make a solver change.
 
 ## Current Operating Model
 
@@ -44,39 +43,29 @@ Follow this order exactly:
 - Active validation policy: Marathon guardrails and promotion runs must use a
   positive token budget; do not run or cite `--budget-tokens 0` as current
   evidence.
-- Active deterministic TRUE routes: reflexive, singleton/collapse, exact substitution, projection-boundary laws, short bridge/constancy rewrites, bounded subterm rewrite chains, bounded absorption closure, deep absorption, and bounded equational closure.
-- Active deterministic FALSE routes: named compact witnesses, structured finite families, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded `Fin 2..3` search.
+- Active route inventory: see `CLAUDE.md` ("How the solver is organised") and
+  `stage2/docs/solver-route-ledger.md`. The list that used to sit here went stale
+  and omitted every engine added after 2026-05.
 - Shared data: `data/exports/`, `data/teorth_cache/`, and `paper/`.
 - Stage 1 archive: `stage1/`.
 
-Latest completed public benchmark snapshot, before the final heartbeat/path-helper optimization patch:
+### Benchmark numbers live in one place
 
-- `normal`: `803/1000`
-- `hard1`: `42/69`
-- `hard2`: `92/200`
-- `hard3`: `264/400`
-- total: `1201/1669`, split `390 TRUE + 811 FALSE`, with `0` solver tokens
+Current measured state is in **`CLAUDE.md`**. Regenerate it with
+`stage2/experiments/audit_corpus.py --all` (and `--hf`).
 
-Use `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md` as
-archived history and
-`stage2/docs/LATEST_HANDOFF.md` as the current team-memory bridge before
-starting new solver work. Use `stage2/docs/playground-preflight.md` before any
-upload/playground check.
+This section used to carry `1201/1669` and a `138939`-byte package as the
+"latest snapshot". Both were stale by a wide margin — the real figures on
+2026-07-29 are `1617/1669` and ~333 KB — and a cold-start agent read the stale
+ones first and planned against them. Historical baselines belong in
+`stage2/results/` with their dates, not here.
 
-Latest local candidate evidence after the final optimization patch, not a full public rerun:
-
-- `sample_20`: `15/20` in the 2026-05-25 no-key Solo smoke
-- `sample_200`: `169/200` in the 2026-05-25 no-key Solo smoke
-- accepted-grind fixture with heartbeat cap: `34/34` accepted only with `MAGMA_ENABLE_GRIND=1`
-- compact witness fixture: `8/8` accepted, `0` LLM calls
-- Fresh 150-row hard mixes, archived as deterministic discovery evidence: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
-- Bounded local OpenRouter proxy smoke on 2026-05-25: Solo `1/1` and Marathon `1/1` accepted through official proxy paths, with Marathon `89/4096` tokens used
-- Packaged solver size: `138939` bytes
-- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` historical Marathon behavior; selected fallback reproduction lives at `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
-- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions.
-- 2026-05-30 official `normal_100` positive-token Marathon guardrail: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions.
-- 2026-05-30 official `hard1` positive-token mixed-lane Marathon: `39/69` accepted, `30` LLM calls, `240164` tokens used, and no incorrect submissions.
-- Full public validation of the post-rollback package is pending. Treat the prior `1201/1669` as historical evidence that included `34` default-disabled grind wins; require positive-token proxy evidence before LLM-backed promotion.
+Historical context worth keeping: the `1201/1669` figure is the 2026-05-18
+public Marathon refresh and included `34` accepted `true:grind` rows against
+`433` incorrect. It is archived at
+`stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`. Use
+`stage2/docs/LATEST_HANDOFF.md` as the team-memory bridge and
+`stage2/docs/playground-preflight.md` before any upload.
 
 ## Banned Approaches
 

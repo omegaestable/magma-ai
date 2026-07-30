@@ -3,4 +3,8 @@
 mypy>=1.10
 pypdf>=4.2
 pytest>=8.0
+# The correctness gate re-solves ~140 real problems; serial it is ~160 s, which
+# is long enough that people reach for -SkipTests. `-n auto` brings it under
+# ~30 s on a many-core box. See stage2/tests/README.md.
+pytest-xdist>=3.5
 ruff>=0.4

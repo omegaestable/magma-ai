@@ -134,8 +134,22 @@ Output exactly ONE JSON object (first char {, last char }). No markdown, no
 """
 
 MAX_SUBMISSION_BYTES = 500_000
-MAX_LEAN_CODE_BYTES = 100_000
-MAX_FALSE_CERT_BYTES = 20_000
+
+# Hard limits enforced by the official judge, mirrored from
+# vendor/stage2-official/judge/verify.py (MAX_CODE_LENGTH / MAX_FALSE_CERT_BYTES).
+# A certificate over these is rejected with the row scored as attempted, so
+# emitting one is strictly worse than skipping. Keep these two in sync with any
+# harness sync.
+JUDGE_MAX_CODE_LENGTH = 50_000
+JUDGE_MAX_FALSE_CERT_BYTES = 10_000
+
+# Our own caps sit just under the judge's, so a cert that passes locally cannot
+# be rejected on size. Previously 100_000 / 20_000 — both *twice* the judge's
+# limit, which silently accepted certificates the judge would refuse (found
+# 2026-07-29; no benchmark row was over the line, so this closes a latent hole
+# rather than recovering lost rows).
+MAX_LEAN_CODE_BYTES = JUDGE_MAX_CODE_LENGTH - 500
+MAX_FALSE_CERT_BYTES = JUDGE_MAX_FALSE_CERT_BYTES - 500
 VALID_VERDICTS = {"true", "false"}
 AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
 AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
@@ -797,11 +811,31 @@ def equation_holds(equation: dict[str, Any], table: list[list[int]]) -> bool:
     return True
 
 
+def table_is_renderable(table: list[list[int]]) -> bool:
+    """Can the judge actually read this table back?
+
+    `MemoFinOp.finOpTable` parses the table string with `extractDigits`, which
+    keeps one value per *digit character*. A cell holding `10` is therefore read
+    as two cells, `1` and `0`, silently shifting everything after it. So only
+    single-digit entries survive the round trip, which caps witness order at 10.
+
+    This is checked here, at the gate every FALSE witness passes through, because
+    every other local check reads the Python table and is blind to it: a `Fin 13`
+    witness for `hard2_0051` passed both offline oracles and was still
+    `LEAN_REJECTED`, with `decide` calling the conjunction false (2026-07-29).
+    """
+    if len(table) > MAX_WITNESS_ORDER:
+        return False
+    return all(0 <= value <= 9 for row in table for value in row)
+
+
 def table_is_counterexample(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
     table: list[list[int]],
 ) -> bool:
+    if not table_is_renderable(table):
+        return False
     return equation_holds(eq1, table) and not equation_holds(eq2, table)
 
 
@@ -2987,8 +3021,33 @@ def right_projection_from_2788_block(source_name: str) -> str:
         "    have h22 : P ◇ X0 = X0 := eq22 X0 X0\n"
         "    have h33 : (P ◇ X0) ◇ P = X0 := eq33 X0 X0\n"
         "    exact (congrArg (fun t => t ◇ P) h22).symm.trans h33\n"
+        # Derived rather than discharged by `grind` (2026-07-29). The old body
+        # was `by grind`, which cost 37.0 s of the judge's 120 s Lean timeout,
+        # needed `set_option maxHeartbeats 5000000`, and rested on a tactic this
+        # project has field evidence against (the cloud judge rejected a
+        # `narrow_grind` cert the local judge accepted). The derivation below
+        # uses only eq19/eq22/eq34, already proven above.
+        #
+        # Write P := X0 ◇ (X0 ◇ X0).
+        #   eq19 X0 (X0◇X0) t  :  X0 ◇ P = t ◇ P        (left factor is free)
+        #   eq34 X0            :  X0 ◇ P = X0
+        #   => (*) ∀ t, t ◇ P = X0
+        #   (*) at t := P      :  P ◇ P = X0
+        #   eq22 P P           :  (P ◇ (P ◇ P)) ◇ P = P
+        #   rewrite by P◇P=X0  :  (P ◇ X0) ◇ P = P
+        #   (*) at t := P ◇ X0 :  (P ◇ X0) ◇ P = X0      => P = X0  ∎
+        #
+        # Real-judge measured: accepted in 4.8 s (was 37.0 s with `grind`).
         "  have eq42 (X0 : G) : X0 ◇ (X0 ◇ X0) = X0 := by\n"
-        "    grind\n"
+        "    have hstar : ∀ t : G, t ◇ (X0 ◇ (X0 ◇ X0)) = X0 := by\n"
+        "      intro t\n"
+        "      exact (eq19 X0 (X0 ◇ X0) t).symm.trans (eq34 X0)\n"
+        "    have hPP : (X0 ◇ (X0 ◇ X0)) ◇ (X0 ◇ (X0 ◇ X0)) = X0 :=\n"
+        "      hstar (X0 ◇ (X0 ◇ X0))\n"
+        "    have h22 := eq22 (X0 ◇ (X0 ◇ X0)) (X0 ◇ (X0 ◇ X0))\n"
+        "    have hrw := (congrArg\n"
+        "      (fun t => ((X0 ◇ (X0 ◇ X0)) ◇ t) ◇ (X0 ◇ (X0 ◇ X0))) hPP).symm.trans h22\n"
+        "    exact hrw.symm.trans (hstar ((X0 ◇ (X0 ◇ X0)) ◇ X0))\n"
         "  have eq43 (X0 : G) : X0 ◇ X0 = X0 := by\n"
         "    exact (congrArg (fun t => X0 ◇ t) (eq42 X0)).symm.trans (eq34 X0)\n"
         "  have hright : ∀ a b : G, a ◇ b = b := by\n"
@@ -3083,9 +3142,11 @@ def right_projection_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) ->
         call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
         if swapped:
             call = f"({call}).symm"
+        # No `set_option maxHeartbeats` here: the only step that needed a raised
+        # budget was the `grind` in right_projection_from_2788_block, now a
+        # derived proof term (2026-07-29).
         code = (
-            "import JudgeProblem\n"
-            "set_option maxHeartbeats 5000000\n\n"
+            "import JudgeProblem\n\n"
             "def submission : Goal := by\n"
             "  intro G _ h\n"
             "  have h2788 : ∀ x y z : G, x = ((y ◇ z) ◇ (y ◇ x)) ◇ y := by\n"
@@ -4097,7 +4158,9 @@ def projection_true_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str
 
 
 UNIVERSAL_IDENTITY_MAX_PATTERN_VARS = 6
-UNIVERSAL_IDENTITY_MAX_CODE = 60000
+# Was 60000 — above the judge's own 50_000 cap, so an oversized cert would have
+# been emitted and then rejected. Bounded by the shared cap instead (2026-07-29).
+UNIVERSAL_IDENTITY_MAX_CODE = MAX_LEAN_CODE_BYTES
 
 
 def universal_identity_source(eq1: dict[str, Any]) -> tuple[str, str, Term, bool] | None:
@@ -5797,12 +5860,13 @@ EGG_ROUNDS = 30
 EGG_POOL_MAX = 36
 EGG_EXPAND_CAP = 900
 EGG_MAX_ENODES = 60_000
-# The production judge rejects code over MAX_CODE_LENGTH = 50_000 UTF-8
-# bytes as malformed (vendor judge/verify.py) — smaller than this module's
-# MAX_LEAN_CODE_BYTES. Measured 2026-07-23: 59,820-byte cert bounced,
-# 48,526-byte cert accepted.
+# The production judge rejects code over JUDGE_MAX_CODE_LENGTH = 50_000 UTF-8
+# bytes as malformed (vendor judge/verify.py). Measured 2026-07-23:
+# 59,820-byte cert bounced, 48,526-byte cert accepted. Since 2026-07-29
+# MAX_LEAN_CODE_BYTES enforces the same bound module-wide, so this route's cap
+# is no longer the only one that is correct.
 EGG_MAX_PROOF_BYTES = 46_000
-EGG_MAX_CERT_BYTES = 49_500
+EGG_MAX_CERT_BYTES = MAX_LEAN_CODE_BYTES
 
 _EGG_BINDER_CANDIDATES = ("t", "q", "p", "s", "r", "m", "n", "k")
 
@@ -6368,6 +6432,160 @@ def egg_closure_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, st
     return "true:egg_closure", code
 
 
+# ---------------------------------------------------------------------------
+# Egg-proved lemma bootstrap.
+#
+# `lemma_bootstrap_route` picks a small law that implies the goal and proves it
+# from eq1 with the *critical-pair closure*. That closure is exactly the engine
+# the 2026-07-23 oracle-pivot experiment showed cannot traverse a single ETP
+# explicit edge even when handed the right intermediate law — candidate
+# generation was never the bottleneck, the closure mechanism was. `egg_closure`
+# fixed the mechanism, but only for the real goal.
+#
+# This route is the missing composition: **egg as the lemma prover**. Two
+# independent facts made it worth building:
+#
+#  - ETP pivot mining (2026-07-29) shows many hard TRUE misses factor through a
+#    *tiny* law — `hard2_0073` and `hard2_0099` both go via `Eq2: x = y`, i.e.
+#    eq1 collapses the magma outright.
+#  - Egg proves that collapse where the CP closure cannot: measured
+#    `hard2_0099` -> `a = b` in 13.4 s at `standard` effort, on a row every
+#    existing engine skips.
+#
+# Certificates use the same `lemma_certificate` shape as `lemma_bootstrap`, so
+# they are fully kernel-checkable (`check_true_lemma_certificate` runs the kernel
+# twice — lemma from eq1, goal from the stated lemma). No new oracle surface.
+#
+# Ordering is deliberate: the free syntactic gate (`lemma_applies_to_goal`) runs
+# first and rejects nearly every candidate, so egg — the expensive half — is only
+# ever paid for on a lemma that would actually finish the proof.
+# ---------------------------------------------------------------------------
+
+EGG_BOOTSTRAP_TOTAL_BUDGET = 24.0
+EGG_BOOTSTRAP_LEMMA_BUDGET = 8.0
+EGG_BOOTSTRAP_MAX_ATTEMPTS = 6
+
+# The collapse law gets its own route and its own budget because it is by far the
+# most common pivot on the frontier. ETP mining over every unsolved official row
+# (2026-07-29): **14 of the 31 unsolved TRUE rows have `eq1 => (x = y)`** — eq1
+# forces a one-element magma, so the goal is irrelevant and the whole problem is
+# "prove eq1 collapses". `singleton_route` catches only the syntactic case, and
+# `lemma_bootstrap`'s CP closure cannot derive it. Egg can: 10 of those 14, in
+# 1.9-34.3 s, every proof kernel-verified.
+#
+# The budget is deliberately larger than `EGG_BOOTSTRAP_LEMMA_BUDGET`: measured
+# successes span 1.9 s to 34.3 s, so an 8 s cap would drop most of them.
+EGG_COLLAPSE_BUDGET = 40.0
+
+
+def egg_collapse_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    """Prove eq1 forces a one-element magma, via equality saturation on `a = b`.
+
+    Certificate is the kernel-checkable `lemma` shape: `check_true_lemma_certificate`
+    replays the collapse proof against eq1 and the goal against the stated law, so
+    neither half is taken on trust.
+    """
+    collapse = lemma_goal("a = b")
+    goal_expr = lemma_applies_to_goal(collapse, eq2)
+    if goal_expr is None:
+        return None
+    # A nontrivial finite model of eq1 refutes collapse outright — milliseconds,
+    # and it rules out the whole route before egg spends anything.
+    if not lemma_survives_models(eq1, collapse):
+        return None
+    proof = egg_saturate_prove(
+        eq1, collapse, time_budget=_eff_time(EGG_COLLAPSE_BUDGET))
+    if proof is None:
+        return None
+    code = lemma_certificate(collapse, proof, eq2["variables"], goal_expr)
+    if len(code.encode("utf-8")) > MAX_LEAN_CODE_BYTES:
+        return None
+    return "true:egg_collapse", code
+
+
+# Which laws actually pay, measured rather than guessed. Two real-LLM sweeps over
+# the open TRUE frontier (2026-07-29, 51 rows, gpt-oss-120b naming pivot lemmas)
+# produced 9 solved rows, and **every single winning law was one of these four** —
+# collapse plus the two projections plus product-constant. The 601-entry library
+# contributed nothing else.
+#
+# So they get the collapse-sized budget and go first. The library scan still runs
+# after, on the remaining budget, because it costs nothing when the free gates
+# reject (and 2026-07-21 established that "looks unused" is not a deletion
+# licence). The earlier flat 8 s cap over the library was the binding constraint:
+# these proofs need 13-20 s, so the route was starved on rows it could win.
+EGG_PRIORITY_LEMMAS = (
+    ("left_projection", "a ◇ b = a"),
+    ("right_projection", "a ◇ b = b"),
+    ("product_constant", "a ◇ b = c ◇ d"),
+)
+
+
+def egg_priority_bootstrap_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    """`egg_bootstrap` restricted to the handful of laws that measurably win,
+    with a real budget each."""
+    route_deadline = local_deadline(_eff_time(EGG_COLLAPSE_BUDGET * 2))
+    for name, text in EGG_PRIORITY_LEMMAS:
+        if deadline_expired(route_deadline):
+            return None
+        try:
+            lemma = lemma_goal(text)
+        except ValueError:
+            continue
+        proof_expr = lemma_applies_to_goal(lemma, eq2)
+        if proof_expr is None:
+            continue
+        if not lemma_survives_models(eq1, lemma):
+            continue
+        proof = egg_saturate_prove(
+            eq1, lemma, time_budget=_eff_time(EGG_COLLAPSE_BUDGET))
+        if proof is None:
+            continue
+        code = lemma_certificate(lemma, proof, eq2["variables"], proof_expr)
+        if len(code.encode("utf-8")) > MAX_LEAN_CODE_BYTES:
+            continue
+        return f"true:egg_bootstrap:{name}", code
+    return None
+
+
+def egg_bootstrap_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    route_deadline = local_deadline(_eff_time(EGG_BOOTSTRAP_TOTAL_BUDGET))
+    attempts = 0
+    for name, text in full_lemma_library():
+        if attempts >= EGG_BOOTSTRAP_MAX_ATTEMPTS:
+            return None
+        if deadline_expired(route_deadline):
+            return None
+        try:
+            lemma = lemma_goal(text)
+        except ValueError:
+            continue
+        # Free gate: does this law even close the goal?
+        proof_expr = lemma_applies_to_goal(lemma, eq2)
+        if proof_expr is None:
+            continue
+        # Free gate: is the law refutable in a model of eq1? Then eq1 cannot
+        # prove it and egg would burn its budget confirming that.
+        if not lemma_survives_models(eq1, lemma):
+            continue
+        attempts += 1
+        lemma_proof = egg_saturate_prove(
+            eq1, lemma, time_budget=_eff_time(EGG_BOOTSTRAP_LEMMA_BUDGET))
+        if lemma_proof is None:
+            continue
+        code = lemma_certificate(lemma, lemma_proof, eq2["variables"], proof_expr)
+        if len(code.encode("utf-8")) > MAX_LEAN_CODE_BYTES:
+            continue
+        return f"true:egg_bootstrap:{name}", code
+    return None
+
+
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
     eq2_left, eq2_right = boundary_vars(eq2["rhs"])
@@ -6522,6 +6740,249 @@ def _lm_cells(term: Term, env: dict[str, int], table: list[list[int]],
     return table[a][b]
 
 
+# ---------------------------------------------------------------------------
+# Constraint-propagation countermodel search (Mace4-style).
+#
+# The canned portfolio (named tables, structured/affine/quadratic families,
+# `Fin 2..3` enumeration) and the randomized `local_model_counterexample` repair
+# search share one blind spot: laws of the form `x = F(x, y-bar)` with `x`
+# occurring once on the right. Those force *quasigroups*, so a random table
+# essentially never satisfies them and the smallest countermodel usually lives at
+# order 8-9, out of enumeration range.
+#
+# Measured cost of that gap (playground, 2026-07-29): six `hard2` rows with
+# ground-truth label FALSE were answered `true` by the Solo grind fallback, at
+# 363-847 s each. A TRUE verdict on a FALSE row can never be accepted.
+#
+# This search treats the n^2 Cayley cells as unknowns and every ground instance
+# of eq1 as a constraint. Two things make it work where the others do not:
+#
+#  1. **Unit propagation.** If one side of an instance evaluates and the other is
+#     blocked exactly at its outermost product, that cell is forced. For
+#     `x = F(x, y-bar)` this cascades hard.
+#  2. **Order schedule, not smallest-first.** On `hard2_0009`, order 7 exhausted a
+#     120 s budget and found nothing while order 8 succeeded in 0.03 s / 40 nodes.
+#     Difficulty tracks how well the order fits the algebra, not its size.
+#
+# Results: 4 of those 6 rows solved in ~0.05 s each, all four judge-accepted as
+# 426-byte `Fin 8` certificates. Every table still passes through
+# `table_is_counterexample` before it can be emitted, so the search cannot
+# produce an unsound witness even if it has a bug.
+# ---------------------------------------------------------------------------
+
+# Did the constraint search finish every order it was asked for, or did it run out
+# of clock / nodes? Only the first case is evidence: "no countermodel exists at
+# orders 8,9,10,12,16" is a real statement, while "the search was cut off" says
+# nothing at all.
+#
+# This matters because the signal it replaces was worthless. `run_solo` used
+# `hypothesis_models_seen() > 0` to decide the row was probably TRUE and submit a
+# speculative grind certificate. On the six FALSE playground rows that misfired on,
+# models_seen was 1050, 1272, 1349, 1352, 7698 and 2 — all comfortably above zero,
+# all genuinely FALSE, all guaranteed misses that each burned 363-847 s.
+_CONSTRAINT_EXHAUSTED = False
+
+
+def reset_constraint_evidence() -> None:
+    global _CONSTRAINT_EXHAUSTED
+    _CONSTRAINT_EXHAUSTED = False
+
+
+def constraint_search_exhausted() -> bool:
+    return _CONSTRAINT_EXHAUSTED
+
+
+# HARD CEILING ON WITNESS ORDER: 10.
+#
+# The judge builds the magma with `MemoFinOp.finOpTable`, whose parser is
+# `extractDigits`: it walks the table string character by character and keeps each
+# *digit* as one value (vendor/stage2-official/judge/JudgeFinOp/MemoFinOp.lean).
+# A cell holding `10` therefore becomes two cells, `1` and `0`, and the whole
+# table shifts. Orders 2..10 use only single-digit entries and are safe; order 11+
+# is silently corrupted.
+#
+# Confirmed the hard way (2026-07-29): a genuine `Fin 13` witness for `hard2_0051`
+# — the linear model `x ◇ y = 7x + 7y (mod 13)`, verified by hand and by both
+# offline oracles — came back `LEAN_REJECTED` with `decide` reporting the
+# conjunction *false*, because Lean was reading a different table than we sent.
+# Nothing in the offline harness could see this, since every local check reads the
+# Python table rather than the rendered string.
+MAX_WITNESS_ORDER = 10
+
+CONSTRAINT_ORDERS = (8, 9, 6, 4, 10)
+CONSTRAINT_TIME_BUDGET = 3.0
+CONSTRAINT_MAX_NODES = 60000
+# Wide tier, reached only when nothing else claimed the row. 5 and 7 are the
+# expensive orders for this family (they fit the algebra badly, so the search
+# explores instead of propagating), which is exactly why they belong here and not
+# in the cheap schedule.
+CONSTRAINT_WIDE_ORDERS = (8, 9, 10, 6, 5, 7, 4)
+# Budget is per *order*, not for the whole schedule. With one shared deadline a
+# 25 s wide tier never reached order 5 at all, and the dev sweep needed 125 s there
+# for `hard1_0025`, 94 s at order 6 for `hard2_0125` and 21 s at order 8 for
+# `hard2_0092` — three rows with genuine witnesses that the solver could not claim.
+# Reached only by rows nothing else solved, where the alternative is a speculative
+# `true` guess, so spending real time here is the better trade.
+CONSTRAINT_WIDE_PER_ORDER_BUDGET = 45.0
+_CELL_UNKNOWN = -1
+
+
+def _cp_eval(term: Term, env: dict[str, int], table: list[int], n: int):
+    """Partial evaluation. Returns (value, ready_cell, root_cell).
+
+    `root_cell` is set only when this term's own outermost lookup is the missing
+    one (both children known) — the only position where propagating the other
+    side's value is valid. `ready_cell` is any unknown cell whose operands are
+    known, i.e. a legal branch point.
+    """
+    if term[0] == "var":
+        return env[term[1]], None, None
+    lv, lr, _ = _cp_eval(term[1], env, table, n)
+    rv, rr, _ = _cp_eval(term[2], env, table, n)
+    if lv is None or rv is None:
+        return None, (lr if lr is not None else rr), None
+    idx = lv * n + rv
+    val = table[idx]
+    if val == _CELL_UNKNOWN:
+        return None, idx, idx
+    return val, None, None
+
+
+def _cp_instances(eq: dict[str, Any], n: int) -> list[tuple[dict[str, int], Term, Term]]:
+    variables = list(eq["variables"])
+    lhs, rhs = eq["lhs"], eq["rhs"]
+    return [(dict(zip(variables, values)), lhs, rhs)
+            for values in product(range(n), repeat=len(variables))]
+
+
+def _cp_propagate(table: list[int], n: int, instances) -> bool:
+    """Unit-propagate to a fixpoint. False on conflict."""
+    changed = True
+    while changed:
+        changed = False
+        for env, lhs, rhs in instances:
+            lv, _lr, lroot = _cp_eval(lhs, env, table, n)
+            rv, _rr, rroot = _cp_eval(rhs, env, table, n)
+            if lv is not None and rv is not None:
+                if lv != rv:
+                    return False
+                continue
+            if lv is not None and rroot is not None:
+                table[rroot] = lv
+                changed = True
+            elif rv is not None and lroot is not None:
+                table[lroot] = rv
+                changed = True
+    return True
+
+
+def _cp_search(eq1: dict[str, Any], eq2: dict[str, Any], n: int,
+               deadline: float | None, budget: list[int]) -> list[list[int]] | None:
+    instances = _cp_instances(eq1, n)
+    eq2_vars = list(eq2["variables"])
+    eq2_lhs, eq2_rhs = eq2["lhs"], eq2["rhs"]
+
+    def branch(table: list[int]) -> list[list[int]] | None:
+        budget[0] -= 1
+        if budget[0] <= 0:
+            return None
+        if deadline is not None and time.monotonic() >= deadline:
+            return None
+        work = table[:]
+        if not _cp_propagate(work, n, instances):
+            return None
+        lv, _lr, _lroot = _cp_eval(eq2_lhs, tenv, work, n)
+        rv, _rr, _rroot = _cp_eval(eq2_rhs, tenv, work, n)
+        if lv is not None and rv is not None and lv == rv:
+            return None
+        blocking: dict[int, int] = {}
+        for env, lhs, rhs in instances:
+            for term in (lhs, rhs):
+                _v, ready, _root = _cp_eval(term, env, work, n)
+                if ready is not None:
+                    blocking[ready] = blocking.get(ready, 0) + 1
+        cell = -1
+        if blocking:
+            cell = max(blocking, key=lambda k: blocking[k])
+        else:
+            for term in (eq2_lhs, eq2_rhs):
+                _v, ready, _root = _cp_eval(term, tenv, work, n)
+                if ready is not None:
+                    cell = ready
+                    break
+        if cell < 0:
+            if lv is None or rv is None or lv == rv:
+                return None
+            filled = [0 if v == _CELL_UNKNOWN else v for v in work]
+            return [filled[r * n:(r + 1) * n] for r in range(n)]
+        for value in range(n):
+            trial = work[:]
+            trial[cell] = value
+            got = branch(trial)
+            if got is not None:
+                return got
+        return None
+
+    # Commit to one violating assignment of eq2 at a time: much stronger pruning
+    # than finding any model and testing eq2 afterwards.
+    for target in product(range(n), repeat=len(eq2_vars)):
+        if budget[0] <= 0:
+            return None
+        if deadline is not None and time.monotonic() >= deadline:
+            return None
+        tenv = dict(zip(eq2_vars, target))
+        found = branch([_CELL_UNKNOWN] * (n * n))
+        if found is not None:
+            return found
+    return None
+
+
+def constraint_countermodel(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    *,
+    orders: tuple[int, ...] = CONSTRAINT_ORDERS,
+    time_budget: float = CONSTRAINT_TIME_BUDGET,
+    per_order: bool = False,
+) -> tuple[int, list[list[int]], str] | None:
+    """Constraint-propagation search for a finite magma separating eq1 from eq2.
+
+    `per_order=False` shares one deadline across the whole schedule (cheap tier:
+    the successes there land in milliseconds). `per_order=True` gives each order
+    its own slice, which is what the wide tier needs — the orders that pay off
+    late in the schedule need tens of seconds each, and a shared deadline never
+    reaches them.
+    """
+    global _CONSTRAINT_EXHAUSTED
+    if len(eq1["variables"]) > 4 or len(eq2["variables"]) > 4:
+        return None  # n^k instance blow-up; the cheap portfolio owns these
+    shared_deadline = None if per_order else local_deadline(_eff_time(time_budget))
+    complete = True
+    for n in orders:
+        deadline = (local_deadline(_eff_time(time_budget)) if per_order
+                    else shared_deadline)
+        if deadline is not None and time.monotonic() >= deadline:
+            complete = False
+            break
+        if memory_exceeded() and not try_reclaim_memory():
+            complete = False
+            break
+        budget = [CONSTRAINT_MAX_NODES]
+        table = _cp_search(eq1, eq2, n, deadline, budget)
+        if budget[0] <= 0:
+            complete = False  # node cap hit: this order was not settled
+        if table is None:
+            continue
+        note_hypothesis_model()
+        # The search is never trusted: only a table that genuinely satisfies eq1
+        # and genuinely refutes eq2 can leave this function.
+        if table_is_counterexample(eq1, eq2, table):
+            return n, table, f"false:constraint_fin{n}"
+    if complete:
+        _CONSTRAINT_EXHAUSTED = True
+    return None
+
+
 def local_model_counterexample(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
@@ -6609,514 +7070,271 @@ def _engine_gate() -> bool:
     return False
 
 
-def solve_problem(
+# ---------------------------------------------------------------------------
+# TRUE route table.
+#
+# Order is load-bearing: cheap syntactic recognisers first, search engines last,
+# so a row that a millisecond pattern match can close never pays for the
+# closures. This used to be ~380 lines of copy-pasted
+# `x = fn(eq1, eq2); if x is not None: route, code = x; return {...}` blocks,
+# which is how two defects hid in plain sight (2026-07-29): a duplicated
+# `sandwich_left_projection_route` call whose second copy was unreachable, and a
+# missing `_engine_gate()` before `narrow_grind`. Adding a route is now one line.
+#
+# Every entry has the same signature: (eq1, eq2) -> (route_label, lean_code) or
+# None. The handful of routes with a different return shape get a thin adapter
+# below rather than a special case in the dispatcher.
+# ---------------------------------------------------------------------------
 
+RouteResult = tuple[str, str]
+
+
+def _direct_substitution_entry(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> RouteResult | None:
+    direct = direct_substitution_route(eq1, eq2)
+    if direct is None:
+        return None
+    mode, subst = direct
+    call_expr = call_expression(eq1["variables"], subst)
+    if mode == "symm":
+        call_expr = f"({call_expr}).symm"
+    route = "true:rewrite" if mode == "direct" else "true:rewrite:symm"
+    return route, substitution_true_certificate(eq2["variables"], call_expr)
+
+
+def _bridge_result(
+    finder: Any, eq1: dict[str, Any], eq2: dict[str, Any]
+) -> RouteResult | None:
+    """Shared rendering for `bridge_route` / `completed_bridge_route`.
+
+    Both return (name, left_subst, right_subst) and the last two characters of
+    the name say which side of eq1 each leg starts from.
+    """
+    found = finder(eq1, eq2)
+    if found is None:
+        return None
+    bridge_name, left_subst, right_subst = found
+    left_call = call_expression(eq1["variables"], left_subst)
+    right_call = call_expression(eq1["variables"], right_subst)
+    left_source = int(bridge_name[-2])
+    right_source = int(bridge_name[-1])
+    left_to_mid = left_call if left_source == 0 else f"({left_call}).symm"
+    mid_to_right = f"({right_call}).symm" if right_source == 0 else right_call
+    return bridge_name, substitution_true_certificate(
+        eq2["variables"], f"({left_to_mid}).trans ({mid_to_right})")
+
+
+def _bridge_entry(eq1: dict[str, Any], eq2: dict[str, Any]) -> RouteResult | None:
+    return _bridge_result(bridge_route, eq1, eq2)
+
+
+def _completed_bridge_entry(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> RouteResult | None:
+    return _bridge_result(completed_bridge_route, eq1, eq2)
+
+
+def _rewrite_chain_entry(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> RouteResult | None:
+    chain = find_rewrite_chain(eq1, eq2)
+    if chain is None:
+        return None
+    routes, proof_expr = chain
+    return ("true:rewrite_chain:" + ",".join(routes),
+            substitution_true_certificate(eq2["variables"], proof_expr))
+
+
+TRUE_ROUTES: tuple[Any, ...] = (
+    # Derived-basis collapse recognisers.
+    deep_repeat_singleton_route,
+    reverse_deep_repeat_singleton_route,
+    sandwich_repeat_singleton_route,
+    outer_sandwich_singleton_route,
+    forked_square_singleton_route,
+    crossed_pair_singleton_route,
+    repeated_prefix_product_constancy_route,
+    double_tail_square_product_route,
+    # Structural singleton / self-collapse families.
+    nested_square_singleton_route,
+    tail_square_singleton_route,
+    paired_tail_singleton_route,
+    wrapped_tail_singleton_route,
+    middle_self_collapse_route,
+    front_double_self_collapse_route,
+    alternating_front_self_collapse_route,
+    mirrored_alternating_front_self_collapse_route,
+    square_twist_comm_route,
+    # Projection-boundary families.
+    sandwich_left_projection_route,
+    nested_left_projection_route,
+    specialized_left_projection_route,
+    derived_left_projection_route,
+    derived_right_projection_route,
+    square_to_right_product_route,
+    right_projection_collapse_route,
+    # Absorption / constancy families.
+    right_self_absorption_route,
+    repeated_right_square_route,
+    self_tail_triple_route,
+    nested_left_absorption_route,
+    # NOTE: `sandwich_left_projection_route` used to appear a second time here.
+    # It is deterministic in (eq1, eq2), so the earlier call above already
+    # decided it and the second copy could never fire. Removed 2026-07-29.
+    left_row_constancy_route,
+    product_constancy_route,
+    # Substitution / bridging.
+    _direct_substitution_entry,
+    _bridge_entry,
+    _completed_bridge_entry,
+    projection_true_route,
+    _rewrite_chain_entry,
+    # Named collapse plus the wider absorption recognisers.
+    c9_e1072_collapse_route,
+    self_square_absorption_route,
+    repeat_tail_absorption_route,
+    universal_identity_route,
+    absorption_context_bridge_route,
+    absorption_closure_route,
+)
+
+
+def solve_problem(
     problem: dict[str, Any],
     *,
     false_time_budget: float | None = None,
 ) -> dict[str, Any] | None:
     reset_hypothesis_model_count()
+    reset_constraint_evidence()
     try:
         eq1 = parse_equation(str(problem["equation1"]))
         eq2 = parse_equation(str(problem["equation2"]))
     except (KeyError, ValueError):
         return None
 
-    if is_reflexive_problem(problem):
+    def true_record(route: str, code: str) -> dict[str, Any]:
         return {
-            "answer": make_true_answer(problem, reflexive_true_certificate()),
-            "route": "true:reflexive",
+            "answer": make_true_answer(problem, code),
+            "route": route,
             "priority": problem_priority(problem, eq1, eq2),
         }
+
+    def false_record(n: int, table: list[list[int]], route: str) -> dict[str, Any]:
+        return {
+            "answer": make_false_answer(problem, n, table),
+            "route": route,
+            "priority": problem_priority(problem, eq1, eq2),
+        }
+
+    # Two pre-checks that do not take (eq1, eq2): reflexive reads the problem's
+    # equation ids, and the singleton recogniser looks only at eq1.
+    if is_reflexive_problem(problem):
+        return true_record("true:reflexive", reflexive_true_certificate())
 
     singleton = singleton_route(eq1)
     if singleton is not None:
         singleton_var, singleton_on_lhs = singleton
-        return {
-            "answer": make_true_answer(
-                problem,
-                singleton_true_certificate(eq1["variables"], eq2["variables"], singleton_var, singleton_on_lhs),
-            ),
-            "route": "true:singleton",
-            "priority": problem_priority(problem, eq1, eq2),
-        }
+        return true_record("true:singleton", singleton_true_certificate(
+            eq1["variables"], eq2["variables"], singleton_var, singleton_on_lhs))
 
-    for derived_basis_route in (
-        deep_repeat_singleton_route,
-        reverse_deep_repeat_singleton_route,
-        sandwich_repeat_singleton_route,
-        outer_sandwich_singleton_route,
-        forked_square_singleton_route,
-        crossed_pair_singleton_route,
-        repeated_prefix_product_constancy_route,
-        double_tail_square_product_route,
-    ):
-        derived_basis = derived_basis_route(eq1, eq2)
-        if derived_basis is not None:
-            route, code = derived_basis
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-    nested_square_singleton = nested_square_singleton_route(eq1, eq2)
-    if nested_square_singleton is not None:
-        route, code = nested_square_singleton
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    tail_square_singleton = tail_square_singleton_route(eq1, eq2)
-    if tail_square_singleton is not None:
-        route, code = tail_square_singleton
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    paired_tail_singleton = paired_tail_singleton_route(eq1, eq2)
-    if paired_tail_singleton is not None:
-        route, code = paired_tail_singleton
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    wrapped_tail_singleton = wrapped_tail_singleton_route(eq1, eq2)
-    if wrapped_tail_singleton is not None:
-        route, code = wrapped_tail_singleton
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    middle_self_collapse = middle_self_collapse_route(eq1, eq2)
-    if middle_self_collapse is not None:
-        route, code = middle_self_collapse
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    front_double_self_collapse = front_double_self_collapse_route(eq1, eq2)
-    if front_double_self_collapse is not None:
-        route, code = front_double_self_collapse
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    alternating_front_self_collapse = alternating_front_self_collapse_route(eq1, eq2)
-    if alternating_front_self_collapse is not None:
-        route, code = alternating_front_self_collapse
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    mirrored_alternating_front_self_collapse = mirrored_alternating_front_self_collapse_route(eq1, eq2)
-    if mirrored_alternating_front_self_collapse is not None:
-        route, code = mirrored_alternating_front_self_collapse
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    square_twist_comm = square_twist_comm_route(eq1, eq2)
-    if square_twist_comm is not None:
-        route, code = square_twist_comm
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    sandwich_left_projection = sandwich_left_projection_route(eq1, eq2)
-    if sandwich_left_projection is not None:
-        route, code = sandwich_left_projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    nested_left_projection = nested_left_projection_route(eq1, eq2)
-    if nested_left_projection is not None:
-        route, code = nested_left_projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    specialized_left_projection = specialized_left_projection_route(eq1, eq2)
-    if specialized_left_projection is not None:
-        route, code = specialized_left_projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    derived_left_projection = derived_left_projection_route(eq1, eq2)
-    if derived_left_projection is not None:
-        route, code = derived_left_projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    derived_right_projection = derived_right_projection_route(eq1, eq2)
-    if derived_right_projection is not None:
-        route, code = derived_right_projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    square_to_right_product = square_to_right_product_route(eq1, eq2)
-    if square_to_right_product is not None:
-        route, code = square_to_right_product
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    right_projection_collapse = right_projection_collapse_route(eq1, eq2)
-    if right_projection_collapse is not None:
-        route, code = right_projection_collapse
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    right_self_absorption = right_self_absorption_route(eq1, eq2)
-    if right_self_absorption is not None:
-        route, code = right_self_absorption
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    repeated_square = repeated_right_square_route(eq1, eq2)
-    if repeated_square is not None:
-        route, code = repeated_square
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    self_tail_triple = self_tail_triple_route(eq1, eq2)
-    if self_tail_triple is not None:
-        route, code = self_tail_triple
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    nested_left_absorption = nested_left_absorption_route(eq1, eq2)
-    if nested_left_absorption is not None:
-        route, code = nested_left_absorption
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    sandwich_left_projection = sandwich_left_projection_route(eq1, eq2)
-    if sandwich_left_projection is not None:
-        route, code = sandwich_left_projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    left_row_constancy = left_row_constancy_route(eq1, eq2)
-    if left_row_constancy is not None:
-        route, code = left_row_constancy
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    product_constancy = product_constancy_route(eq1, eq2)
-    if product_constancy is not None:
-        route, code = product_constancy
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    direct = direct_substitution_route(eq1, eq2)
-    if direct is not None:
-        mode, subst = direct
-        call_expr = call_expression(eq1["variables"], subst)
-        if mode == "symm":
-            call_expr = f"({call_expr}).symm"
-        return {
-            "answer": make_true_answer(problem, substitution_true_certificate(eq2["variables"], call_expr)),
-            "route": "true:rewrite" if mode == "direct" else "true:rewrite:symm",
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    bridge = bridge_route(eq1, eq2)
-    if bridge is not None:
-        bridge_name, left_subst, right_subst = bridge
-        left_call = call_expression(eq1["variables"], left_subst)
-        right_call = call_expression(eq1["variables"], right_subst)
-        left_source = int(bridge_name[-2])
-        right_source = int(bridge_name[-1])
-        left_to_mid = left_call if left_source == 0 else f"({left_call}).symm"
-        mid_to_right = f"({right_call}).symm" if right_source == 0 else right_call
-        return {
-            "answer": make_true_answer(
-                problem,
-                substitution_true_certificate(eq2["variables"], f"({left_to_mid}).trans ({mid_to_right})"),
-            ),
-            "route": bridge_name,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    completed_bridge = completed_bridge_route(eq1, eq2)
-    if completed_bridge is not None:
-        bridge_name, left_subst, right_subst = completed_bridge
-        left_call = call_expression(eq1["variables"], left_subst)
-        right_call = call_expression(eq1["variables"], right_subst)
-        left_source = int(bridge_name[-2])
-        right_source = int(bridge_name[-1])
-        left_to_mid = left_call if left_source == 0 else f"({left_call}).symm"
-        mid_to_right = f"({right_call}).symm" if right_source == 0 else right_call
-        return {
-            "answer": make_true_answer(
-                problem,
-                substitution_true_certificate(eq2["variables"], f"({left_to_mid}).trans ({mid_to_right})"),
-            ),
-            "route": bridge_name,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    projection = projection_true_route(eq1, eq2)
-    if projection is not None:
-        route, code = projection
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    chain = find_rewrite_chain(eq1, eq2)
-    if chain is not None:
-        routes, proof_expr = chain
-        return {
-            "answer": make_true_answer(problem, substitution_true_certificate(eq2["variables"], proof_expr)),
-            "route": "true:rewrite_chain:" + ",".join(routes),
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    c9_collapse = c9_e1072_collapse_route(eq1, eq2)
-    if c9_collapse is not None:
-        route, code = c9_collapse
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    self_square = self_square_absorption_route(eq1, eq2)
-    if self_square is not None:
-        route, code = self_square
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    repeat_tail = repeat_tail_absorption_route(eq1, eq2)
-    if repeat_tail is not None:
-        route, code = repeat_tail
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    universal_identity = universal_identity_route(eq1, eq2)
-    if universal_identity is not None:
-        route, code = universal_identity
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    absorption_context_bridge = absorption_context_bridge_route(eq1, eq2)
-    if absorption_context_bridge is not None:
-        route, code = absorption_context_bridge
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
-
-    absorption = absorption_closure_route(eq1, eq2)
-    if absorption is not None:
-        route, code = absorption
-        return {
-            "answer": make_true_answer(problem, code),
-            "route": route,
-            "priority": problem_priority(problem, eq1, eq2),
-        }
+    for route_fn in TRUE_ROUTES:
+        found = route_fn(eq1, eq2)
+        if found is not None:
+            route, code = found
+            return true_record(route, code)
 
     if _engine_gate():
         return None
     counterexample = find_counterexample(eq1, eq2, time_budget=false_time_budget)
-    if counterexample is None:
-        if _engine_gate():
-            return None
-        closure_first = not absorption_hypothesis(eq1)
-        if closure_first:
-            closure = equational_closure_route(eq1, eq2)
-            if closure is not None:
-                route, code = closure
-                return {
-                    "answer": make_true_answer(problem, code),
-                    "route": route,
-                    "priority": problem_priority(problem, eq1, eq2),
-                }
+    if counterexample is not None:
+        n, table, route = counterexample
+        return false_record(n, table, route)
 
-        if _engine_gate():
-            return None
-        deep_absorption = deep_absorption_closure_route(eq1, eq2)
-        if deep_absorption is not None:
-            route, code = deep_absorption
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        if not closure_first:
-            closure = equational_closure_route(eq1, eq2)
-            if closure is not None:
-                route, code = closure
-                return {
-                    "answer": make_true_answer(problem, code),
-                    "route": route,
-                    "priority": problem_priority(problem, eq1, eq2),
-                }
-
-        if _engine_gate():
-            return None
-        derived_cp = derived_cp_closure_route(eq1, eq2)
-        if derived_cp is not None:
-            route, code = derived_cp
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        if _engine_gate():
-            return None
-        projection_bootstrap = projection_bootstrap_route(eq1, eq2)
-        if projection_bootstrap is not None:
-            route, code = projection_bootstrap
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        if _engine_gate():
-            return None
-        lemma_bootstrap = lemma_bootstrap_route(eq1, eq2)
-        if lemma_bootstrap is not None:
-            route, code = lemma_bootstrap
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        if _engine_gate():
-            return None
-        lemma_chain = lemma_chain_bootstrap_route(eq1, eq2)
-        if lemma_chain is not None:
-            route, code = lemma_chain
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        # Ground equality saturation with kernel-checkable extraction — the
-        # only engine that reaches the ETP's MagmaEgg-style proofs. Placed
-        # after every other TRUE engine as a pure addition (2026-07-23).
-        if _engine_gate():
-            return None
-        egg_closure = egg_closure_route(eq1, eq2)
-        if egg_closure is not None:
-            route, code = egg_closure
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        # Demoted 2026-07-22: the playground judge rejected a narrow_grind
-        # cert the local judge accepts (evaluation_normal_0048), and the
-        # local proof kernel cannot check the grind shape at all. Kernel-
-        # verifiable engines above get first claim; grind is a last-ditch
-        # attempt on its known-TRUE shapes only.
-        narrow_grind = narrow_grind_true_route(eq1, eq2)
-        if narrow_grind is not None:
-            route, code = narrow_grind
-            return {
-                "answer": make_true_answer(problem, code),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
-
-        # Last resort: the row is unresolved either way, so a randomized
-        # model search costs nothing that was already being won. Runs after
-        # the TRUE routes so solved implications never pay for it.
-        if _engine_gate():
-            return None
-        late = local_model_counterexample(eq1, eq2)
-        if late is not None:
-            n, table, route = late
-            return {
-                "answer": make_false_answer(problem, n, table),
-                "route": route,
-                "priority": problem_priority(problem, eq1, eq2),
-            }
+    # Constraint-propagation witness search, cheap tier. Placed here rather than
+    # with the other last-resort search because when it succeeds it succeeds in
+    # milliseconds (4 of 6 known-FALSE misses in ~0.05 s), and a FALSE row that
+    # falls through to the general TRUE engines pays for all of them first.
+    if _engine_gate():
         return None
-    n, table, route = counterexample
-    return {
-        "answer": make_false_answer(problem, n, table),
-        "route": route,
-        "priority": problem_priority(problem, eq1, eq2),
-    }
+    constrained = constraint_countermodel(eq1, eq2)
+    if constrained is not None:
+        n, table, route = constrained
+        return false_record(n, table, route)
+
+    # General TRUE engines. Each is expensive, so `_engine_gate()` is checked
+    # before every one: it enforces the global hard deadline and the memory
+    # guard modelling the 2048 MB sandbox (deep-tier closures were measured at
+    # 5-17 GB RSS and were being OOM-killed in the playground).
+    #
+    # `equational_closure` runs first unless eq1 is an absorption hypothesis, in
+    # which case `deep_absorption_closure` gets the first attempt. That single
+    # conditional is why this block is a sequence rather than a flat table.
+    closure_first = not absorption_hypothesis(eq1)
+    engines: list[Any] = []
+    if closure_first:
+        engines.append(equational_closure_route)
+    engines.append(deep_absorption_closure_route)
+    if not closure_first:
+        engines.append(equational_closure_route)
+    engines.extend((
+        derived_cp_closure_route,
+        projection_bootstrap_route,
+        lemma_bootstrap_route,
+        lemma_chain_bootstrap_route,
+        # Ground equality saturation with kernel-checkable extraction — the only
+        # engine that reaches the ETP's MagmaEgg-style proofs. Placed after every
+        # other TRUE engine as a pure addition (2026-07-23).
+        egg_closure_route,
+        # Egg pointed at a small lemma instead of the real goal. Strictly more
+        # reachable than `egg_closure` (the target is smaller), so these go after
+        # it: if egg can close the goal directly, that is the shorter certificate.
+        # Collapse first — it is the most common pivot on the frontier by a wide
+        # margin, and it subsumes every other lemma when it fires.
+        egg_collapse_route,
+        egg_priority_bootstrap_route,
+        egg_bootstrap_route,
+        # Demoted 2026-07-22: the playground judge rejected a narrow_grind cert
+        # the local judge accepts (evaluation_normal_0048), and the proof kernel
+        # cannot check the grind shape at all. Kernel-verifiable engines above
+        # get first claim; grind is a last-ditch attempt on known-TRUE shapes.
+        # It previously ran with NO preceding gate — the only engine to do so —
+        # so it fired even after a memory trip or a passed deadline (fixed
+        # 2026-07-29 by folding it into this loop).
+        narrow_grind_true_route,
+    ))
+
+    for engine in engines:
+        if _engine_gate():
+            return None
+        found = engine(eq1, eq2)
+        if found is not None:
+            route, code = found
+            return true_record(route, code)
+
+    # Last resort: the row is unresolved either way, so a randomized model
+    # search costs nothing that was already being won. Runs after the TRUE
+    # routes so solved implications never pay for it.
+    if _engine_gate():
+        return None
+    late = local_model_counterexample(eq1, eq2)
+    if late is not None:
+        n, table, route = late
+        return false_record(n, table, route)
+
+    # Widest witness tier, reached only on a row nothing else claimed. Orders
+    # beyond the cheap schedule and a much larger budget: the alternative for
+    # this row is a speculative `true` guess, and a found witness is a certainty
+    # where that guess is a ~7% lottery that also burns the judge's Lean timeout.
+    if _engine_gate():
+        return None
+    wide = constraint_countermodel(
+        eq1, eq2, orders=CONSTRAINT_WIDE_ORDERS,
+        time_budget=CONSTRAINT_WIDE_PER_ORDER_BUDGET, per_order=True)
+    if wide is not None:
+        n, table, route = wide
+        return false_record(n, table, route)
+    return None
 
 
 def load_json_line(stream: Any) -> dict[str, Any] | None:
@@ -7995,6 +8213,18 @@ def run_solo() -> int:
             file=sys.stderr,
         )
         return 0
+    # `models_seen > 0` on its own is a much weaker signal than it looks. On the
+    # six FALSE playground rows this fallback misfired on (2026-07-29) it read
+    # 1050-7698 and every row was genuinely FALSE, so the guess could never be
+    # accepted and each one burned 363-847 s. Record what the constraint search
+    # actually established so the log distinguishes "searched orders 8-16 and
+    # found nothing" from "ran out of clock", instead of implying evidence that
+    # was never there.
+    log_stderr({
+        "route": "fallback:evidence",
+        "models_seen": hypothesis_models_seen(),
+        "constraint_search_exhausted": constraint_search_exhausted(),
+    })
     fallback_route = "fallback:unsolved_grind"
     try:
         fallback_code = grind_true_certificate(

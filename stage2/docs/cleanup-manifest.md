@@ -1,8 +1,46 @@
 # Non-Destructive Cleanup Manifest
 
-Updated: 2026-05-25
+Updated: 2026-07-29
 
 This manifest records clutter and evidence debt without deleting anything. Use it before any future cleanup commit so raw artifacts are not lost accidentally.
+
+## 2026-07-29 measured disk inventory
+
+The working tree is **~7.4 GB across ~154k files**. Almost none of it is tracked
+content, but it is why `du`/`find` at the repo root hang and why unscoped file
+searches are slow.
+
+| Path | Size | Files | Verdict |
+| --- | ---: | ---: | --- |
+| `vendor/stage2-official/.lake` | 7.06 GB | 117,609 | **Keep.** Lean + Mathlib build cache; it is what makes the local Lean judge work. Gitignored. |
+| `tmp_stage2_smoke/` | 103 MB | 20,747 | Prunable scratch, gitignored. See below. |
+| `vendor/stage2-official/.artifacts` | 57 MB | 15,573 | Prunable judge run artifacts, regenerated on demand. Gitignored. |
+| `data/` | 103 MB | 311 | Keep — benchmark problems, ETP exports, Teorth cache. |
+| `stage1/` | 25 MB | 340 | Keep as archive. |
+| `paper/` | 18 MB | 150 | Keep — upstream ETP reading material. |
+| `stage2/` | 13 MB | 266 | Keep — active work. |
+
+### Removed 2026-07-29
+
+- `.agents/` — empty directory, referenced by nothing.
+- `Untitled-1.md` — a bare URL already present in `README.md`'s external links.
+
+### Recommended, NOT executed
+
+Deleting scratch is irreversible and this manifest's policy is to preserve a
+final representative run, so the call is left to the maintainer. Both paths are
+gitignored, so nothing tracked is at stake:
+
+```powershell
+# 1. Keep the most recent dated batch, drop the rest (inspect the list first).
+Get-ChildItem tmp_stage2_smoke | Sort-Object Name | Select-Object -SkipLast 20
+
+# 2. Judge artifacts regenerate on the next verify_answer call.
+Remove-Item -Recurse -Force vendor/stage2-official/.artifacts
+```
+
+Recovers ~160 MB and ~36k files, which measurably speeds up unscoped searches.
+Do **not** touch `vendor/stage2-official/.lake`: rebuilding Mathlib costs hours.
 
 ## Completed Archive Batches
 

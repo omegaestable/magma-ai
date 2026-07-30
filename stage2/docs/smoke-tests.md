@@ -16,7 +16,7 @@ PowerShell with `.venv` Python 3.14.3:
 Observed:
 
 - Set `$env:PYTHONUTF8='1'` and `$env:PATH="$env:USERPROFILE\.elan\bin;$env:PATH"` for official runner checks.
-- Packaged `stage2/submissions/solver.py` at `138939` bytes.
+- Packaged `stage2/submissions/solver.py` (size: see `CLAUDE.md`; `138939` bytes was the stale 2026-05-30 figure).
 - `stage2/submissions/` must contain only `solver.py`; the official Solo runner rejects `.gitkeep`, `__pycache__`, and any other extra entries before executing the solver.
 - Run the package command last before official runner invocations. `compileall stage2` can create bytecode caches under generated submission paths.
 - Use explicit `--output` paths for recorded Solo smoke runs; the default `pipeline/results/submissions.json` is easy to confuse with earlier local smoke rows.
@@ -42,7 +42,7 @@ Observed after cleaning and packaging `stage2/submissions/`:
 - `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke.
 - `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke.
 - Targeted FALSE fixtures for `false_907_2534`, `false_1682_411`, and `false_3145_3481` are accepted by the official runner after the recent fixes.
-- Packaged solver is currently `138939` bytes and the submission directory contains only `solver.py`.
+- The submission directory contains only `solver.py`, under the 500 KB limit. Current size: `CLAUDE.md`.
 
 If local upstream keys are configured, blank `OPENAI_API_KEY` and
 `OPENROUTER_API_KEY` for fast deterministic Solo smokes. The official proxy

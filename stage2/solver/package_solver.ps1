@@ -17,7 +17,14 @@ if (-not (Test-Path $sourcePath)) {
 if (-not $SkipTests) {
     $python = if (Test-Path ".venv/Scripts/python.exe") { ".venv/Scripts/python.exe" } else { "python" }
     Write-Host "Running offline correctness gate..."
-    & $python -m pytest stage2/tests -q
+    # -n auto: the gate re-solves ~170 real problems, which is ~160 s serially
+    # and ~47 s across cores. Speed matters here because a slow gate is a gate
+    # people skip. Falls back to serial when pytest-xdist is not installed.
+    & $python -m pytest stage2/tests -q -n auto
+    if ($LASTEXITCODE -eq 4) {
+        Write-Warning "pytest-xdist unavailable; falling back to a serial gate (slower)."
+        & $python -m pytest stage2/tests -q
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "Offline correctness gate failed; refusing to package. Re-run with -SkipTests only for a deliberate spike."
     }

@@ -1,7 +1,11 @@
 """Negative control for mini-egg: it must never saturate a FALSE implication.
 Draw random explicit_proof_false pairs from the ETP matrix and run the same
 budgets as the positive tests. Any 'proved' here = soundness bug."""
-import gzip, json, random, sys, time
+import gzip
+import json
+import random
+import sys
+import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]

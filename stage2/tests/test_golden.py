@@ -91,6 +91,8 @@ def test_golden_route(solver, entry):
     eq2 = solver.parse_equation(str(entry["problem"]["equation2"]))
     code = answer["code"]
 
+    oracles.check_no_banned_tactics(code, str(record["route"]))
+
     if answer["verdict"] == "false":
         oracles.check_false_certificate(code, eq1, eq2)
     else:
@@ -101,6 +103,8 @@ def test_golden_route(solver, entry):
             oracles.check_true_singleton_certificate(code, eq1)
         elif shape == "lemma":
             oracles.check_true_lemma_certificate(code, eq1, eq2)
+        elif shape == "lemma_chain":
+            oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
         extras = [t for _n, t in solver.WITNESS_TABLES]
         extras.extend(t for _r, t in solver.structured_family_tables())
         oracles.model_check_true(

@@ -120,6 +120,10 @@ def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
 
     checks: list[str] = []
     try:
+        # A tactic-backed proof is invisible to every check below, so refuse it
+        # outright rather than reporting a green row with no evidence.
+        oracles.check_no_banned_tactics(code, route)
+        checks.append("no_banned_tactics")
         if verdict == "false":
             oracles.check_false_certificate(code, eq1, eq2)
             checks.append("false_table_verified")
@@ -142,8 +146,16 @@ def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
                 checks.append("proof_kernel_skipped_unsupported_shape")
             battery = build_battery(eq1)
             row["battery"] = len(battery)
+            # The trivial magma satisfies every equation, so a battery with no
+            # non-trivial model makes the check below vacuous. Record it: a
+            # `model_checked` tick on `nontrivial_models = 0` is not evidence,
+            # and combined with an unsupported cert shape it means the row has
+            # no verification at all.
+            row["nontrivial_models"] = oracles.nontrivial_model_count(battery)
             oracles.model_check_true(eq2, battery)
-            checks.append("model_checked")
+            checks.append(
+                "model_checked" if row["nontrivial_models"]
+                else "model_check_vacuous")
         row["oracle"] = "ok"
         row["checks"] = checks
     except oracles.OracleError as exc:

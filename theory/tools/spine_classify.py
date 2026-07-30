@@ -33,7 +33,6 @@ Usage:
     python spine_classify.py --check "x = x * (y * z)" "x = (y * x) * z"
 """
 
-import re
 import sys
 from dataclasses import dataclass
 from enum import Enum

@@ -1,10 +1,120 @@
 # Latest Handoff
 
-Updated: 2026-07-23 (session 2 — playground `TRUE INCORRECT` triage).
+Updated: 2026-07-29 (v4 coverage push — three new engines, witness-order rail).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
-## 2026-07-23 session 2 (newest — read first)
+**Start at `CLAUDE.md`** for current numbers, commands and rails; this file is the
+dated session log.
+
+## 2026-07-29 v4 coverage push (newest — read first)
+
+Triggered by 16 playground `TRUE INCORRECT` rows from v3. Full detail:
+`stage2/results/2026-07-29-v4-coverage-push.md`.
+
+**Official `1616 → 1647/1669` (98.7%), TRUE `788 → 803`, FALSE `828 → 844`,
+0 rows lost, 0 oracle failures, 0 crashes, 0 label mismatches. HF `782 → 788`.**
+22 official rows remain open (14 TRUE, 8 FALSE).
+
+- **The six FALSE-labelled reported rows were guaranteed misses**: the Solo grind
+  fallback answered `true` on rows labelled FALSE, at 363–847 s each.
+  `hypothesis_models_seen()` read 1050–7698 on them, so the existing
+  `skip_no_model_evidence` guard passed them through. **`models_seen > 0` is not a
+  TRUE signal**; `constraint_search_exhausted()` is the one that means something.
+- **New: `false:constraint_fin*`** — Mace4-style propagation search. The whole
+  FALSE portfolio was blind to `x = F(x, ȳ)` laws, which force *quasigroups*:
+  random tables never satisfy them and the witness usually sits at order 8.
+  **17 of 22 unsolved FALSE official rows solved, 17/17 judge-accepted**
+  (313–426 bytes). Two design points carry it: propagate at the **root** only
+  (the first version assigned the innermost cell and reported "no countermodel"
+  everywhere), and use an **order schedule** — `hard2_0009` exhausted 120 s at
+  order 7 and took 0.03 s at order 8.
+- **New: `true:egg_collapse`** — ETP pivot mining found **14 of 31 unsolved TRUE
+  rows have `eq1 ⇒ (x = y)`**: eq1 collapses the magma, so the goal is
+  irrelevant. The CP closure derives none of them; egg derives **10**, all
+  kernel-verified, **10/10 judge-accepted** (1.2–34 KB).
+- **New: `true:egg_bootstrap`** — the same move over the 601-entry lemma library,
+  free gates first so egg is only paid for on a law that closes the goal. +5 rows.
+- **HARD RAIL FOUND: FALSE witness order ≤ 10.** `finOpTable`'s parser
+  (`extractDigits`) keeps one value per *digit character*, so a cell holding `10`
+  becomes two cells. A hand-verified `Fin 13` linear witness
+  (`x ◇ y = 7x + 7y mod 13`) passed every offline oracle and came back
+  `LEAN_REJECTED` with `decide` calling the conjunction *false*. Formula-based
+  magmas fail the proof policy (`HAdd.hAdd`/`HMul.hMul` unlisted). Now enforced by
+  `MAX_WITNESS_ORDER` + `table_is_renderable()` inside `table_is_counterexample`,
+  mirrored in `oracles.check_false_certificate`, and pinned by a test. **My first
+  version of the constraint search used orders 12 and 16** — it would have emitted
+  certificates that pass every local check and fail in the field.
+- **LLM lane works but is not needed at inference time.**
+  `stage2/experiments/llm_lemma_egg.py` (model names the pivot, egg derives it,
+  kernel checks it): 4/21 open TRUE rows, **0 kernel rejects**, 34k tokens. Every
+  law it found is already a library entry and `egg_bootstrap` finds all four
+  deterministically. Keep it as a discovery tool.
+- **New dev tools**: `mace_finder.py` (countermodel search + controls),
+  `etp_pivots.py` (decodes the ETP 4694² outcome matrix; agrees with benchmark
+  labels 2269/2269), `llm_lemma_egg.py`, `judge_rows.py`.
+- **Process rail:** do not edit `solver.py` while a pool-based audit is running —
+  a worker imported a half-renamed module and produced a spurious crash row.
+
+## 2026-07-29 QA pass
+
+No new coverage attempted. The goal was to make existing coverage *provably*
+correct and the repo cheap to improve. Full detail:
+`stage2/results/2026-07-29-qa-pass-soundness-and-refactor.md`.
+
+- **The documented baseline reproduced exactly** on a clean run: official
+  `1617/1669`, TRUE `790`, FALSE `827`, **0 oracle failures, 0 crashes**, 430 s
+  on 16 workers. `spotcheck.py` 72 rows / 9 sources: 100% accuracy. The evidence
+  base in this repo is trustworthy.
+- **`grind` was still inside a deterministic route** —
+  `true:right_projection_collapse:left_pair_tail`, via
+  `right_projection_from_2788_block()`, with a 5M `maxHeartbeats` bump. Replaced
+  by a derivation from eq19/eq22/eq34 that were already in the certificate:
+  with `P := X0 ◇ (X0 ◇ X0)`, eq19+eq34 give `∀t, t ◇ P = X0`, hence
+  `P ◇ P = X0`, and eq22 P P rewritten by that gives `(P ◇ X0) ◇ P = P`, which
+  the universal fact closes to `P = X0`. **Judge-verified: accepted,
+  37.0 s → 4.8 s.**
+- **New rail: the solver must obey its own banned-tactic rule.**
+  `sanitize_lean_code` policed only *LLM* output; that asymmetry is what hid the
+  above. `check_no_banned_tactics` now runs per row in the golden gate and the
+  audit, plus a static scan of the solver source.
+- **The model oracle was vacuous on 28% of rows** (536/1889) because
+  `model_battery` pre-seeded the trivial magma, making its `Fin 3` escalation
+  unreachable dead code — and every equation holds in `Fin 1`. Now keyed off
+  `nontrivial_model_count()` with exhaustive `Fin 3` then a budgeted order-4/5
+  hill-climb (finds a real order-4 central groupoid in ~0.1 s).
+- **Know this limit:** for laws that force a one-element magma — what every
+  `*_singleton`/`*_collapse` route asserts — **no non-trivial finite model exists
+  at any order**, so model-checking them proves nothing by construction. Those
+  rows are only verifiable by proof-checking. A green `model_checked` there is
+  not evidence; the audit now says `model_check_vacuous`.
+- **All 34 kernel-unverifiable certs are judge-verified and pinned.** 10 of them
+  previously had *no* offline verification at all. **34/34 `accepted`** by the
+  real judge, pinned byte-for-byte in
+  `stage2/fixtures/judge_verified_certs.jsonl`, guarded by
+  `test_judge_verified.py`. Regenerate with `stage2/experiments/judge_rows.py`.
+- **The local Lean judge works on Windows** via `elan` (docs said WSL/Linux
+  only). This was tribal knowledge and is the strongest local evidence source;
+  `judge_rows.py` makes it one command. `lake env` times out under load — never
+  race it against a full audit.
+- **Size caps were 2x the judge's** (`MAX_LEAN_CODE_BYTES` 100_000 vs the judge's
+  50_000; FALSE 20_000 vs 10_000). Now derived from `JUDGE_MAX_*` constants. No
+  row was affected — latent hole closed, not rows recovered.
+- **`solve_problem`: 510 → 104 lines**, routes in a `TRUE_ROUTES` table, order
+  verified mechanically against `git show HEAD`. The old copy-paste shape is what
+  hid two defects: `narrow_grind` ran with **no `_engine_gate()`** (so it fired
+  after a memory trip or passed deadline), and a duplicate
+  `sandwich_left_projection_route` call was unreachable. Adding a route is now
+  one line.
+- **Gate: 146 s → 47 s** (`-n auto`), 196 → 237 tests. **CI added** — nothing
+  enforced the gate outside `package_solver.ps1` before. `ruff check .` clean.
+- **`CLAUDE.md` is the new entry point.** The mandated cold-start read was ~36k
+  tokens across 13 mutually contradictory files; `AGENTS.md` advertised
+  `1201/1669` and a 138,939-byte package as current.
+- **Next levers unchanged** (see "Recommended Next Steps"): egg at `standard`,
+  shrink egg extraction, step-count budgets, LLM lemma lane.
+
+## 2026-07-23 session 2
 
 A real playground Solo run returned eight `TRUE INCORRECT` rows at 400–630 s
 each, all submitting the `fallback:unsolved_grind` cert. Seven were labelled
@@ -118,7 +228,9 @@ multi-hypothesis kernel check for every chain cert.
 ## Current status
 
 - **Offline score** (`fast` tier, oracles; regenerate via `audit_corpus.py --all`/`--hf`):
-  official **1617/1669** (TRUE **789/819**), HF **754/800** (TRUE **384**).
+  official **1617/1669** (TRUE **789-790/819**), HF **783/800** (TRUE **383**).
+  (The `754` previously written here predated the same session's own S9A fix,
+  documented two blocks above as `754 -> 783`.)
   **Zero oracle failures across all 2,689 problems.** Offline is an upper
   bound — a cloud judge sweep is still owed before promotion.
 - **Packaged**: `stage2/submissions/solver.py` (repackaged 2026-07-23 with the
@@ -316,7 +428,7 @@ Full detail: `stage2/results/2026-07-21-correctness-harness-and-budget-scaling.m
 
 **Shipped**
 
-- **Offline correctness gate** — `pytest stage2/tests` (262 tests, ~12 s), no Lean
+- **Offline correctness gate** — `pytest stage2/tests` (262 tests at the time; 208 and ~160 s as of 2026-07-29 — the count fell when the golden fixture moved to route-family grouping, 213 entries -> 136), no Lean
   needed. An independent proof kernel evaluates the Lean grammar the closure/CP
   builders emit and checks each certificate proves exactly `eq2.lhs = eq2.rhs`;
   a finite-model oracle independently refutes unsound TRUE verdicts; mutation
@@ -389,7 +501,7 @@ Focus: a self-verifying LLM TRUE-proof loop with `openai/gpt-oss-120b` via OpenR
 - **Before any solver change: run `pytest stage2/tests` (it is also the
   pre-package gate). After an intentional route change, regenerate the golden
   fixture with `stage2/experiments/audit_corpus.py` + `make_golden.py`.**
-- Packaged artifact: `stage2/submissions/solver.py`, `277918` bytes (limit 500 KB).
+- Packaged artifact: `stage2/submissions/solver.py` (limit 500 KB; current size in `CLAUDE.md` — `277918` was the 2026-07-22 pass).
 - Submission directory should contain only `solver.py`.
 - Historical public no-LLM baseline: `1201/1669` from `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`, including `34` now-retired grind wins.
 - Active validation policy now forbids `--budget-tokens 0` Marathon guardrails. Use positive-token official/proxy runs and record LLM calls, token usage, and rejection classes.

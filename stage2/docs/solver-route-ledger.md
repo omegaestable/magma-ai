@@ -1,8 +1,27 @@
 # Solver Route Ledger
 
-Updated: 2026-05-30
+Updated: 2026-07-29 (header note only; the tables below still date from 2026-05-30
+and predate every engine added since — `derived_cp_closure`, `universal_identity`,
+`projection_bootstrap`, `lemma_bootstrap`, `lemma_chain`, `egg_closure`).
 
 This ledger is the review map for `stage2/solver/solver.py`. It records what each route is allowed to claim, why the method is mathematically sound, what local evidence exists, and what must be rechecked before promotion.
+
+**Source of truth for dispatch order is the `TRUE_ROUTES` table in
+`stage2/solver/solver.py`**, not this document. `solve_problem` was refactored
+from ~380 lines of copy-pasted dispatch into that table on 2026-07-29; the order
+was verified mechanically unchanged.
+
+Two ledger entries below are out of date on evidence, worth knowing while reading:
+
+- `true:right_projection_collapse:left_pair_tail` no longer contains a `grind`
+  step or a `maxHeartbeats` bump — the lemma it needed is now derived. All emitted
+  certificates are checked against the banned-tactic list
+  (`oracles.check_no_banned_tactics`); only `true:narrow_grind` and the Solo
+  `fallback:unsolved_grind` may use a search tactic.
+- The 34 routes whose certificates the proof kernel cannot check (`other` shape)
+  now carry **real Lean judge evidence**: 34/34 `accepted`, pinned in
+  `stage2/fixtures/judge_verified_certs.jsonl`. Where an "Evidence / checks"
+  cell below says a route "should get a route fixture", check that file first.
 
 ## Status Labels
 

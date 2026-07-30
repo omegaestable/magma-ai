@@ -2,7 +2,108 @@
 
 This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
 
-Last updated: 2026-07-23 (session 2, playground `TRUE INCORRECT` triage).
+**Headline numbers and commands now live in `CLAUDE.md`.** This file keeps the
+dated session history and the operational detail behind them.
+
+Last updated: 2026-07-29 (QA pass: soundness gaps, judge-verified pinning, dispatcher refactor).
+
+## Read This First (2026-07-29, v4 coverage push)
+
+Triggered by 16 playground `TRUE INCORRECT` rows. Detail:
+`stage2/results/2026-07-29-v4-coverage-push.md`.
+
+**Official `1616 → 1647/1669` (98.7%), TRUE `788 → 803`, FALSE `828 → 844`;
+0 rows lost, 0 oracle failures, 0 crashes. HF `782 → 788`.** 22 official rows
+open: 14 TRUE, 8 FALSE.
+
+- **Three new engines.** `false:constraint_fin*` (Mace4-style propagation search
+  for the quasigroup-forcing `x = F(x, ȳ)` family the whole FALSE portfolio was
+  blind to) — 17/22 unsolved FALSE rows, **17/17 judge-accepted**.
+  `true:egg_collapse` (equality saturation aimed at `x = y`) — 10 rows,
+  **10/10 judge-accepted**. `true:egg_bootstrap` (same move over the lemma
+  library) — 5 rows.
+- **Why the collapse route exists:** ETP pivot mining over every unsolved official
+  row found **14 of 31 unsolved TRUE rows have `eq1 ⇒ (x = y)`** — eq1 forces a
+  one-element magma, so the goal is irrelevant. The critical-pair closure derives
+  none; egg derives 10.
+- **HARD RAIL: FALSE witness order ≤ 10.** `finOpTable`'s `extractDigits` parser
+  keeps one value per digit character, so any cell ≥ 10 splits and corrupts the
+  table. A hand-verified `Fin 13` witness passed every offline oracle and was
+  `LEAN_REJECTED`. Formula-based magmas fail the proof policy. Enforced by
+  `MAX_WITNESS_ORDER` / `table_is_renderable()` and mirrored in the oracle.
+- **`models_seen > 0` is not a TRUE signal** — it read 1050–7698 on the six FALSE
+  rows the grind fallback misfired on. Use `constraint_search_exhausted()`.
+- **Order-difficulty is not monotonic**: order 7 exhausted 120 s where order 8
+  took 0.03 s on the same row. Search 8/9 first.
+- **LLM lane validated but not required**: 4/21 open TRUE rows, 0 kernel rejects,
+  34k tokens — and `egg_bootstrap` finds all four deterministically.
+
+## Read This First (2026-07-29, QA pass)
+
+A full QA/assessment pass. The documented `1617/1669` baseline **reproduced
+exactly** on a clean run (TRUE 790, FALSE 827, 0 oracle failures, 0 crashes), so
+the evidence base is sound. Five real defects were found and fixed; detail in
+`stage2/results/2026-07-29-qa-pass-soundness-and-refactor.md`.
+
+- **`grind` was still inside a deterministic route.**
+  `right_projection_from_2788_block()` discharged
+  `X0 ◇ (X0 ◇ X0) = X0` with `by grind` plus
+  `set_option maxHeartbeats 5000000`, in
+  `true:right_projection_collapse:left_pair_tail`. Replaced with a derivation
+  from eq19/eq22/eq34 already present in the same certificate (write
+  `P := X0 ◇ (X0 ◇ X0)`; eq19+eq34 give `∀t, t ◇ P = X0`; at `t := P` that is
+  `P ◇ P = X0`; eq22 P P rewritten by it gives `(P ◇ X0) ◇ P = P`; the universal
+  fact at `t := P ◇ X0` gives `= X0`, so `P = X0`). **Real judge: accepted,
+  37.0 s → 4.8 s.** `check_no_banned_tactics` now enforces this for every
+  emitted certificate, plus a static scan of the solver source, so it cannot
+  come back. `sanitize_lean_code` only ever policed *LLM* output — that
+  asymmetry is what hid it.
+- **The finite-model oracle was vacuous on 28% of rows, via dead code.**
+  `model_battery` pre-seeded itself with the trivial magma, so its
+  `if not battery` escalation could never fire; every equation holds in `Fin 1`.
+  Measured 536/1889 official rows (`normal` 431/1000, `hard2` 64/200). Now keyed
+  off `nontrivial_model_count()`, with exhaustive `Fin 3` then a budgeted
+  order-4/5 hill-climb (`search_models`, finds a genuine order-4 central
+  groupoid in ~0.1 s). The audit records `nontrivial_models` per row, so a
+  vacuous check is visible instead of silent.
+- **Important limit, worth internalising:** for laws that force a one-element
+  magma — which is exactly what every `*_singleton` / `*_collapse` route asserts
+  — **no** non-trivial finite model exists at any order, so model-checking them
+  is inherently powerless. Those rows can only be verified by proof-checking.
+  Do not read a green `model_checked` on such a row as evidence.
+- **All 34 kernel-unverifiable certificates are now judge-verified and pinned.**
+  `classify_true_certificate` returns `other` for the hand-written `*_block` and
+  nested-`have` proofs (34 official rows / 18 routes); 10 of them had *no*
+  offline verification at all (unsupported shape ∩ vacuous battery). All 34 were
+  run through `judge.verify.verify_answer`: **34/34 `accepted`**, 4.3–7.3 s each.
+  Text is pinned byte-for-byte in
+  `stage2/fixtures/judge_verified_certs.jsonl` and guarded by
+  `stage2/tests/test_judge_verified.py`.
+- **Solver size caps were twice the judge's.** `MAX_LEAN_CODE_BYTES` was 100_000
+  against the judge's `MAX_CODE_LENGTH = 50_000`; `MAX_FALSE_CERT_BYTES` 20_000
+  against 10_000; `UNIVERSAL_IDENTITY_MAX_CODE` 60000. Now derived from
+  `JUDGE_MAX_CODE_LENGTH` / `JUDGE_MAX_FALSE_CERT_BYTES`. No benchmark row was
+  over the line, so this closed a latent hole rather than recovering rows.
+- **`narrow_grind` was the one engine with no `_engine_gate()` before it**, so it
+  ran even after a memory trip or a passed hard deadline — the OOM/ERROR class
+  eliminated everywhere else. Fixed by the dispatcher refactor below.
+- **`solve_problem` went 510 → 104 lines.** It was ~380 lines of copy-pasted
+  `x = fn(eq1, eq2); if x is not None: return {...}`, which is how both the
+  missing gate and an unreachable duplicate `sandwich_left_projection_route`
+  call survived. Routes now live in a `TRUE_ROUTES` table; order was verified
+  mechanically identical to the old invocation sequence.
+- **The gate went 146 s → 47 s** (`pytest-xdist`, `-n auto`) and 196 → 237
+  tests. A slow gate is a gate people `-SkipTests`. CI now runs it
+  (`.github/workflows/gate.yml`); nothing enforced it outside
+  `package_solver.ps1` before.
+- **`CLAUDE.md` is the new single entry point.** The mandated cold-start read was
+  142,842 chars ≈ 36k tokens across 13 files that contradicted each other —
+  `AGENTS.md`, the first file agents read, advertised `1201/1669` and a 138,939-byte
+  package as current (real: `1617/1669`, ~333 KB).
+- **The local Lean judge works on Windows** via `elan`, despite the docs saying
+  WSL/Linux only. New wrapper: `stage2/experiments/judge_rows.py`. Caveat:
+  `lake env` has a 30 s timeout and fails under heavy CPU load, so never race it
+  against a full audit.
 
 ## Read This First (2026-07-23, session 2)
 
@@ -75,8 +176,10 @@ built into the solver:
    too (`{"verdict":"true","lemma":"..."}`); the solver proves it and the
    kernel checks it, so nothing the model says is trusted. Detail:
    `stage2/results/2026-07-22-universal-identity-route-and-cache-bound.md`.
-1. There is an **offline correctness gate**: `pytest stage2/tests` (273
-   tests, ~27 s). It proof-checks certificates with an independent kernel and
+1. There is an **offline correctness gate**: `pytest stage2/tests` (208
+   tests, ~160 s as of 2026-07-29; the `273` written here counted a larger
+   golden fixture before route-family grouping shrank it 213 -> 136 entries).
+   It proof-checks certificates with an independent kernel and
    model-checks every TRUE verdict, with no Lean required.
    `package_solver.ps1` refuses to package if it fails. See
    `stage2/tests/README.md`.
@@ -238,7 +341,7 @@ Answer-kind totals for that baseline:
 
 Latest local regression evidence after the final optimization/refactor patch:
 
-- Current package pass (2026-07-22 session 2) produced `stage2/submissions/solver.py` at `277918` bytes, still well below the 500 KB limit.
+- Packaged size: see `CLAUDE.md`. (`277918` bytes was the 2026-07-22 session-2 pass.) Still far below the 500 KB limit; size has never been the binding constraint.
 - Active TRUE boundary rails were cleaned up on 2026-05-25: helper-bearing full-file `code` payloads are accepted, and legacy `proof` / `proof_body` payloads are rejected as unsupported.
 - 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20` and official Solo no-key `sample_200 = 169/200`.
 - Official harnesses passed on 2026-05-25: Solo harness had no failing buckets; Marathon harness passed `25/25` with Lean available.

@@ -32,28 +32,40 @@ or default regression path.
 
 ## Start Here
 
-Cold-start read order:
+1. **`CLAUDE.md`** — current numbers, the four standing commands, and the rails.
+   This is the only required reading.
+2. `stage2/docs/LATEST_HANDOFF.md` — latest session detail and ranked next levers.
+3. Then whatever the task needs; `CLAUDE.md` has a "Going deeper" index.
 
-1. `README.md`
-2. `CURRENT_STATE.md`
-3. `AGENTS.md`
-4. `.github/copilot-instructions.md`
-5. `RESTART_CHECKLIST.md`
-6. `EVAL_WORKFLOW.md`
-7. `BENCHMARK_MANIFEST.md`
-8. `stage2/README.md`
-9. `stage2/docs/playground-preflight.md`
-10. `theory/README.md`
-11. `theory/TEORTH_WORKFLOW.md`
-12. `theory/tools/README.md`
-13. `stage2/docs/LATEST_HANDOFF.md`
+The old mandatory 13-file order cost ~36k tokens before any work could start and
+the files disagreed with each other on the headline numbers. Every one of them is
+still an accurate reference for its own topic.
 
 ## Current Evidence
 
-Current `fast`-tier baseline (offline oracles, zero oracle failures):
-official sets **`1617/1669`** (TRUE `789`), HF evaluation sets **`783/800`**
-(TRUE `383`). Regenerate with `stage2/experiments/audit_corpus.py --all` and
-`--hf`.
+**Read `CLAUDE.md` for the authoritative current numbers and the four standing
+commands.** Summary as of 2026-07-29 (v4): official sets
+**`1647/1669` (98.7%)**, TRUE `803`, FALSE `844`; HF evaluation sets
+**`788/800`**; zero oracle failures, zero crashes. Regenerate with
+`stage2/experiments/audit_corpus.py --all` and `--hf`.
+
+2026-07-29 (v4): shipped three engines after triaging 16 playground
+`TRUE INCORRECT` rows — `false:constraint_fin*` (Mace4-style propagation search;
+17/22 unsolved FALSE rows, 17/17 judge-accepted), `true:egg_collapse` (equality
+saturation aimed at `x = y`, which ETP pivot mining showed is what 14 of 31
+unsolved TRUE rows actually need; 10 rows, 10/10 judge-accepted) and
+`true:egg_bootstrap`. Also found a hard rail: the judge's `finOpTable` parser
+keeps one value per digit character, so **FALSE witnesses above order 10 are
+silently corrupted** — a hand-verified `Fin 13` witness passed every offline
+oracle and was still rejected. Details:
+`stage2/results/2026-07-29-v4-coverage-push.md`.
+
+2026-07-29 (QA pass): removed the last `grind` from a deterministic route (judge
+time 37.0 s → 4.8 s), fixed a dead-code hole that made the finite-model oracle
+vacuous on 28% of rows, pinned all 34 kernel-unverifiable certificates against
+the real Lean judge (34/34 accepted), and refactored `solve_problem` from 510 to
+104 lines. Details:
+`stage2/results/2026-07-29-qa-pass-soundness-and-refactor.md`.
 
 2026-07-23 (session 2): a playground Solo run returned eight `TRUE INCORRECT`
 rows at 400–630 s each. Root cause was `LARGE_WITNESS_SHAPE_KEYS`, which
@@ -113,7 +125,7 @@ Historical completed public total: `1201/1669` solved. This included `34` accept
 
 Latest local candidate evidence after the final optimization patch, not a replacement for the full public totals above:
 
-- Packaged `stage2/submissions/solver.py`: `138939` bytes, single-file submission directory after the 2026-05-30 mixed-lane resume.
+- Packaged `stage2/submissions/solver.py`: single-file submission directory. Size: see `CLAUDE.md` (`138939` bytes was the 2026-05-30 mixed-lane resume figure).
 - May 21 prune/refactor evidence: closure-route dedupe preserved `normal_100 = 74/100` historical Marathon behavior, and selected fallback reproduction is summarized in `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`.
 - Official Solo `sample_20` no-key smoke: `15/20` solved on 2026-05-25.
 - Official Solo `sample_200` no-key smoke: `169/200` solved on 2026-05-25.

@@ -2,7 +2,9 @@
 Saturation aims at the goal itself; no ETP path needed. 20s/row budget.
 Output: which currently-unsolvable benchmark rows the e-graph mechanism cracks.
 """
-import json, sys, time
+import json
+import sys
+import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]

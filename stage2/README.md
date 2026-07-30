@@ -43,13 +43,13 @@ Latest completed public refresh, generated on 2026-05-18 before the final heartb
 - `hard2`: `92/200` solved, `16 TRUE + 76 FALSE`
 - `hard3`: `264/400` solved, `63 TRUE + 201 FALSE`
 
-Total public score: `1201/1669`, with `0` LLM calls. This is historical deterministic evidence; `34` of those wins came from `true:grind`, which is now retired from active solver policy.
+Total public score for that 2026-05-18 refresh: `1201/1669`, with `0` LLM calls. **Historical only** — `34` of those wins came from `true:grind`, retired since. Current measured state lives in `CLAUDE.md`.
 
 Latest local candidate evidence after the final optimization patch:
 
 - `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke
 - `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke
-- packaged solver size: `138939` bytes after the latest local package pass
+- packaged solver size: see `CLAUDE.md` (was `138939` bytes at the 2026-05-30 pass; the package has roughly doubled since as engines were added, and is still far under the 500 KB limit)
 - May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` historical Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route

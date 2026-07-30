@@ -32,3 +32,33 @@ def solver():
 @pytest.fixture(scope="session")
 def problems_dir() -> Path:
     return PROBLEMS_DIR
+
+
+@pytest.fixture(scope="session")
+def problems_by_id() -> dict:
+    """Every local benchmark problem keyed by id (official sets, then HF).
+
+    Official sets win on collision: `sample_20` / `sample_200` are subsets of
+    `normal` and carry the same ids.
+    """
+    import json
+
+    HF_DIR = REPO_ROOT / "data" / "hf_cache"
+    out: dict = {}
+
+    def add(path: Path) -> None:
+        text = path.read_text(encoding="utf-8")
+        rows = ([json.loads(line) for line in text.splitlines() if line.strip()]
+                if path.suffix == ".jsonl" else json.loads(text))
+        for problem in rows:
+            out.setdefault(str(problem.get("id", "")), problem)
+
+    for name in ("normal.jsonl", "hard1.jsonl", "hard2.jsonl", "hard3.jsonl",
+                 "sample_200.json", "sample_20.json"):
+        path = PROBLEMS_DIR / name
+        if path.exists():
+            add(path)
+    if HF_DIR.exists():
+        for path in sorted(HF_DIR.glob("evaluation_*.jsonl")):
+            add(path)
+    return out

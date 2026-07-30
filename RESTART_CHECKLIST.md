@@ -153,18 +153,27 @@ as the default local playground-readiness gate.
 
 Current fast local smoke probes:
 
+Start with the offline gate and the corpus audit — they are faster and catch more
+than the harness smokes below. See `CLAUDE.md` for the four standing commands.
+
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-$env:PYTHONUTF8='1'
+$env:PYTHONUTF8='1'   # certificates carry ◇; cp1252 consoles crash without this
+.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 .\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
 .\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
 .\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
 Push-Location vendor/stage2-official
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json
 ..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json
-..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions --manifest examples\problems\marathon\normal_100.jsonl --budget-tokens 0
 Pop-Location
 ```
+
+The `run_marathon.py ... --budget-tokens 0` line that used to sit here was
+removed (2026-07-29): zero-token Marathon runs are **banned** as validation or
+promotion evidence, and the checklist should not hand anyone the forbidden
+command. For a Marathon guardrail use a positive token budget via
+`stage2/experiments/run_positive_token_sweeps.py`.
 
 Latest smoke-only outcomes: `sample_20 = 15/20` and `sample_200 = 169/200` in the 2026-05-25 no-key Solo smokes, and Marathon `normal_100 = 74/100` accepted with zero tokens in `60.6s`. Latest May 21 selected-row reproduction: three `evaluation_extra_hard_false_*` rows now accept via `false:witness:S4C`; remaining listed fallback rows are unresolved gaps, not ids to hardcode.
 

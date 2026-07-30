@@ -1,0 +1,50 @@
+# Offline correctness gate.
+#
+# The Lean judge is cloud-only, so this runs the Lean-free oracles: an
+# independent proof kernel, finite-model checks, the banned-tactic scan, the
+# golden route fixture, and the pinned judge-verified certificates. Until
+# 2026-07-29 nothing enforced this outside `package_solver.ps1`, so a change
+# could land unverified.
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  offline-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Offline correctness gate
+        # Certificates carry ◇; a non-UTF-8 default encoding kills the run.
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python -m pytest stage2/tests -q -n auto
+
+      - name: Packaged solver stays under the submission limit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path("stage2/solver/solver.py")
+          size = len(src.read_bytes())
+          limit = 500_000
+          print(f"{src}: {size} bytes of {limit}")
+          assert size <= limit, f"solver is {size} bytes, over the {limit} limit"
+          PY

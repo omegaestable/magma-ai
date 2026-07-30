@@ -85,6 +85,24 @@ def main() -> int:
                 # avoids a flaky pre-package gate (2026-07-23).
                 if row["route"].startswith("true:egg_closure"):
                     continue
+                # Same reasoning for the other two engines that sit at the very
+                # end of the pipeline behind a large wall-clock budget: measured
+                # 2026-07-29, `egg_collapse` rows take 41-85 s to re-solve at
+                # `fast` and `egg_bootstrap` 5-20 s, both budget-marginal. Pinning
+                # them would add minutes to the gate and make it flake on load,
+                # which is how a gate ends up routinely skipped. Their
+                # certificates are kernel-checked (the `lemma` shape) in every
+                # audit and spotcheck run, and 10 of them are judge-verified.
+                if row["route"].startswith(("true:egg_collapse",
+                                            "true:egg_bootstrap")):
+                    continue
+                # The wide constraint tier is likewise last-resort and
+                # per-order budgeted (45 s x 7 orders). The cheap tier
+                # (`false:constraint_fin*` landing in ~0.5 s) is fine to pin and
+                # is not excluded — only rows that took real time are dropped.
+                if (row["route"].startswith("false:constraint_fin")
+                        and row.get("seconds", 0) > 10):
+                    continue
                 by_route[_route_family(row["route"])].append(row)
 
     entries = []

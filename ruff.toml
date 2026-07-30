@@ -1,0 +1,33 @@
+# Lint config for the Stage 2 lab.
+#
+# Goal: `ruff check` should be *clean*, so that a finding means something. Before
+# 2026-07-29 it reported 16 findings, most of them structurally unavoidable, which
+# trained everyone to ignore the tool.
+
+line-length = 100
+target-version = "py311"
+
+exclude = [
+    ".venv",
+    "stage1",              # frozen archive; do not churn it
+    "vendor",              # vendored official harness, upstream-owned
+    "tmp_stage2_smoke",    # scratch
+]
+
+[lint]
+# Default rule set (E, F) is the right level for this repo: it catches real bugs
+# (undefined names, unused imports) without fighting the house style.
+ignore = [
+    # `l` reads as "line" or "left" throughout the data/theory tooling. It is a
+    # readability preference, not a bug class, and renaming ~8 comprehension
+    # variables across archived analysis scripts buys nothing.
+    "E741",
+]
+
+[lint.per-file-ignores]
+# The submission artifact is a single file with no package, so every repo-side
+# tool must extend sys.path before it can `import solver`. That is inherently an
+# import-not-at-top-of-file pattern and is correct here, not a smell.
+"stage2/experiments/*.py" = ["E402"]
+"stage2/tests/*.py" = ["E402"]
+"theory/tools/*.py" = ["E402"]

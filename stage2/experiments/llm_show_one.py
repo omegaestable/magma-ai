@@ -7,7 +7,6 @@ No threading, no buffering tricks - meant to be watched live.
 """
 from __future__ import annotations
 
-import json
 import random
 import sys
 import time
@@ -104,7 +103,7 @@ def main() -> int:
               "UNSOUND_CERT": "!!! UNSOUND CERT !!!"}[status]
         print(f"  ORACLE: {tag} ({detail})")
         if status != "correct":
-            print(f"  code:\n    " + candidate["answer"]["code"].replace("\n", "\n    "))
+            print("  code:\n    " + candidate["answer"]["code"].replace("\n", "\n    "))
         print()
 
     return 0

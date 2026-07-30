@@ -27,6 +27,7 @@ from __future__ import annotations
 import json
 import random
 import re
+import time
 from itertools import product
 from typing import Any
 
@@ -536,6 +537,52 @@ def check_true_lemma_certificate(
             f"{term_to_str(eq2['lhs'])} = {term_to_str(eq2['rhs'])}")
 
 
+# Tactics the solver's own PROMPT forbids the LLM from using, and which this
+# project has field evidence against: the cloud judge rejected a `true:grind`
+# certificate the local judge accepted, and broad grind produced 433 `incorrect`
+# submissions before it was retired. `sanitize_lean_code` enforces this on LLM
+# output but never on solver-generated code, which is how a `grind` sat inside
+# `true:right_projection_collapse:left_pair_tail` unnoticed (found 2026-07-29).
+# This closes that asymmetry.
+_BANNED_TACTIC_RE = re.compile(r"\b(?:simp|simpa|simp_all|aesop|grind|sorry|admit)\b")
+
+# The only routes allowed to emit a search tactic, deliberately and documented:
+# `true:narrow_grind` is a demoted last-ditch attempt on known-TRUE shapes, and
+# the Solo `fallback:unsolved_grind` is a speculative final guess on a row that
+# is otherwise lost anyway.
+GRIND_ALLOWED_ROUTES = frozenset({"true:narrow_grind", "fallback:unsolved_grind"})
+
+
+def check_no_banned_tactics(code: str, route: str = "") -> None:
+    """Raise if a solver-emitted certificate leans on a forbidden tactic.
+
+    A tactic-backed proof cannot be checked by the proof kernel, so it is also
+    invisible to every offline gate here. Keeping them out means the offline
+    evidence actually covers what ships.
+    """
+    if route in GRIND_ALLOWED_ROUTES:
+        return
+    found = sorted({m.group() for m in _BANNED_TACTIC_RE.finditer(code)})
+    if found:
+        raise OracleError(
+            f"certificate for route {route!r} uses banned tactic(s) "
+            f"{found}: unverifiable offline and judge-rejected in the field")
+
+
+# The judge reads the table with `MemoFinOp.finOpTable`, whose parser
+# (`extractDigits`) keeps one value per *digit character*. A cell holding `10`
+# becomes two cells, `1` and `0`, shifting everything after it — so the magma Lean
+# checks is not the magma we sent. Orders 2..10 use only single-digit entries and
+# round-trip cleanly; order 11+ is silently corrupted.
+#
+# Found 2026-07-29 by a `Fin 13` witness for `hard2_0051` that was mathematically
+# correct (verified by hand and by this module) and still came back
+# `LEAN_REJECTED`, with `decide` reporting the conjunction *false*. Every check in
+# this file reads the parsed Python table, so nothing here could see it. This is
+# the one place that models the judge's *parser* rather than its logic.
+MAX_RENDERABLE_ORDER = 10
+
+
 def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
     """Independently re-verify a FALSE certificate's finite witness table."""
     tm = _TABLE_RE.search(code)
@@ -548,6 +595,11 @@ def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any])
         raise OracleError(f"table shape does not match Fin {n}")
     if any(not (0 <= v < n) for row in table for v in row):
         raise OracleError("table entries out of range")
+    if n > MAX_RENDERABLE_ORDER or any(v > 9 for row in table for v in row):
+        raise OracleError(
+            f"Fin {n} witness has multi-digit entries; the judge's finOpTable "
+            f"parser reads one value per digit character, so this table cannot "
+            f"round-trip (max renderable order is {MAX_RENDERABLE_ORDER})")
     if not equation_holds(eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table):
         raise OracleError("witness does not satisfy eq1")
     if equation_holds(eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table):
@@ -563,12 +615,107 @@ def _all_tables(n: int):
         yield [list(encoding[r * n:(r + 1) * n]) for r in range(n)]
 
 
-def model_battery(eq1: dict[str, Any], extra_tables: list[list[list[int]]],
-                  *, fin3_samples: int = 1500, seed: int = 0) -> list[list[list[int]]]:
-    """Finite magmas satisfying eq1: all Fin2, sampled Fin3, plus extras."""
+def _violations(lhs: Term, rhs: Term, variables: list[str],
+                table: list[list[int]]) -> int:
+    n = len(table)
+    bad = 0
+    for values in product(range(n), repeat=len(variables)):
+        env = dict(zip(variables, values))
+        if eval_term(lhs, env, table) != eval_term(rhs, env, table):
+            bad += 1
+    return bad
+
+
+def search_models(eq1: dict[str, Any], *, orders: tuple[int, ...] = (4, 5),
+                  restarts: int = 6, max_flips: int = 900,
+                  want: int = 2, seed: int = 11,
+                  time_budget: float = 0.25) -> list[list[list[int]]]:
+    """Hill-climb for models of eq1 at orders where enumeration is hopeless.
+
+    Needed because a whole family of laws (central groupoids and friends) has no
+    model below order 4 — `Fin 4` alone is 4^16 ≈ 4.3e9 tables, so exhaustive
+    search is out and uniform sampling essentially never hits one. Measured: this
+    finds a genuine order-4 central groupoid in 0.17 s, for a law where every
+    other method in this module returns nothing.
+
+    `time_budget` matters as much as the flip caps. Two distinct families reach
+    here: laws whose models start at order 4+ (search succeeds fast, if at all),
+    and laws that *force the trivial magma* — every `*_singleton` / `*_collapse`
+    route asserts exactly that, and for those no non-trivial model exists at any
+    order, so the search can only ever fail. Failing must therefore be cheap:
+    unbudgeted it cost 0.6-4.3 s per row on the singleton family. Those rows can
+    only be verified by proof-checking, not model-checking.
+
+    Deliberately implemented here rather than reused from `solver.py`: the whole
+    point of this module is that a bug in a solver primitive cannot hide itself
+    in the oracle.
+    """
     lhs, rhs, variables = eq1["lhs"], eq1["rhs"], list(eq1["variables"])
-    # Fin1 satisfies every law: keeps the battery non-empty for singleton
-    # laws whose only model is trivial, and never causes a false failure.
+    rng = random.Random(seed)
+    found: list[list[list[int]]] = []
+    deadline = time.monotonic() + time_budget if time_budget else None
+    for n in orders:
+        for _ in range(restarts):
+            if deadline is not None and time.monotonic() >= deadline:
+                return found
+            table = [[rng.randrange(n) for _ in range(n)] for _ in range(n)]
+            best = _violations(lhs, rhs, variables, table)
+            for flip in range(max_flips):
+                if best == 0:
+                    break
+                if (deadline is not None and not flip % 32
+                        and time.monotonic() >= deadline):
+                    return found
+                i, j = rng.randrange(n), rng.randrange(n)
+                old = table[i][j]
+                new = rng.randrange(n)
+                if new == old:
+                    continue
+                table[i][j] = new
+                cand = _violations(lhs, rhs, variables, table)
+                # Accept improvements; accept sideways moves sometimes to escape
+                # the plateaus these laws produce. Never accept a worsening move.
+                if cand < best or (cand == best and rng.random() < 0.25):
+                    best = cand
+                else:
+                    table[i][j] = old
+            if best == 0:
+                found.append([row[:] for row in table])
+                if len(found) >= want:
+                    return found
+    return found
+
+
+def nontrivial_model_count(battery: list[list[list[int]]]) -> int:
+    """How many models in `battery` can actually refute anything.
+
+    The one-element magma satisfies *every* equation, so it can never witness a
+    counterexample. A battery whose only member is trivial makes
+    `model_check_true` vacuous — it reports success having tested nothing.
+    Callers should surface this number so "model_checked" cannot be mistaken for
+    evidence (see `audit_corpus.audit_row`).
+    """
+    return sum(1 for table in battery if len(table) > 1)
+
+
+def model_battery(eq1: dict[str, Any], extra_tables: list[list[list[int]]],
+                  *, fin3_samples: int = 1500, seed: int = 0,
+                  search_orders: tuple[int, ...] = (4, 5)) -> list[list[list[int]]]:
+    """Finite magmas satisfying eq1: all Fin2, sampled Fin3, plus extras.
+
+    Escalates when nothing non-trivial turns up. Until 2026-07-29 the escalation
+    below was unreachable dead code: the battery was pre-seeded with the trivial
+    magma, so the `if not battery` guard it used could never be true. Measured
+    consequence — 536 of 1889 official rows (28.4%; `normal` 431/1000,
+    `hard2` 64/200) were "model_checked" against the trivial magma alone, which
+    proves nothing. That is exactly the central-groupoid family behind the eight
+    playground `TRUE INCORRECT` rows. The escalation now keys off the
+    *non-trivial* count instead.
+    """
+    lhs, rhs, variables = eq1["lhs"], eq1["rhs"], list(eq1["variables"])
+    # Fin1 stays in the battery: harmless, and it keeps the list non-empty for
+    # laws whose only model really is trivial. It is deliberately not counted
+    # towards `nontrivial_model_count`.
     battery: list[list[list[int]]] = [[[0]]]
     for table in _all_tables(2):
         if equation_holds(lhs, rhs, variables, table):
@@ -578,17 +725,27 @@ def model_battery(eq1: dict[str, Any], extra_tables: list[list[list[int]]],
         table = [[rng.randrange(3) for _ in range(3)] for _ in range(3)]
         if equation_holds(lhs, rhs, variables, table):
             battery.append(table)
-    if not battery:
-        # Rare laws (e.g. central groupoids, model orders k^2) have no small
-        # random models; sweep Fin3 exhaustively before giving up.
-        for table in _all_tables(3):
-            if equation_holds(lhs, rhs, variables, table):
-                battery.append(table)
-                if len(battery) >= 64:
-                    break
+    # Extras (named witness tables and structured families, orders up to ~9) go
+    # in before the escalation decision: for central-groupoid-style laws whose
+    # models live at order k^2 they are often the only non-trivial models that
+    # exist below order 16, and they are free to test.
     for table in extra_tables:
         if equation_holds(lhs, rhs, variables, table):
             battery.append(table)
+    if nontrivial_model_count(battery) == 0:
+        # Rare laws (central groupoids, model orders k^2) have no Fin2 model and
+        # essentially zero chance of a random Fin3 hit. Sweeping Fin3 exhaustively
+        # is 3^9 = 19,683 tables — milliseconds — and is the cheapest chance to
+        # give the oracle any teeth at all.
+        for table in _all_tables(3):
+            if equation_holds(lhs, rhs, variables, table):
+                battery.append(table)
+                if nontrivial_model_count(battery) >= 64:
+                    break
+    if search_orders and nontrivial_model_count(battery) == 0:
+        # Still nothing: the law's smallest model is order >= 4, where neither
+        # enumeration nor uniform sampling works. Hill-climb instead.
+        battery.extend(search_models(eq1, orders=search_orders))
     return battery
 
 

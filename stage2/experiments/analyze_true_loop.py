@@ -121,10 +121,10 @@ def main() -> int:
     print(f"\n[FAILED] last-round outcome: {top(last_outcome)}")
     print(f"[FAILED] judge error_codes: {top(error_codes)}")
     print(f"[FAILED] parse_reject reasons (all rounds): {top(parse_reasons)}")
-    print(f"\n[FAILED] lean error signatures:")
+    print("\n[FAILED] lean error signatures:")
     for sig, c in lean_sigs.most_common(args.show):
         print(f"  {c:4d}  {sig}")
-    print(f"\n[FAILED] goal syntactic families:")
+    print("\n[FAILED] goal syntactic families:")
     for fam, c in fail_families.most_common(args.show):
         print(f"  {c:4d}  {fam}")
 

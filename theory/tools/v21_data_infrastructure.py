@@ -17,8 +17,6 @@ from __future__ import annotations
 import csv
 import itertools
 import json
-import re
-import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -268,7 +266,7 @@ def main():
     masks = compute_witness_masks(equations)
     # Summary stats
     pop_counts = Counter(bin(m).count('1') for m in masks)
-    print(f"  Witness mask popcount distribution:")
+    print("  Witness mask popcount distribution:")
     for k in sorted(pop_counts):
         print(f"    {k} witnesses satisfy: {pop_counts[k]} equations")
     # How many equations satisfy zero witnesses? (these are "exotic")
@@ -349,7 +347,7 @@ def main():
             print(f"      E1={u['eq1_norm']}")
             print(f"      E2={u['eq2_norm']}")
             print(f"      E1 mask={mask_to_str(masks[u['eq1_id']])}, E2 mask={mask_to_str(masks[u['eq2_id']])}")
-    print(f"  Witness usage in separating FALSE pairs:")
+    print("  Witness usage in separating FALSE pairs:")
     for name, count in witness_usage.most_common():
         print(f"    {name}: {count}")
 
@@ -362,12 +360,11 @@ def main():
     for eid in unique_ids_sorted[:5]:
         line = f"{eid}:{mask_to_str(masks[eid])}"
         sample_lines.append(line)
-    entry_size = max(len(l) for l in sample_lines) + 1  # +1 for newline
     total_table_bytes = sum(len(f"{eid}:{mask_to_str(masks[eid])}") + 1 for eid in unique_ids_sorted)
     print(f"  Unique equations: {len(unique_ids_sorted)}")
     print(f"  Witness table size (all benchmark eqs): {total_table_bytes} bytes")
     print(f"  Budget remaining for instructions: {10240 - total_table_bytes} bytes")
-    print(f"  Sample entries:")
+    print("  Sample entries:")
     for l in sample_lines:
         print(f"    {l}")
 

@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import json
 import random
-from itertools import product
+import time
+from pathlib import Path
 
 import pytest
 
@@ -554,11 +555,225 @@ def test_llm_raw_true_disabled_in_marathon_lane(solver):
 
 
 def test_llm_banned_tactics_rejected(solver):
-    problem = _llm_problem(solver, LAWS["comm"], LAWS["left_zero"])
     for tactic in ("simp_all", "aesop", "grind", "sorry"):
         code = ("import JudgeProblem\n\ndef submission : Goal := by\n"
                 f"  intro G _ h\n  {tactic}\n")
         assert not solver.sanitize_lean_code(code, verdict="true"), tactic
+
+
+def test_solver_certificate_templates_are_tactic_free(solver):
+    """The solver must hold itself to the rule it imposes on the LLM.
+
+    `sanitize_lean_code` rejects `grind`/`simp`/`aesop` from LLM output, but it
+    never sees solver-generated code — which is how a `grind` step lived inside
+    `true:right_projection_collapse:left_pair_tail` until 2026-07-29. A tactic
+    step cannot be proof-kernel checked, so it is invisible to every offline
+    gate and rests on a tactic the cloud judge has rejected in the field.
+
+    Static counterpart to the per-row `check_no_banned_tactics` call in
+    `test_golden.py` / `audit_corpus.py`: this catches a template that no
+    currently-pinned row happens to exercise.
+    """
+    import inspect
+
+    source_path = Path(inspect.getfile(solver))
+    lines = source_path.read_text(encoding="utf-8").splitlines()
+
+    offenders: list[tuple[int, str]] = []
+    for lineno, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith("#") or not oracles._BANNED_TACTIC_RE.search(line):
+            continue
+        # Emitted Lean is always a string literal carrying an explicit newline.
+        # That excludes the PROMPT prose (which names the tactics in order to
+        # forbid them) and the BANNED_LEAN_RE pattern (raw regex, no `\n`).
+        if r"\n" not in line:
+            continue
+        # `grind_true_certificate` is the one sanctioned emitter: it backs
+        # `true:narrow_grind` and the Solo last-resort fallback, both documented.
+        context = "".join(lines[max(0, lineno - 30):lineno])
+        if "def grind_true_certificate" in context:
+            continue
+        offenders.append((lineno, stripped[:110]))
+
+    assert not offenders, (
+        "solver source emits a banned tactic outside grind_true_certificate:\n"
+        + "\n".join(f"  line {n}: {t}" for n, t in offenders))
+
+
+def test_check_no_banned_tactics_flags_and_exempts(solver):
+    body = ("import JudgeProblem\n\ndef submission : Goal := by\n"
+            "  intro G _ h\n  grind\n")
+    with pytest.raises(OracleError):
+        oracles.check_no_banned_tactics(body, "true:some_route")
+    # The two documented exemptions must stay usable.
+    for allowed in sorted(oracles.GRIND_ALLOWED_ROUTES):
+        oracles.check_no_banned_tactics(body, allowed)
+    # A clean certificate passes on any route.
+    oracles.check_no_banned_tactics(
+        "import JudgeProblem\n\ndef submission : Goal := by\n"
+        "  intro G _ h\n  intro x y\n  exact h x y\n", "true:rewrite")
+
+
+def test_constraint_countermodel_is_sound_and_renderable(solver, problems_by_id):
+    """The constraint search may only return verified, shippable witnesses.
+
+    `hard2_0009` is the canary: no canned family, affine family, `Fin 2..3`
+    enumeration or randomized hill-climb finds its witness, and the playground
+    answered it `true` (label FALSE) at 787 s. Its countermodel is order 8.
+    """
+    problem = problems_by_id.get("hard2_0009")
+    if problem is None:
+        pytest.skip("hard2_0009 not present locally")
+    eq1 = solver.parse_equation(str(problem["equation1"]))
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    solver.set_effort("fast")
+    found = solver.constraint_countermodel(eq1, eq2)
+    assert found is not None, "constraint search lost hard2_0009"
+    n, table, route = found
+    assert route.startswith("false:constraint_fin")
+    assert n <= solver.MAX_WITNESS_ORDER
+    assert solver.table_is_renderable(table)
+    # Independent re-verification through the oracle, not the solver's own gate.
+    assert oracles.equation_holds(
+        eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table)
+    assert not oracles.equation_holds(
+        eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table)
+    oracles.check_false_certificate(solver.false_certificate(n, table), eq1, eq2)
+
+
+def test_constraint_countermodel_finds_nothing_on_a_true_row(solver, problems_by_id):
+    """A negative control: a TRUE row has no countermodel, so the search must
+    report none. Without this, a propagation bug that makes the search always
+    fail looks identical to a search that is merely conservative."""
+    problem = problems_by_id.get("hard2_0003")
+    if problem is None or problem.get("answer") is not True:
+        pytest.skip("control row unavailable")
+    eq1 = solver.parse_equation(str(problem["equation1"]))
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    solver.set_effort("fast")
+    assert solver.constraint_countermodel(eq1, eq2) is None
+
+
+def test_egg_collapse_certificate_is_kernel_checkable(solver, problems_by_id):
+    """`true:egg_collapse` must emit the kernel-checkable `lemma` shape.
+
+    ETP mining showed 14 of 31 unsolved TRUE rows factor through `x = y`; this
+    route proves that collapse where the critical-pair closure cannot.
+    `normal_0062` is the cheapest measured instance (~12 s at standard effort).
+    """
+    problem = problems_by_id.get("normal_0062")
+    if problem is None:
+        pytest.skip("normal_0062 not present locally")
+    eq1 = solver.parse_equation(str(problem["equation1"]))
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    solver.set_effort("standard")
+    solver.clear_term_caches()
+    found = solver.egg_collapse_route(eq1, eq2)
+    if found is None:
+        pytest.skip("egg_collapse did not fire within its budget on this machine")
+    route, code = found
+    assert route == "true:egg_collapse"
+    assert oracles.classify_true_certificate(code) == "lemma"
+    # Both halves replayed: collapse from eq1, goal from the stated collapse law.
+    oracles.check_true_lemma_certificate(code, eq1, eq2)
+    oracles.check_no_banned_tactics(code, route)
+
+
+def test_false_certificate_rejects_unrenderable_order(solver):
+    """A witness the judge's table parser cannot read back must not pass.
+
+    `MemoFinOp.finOpTable` keeps one value per digit character, so a cell holding
+    `10` is read as two cells. A `Fin 13` witness for `hard2_0051` was
+    mathematically correct, passed both oracles, and was still `LEAN_REJECTED`
+    with `decide` calling the conjunction false — because Lean saw a different
+    table. Both the solver gate and this oracle now model the parser.
+    """
+    n = 13
+    table = [[(7 * i + 7 * j) % n for j in range(n)] for i in range(n)]
+    eq1 = solver.parse_equation("x = (y ◇ ((y ◇ x) ◇ x)) ◇ y")
+    eq2 = solver.parse_equation("x ◇ (x ◇ y) = z ◇ (z ◇ y)")
+    # The mathematics is genuinely right...
+    assert oracles.equation_holds(
+        eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table)
+    assert not oracles.equation_holds(
+        eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table)
+    # ...and it must still be refused, at both gates.
+    assert not solver.table_is_renderable(table)
+    assert not solver.table_is_counterexample(eq1, eq2, table)
+    with pytest.raises(OracleError):
+        oracles.check_false_certificate(
+            solver.false_certificate(n, table), eq1, eq2)
+    # Order 10 is the ceiling and must still be allowed.
+    ten = [[(i + j) % 10 for j in range(10)] for i in range(10)]
+    assert solver.table_is_renderable(ten)
+
+
+def test_no_route_emits_an_unrenderable_witness_order(solver):
+    """Every witness-order constant must respect the parser ceiling."""
+    assert solver.MAX_WITNESS_ORDER == 10
+    for name in ("CONSTRAINT_ORDERS", "CONSTRAINT_WIDE_ORDERS",
+                 "AFFINE_LINEAR_SIZES", "AFFINE_QUADRATIC_SIZES",
+                 "LOCAL_MODEL_SIZES"):
+        orders = getattr(solver, name)
+        assert max(orders) <= solver.MAX_WITNESS_ORDER, (
+            f"{name} contains an order above the finOpTable parser ceiling: "
+            f"{orders}")
+    assert all(len(table) <= solver.MAX_WITNESS_ORDER
+               for _name, table in solver.WITNESS_TABLES)
+
+
+def test_nontrivial_model_count_ignores_the_trivial_magma():
+    """The one-element magma satisfies every law, so it can never refute one."""
+    assert oracles.nontrivial_model_count([[[0]]]) == 0
+    assert oracles.nontrivial_model_count([[[0]], [[0, 1], [1, 0]]]) == 1
+
+
+def test_battery_is_not_vacuous_for_central_groupoids(solver):
+    """Regression: the escalation used to be unreachable dead code.
+
+    `model_battery` pre-seeded itself with the trivial magma, so its
+    `if not battery` escalation could never fire — and every equation holds in
+    `Fin 1`. Result: 536/1889 official rows were "model_checked" against nothing.
+    Central groupoids are the worst case (no model below order 4, models only at
+    order k^2) and are the family behind the eight playground `TRUE INCORRECT`
+    rows, so they are the right canary.
+    """
+    eq1 = solver.parse_equation("y = (x ◇ y) ◇ (y ◇ z)")
+    battery = oracles.model_battery(eq1, [], fin3_samples=200, seed=17)
+    assert oracles.nontrivial_model_count(battery) > 0, (
+        "central-groupoid battery has no non-trivial model: "
+        "model_check_true would be vacuous")
+    # Whatever came back must genuinely satisfy eq1.
+    for table in battery:
+        assert oracles.equation_holds(
+            eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table)
+
+
+def test_search_models_finds_an_order_four_model(solver):
+    eq1 = solver.parse_equation("y = (x ◇ y) ◇ (y ◇ z)")
+    models = oracles.search_models(eq1, orders=(4,), restarts=12,
+                                   max_flips=3000, time_budget=5.0)
+    assert models, "hill-climb found no order-4 central groupoid"
+    for table in models:
+        assert len(table) == 4
+        assert oracles.equation_holds(
+            eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table)
+
+
+def test_search_models_respects_its_time_budget(solver):
+    """A law forcing the trivial magma has no model to find; failing must be cheap.
+
+    Every `*_singleton` / `*_collapse` route asserts eq1 collapses the magma, so
+    for those rows the search can only ever fail. Unbudgeted it cost up to 4.3 s
+    per row across ~26% of the corpus.
+    """
+    eq1 = solver.parse_equation("x = y ◇ ((y ◇ (x ◇ x)) ◇ z)")
+    started = time.monotonic()
+    models = oracles.search_models(eq1, time_budget=0.25)
+    elapsed = time.monotonic() - started
+    assert not models
+    assert elapsed < 2.0, f"search overran its budget: {elapsed:.2f}s"
 
 
 def test_model_oracle_catches_a_false_implication(solver):

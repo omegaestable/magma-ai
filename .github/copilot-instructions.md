@@ -2,6 +2,11 @@
 
 This workspace is for SAIR Equational Theories Stage 2 solver development.
 
+**Read `CLAUDE.md` at the repo root first.** It is the single authoritative
+source for the current measured state, the four commands that matter, the rails,
+and the environment gotchas. This file adds only Copilot-specific priorities. If
+the two disagree, `CLAUDE.md` wins.
+
 ## Always-On Priorities
 
 1. Lean judge acceptance first.
@@ -22,20 +27,12 @@ This workspace is for SAIR Equational Theories Stage 2 solver development.
 
 ## Startup Path
 
-On a cold start, read in this order:
+1. `CLAUDE.md` — always.
+2. `stage2/docs/LATEST_HANDOFF.md` — latest session detail and ranked next levers.
+3. Then only what the task needs; `CLAUDE.md` has a "Going deeper" index.
 
-1. `README.md`
-2. `CURRENT_STATE.md`
-3. `AGENTS.md`
-4. `RESTART_CHECKLIST.md`
-5. `EVAL_WORKFLOW.md`
-6. `BENCHMARK_MANIFEST.md`
-7. `stage2/README.md`
-8. `stage2/docs/playground-preflight.md`
-9. `theory/README.md`
-10. `theory/TEORTH_WORKFLOW.md`
-11. `theory/tools/README.md`
-12. `stage2/docs/LATEST_HANDOFF.md`
+The former mandatory 12-file order cost ~36k tokens before any work could begin,
+and the files disagreed with each other on the headline numbers.
 
 ## Editing Priorities
 
@@ -51,8 +48,11 @@ On a cold start, read in this order:
 - Packaged output: `stage2/submissions/solver.py`
 - Self-verifying LLM dev loop (OpenRouter gpt-oss + local judge): `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`); latest run `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`
 - Official harness: `vendor/stage2-official/`
-- Latest public benchmark summary: `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
-- Latest competition preflight: `stage2/results/2026-05-12-competition-preflight.md`
+- Offline correctness gate: `pytest stage2/tests -q -n auto` (see `stage2/tests/README.md`)
+- Standing accuracy loop: `stage2/experiments/spotcheck.py`
+- Corpus audit: `stage2/experiments/audit_corpus.py`
+- Real Lean judge (works locally on Windows): `stage2/experiments/judge_rows.py`
+- Current benchmark numbers: `CLAUDE.md` (not a dated results file — those go stale)
 - Playground preflight: `stage2/docs/playground-preflight.md`
 - Theory extraction workflow: `theory/TEORTH_WORKFLOW.md`
 - Theory tool index: `theory/tools/README.md`

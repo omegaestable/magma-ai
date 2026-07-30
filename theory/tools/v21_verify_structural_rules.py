@@ -9,11 +9,10 @@ to the brute-force check_equation() result across all equations.
 from __future__ import annotations
 
 import re
-import itertools
 from collections import Counter
 from v21_data_infrastructure import (
-    load_equations, WITNESSES, WITNESS_NAMES, check_equation,
-    normalize_eq, _parse_expr, _collect_vars
+    load_equations, WITNESSES, check_equation,
+    normalize_eq
 )
 
 

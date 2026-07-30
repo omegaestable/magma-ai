@@ -16,32 +16,19 @@ from __future__ import annotations
 
 import json
 from collections import Counter, defaultdict
-from pathlib import Path
 
 from v21_data_infrastructure import (
     ROOT,
-    WITNESSES,
-    WITNESS_NAMES,
     load_equations,
     build_equation_map,
-    normalize_eq,
-    check_equation,
     compute_witness_masks,
     load_implications_csv,
     load_all_benchmarks,
     map_benchmark_to_ids,
     witness_separates,
-    mask_to_str,
-    implication_answer,
 )
 from v21_verify_structural_rules import (
     STRUCTURAL_RULES,
-    leftmost_leaf,
-    rightmost_leaf,
-    has_star,
-    var_counts,
-    var_set,
-    count_stars,
 )
 from fetch_teorth_data import decode_graph_json
 
@@ -195,7 +182,7 @@ def main():
     pct = 100 * covered / len(unique_false) if unique_false else 0
     print(f"  Covered by ≥1 structural test: {covered}/{len(unique_false)} ({pct:.1f}%)")
     print(f"  UNCOVERED (no structural test): {len(uncovered)}")
-    print(f"  Per-test coverage:")
+    print("  Per-test coverage:")
     for name in STRUCTURAL_RULES:
         cnt = test_coverage.get(name, 0)
         print(f"    {name}: {cnt} pairs ({100*cnt/len(unique_false):.1f}%)")
