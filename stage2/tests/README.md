@@ -52,25 +52,46 @@ Never hand-edit that fixture: its value is that a human did not write it.
 ## Witness rendering: the one thing the oracles could not see
 
 Every check in `oracles.py` reads the *parsed Python table*. The judge does not —
-it builds the magma with `MemoFinOp.finOpTable`, whose parser (`extractDigits`)
-keeps **one value per digit character**. A cell holding `10` becomes two cells,
-`1` and `0`, and the whole table shifts.
+it builds the magma from the rendered Lean source, and the two available shapes
+have very different limits.
 
-Found 2026-07-29 by a `Fin 13` witness for `hard2_0051` — the linear model
-`x ◇ y = 7x + 7y (mod 13)` — that was verified by hand, by `equation_holds`, and
-by the solver's own `table_is_counterexample`, and still came back
-`LEAN_REJECTED` with `decide` reporting the conjunction *false*. Building the
-magma from a formula instead fails the proof policy (`HAdd.hAdd` / `HMul.hMul`
-are not allowlisted), so `finOpTable` is the only sanctioned constructor.
+`finOpTable` parses its table string with `extractDigits`, keeping **one value
+per digit character**. A cell holding `10` becomes two cells, `1` and `0`, and
+the whole table shifts. Found 2026-07-29 by a `Fin 13` witness for `hard2_0051`
+— the linear model `x ◇ y = 7x + 7y (mod 13)` — verified by hand, by
+`equation_holds`, and by the solver's own `table_is_counterexample`, and still
+`LEAN_REJECTED` with `decide` reporting the conjunction *false*.
 
-Consequences now enforced in two places:
+That is a limit of one constructor, not of the judge. The conclusion drawn at
+the time — "formula magmas fail the proof policy, so `finOpTable` is the only
+sanctioned constructor and order ≤ 10 is a hard rail" — was **wrong, and cost
+every FALSE row above order 10 for two days**. It rested on one experiment,
+`fun i j => 7 * i + 7 * j`, rejected on `HAdd.hAdd` / `HMul.hMul`. The
+*notation* was what failed the allowlist: `Nat.add`, `Nat.mul`, `Nat.mod`,
+`List.getD`, `Fin.mk` and `Fin.val` are all under allowed prefixes. Rewritten
+that way and judge-verified 2026-07-31, the same `Fin 13` witness is `accepted`
+in 5.8 s, and orders 17 and 25 follow (11.2 s, 30.2 s).
 
-- `solver.table_is_renderable()`, called inside `table_is_counterexample` — the
-  single gate every FALSE witness crosses. `MAX_WITNESS_ORDER = 10`.
-- `oracles.check_false_certificate` rejects multi-digit tables, so this class is
-  finally visible offline, plus a test pinning every witness-order constant.
+So the shapes now split by order, and what bounds them is size and time:
 
-A FALSE row whose smallest countermodel exceeds order 10 is **unreachable**.
+- `solver.false_certificate()` renders order ≤ 10 through `finOpTable`
+  unchanged — that is where all the accepted-cert evidence is — and everything
+  above through an inlined `List.getD` lookup.
+- `solver.table_is_renderable()`, inside `table_is_counterexample`, is the
+  single gate every FALSE witness crosses. It measures the rendered certificate
+  against the judge's 10,000-byte FALSE cap rather than guessing from order.
+- `solver.witness_decide_is_affordable()` bounds the other limit. `decideFin!`
+  is exhaustive, so an equation in `k` variables costs `n ** k` applications;
+  order alone says nothing. Order 25 against a 3-variable goal is 15,625 and
+  measured 30.2 s of the judge's 120 s. Orders ≤ 10 are exempt — the cost model
+  is for new territory and must never veto the proven envelope.
+- `oracles.check_false_certificate` re-verifies both shapes, still rejects a
+  multi-digit `finOpTable` table, and independently re-checks the byte cap and
+  the `decide` cost.
+
+`MAX_WITNESS_ORDER = 25`. A FALSE row needing a *complete* table above that is
+still out of reach, but the reach is now set by measurement, not by a parser
+quirk.
 
 ## Banned tactics
 

@@ -1,11 +1,60 @@
 # Latest Handoff
 
-Updated: 2026-07-29 (v4 coverage push — three new engines, witness-order rail).
+Updated: 2026-07-31 (rules review — the witness-order rail was ours, and is gone).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
 **Start at `CLAUDE.md`** for current numbers, commands and rails; this file is the
 dated session log.
+
+## 2026-07-31: official rules review, and the order-10 rail retired (newest — read first)
+
+Triggered by three organizer clarifications on the playground forum. Two were
+no-ops for us; reviewing the third is what exposed a self-inflicted ceiling.
+
+**The rule changes** (all checked against the vendored snapshot, same commit
+`6805e232` the forum thread cites — see `CLAUDE.md` for the full statement):
+
+- *Marathon cannot call the judge.* Already compliant; `stdin` is `DEVNULL` and
+  the marathon proxy has no judge route. Now pinned by an AST-level test that
+  keeps every proxy call inside `run_solo`.
+- *Solo 60 min/problem, Marathon 5 min/problem average; `compression_ratio`
+  withdrawn.* No code change — budgets are read from the environment, never
+  assumed. The vendored `rules/evaluation.md` is **stale** here (it still says
+  180,000 s at N=100 where the real figure is 30,000 s); noted in `UPSTREAM.md`.
+- *Infinite countermodels are allowed.* Not used yet — see below for why the
+  finite route was the cheaper reach.
+
+**The real finding.** Chasing what "no finiteness constraint" opens up meant
+re-reading the FALSE certificate policy, and the 2026-07-29 conclusion that
+`finOpTable` is the only sanctioned magma constructor did not survive it. That
+rested on one experiment — `fun i j => 7 * i + 7 * j`, rejected on
+`HAdd.hAdd`/`HMul.hMul`. It was the *notation* that failed the allowlist.
+Written with `Nat.add`/`Nat.mul`/`Fin.mk`/`List.getD`, all under allowed
+prefixes, the real judge **accepts** the same construction:
+
+| Shape | Order | Result |
+| --- | --- | --- |
+| `fun i j => 7 * i + 7 * j` | 13 | `DISALLOWED_DECLARATIONS` (reproduced) |
+| `finOpTable` complete table | 13 | `LEAN_REJECTED` (reproduced) |
+| `magmaFin` (judge's own List constructor) | 13 | `DISALLOWED_DECLARATIONS: magmaFin` |
+| **inlined `List.getD` table** | **13** | **accepted, 5.8 s** |
+| **inlined `List.getD` table** | **17 / 25** | **accepted, 11.2 s / 30.2 s** |
+| **named-arithmetic formula** | **13** | **accepted, 6.0 s** |
+
+Shipped from that: `false_certificate_list`, `MAX_WITNESS_ORDER` 10 → 25,
+`witness_decide_is_affordable()` (cost is `n ** variables`, not order), and
+`large_linear_family_tables()` for orders 11–25. `hard2_0051`, called
+unreachable in the v4b note below, now solves as `false:linear:z13:7,7` and is
+judge-accepted in 5.6 s end-to-end.
+
+Orders ≤ 10 keep the `finOpTable` shape byte-for-byte, so no working row changed
+shape — verified by test and by 4 judge-accepted legacy controls.
+
+Why infinite countermodels stayed on the shelf: they only pay where *no* finite
+model exists, and they trade `decide` for arithmetic lemmas under an allowlist
+that excludes `HAdd.hAdd`/`HMul.hMul`. Lifting the finite ceiling was cheaper
+and it was the actual blocker. Revisit if a row resists every finite order.
 
 ## 2026-07-29 v4b: wide-domain witnesses + a node-cap bug (newest — read first)
 

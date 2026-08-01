@@ -455,6 +455,54 @@ def test_marathon_budget_degenerate_inputs(solver):
     assert solver.marathon_per_problem_budget(0.0, 100, reference) > 0
 
 
+def test_marathon_reads_its_budget_from_the_environment(solver, monkeypatch):
+    """Never hardcode a per-problem Marathon budget — the reference moved.
+
+    The vendored `rules/evaluation.md` derived it from a 3600 s Solo reference
+    (~1800 s per problem at N=100) while `scripts/run_marathon.py` used 600 s
+    (~300 s per problem). The organizers settled it at 5 minutes per problem on
+    2026-07-31 and withdrew `compression_ratio` entirely. Anything that reads
+    the environment survived that; anything that had baked in a number did not.
+    """
+    reference = solver.marathon_reference_seconds()
+    settled = solver.marathon_per_problem_budget(30_000.0, 100, reference)
+    withdrawn = solver.marathon_per_problem_budget(180_000.0, 100, reference)
+    assert 0 < settled < withdrawn, "budget must track the real clock, not a constant"
+
+    monkeypatch.setenv("MAGMA_MARATHON_REF_SECONDS_PER_PROBLEM", "300")
+    assert solver.marathon_reference_seconds() == 300.0
+
+
+def test_no_judge_call_outside_solo(solver):
+    """Marathon has no judge channel; a call there hangs on a DEVNULL stdin.
+
+    `marathon_runner.py` spawns the solver with `stdin=subprocess.DEVNULL` and
+    `marathon_proxy.py` serves only `/v1/chat/completions`, so the proxy
+    round-trip in `judge_via_solo_proxy` has nothing to talk to. Checked
+    structurally because the failure mode is a silent stall that costs the whole
+    run, not one row.
+    """
+    import ast
+    import inspect
+
+    tree = ast.parse(inspect.getsource(solver))
+    proxy_callers = {"judge_via_solo_proxy", "send_proxy_call", "load_json_line"}
+    offenders = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        called = {
+            child.func.id
+            for child in ast.walk(node)
+            if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+        }
+        hits = called & proxy_callers
+        if hits and node.name not in proxy_callers | {"run_solo"}:
+            offenders.append(f"{node.name} calls {sorted(hits)}")
+    assert not offenders, (
+        "stdin/stdout proxy traffic must stay inside run_solo: " + "; ".join(offenders))
+
+
 # ---------------------------------------------------------------------------
 # LLM candidate parsing: the boundary where model output becomes a submission.
 # ---------------------------------------------------------------------------
@@ -680,54 +728,129 @@ def test_egg_collapse_certificate_is_kernel_checkable(solver, problems_by_id):
     oracles.check_no_banned_tactics(code, route)
 
 
-def test_false_certificate_rejects_unrenderable_order(solver):
-    """A witness the judge's table parser cannot read back must not pass.
+def test_multi_digit_table_never_uses_the_finOpTable_shape(solver):
+    """The `hard2_0051` witness, and the rendering rule it taught us.
 
-    `MemoFinOp.finOpTable` keeps one value per digit character, so a cell holding
-    `10` is read as two cells. A `Fin 13` witness for `hard2_0051` was
-    mathematically correct, passed both oracles, and was still `LEAN_REJECTED`
-    with `decide` calling the conjunction false — because Lean saw a different
-    table. Both the solver gate and this oracle now model the parser.
+    `MemoFinOp.finOpTable` keeps one value per digit character, so a cell
+    holding `10` is read as two cells. This `Fin 13` witness was mathematically
+    correct, passed both oracles, and was still `LEAN_REJECTED` with `decide`
+    calling the conjunction false — Lean saw a different table.
+
+    The fix is a different renderer, not a smaller witness: the table is now
+    emitted with an inlined `List.getD` lookup, which the real judge accepted in
+    5.8 s (2026-07-31). What must never happen again is this table going out in
+    the `finOpTable` shape, so that is what is pinned here.
     """
     n = 13
     table = [[(7 * i + 7 * j) % n for j in range(n)] for i in range(n)]
     eq1 = solver.parse_equation("x = (y ◇ ((y ◇ x) ◇ x)) ◇ y")
     eq2 = solver.parse_equation("x ◇ (x ◇ y) = z ◇ (z ◇ y)")
-    # The mathematics is genuinely right...
     assert oracles.equation_holds(
         eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table)
     assert not oracles.equation_holds(
         eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table)
-    # ...and it must still be refused, at both gates.
-    assert not solver.table_is_renderable(table)
-    assert not solver.table_is_counterexample(eq1, eq2, table)
+
+    code = solver.false_certificate(n, table)
+    assert "finOpTable" not in code, "multi-digit table rendered with the digit parser"
+    assert "List.getD" in code
+    assert solver.table_is_renderable(table)
+    assert solver.table_is_counterexample(eq1, eq2, table)
+    oracles.check_false_certificate(code, eq1, eq2)
+
+    # The old failure mode itself: if this table ever *were* rendered through
+    # finOpTable, the oracle must still catch it.
     with pytest.raises(OracleError):
         oracles.check_false_certificate(
-            solver.false_certificate(n, table), eq1, eq2)
-    # Order 10 is the ceiling and must still be allowed.
-    ten = [[(i + j) % 10 for j in range(10)] for i in range(10)]
-    assert solver.table_is_renderable(ten)
+            solver.false_certificate_memo(n, table), eq1, eq2)
+
+
+def test_orders_within_the_legacy_envelope_keep_their_shape(solver):
+    """Lifting the ceiling must not restyle a single already-working row.
+
+    Every judge-accepted FALSE certificate to date is a `finOpTable` table at
+    order <= 10. Those keep that exact shape; `List.getD` is for what was
+    previously unreachable.
+    """
+    for n in range(2, solver.LEGACY_MAX_WITNESS_ORDER + 1):
+        table = [[(i + j) % n for j in range(n)] for i in range(n)]
+        code = solver.false_certificate(n, table)
+        assert "finOpTable" in code and "List.getD" not in code, (
+            f"order {n} changed rendering shape")
 
 
 def test_no_complete_table_route_exceeds_the_order_ceiling(solver):
-    """Every *complete-table* engine's order constants must stay <= 10.
+    """Every *complete-table* engine's order constants must stay <= 25.
 
-    `MAX_WITNESS_ORDER = 10` is the ceiling for a complete Cayley table (entries
-    spanning the full `0..n-1`), which is what every one of these produces. It is
-    NOT a ceiling on renderable order in general — `WIDE_DOMAIN_ORDERS` legally
-    exceeds it because that engine caps cell *values*, not order. See
+    25 is where the judge's own limits meet, measured against the real judge:
+    the rendered table still fits the 10,000-byte FALSE cap, and a 3-variable
+    goal costs 30.2 s of its 120 s Lean timeout. `WIDE_DOMAIN_ORDERS` legally
+    exceeds it because that engine caps cell *values*, not order — see
     `test_wide_domain_orders_are_value_capped_not_order_capped`.
     """
-    assert solver.MAX_WITNESS_ORDER == 10
+    assert solver.MAX_WITNESS_ORDER == 25
+    assert solver.LEGACY_MAX_WITNESS_ORDER == 10
     for name in ("CONSTRAINT_ORDERS", "CONSTRAINT_WIDE_ORDERS",
                  "AFFINE_LINEAR_SIZES", "AFFINE_QUADRATIC_SIZES",
-                 "LOCAL_MODEL_SIZES"):
+                 "LARGE_LINEAR_SIZES", "LOCAL_MODEL_SIZES"):
         orders = getattr(solver, name)
         assert max(orders) <= solver.MAX_WITNESS_ORDER, (
-            f"{name} contains an order above the finOpTable parser ceiling: "
+            f"{name} contains an order above the measured witness ceiling: "
             f"{orders}")
     assert all(len(table) <= solver.MAX_WITNESS_ORDER
                for _name, table in solver.WITNESS_TABLES)
+
+
+def test_witness_cost_gate_tracks_variables_not_just_order(solver):
+    """`decideFin!` is exhaustive, so cost is `n ** variables`, not order.
+
+    Order 25 against a 3-variable goal is 15,625 applications and measured 30.2 s
+    at the real judge. The same order against a 5-variable goal is 9.7M, which
+    would blow the 120 s timeout and lose the row — worse than skipping it.
+    """
+    two_var = solver.parse_equation("x ◇ y = y ◇ x")
+    five_var = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ u) ◇ x")
+    table = [[(7 * i + 7 * j) % 13 for j in range(13)] for i in range(13)]
+    assert solver.witness_decide_is_affordable(two_var, two_var, table)
+    assert not solver.witness_decide_is_affordable(two_var, five_var, table)
+    # ...but the proven envelope is never vetoed by the cost model.
+    small = [[(i + j) % 10 for j in range(10)] for i in range(10)]
+    assert solver.witness_decide_is_affordable(five_var, five_var, small)
+
+
+def test_witness_check_applies_the_shippability_gate(solver):
+    """`witness_check` must gate on shippability, not just on the mathematics.
+
+    It historically stopped at `eq1 holds and eq2 fails`, which was safe only
+    because every family feeding it topped out at order 9. Orders 11-25 make the
+    difference observable: this table is a genuine counterexample that would cost
+    the judge 13**5 = 371,293 decide applications, and must still be refused.
+    """
+    eq1 = solver.parse_equation("x ◇ y = y ◇ x")
+    five_var = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ u) ◇ x")
+    n = 13
+    table = [[(i + j) % n for j in range(n)] for i in range(n)]
+    # Genuinely a counterexample: eq1 holds, eq2 does not.
+    assert oracles.equation_holds(eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table)
+    assert not oracles.equation_holds(
+        five_var["lhs"], five_var["rhs"], list(five_var["variables"]), table)
+    # ...and still refused, by both entry points.
+    assert not solver.witness_check(eq1, five_var, table)
+    assert not solver.table_is_counterexample(eq1, five_var, table)
+    # The model counter must still have seen it — it inspected a real model of
+    # eq1, which is exactly what `constraint_search_exhausted` reasoning needs.
+    assert solver.hypothesis_models_seen() > 0
+
+
+def test_large_linear_family_only_emits_shippable_tables(solver):
+    """Every table the new above-10 family produces must clear both judge caps."""
+    seen_orders = set()
+    for route, table in solver.large_linear_family_tables():
+        n = len(table)
+        seen_orders.add(n)
+        assert route.startswith("false:linear:z")
+        assert n in solver.LARGE_LINEAR_SIZES
+        assert solver.table_is_renderable(table), f"order {n} table is unshippable"
+    assert seen_orders == set(solver.LARGE_LINEAR_SIZES)
 
 
 def test_wide_domain_orders_are_value_capped_not_order_capped(solver):

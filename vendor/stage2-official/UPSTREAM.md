@@ -36,6 +36,24 @@ Current local evidence:
 3. `stage2/experiments/homelab_llm_probe.py --run-direct-openrouter-smoke`: plain, pinned-provider, and pinned-provider-plus-reasoning OpenRouter request shapes all returned OK.
 4. `stage2/experiments/homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180`: Solo `1/1` accepted and Marathon `1/1` accepted through the local OpenRouter proxy path.
 
+## Known upstream drift (do not "fix" locally)
+
+As of 2026-07-31 the organizers have clarified two points on the playground
+forum that this snapshot's own docs contradict. The snapshot is left alone —
+these are notes for whoever syncs next:
+
+1. `rules/evaluation.md` derives the Marathon budget as `compression_ratio × N ×
+   3600 s` (180,000 s at N=100). `scripts/run_marathon.py` uses a 600 s
+   reference instead (30,000 s at N=100). The organizers confirmed the CLI:
+   **Solo 60 min per problem, Marathon 5 min per problem on average**, and
+   `compression_ratio` has been withdrawn from the spec as misleading.
+2. `rules/evaluation.md` describes a FALSE certificate as "a Lean 4 proof that
+   there exists a **finite** magma …". The judge's actual goal
+   (`judge/verify.py`) is `∃ (G : Type) (_ : Magma G), EquationLHS G ∧ ¬
+   EquationRHS G`, with no `Finite`/`Fintype` constraint, and the organizers
+   confirmed verified infinite countermodels are allowed. The judge is right;
+   the prose is being updated upstream.
+
 To sync upstream later:
 
 1. Record the current snapshot commit.

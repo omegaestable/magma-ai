@@ -152,6 +152,13 @@ MAX_LEAN_CODE_BYTES = JUDGE_MAX_CODE_LENGTH - 500
 MAX_FALSE_CERT_BYTES = JUDGE_MAX_FALSE_CERT_BYTES - 500
 VALID_VERDICTS = {"true", "false"}
 AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
+# Orders above 10, reachable only since `false_certificate_list` (2026-07-31).
+# Mostly primes, because a linear model over Z_p is a quasigroup for every
+# non-zero coefficient pair — the property these hypotheses tend to want; 16 and
+# 25 are the two prime powers cheap enough to be worth carrying anyway.
+# Bounded by `witness_decide_is_affordable`, not by this tuple — an order here
+# is only *tried*, and a 3-variable goal already costs the judge 30 s at 25.
+LARGE_LINEAR_SIZES = (11, 13, 16, 17, 19, 23, 25)
 AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
 STRUCTURED_MAX_N = 7
@@ -368,7 +375,12 @@ def submission : Goal := by
 """
 
 
-def false_certificate(n: int, table: list[list[int]]) -> str:
+def false_certificate_memo(n: int, table: list[list[int]]) -> str:
+    """The `finOpTable` shape. Only valid while every cell is a single digit.
+
+    Kept as the default for tables it can express: it is the shape behind every
+    judge-accepted FALSE row to date, so nothing already working changes shape.
+    """
     table_str = json.dumps(table, separators=(",", ":"))
     max_rec_depth = "set_option maxRecDepth 20000\n" if n >= 7 else ""
     return (
@@ -385,6 +397,62 @@ def false_certificate(n: int, table: list[list[int]]) -> str:
         "  refine Exists.intro m ?_\n"
         "  decideFin!\n"
     )
+
+
+def false_certificate_list(n: int, table: list[list[int]]) -> str:
+    """Cell lookup with `List.getD` instead of the judge's digit-parsing table.
+
+    `finOpTable` is not the only sanctioned constructor — that conclusion
+    (2026-07-29) came from a single experiment that wrote the operation as
+    `fun i j => 7 * i + 7 * j` and was rejected on `HAdd.hAdd` / `HMul.hMul`.
+    It was the *notation* that failed the policy, not the construction: `+` and
+    `*` elaborate to those two unlisted heads, while `Nat.add`, `Nat.mul`,
+    `Nat.mod`, `Nat.mod_lt`, `Nat.succ_pos`, `List.getD`, `Fin.mk` and
+    `Fin.val` all sit under prefixes the policy already allows.
+
+    Confirmed against the real judge (2026-07-31) on `hard2_0051`, the row the
+    order-10 ceiling had made unreachable: `accepted` in 5.8 s at order 13, and
+    again at orders 17 (11.2 s) and 25 (30.2 s) against the judge's own 120 s
+    Lean timeout. Since no digit parser is involved, cells may hold any value
+    below `n`, which is what lifts witness order past 10.
+
+    Note the judge's *other* built-in constructor, `magmaFin` (a `List Nat`
+    table in `JudgeMagma/Magma.lean`), does not work: it is a bare top-level
+    name matching no allowlisted prefix and is rejected with
+    `disallowed declarations: magmaFin`. The lookup has to be inlined.
+    """
+    flat = ",".join(str(value) for row in table for value in row)
+    op = (
+        f"fun i j => Fin.mk (Nat.mod (List.getD [{flat}] "
+        f"(Nat.add (Nat.mul (Fin.val i) {n}) (Fin.val j)) 0) {n}) "
+        f"(Nat.mod_lt _ (Nat.succ_pos {n - 1}))"
+    )
+    return (
+        "import JudgeProblem\n"
+        "import JudgeDecide.DecideBang\n"
+        f"set_option maxRecDepth {max(40_000, 80 * n * n)}\n\n"
+        "def submission : Goal := by\n"
+        f"  let m : Magma (Fin {n}) := {{ op := {op} }}\n"
+        f"  refine Exists.intro (Fin {n}) ?_\n"
+        "  refine Exists.intro m ?_\n"
+        "  decideFin!\n"
+    )
+
+
+def false_certificate(n: int, table: list[list[int]]) -> str:
+    """Render a witness table in the shape that suits it.
+
+    `finOpTable` keeps the orders it has always served — that is where all the
+    accepted-cert evidence lives, and holding those byte-identical means this
+    change cannot disturb a working row. Everything above goes to `List.getD`,
+    which is not merely the only shape that *can* express a multi-digit cell:
+    it is also far cheaper for the judge. `finOpTable` re-runs `extractDigits`
+    over the whole table string on every single application, which is why an
+    order-13 table costs it 78.1 s where the `List.getD` shape costs 5.8 s.
+    """
+    if n <= LEGACY_MAX_WITNESS_ORDER and all(0 <= v <= 9 for row in table for v in row):
+        return false_certificate_memo(n, table)
+    return false_certificate_list(n, table)
 
 
 def singleton_true_certificate(
@@ -812,33 +880,64 @@ def equation_holds(equation: dict[str, Any], table: list[list[int]]) -> bool:
 
 
 def table_is_renderable(table: list[list[int]]) -> bool:
-    """Can the judge actually read this table back?
+    """Can the judge actually read this table back, within its size cap?
 
-    `MemoFinOp.finOpTable` parses the table string with `extractDigits`, which
-    keeps one value per *digit character*: `(vals.getD idx 0) % n`. Every
-    extracted digit is 0-9, and `d % n == d` whenever `n > d`, so **the real
-    invariant is single-digit cell values, not order <= 10**. Order <= 10 was
-    only a corollary for a *complete* Cayley table, whose entries must span the
-    full `0..n-1` and therefore hit a two-digit value the moment `n > 10`.
+    Two distinct constraints used to be conflated here. The *parser* one is
+    real but narrow: `MemoFinOp.finOpTable` reads its table string with
+    `extractDigits`, one value per digit character, so a cell holding `10`
+    becomes two cells and the whole table shifts. That is a property of one
+    constructor, not of the judge — `false_certificate` switches to the
+    `List.getD` shape above order 10, and that shape is judge-accepted at
+    orders 13, 17 and 25 (2026-07-31).
 
-    A `Fin 13` witness for `hard2_0051` demonstrated the failure mode: its
-    entries used the full 0..12 range and was `LEAN_REJECTED`, with `decide`
-    calling the conjunction false (2026-07-29). But confirmed the same day
-    against the real judge: a `Fin 13` table whose entries are *deliberately
-    restricted* to 0..9 (e.g. `(i + j) % 10`, carrier size 13) round-trips
-    correctly and was `accepted` in 78.1s. So order can exceed 10 as long as
-    every cell stays a single digit — see `constraint_countermodel_wide_domain`
-    for where that space is actually searched, and its docstring for the one
-    equation shape (`eq1: x = F(...)`, a bare variable alone on one side) that
-    can *never* be satisfied by such a table, no matter how large: the
-    universally-quantified bare variable ranges over the full carrier, so once
-    it exceeds 9 no digit-only lookup can equal it.
+    What remains is a size question. The rendered certificate must fit under
+    `MAX_FALSE_CERT_BYTES`; a cert over the judge's 10,000-byte FALSE cap is
+    rejected outright, which is strictly worse than skipping the row. Measured
+    exactly here rather than estimated, since the renderer is right there.
 
-    This is checked here, at the gate every FALSE witness passes through,
-    because every other local check reads the Python table and is blind to
-    parser semantics.
+    Deliberately no order cap here: order is not what makes a table
+    unshippable. Bytes are one real limit and `witness_decide_is_affordable` is
+    the other, and a wide, narrow-ranged table can be perfectly fine at an
+    order far above `MAX_WITNESS_ORDER` when the goal has few variables.
+
+    This is checked at the gate every FALSE witness passes through, because
+    every other local check reads the Python table and is blind to rendering.
     """
-    return all(0 <= value <= 9 for row in table for value in row)
+    n = len(table)
+    if n < 1 or any(len(row) != n for row in table):
+        return False
+    if any(not (0 <= value < n) for row in table for value in row):
+        return False
+    return len(false_certificate(n, table).encode("utf-8")) <= MAX_FALSE_CERT_BYTES
+
+
+def witness_decide_is_affordable(
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    table: list[list[int]],
+) -> bool:
+    """Will `decideFin!` finish inside the judge's Lean timeout?
+
+    `decide` is exhaustive: it walks `n ** k` assignments for an equation in
+    `k` variables, for both equations. Order alone does not bound that — order
+    25 against a 3-variable goal is 15,625 applications, but order 13 against a
+    5-variable goal is 371,293.
+
+    Anchor (real judge, 2026-07-31): `hard2_0051` at order 25, goal in 3
+    variables, 15,625 applications, `accepted` in 30.2 s against
+    `LEAN_TIMEOUT_SECONDS = 120`. The cap below extrapolates to ~40 s, leaving
+    ~3x for slower judge hardware, since overshooting spends the row.
+
+    Orders through 10 are exempt. That envelope is behind every FALSE row the
+    judge has accepted to date, so a cost model introduced for the *new*
+    territory above it has no business vetoing it — this check can only ever
+    add rows, never take one away.
+    """
+    n = len(table)
+    if n <= LEGACY_MAX_WITNESS_ORDER:
+        return True
+    widest = max(len(eq1.get("variables") or ()), len(eq2.get("variables") or ()))
+    return n ** max(1, widest) <= MAX_WITNESS_DECIDE_APPLICATIONS
 
 
 def table_is_counterexample(
@@ -846,9 +945,17 @@ def table_is_counterexample(
     eq2: dict[str, Any],
     table: list[list[int]],
 ) -> bool:
-    if not table_is_renderable(table):
+    """Semantics first, shippability second — the order is a performance
+    contract, not a preference. `table_is_renderable` builds the certificate to
+    measure it, and this runs on every candidate table of every family, so the
+    cheap refutation has to come first: only a genuine counterexample is ever
+    rendered."""
+    if not equation_holds(eq1, table) or equation_holds(eq2, table):
         return False
-    return equation_holds(eq1, table) and not equation_holds(eq2, table)
+    return (
+        table_is_renderable(table)
+        and witness_decide_is_affordable(eq1, eq2, table)
+    )
 
 
 # How many models of the *hypothesis* the FALSE search has inspected for the
@@ -884,11 +991,23 @@ def witness_check(
 
     Same short-circuit as the plain check -- a table that fails `eq1` never
     costs an `eq2` evaluation -- so the counter is free.
+
+    This used to stop at the mathematics and skip the shippability gate, which
+    was invisible only because every family feeding it topped out at order 9:
+    such a table is single-digit and small by construction, so it could not fail
+    either check. `large_linear_family_tables` (orders 11-25) broke that
+    assumption the moment it was added. The gate belongs here, not in the
+    callers, so the next family above the old ceiling inherits it.
     """
     if not equation_holds(eq1, table):
         return False
     note_hypothesis_model()
-    return not equation_holds(eq2, table)
+    if equation_holds(eq2, table):
+        return False
+    return (
+        table_is_renderable(table)
+        and witness_decide_is_affordable(eq1, eq2, table)
+    )
 
 
 def enumerate_tables(n: int):
@@ -974,6 +1093,29 @@ def affine_family_tables(max_n: int = 5):
                     else:
                         route = f"false:affine:z{n}:{a},{b},{c}"
                     yield route, table
+
+
+def large_linear_family_tables():
+    """Linear models `x ◇ y = ax + by (mod n)` for orders above 10.
+
+    Split out from `affine_family_tables` rather than folded into it, for two
+    reasons. Cost: the affine sweep is O(n^3) tables, which is 15,625 at order
+    25 where the linear sweep is 625 — this has to stay cheap enough to run
+    late on every unresolved FALSE row. And placement: orders above 10 only
+    became shippable on 2026-07-31 (see `false_certificate_list`), so this is
+    new territory that belongs after everything with a longer track record.
+
+    Composite orders are included but sparse: on a prime order every non-zero
+    coefficient is invertible, which is what makes these models satisfy the
+    quasigroup-ish hypotheses this family tends to win on.
+    """
+    for n in LARGE_LINEAR_SIZES:
+        for a in range(1, n):
+            for b in range(1, n):
+                yield (
+                    f"false:linear:z{n}:{a},{b}",
+                    [[(a * x + b * y) % n for y in range(n)] for x in range(n)],
+                )
 
 
 def quadratic_family_tables(max_n: int = STRUCTURED_MAX_N):
@@ -6804,29 +6946,36 @@ def constraint_search_exhausted() -> bool:
     return _CONSTRAINT_EXHAUSTED
 
 
-# CEILING ON *COMPLETE* WITNESS ORDER: 10.
+# CEILING ON WITNESS ORDER: 25, measured against the real judge.
 #
-# The judge builds the magma with `MemoFinOp.finOpTable`, whose parser is
-# `extractDigits`: it walks the table string character by character and keeps each
-# *digit* as one value (vendor/stage2-official/judge/JudgeFinOp/MemoFinOp.lean).
-# A cell holding `10` therefore becomes two cells, `1` and `0`, and the whole
-# table shifts, so only single-digit cell VALUES survive the round trip
-# (`table_is_renderable`). For a *complete* Cayley table — entries spanning the
-# full `0..n-1`, which is every route below except the wide-domain tier — that
-# forces order <= 10, since order 11 needs an entry of at least 10.
+# This was 10 from 2026-07-29 to 2026-07-31, on the belief that `finOpTable` was
+# the only sanctioned magma constructor. It is not, and the ceiling was ours,
+# not the judge's — see `false_certificate_list` for the experiment that
+# retired it. What actually forced 10 was `finOpTable`'s `extractDigits`
+# parser: one value per digit character, so a cell holding `10` splits into two
+# cells and shifts the table. That still holds, and is still why a
+# `finOpTable` cert must stay single-digit; it just is not the only shape
+# available.
 #
-# Confirmed the hard way (2026-07-29): a genuine `Fin 13` witness for `hard2_0051`
-# — the linear model `x ◇ y = 7x + 7y (mod 13)`, entries spanning 0..12, verified
-# by hand and by both offline oracles — came back `LEAN_REJECTED` with `decide`
-# reporting the conjunction *false*. Nothing in the offline harness could see
-# this, since every local check reads the Python table rather than the rendered
-# string.
-#
-# This does NOT mean order > 10 is categorically unrenderable — see
-# `constraint_countermodel_wide_domain` below for the deliberately
-# range-restricted construction that can exceed it, and why it cannot help the
-# `eq1: x = F(...)` family that is our entire current FALSE-frontier.
-MAX_WITNESS_ORDER = 10
+# 25 is where two real limits meet, not a round number:
+#   * bytes — the `List.getD` rendering of an order-25 table is 1,972 bytes of
+#     the judge's 10,000-byte FALSE cap, and only passes ~45 in the worst case;
+#   * Lean time — order 25 against a 3-variable goal was `accepted` in 30.2 s
+#     of the judge's 120 s. Time binds first, and it binds on
+#     `n ** variables`, not on order, so `witness_decide_is_affordable` is the
+#     check that actually protects the timeout. This constant is the outer
+#     bound on top of it.
+MAX_WITNESS_ORDER = 25
+
+# The pre-2026-07-31 ceiling, kept as the boundary of the *proven* envelope:
+# every judge-accepted FALSE row to date is at or below it, so witnesses inside
+# it skip the cost model below rather than being re-litigated by it.
+LEGACY_MAX_WITNESS_ORDER = 10
+
+# Exhaustive-`decide` applications a witness may cost the judge. Anchored on the
+# order-25 / 3-variable measurement above (15,625 applications -> 30.2 s), with
+# margin for slower judge hardware. See `witness_decide_is_affordable`.
+MAX_WITNESS_DECIDE_APPLICATIONS = 20_000
 
 CONSTRAINT_ORDERS = (8, 9, 6, 4, 10)
 CONSTRAINT_TIME_BUDGET = 3.0
@@ -7032,17 +7181,23 @@ def constraint_countermodel(
 # construction the FALSE portfolio lacked, and the frontier will not always
 # look like it does today.
 #
-# The insight (2026-07-29): `MAX_WITNESS_ORDER = 10` is the ceiling for a
-# *complete* Cayley table, whose entries must span the full `0..n-1`. But
-# `finOpTable`'s parser only cares that each cell VALUE is a single digit — the
-# carrier size `n` is unconstrained. So a table with a much larger carrier,
-# whose operation is deliberately restricted to output values `< 10`, still
-# round-trips. Confirmed against the real judge: a `Fin 13` magma
-# `op(i, j) = (i + j) mod 10` — order 13, every entry < 10 — was `accepted` in
-# 78.1 s, where the unrestricted `Fin 13` linear model that started this
-# investigation was rejected.
+# The insight (2026-07-29) was that `finOpTable`'s parser only cares that each
+# cell VALUE is a single digit — the carrier size `n` is unconstrained. So a
+# table with a much larger carrier, whose operation is deliberately restricted
+# to output values `< 10`, still round-trips where a complete table could not.
+# Confirmed against the real judge: a `Fin 13` magma `op(i, j) = (i + j) mod 10`
+# — order 13, every entry < 10 — was `accepted` in 78.1 s, where the
+# unrestricted `Fin 13` linear model that started that investigation was
+# rejected.
 #
-# Why this cannot rescue the current frontier: every unsolved FALSE row has
+# Since 2026-07-31 this is no longer the *only* way past order 10:
+# `false_certificate_list` renders complete tables at any order, so the value
+# cap here is a property of this particular search, not of the judge. The tier
+# still earns its place — it reaches orders (30, 40, 50, 60) that no complete
+# table can, because a complete table's `decide` cost explodes long before
+# then.
+#
+# Why this tier cannot rescue the current frontier: every unsolved FALSE row has
 # `eq1: x = F(...)` — a bare variable alone on one side. That variable is
 # universally quantified over the *full* carrier `Fin n`, so once it exceeds 9
 # the equation demands `F(...) = x >= 10`, impossible for an output capped at 9.
@@ -7050,7 +7205,9 @@ def constraint_countermodel(
 # for free, rather than let `_cp_propagate`'s value-cap conflict discover the
 # same impossibility the slow way (measured: 74,787 search nodes in 15 s on
 # `hard2_0051` without resolving, because propagation only reaches the fatal
-# instance once enough of the table happens to be filled in).
+# instance once enough of the table happens to be filled in). Those rows are
+# exactly what the complete-table orders above 10 are now for — `hard2_0051`
+# itself is a `Fin 13` complete-table witness.
 #
 # For the equation shapes this restriction does NOT rule out (no bare variable
 # on either side — e.g. `F(...) = G(...)`), it is a real expansion of the
@@ -7441,6 +7598,21 @@ def solve_problem(
         n, table, route = late
         return false_record(n, table, route)
 
+    # Linear models over Z_n for n > 10. Cheap (a few thousand candidate tables,
+    # each abandoned at the first assignment that violates eq1), and placed here
+    # because it is the first route that can claim a witness above the old
+    # order-10 ceiling. `hard2_0051` is the motivating row: its smallest
+    # countermodel is `x ◇ y = 7x + 7y (mod 13)`, which no other route can reach.
+    if _engine_gate():
+        return None
+    for index, (route, table) in enumerate(large_linear_family_tables()):
+        # Re-gate periodically rather than per candidate: `_engine_gate` reads
+        # RSS, and there are a few thousand candidates here.
+        if index % 128 == 0 and _engine_gate():
+            return None
+        if witness_check(eq1, eq2, table):
+            return false_record(len(table), table, route)
+
     # Widest witness tier, reached only on a row nothing else claimed. Orders
     # beyond the cheap schedule and a much larger budget: the alternative for
     # this row is a speculative `true` guess, and a found witness is a certainty
@@ -7480,6 +7652,18 @@ def send_proxy_call(message: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def judge_via_solo_proxy(answer: dict[str, Any]) -> dict[str, Any] | None:
+    """Pre-flight a certificate through the judge. SOLO ONLY — never Marathon.
+
+    Marathon has no judge channel at all, confirmed on the forum and in the
+    vendored harness (2026-07-31): `marathon_runner.py` spawns the solver with
+    `stdin=subprocess.DEVNULL`, and `marathon_proxy.py` serves only
+    `/v1/chat/completions`. A `judge` call there would write a stray line to
+    stdout and then block on a stdin that is already at EOF.
+
+    `main()` dispatches to `run_marathon` before any of this, so the separation
+    is structural rather than a flag to remember — keep it that way, and keep
+    every call to this function inside `run_solo`.
+    """
     request = judge_answer_payload(answer)
     if request is None:
         log_stderr({"route": "output:skip_malformed_judge_answer"})
@@ -8418,11 +8602,20 @@ def marathon_reference_seconds() -> float:
 def marathon_per_problem_budget(total_budget: float, problem_count: int, ref_seconds: float) -> float:
     """Wall-clock the FALSE portfolio may spend on one problem.
 
-    Previously hard-capped at 4 s, which threw away most of the Marathon
-    clock: at N=100 with the reference 180000 s budget this returned 4 s while
-    ~1800 s per problem was available. The cap now scales with the real budget
-    and only the share reserved for the cheap portfolio is taken here; the
-    TRUE engines scale separately via the effort tier.
+    Previously hard-capped at 4 s, which threw away most of the Marathon clock.
+    The cap now scales with the real budget, and only the share reserved for the
+    cheap portfolio is taken here; the TRUE engines scale separately via the
+    effort tier.
+
+    Note the budget is read from `JUDGE_MARATHON_BUDGET_SECONDS`, never assumed.
+    That matters: `rules/evaluation.md` in the vendored snapshot derived the
+    global budget from a 3600 s Solo reference (180,000 s at N=100, ~1800 s per
+    problem), while `scripts/run_marathon.py` has always used a 600 s reference
+    — 30,000 s at N=100, ~300 s per problem. The organizers resolved that
+    contradiction on the forum in favour of the CLI (2026-07-31): Solo is 60
+    minutes per problem, Marathon averages 5 minutes per problem, and the
+    misleading `compression_ratio` definition was withdrawn. Reading the
+    environment is what kept this function correct through the change.
     """
     if problem_count <= 0:
         return 0.25

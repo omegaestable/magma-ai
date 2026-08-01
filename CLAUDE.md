@@ -14,10 +14,37 @@ secrets, no repo-local imports. It decides implications between magma equations
 and must emit **Lean 4 certificates the official judge accepts**:
 
 - **TRUE** — a Lean proof that `equation1 ⇒ equation2`.
-- **FALSE** — a finite magma satisfying `equation1` but not `equation2`
-  (`finOpTable` + `decideFin!`).
+- **FALSE** — a magma satisfying `equation1` but not `equation2`. We ship finite
+  ones (a Cayley table + `decideFin!`); the goal is `∃ (G : Type) (_ : Magma G),
+  EquationLHS G ∧ ¬ EquationRHS G`, with no `Finite`/`Fintype` constraint.
 
 `stage1/` is a finished archive. Do not start work there.
+
+## Official rules, as clarified 2026-07-31
+
+Three organizer answers on the forum, all checked against the vendored snapshot
+(`vendor/stage2-official`, commit `6805e232` — the same commit under discussion):
+
+1. **Marathon cannot call the judge.** `marathon_runner.py` spawns the solver
+   with `stdin=subprocess.DEVNULL` and `marathon_proxy.py` serves only
+   `/v1/chat/completions`. We already comply structurally — `main()` dispatches
+   to `run_marathon` before any proxy traffic, every `judge_via_solo_proxy` call
+   is inside `run_solo`, and a test now pins that. Solo keeps its judge channel.
+2. **Budgets: Solo 60 min per problem, Marathon 5 min per problem on average.**
+   `compression_ratio` has been withdrawn as misleading. The vendored
+   `rules/evaluation.md` still says the global budget is `ratio × N × 3600 s`
+   (180,000 s at N=100); `scripts/run_marathon.py` has always used a 600 s
+   reference (30,000 s at N=100 = 300 s/problem), and the CLI is what the
+   organizers confirmed. **Treat that vendored rules file as stale on this
+   point.** The solver reads `JUDGE_MARATHON_BUDGET_SECONDS` and Solo's
+   `budget.timeout_seconds` from the proxy, so nothing needed changing.
+3. **Infinite countermodels are allowed.** The public judge never required
+   finiteness and the organizers confirmed the rules text will follow. Unused so
+   far, and correctly so: it only pays on a row with *no* finite countermodel,
+   and proving `EquationLHS` over an infinite carrier means arithmetic lemmas
+   instead of `decide`, under an allowlist with no `HAdd.hAdd`/`HMul.hMul`.
+   Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
+   row resists every finite order.
 
 ## Current measured state (2026-07-29)
 
@@ -101,28 +128,39 @@ judge** (see below). It is the only thing that is not an upper bound.
    judge rejected a `grind` cert the local judge accepted. Broad grind scored 34
    accepted against **433 incorrect** before retirement. Certificates must be
    kernel-checkable, not tactic-backed.
-3b. **A *complete* FALSE witness table is capped at order 10, but that is not the
-   whole story.** The judge builds the magma with `MemoFinOp.finOpTable`, whose
-   parser (`extractDigits`) keeps **one value per digit character** and computes
-   `(vals.getD idx 0) % n` — so the real invariant is single-digit *cell values*,
-   not order. A hand-verified `Fin 13` linear witness with entries spanning
-   0..12 (`x ◇ y = 7x + 7y mod 13`) passed every offline oracle and came back
-   `LEAN_REJECTED`, `decide` calling the conjunction *false* — that is what forces
-   a **complete** table (entries spanning the full `0..n-1`) to order ≤ 10.
-   Building the magma from a formula instead fails the proof policy
-   (`HAdd.hAdd`/`HMul.hMul` not allowlisted), so `finOpTable` is the only
-   sanctioned constructor. `MAX_WITNESS_ORDER = 10` covers every complete-table
-   route, enforced via `table_is_renderable()` inside `table_is_counterexample`.
-3b-ii. **A table with cell values deliberately restricted to 0..9 can exceed
-   order 10** — confirmed against the real judge: `Fin 13`, `op(i,j)=(i+j)%10`,
-   `accepted` in 78.1 s. `constraint_countermodel_wide_domain` searches this space
-   (orders up to 60, `WIDE_DOMAIN_VALUE_CAP=10`). It provably **cannot** help any
-   law shaped `eq1: x = F(...)` — a bare variable alone on one side is
-   universally quantified over the *full* carrier, so once it exceeds 9 the
-   equation demands `F(...) = x ≥ 10`, impossible for an output capped at 9.
-   `_eq1_has_bare_variable_side()` detects this for free before spending any
-   search. That shape is every currently-unsolved FALSE row (2026-07-29), so this
-   engine ships for the *general* corpus, not today's frontier.
+3b. **Check whether a "judge limit" is actually the judge's before building a
+   rail on it.** From 2026-07-29 to 07-31 this file carried a hard rail —
+   "complete FALSE witness tables are capped at order 10" — that was **ours**.
+   The real constraint is narrow: `MemoFinOp.finOpTable`'s parser
+   (`extractDigits`) keeps **one value per digit character**, so a complete
+   table above order 10 corrupts *in that shape*. The leap was concluding no
+   other shape exists, from a single experiment (`fun i j => 7 * i + 7 * j`,
+   rejected on `HAdd.hAdd`/`HMul.hMul`). The **notation** failed the allowlist,
+   not the construction: `Nat.add`, `Nat.mul`, `Nat.mod`, `Nat.mod_lt`,
+   `List.getD`, `Fin.mk` and `Fin.val` all sit under allowed prefixes. An
+   inlined `List.getD` lookup is judge-**accepted** at order 13 (5.8 s), 17
+   (11.2 s) and 25 (30.2 s), and `hard2_0051` — documented as unreachable — now
+   ships as `false:linear:z13:7,7`. Cost of the wrong rail: every FALSE row
+   above order 10, for two days. When one experiment closes a door, vary it once
+   before writing the rail. (The judge's own `magmaFin` is genuinely unusable —
+   a bare top-level name matching no allowlisted prefix.)
+3b-ii. **What actually bounds a FALSE witness is bytes and `decide` cost, not
+   order.** `MAX_WITNESS_ORDER = 25` is where the two meet:
+   `table_is_renderable()` measures the rendered cert against the judge's
+   10,000-byte FALSE cap, and `witness_decide_is_affordable()` bounds
+   `n ** variables` — exhaustive `decide` means order 25 with a 3-variable goal
+   is 15,625 applications (30.2 s of the judge's 120 s) while order 13 with 5
+   variables is 371,293. Orders ≤ 10 are exempt from the cost model: that
+   envelope holds every accepted cert to date and a model invented for new
+   territory has no business vetoing it. Separately, a table with cell values
+   restricted to 0..9 can exceed all of this on carrier size alone (`Fin 13`,
+   `op(i,j)=(i+j)%10`, accepted in 78.1 s); `constraint_countermodel_wide_domain`
+   searches that space up to order 60. It provably **cannot** help any law
+   shaped `eq1: x = F(...)` — a bare variable alone on one side is universally
+   quantified over the *full* carrier, so once it exceeds 9 the equation demands
+   `F(...) = x ≥ 10`, impossible for an output capped at 9.
+   `_eq1_has_bare_variable_side()` detects this for free. Those rows are exactly
+   what the complete-table orders 11–25 are now for.
 3c. **A sound witness is not automatically a shippable one.** Every local check
    reads the parsed Python table, so all of them are blind to rendering. When a
    witness route changes, verify against the real judge.

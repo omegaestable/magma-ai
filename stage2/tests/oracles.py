@@ -326,7 +326,19 @@ _LEMMA_CERT_RE = re.compile(
 )
 
 _TABLE_RE = re.compile(r'finOpTable "(\[\[.*?\]\])"')
+_LIST_TABLE_RE = re.compile(r"List\.getD \[([0-9,]+)\]")
 _FIN_RE = re.compile(r"Exists\.intro \(Fin (\d+)\)")
+
+# Restated from vendor/stage2-official/judge/verify.py rather than imported from
+# the solver: this harness shares no code with what it checks, so a wrong
+# constant in the solver cannot hide behind the same wrong constant here.
+JUDGE_MAX_FALSE_CERT_BYTES = 10_000
+# `decideFin!` is exhaustive, so an equation in k variables costs n**k magma
+# applications. Anchored on the real judge (2026-07-31): order 25 against a
+# 3-variable goal is 15,625 applications and was accepted in 30.2 s of the
+# judge's 120 s. Applies only above order 10, the envelope every accepted FALSE
+# row to date already sits inside.
+MAX_WITNESS_DECIDE_APPLICATIONS = 20_000
 
 _LEMMA_CHAIN_HEAD = "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n"
 
@@ -569,38 +581,68 @@ def check_no_banned_tactics(code: str, route: str = "") -> None:
             f"{found}: unverifiable offline and judge-rejected in the field")
 
 
-# The judge reads the table with `MemoFinOp.finOpTable`, whose parser
-# (`extractDigits`) keeps one value per *digit character* and computes
-# `(vals.getD idx 0) % n`. Since every extracted digit is 0-9 and `d % n == d`
-# whenever `n > d`, **the real invariant is single-digit cell VALUES, not order
-# <= 10** — order <= 10 is only a corollary for a *complete* table (entries
-# spanning the full `0..n-1`), which is what every current FALSE route except the
-# wide-domain tier produces.
+# A FALSE certificate comes in one of two rendered shapes, and this is the one
+# place in the harness that models the judge's *parser* rather than its logic —
+# every other check here reads an already-parsed Python table and is blind to
+# how it round-trips.
 #
-# Found 2026-07-29 by a `Fin 13` witness for `hard2_0051` (entries spanning
-# 0..12) that was mathematically correct and still came back `LEAN_REJECTED`,
-# `decide` reporting the conjunction *false*. Confirmed the same day: a `Fin 13`
-# table whose entries are capped to 0..9 (order 13, values < 10) round-trips
-# correctly and was `accepted`. Every check in this file reads the parsed Python
-# table, so nothing here could see the rendering distinction on its own — this is
-# the one place that models the judge's *parser* rather than its logic.
+# `finOpTable` (orders <= 10): the judge parses the table string with
+# `extractDigits`, which keeps one value per *digit character* and computes
+# `(vals.getD idx 0) % n`. Every extracted digit is 0-9, so a cell holding `10`
+# splits into two cells and shifts the whole table. Found 2026-07-29 by a
+# `Fin 13` witness for `hard2_0051` (entries spanning 0..12) that was
+# mathematically correct and still came back `LEAN_REJECTED`, `decide` reporting
+# the conjunction *false*. Single-digit cells are therefore mandatory in this
+# shape — a corollary, not a law about order.
+#
+# `List.getD` (any order): the lookup is inlined into the submission, so no
+# parser is involved and cells may hold any value below `n`. Judge-accepted at
+# orders 13, 17 and 25 on 2026-07-31. What bounds this shape is the judge's
+# 10,000-byte FALSE cap and its 120 s Lean timeout, both checked below.
 def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
     """Independently re-verify a FALSE certificate's finite witness table."""
-    tm = _TABLE_RE.search(code)
     fm = _FIN_RE.search(code)
-    if tm is None or fm is None:
-        raise OracleError("FALSE certificate missing finOpTable/Fin markers")
-    table = json.loads(tm.group(1))
+    if fm is None:
+        raise OracleError("FALSE certificate missing Fin marker")
     n = int(fm.group(1))
+
+    tm = _TABLE_RE.search(code)
+    lm = _LIST_TABLE_RE.search(code)
+    if tm is not None:
+        table = json.loads(tm.group(1))
+        multi_digit = [v for row in table for v in row if v > 9]
+        if multi_digit:
+            raise OracleError(
+                f"Fin {n} witness has multi-digit entries; the judge's finOpTable "
+                f"parser reads one value per digit character, so this table cannot "
+                f"round-trip")
+    elif lm is not None:
+        flat = [int(v) for v in lm.group(1).split(",")]
+        if len(flat) != n * n:
+            raise OracleError(
+                f"List.getD witness has {len(flat)} cells, expected {n * n} for Fin {n}")
+        table = [flat[r * n:(r + 1) * n] for r in range(n)]
+    else:
+        raise OracleError("FALSE certificate missing finOpTable/List.getD table")
+
     if len(table) != n or any(len(row) != n for row in table):
         raise OracleError(f"table shape does not match Fin {n}")
     if any(not (0 <= v < n) for row in table for v in row):
         raise OracleError("table entries out of range")
-    if any(v > 9 for row in table for v in row):
+
+    # The judge rejects an oversized certificate outright, and times out at 120 s
+    # on one whose `decide` is too wide. Both cost the row, so both are errors
+    # here rather than warnings.
+    size = len(code.encode("utf-8"))
+    if size > JUDGE_MAX_FALSE_CERT_BYTES:
         raise OracleError(
-            f"Fin {n} witness has multi-digit entries; the judge's finOpTable "
-            f"parser reads one value per digit character, so this table cannot "
-            f"round-trip")
+            f"FALSE certificate is {size} bytes, over the judge's "
+            f"{JUDGE_MAX_FALSE_CERT_BYTES}-byte cap")
+    widest = max(len(eq1["variables"]), len(eq2["variables"]))
+    if n > 10 and n ** max(1, widest) > MAX_WITNESS_DECIDE_APPLICATIONS:
+        raise OracleError(
+            f"Fin {n} witness against a {widest}-variable goal costs the judge "
+            f"{n ** widest} decide applications, beyond the measured envelope")
     if not equation_holds(eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table):
         raise OracleError("witness does not satisfy eq1")
     if equation_holds(eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table):

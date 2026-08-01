@@ -28,11 +28,17 @@ effort's scaled budget — see `stage2/results/2026-07-29-v4b-wide-domain-and-no
   row found **14 of 31 unsolved TRUE rows have `eq1 ⇒ (x = y)`** — eq1 forces a
   one-element magma, so the goal is irrelevant. The critical-pair closure derives
   none; egg derives 10.
-- **HARD RAIL: FALSE witness order ≤ 10.** `finOpTable`'s `extractDigits` parser
-  keeps one value per digit character, so any cell ≥ 10 splits and corrupts the
-  table. A hand-verified `Fin 13` witness passed every offline oracle and was
-  `LEAN_REJECTED`. Formula-based magmas fail the proof policy. Enforced by
-  `MAX_WITNESS_ORDER` / `table_is_renderable()` and mirrored in the oracle.
+- **RETIRED 2026-07-31 — the "FALSE witness order ≤ 10" rail was ours, not the
+  judge's.** `finOpTable`'s `extractDigits` parser does keep one value per digit
+  character, so any cell ≥ 10 corrupts *that* shape. The error was concluding
+  from one experiment (`fun i j => 7 * i + 7 * j`, rejected on `HAdd.hAdd` /
+  `HMul.hMul`) that no other constructor exists. Notation was the problem, not
+  construction: an inlined `List.getD` lookup built from `Nat.add` / `Nat.mul` /
+  `Fin.mk` uses only allowlisted prefixes, and the real judge accepts it at
+  order 13 (5.8 s), 17 (11.2 s) and 25 (30.2 s). `hard2_0051`, documented as
+  unreachable, is now solved by `false:linear:z13:7,7`. `MAX_WITNESS_ORDER = 25`,
+  bounded by the 10,000-byte FALSE cap and by `witness_decide_is_affordable()`
+  (`decide` costs `n ** variables`, not `n`).
 - **`models_seen > 0` is not a TRUE signal** — it read 1050–7698 on the six FALSE
   rows the grind fallback misfired on. Use `constraint_search_exhausted()`.
 - **Order-difficulty is not monotonic**: order 7 exhausted 120 s where order 8
@@ -279,7 +285,8 @@ The active solver is deterministic-first and skips unresolved rows rather than s
    nothing. Gated by `table_is_counterexample`, so it cannot emit an unsound
    witness. Worth `+7` rows on the official sets.
 8. Current named witness set includes the recent `S4D`, `S4E`, and `S5D` additions.
-9. Emits FALSE certificates with `finOpTable` and `decideFin!`; larger `Fin 7+` tables use `set_option maxRecDepth 20000`.
+9. Emits FALSE certificates with `decideFin!` in one of two shapes: `finOpTable` at orders ≤ 10 (`Fin 7+` adds `set_option maxRecDepth 20000`), and an inlined `List.getD` lookup above that, where the digit parser cannot round-trip. Both judge-verified 2026-07-31.
+9b. Searches linear models over `Z_n` for `n` in 11..25 (`large_linear_family_tables`), the first route to claim a witness above the retired order-10 ceiling.
 10. Caches repeated term metadata and path/context helper work in the solver hot paths.
 
 ## Best Evidence
