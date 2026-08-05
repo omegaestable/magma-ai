@@ -46,36 +46,56 @@ Three organizer answers on the forum, all checked against the vendored snapshot
    Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
    row resists every finite order.
 
-## Current measured state (2026-07-29)
+## Current measured state (2026-07-31)
 
 | Metric | Value |
 | --- | --- |
-| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1650 / 1669 (98.9%)** |
-| Official TRUE | **806 / 819** |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1647 / 1669 (98.7%)** |
+| Official TRUE | **803 / 819** |
 | Official FALSE | **844 / 850** |
-| Remaining unsolved at `fast` | **19** (14 TRUE, 5 FALSE) |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0** |
-| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, **19/19** constraint witnesses |
-| Offline gate | **196 passed, 2 skipped, ~45-67 s** (`-n auto`) |
-| Packaged size | 354,071 bytes of 500,000 (size is not binding) |
+| Remaining unsolved at `fast` | **22** — see the budget-marginal caveat below |
+| Oracle failures / crashes / label mismatches | **0 / 0 / 0** across 1863 solved rows |
+| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, **3/3** order-13/17/25 `List.getD` witnesses |
+| Offline gate | **202 passed, 2 skipped, ~45 s** (`-n auto`) |
+| Packaged size | 363,919 bytes of 500,000 (size is not binding) |
 
-Confirmed by a clean, isolated full audit (no concurrent jobs): **row-for-row
-identical** to the pre-node-cap-fix baseline — 0 lost, 0 gained, 0 oracle
-failures. An earlier contaminated run (an unrelated diagnostic audit
-accidentally overlapping this one) showed 16 spurious "losses", all
+**The 1650 that stood here from 2026-07-29 was never measured.** The last full
+audit before this one read 1647; the doc then added +3 for `hard2_0082`,
+`hard3_0131` and `hard3_0271`, each verified individually, and wrote the sum as
+if it were a measurement. This run — the first full audit since — reads 1647
+again, with `hard3_0131` and `hard3_0271` landing as predicted and `hard2_0082`
+not. Per-set: `normal` 996, `hard1` 68, `hard2` 189, `hard3` 394.
+
+Treat the per-set movement (`hard2` 191→189, `hard3` 392→394) as scheduling, not
+coverage: both `hard2_0082` (74.1 s standalone, `true:egg_bootstrap`) and
+`hard2_0001` (1.3 s standalone, `false:dual:...:witness:S5B`) solve fine on a
+quiet machine and miss under 16-way parallelism, `hard2_0001` because the cheap
+witness portfolio runs on a 2 s budget that contention alone can exhaust. This
+audit was **not** run on an idle machine, so its timing-derived numbers carry
+less weight than the soundness ones beside them; a genuinely isolated re-run is
+still owed. Nothing above depends on timing: 0 mismatches over 1863 rows does
+not come and go with load.
+
+The 2026-07-29 audit behind the previous baseline was itself confirmed clean and
+isolated: **row-for-row identical** to the pre-node-cap-fix run — 0 lost, 0
+gained, 0 oracle failures. An earlier contaminated run (an unrelated diagnostic
+audit accidentally overlapping it) showed 16 spurious "losses", all
 budget-marginal `egg_*`/`lemma_chain` routes; reproduced each in isolation and
 confirmed they solve identically — pure CPU-contention noise from testing
 methodology, not a code regression. **Lesson: never run two `audit_corpus.py`
 sweeps concurrently on the same machine** — the `fast`-tier headline number
-is only trustworthy from an isolated run.
+is only trustworthy from an isolated run, and killing a sweep does not
+necessarily kill its worker pool.
 
 **Effort tier matters and is easy to conflate.** `egg_priority_bootstrap`
-solves three TRUE rows (`hard2_0082`, `hard3_0131`, `hard3_0271`) at `fast` —
-counted in the 1650 above. Two more rows (`hard1_0062`, `hard2_0123`, ~75 s
-each) are real, judge-accepted (4.7 s / 5.3 s) fixes from the node-cap bug
-below, but need `standard` effort's scaled budget (45 s × 7.5 = 337.5 s) to
-finish within the wide constraint tier — they do **not** appear in the
-`fast`-tier 1650, only in Solo/Marathon or a `--effort standard` sweep.
+solves three TRUE rows (`hard2_0082`, `hard3_0131`, `hard3_0271`) at `fast`
+given the machine to itself — `hard2_0082` needs 74 s of it, which 16-way
+parallelism does not give, so it is *not* in the 1647 above. Two more rows
+(`hard1_0062`, `hard2_0123`, ~75 s each) are real, judge-accepted (4.7 s /
+5.3 s) fixes from the node-cap bug below, but need `standard` effort's scaled
+budget (45 s × 7.5 = 337.5 s) to finish within the wide constraint tier — they
+do **not** appear in the `fast`-tier count either, only in Solo/Marathon or a
+`--effort standard` sweep.
 
 Root cause of the constraint fix: `CONSTRAINT_MAX_NODES = 60000` was cutting
 `_cp_search` off *before* the time deadline that already bounds it correctly —
@@ -89,6 +109,34 @@ general closure engines race a wall clock. **Diff by row id, never by total.**
 This is **offline** evidence (proof kernel + finite-model oracles) — an upper
 bound on judge acceptance, except for the 34 certificates with real judge
 evidence. A cloud judge sweep is still owed before promotion.
+
+**2026-08-01/03: that cloud-judge sweep started, found two Marathon-only bugs,
+and both are now real-judge confirmed fixed on all nine official + HF sets.**
+A real-judge, real-key Solo/Marathon run found the first bug this table cannot
+see, because `audit_corpus.py` never arms the memory guard: `_mem_reclaims_left`
+(a module-level global) was never reset per-problem inside `run_marathon()`,
+so 3 memory-guard trips anywhere in a manifest permanently disabled every
+general engine for every remaining problem. Real Marathon on `normal.jsonl`
+scored 287/1000 against this table's 989/1000 before the fix; real Solo on the
+same rows was clean throughout. A second bug surfaced fixing the first: the
+Marathon deterministic loop called `solve_problem()` with zero exception
+handling, so one bad row could silently kill the entire multi-hour process —
+a `hard3.jsonl` rerun crashed at 283/400 with no traceback anywhere, and a
+narrow fix (wrapping only the `solve_problem()` call) turned out incomplete —
+`evaluation_extra_hard.jsonl` crashed the same way at 75/200 under it. Widened
+to wrap the entire per-problem loop body (cache clear, memory-guard reset,
+solve, answer append, bookkeeping); the rerun completed clean. **Real-judge
+confirmed on all four official sets**: `hard1.jsonl` 69/69, `normal.jsonl`
+988/1000 (12 not_attempted), `hard2.jsonl` 196/200 (4 not_attempted),
+`hard3.jsonl` 396/400 (4 not_attempted) — **0 rejected across all 1669 rows**,
+total 1649/1669 (98.8%), matching this table's offline ceiling for the first
+time via the real judge. **And on all five HF mirror sets**: `hf_hard`
+200/200, `evaluation_normal` 198/200, `evaluation_hard` 197/200,
+`evaluation_extra_hard` 200/200, `evaluation_order5` 195/200 — total 990/1000
+(99.0%), 0 rejected. **Grand total: 2639/2669 (98.9%), 0 rejected anywhere.**
+Detail: rails 10-11 below and
+`stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`.
+Still queued: an ETP random sample via real Solo/Marathon.
 
 Regenerate everything with the four commands below.
 
@@ -212,6 +260,46 @@ judge** (see below). It is the only thing that is not an upper bound.
    to stderr, never into the payload.
 9. **No benchmark ids in solver policy.** Generalise findings into proof or
    witness families; pasted row lists are diagnostics and regression fixtures.
+10. **A per-row safety-net counter that only decrements is a process-lifetime
+    counter in Marathon, not a per-row one.** `_mem_reclaims_left` (the memory
+    guard's reclaim budget) was set once at import and never reset inside
+    `run_marathon()`'s loop, unlike the `clear_term_caches()` call right next
+    to it. 3 memory-guard trips anywhere in a manifest permanently failed
+    `_engine_gate()` closed for every remaining problem — real Marathon on
+    `normal.jsonl` scored 287/1000 against this table's 989/1000, with 0
+    rejected (pure coverage loss, not soundness). Invisible in the offline
+    audit (never arms the guard) and in Solo (fresh subprocess per problem
+    resets everything for free) — only a real, long, single-process Marathon
+    run exposes it. Fixed 2026-08-01 with a `reset_memory_reclaims()` call
+    alongside `clear_term_caches()`; **real-judge confirmed same day** —
+    post-fix real Marathon: `hard1.jsonl` 69/69, `normal.jsonl` 988/1000, both
+    0 rejected — see
+    `stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`.
+    Any future per-row budget/counter that lives at module level needs the
+    same check: does it get reset where `clear_term_caches()` is, or does it
+    silently accumulate across an entire Marathon manifest?
+11. **One bad row must never be able to kill a whole Marathon manifest — and
+    the `try/except` has to wrap the whole per-row body, not just the one
+    call that looks risky.** `run_marathon()`'s deterministic loop called
+    `solve_problem()` with zero exception handling — unlike the LLM lane a
+    few lines below it in the same function, which already wraps each result
+    in `try/except` + `continue`. A real `hard3.jsonl` rerun crashed silently
+    at 283/400 with no traceback anywhere (not in solver output, not in the
+    harness log, not in the Windows event log). First fix (2026-08-02)
+    wrapped only the `solve_problem()` call — `hard3.jsonl`'s rerun then
+    completed clean, which looked like confirmation but wasn't: a later real
+    run on `evaluation_extra_hard.jsonl` crashed with the identical
+    signature at 75/200, faster and past the narrow fix, with zero
+    `solve:crash` entries logged — proving the exception was in
+    `clear_term_caches()`, `reset_memory_reclaims()`, `append_answer()`, or
+    the bookkeeping after `solve_problem()`, not the call itself. Widened
+    (2026-08-03) to wrap the **entire loop body** per problem. Real-judge
+    confirmed on both crash sites: `hard3.jsonl` 396/400 and
+    `evaluation_extra_hard.jsonl` 200/200, both 0 rejected, 0 `solve:crash`
+    entries under the wide fix. Lesson: when hardening a loop against
+    one-iteration failures, don't narrow the `try/except` to "the call that
+    seems most likely to fail" — wrap the whole iteration, then narrow later
+    only with evidence.
 
 ## Environment gotchas that will bite you
 
@@ -314,8 +402,14 @@ solver primitive cannot hide itself in the oracle.
 
 ## Known open frontier
 
-52 official skips. TRUE-heavy: 29 TRUE misses vs 23 FALSE. Ranked next levers
-(evidence-backed, see `LATEST_HANDOFF.md`):
+**22 official skips** (measured 2026-07-31, replacing a stale "52" that predated
+three engines): `normal_0090/0491/0549/0582`, `hard1_0062`,
+`hard2_0001/0027/0028/0073/0079/0082/0092/0093/0098/0123/0162`,
+`hard3_0135/0192/0204/0214/0266/0314`. Two of those (`hard2_0001`,
+`hard2_0082`) solve standalone and are lost only to parallel scheduling, so the
+true frontier is ~20. `hard2_0051` left this list on 2026-07-31 — see rail 3b.
+
+Ranked next levers (evidence-backed, see `LATEST_HANDOFF.md`):
 
 1. Run `egg_closure` at `standard` effort — it is budget-bound at `fast`; the
    prototype reached ~8 more official rows at 20 s/row.

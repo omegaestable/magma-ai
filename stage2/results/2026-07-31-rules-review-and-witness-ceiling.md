@@ -153,7 +153,69 @@ applications; order 13 against a 5-variable goal is 371,293.
   (`false:witness:*`) and `hard2_0009` (`false:constraint_fin8`) all
   **accepted**, confirming no working row changed shape. 5/5, then 3/3 again
   after the `witness_check` fix.
-- Full corpus audit: see `audit-2026-07-31.json`.
+- Full corpus audit: see `audit-2026-07-31.json` — **1647 / 1669**, TRUE 803,
+  FALSE 844, 22 open, and **0 label mismatches / 0 oracle failures / 0 crashes
+  across 1863 solved rows** counting the sample sets.
+
+## Regression triage: the `hard2` 191 → 189 movement
+
+The audit total matched the last measured one exactly (1647), but per-set it
+moved: `hard3` 392 → 394, `hard2` 191 → 189. Worth writing down because the
+investigation took longer than the change did.
+
+**First, the baseline was not what the docs said.** `CLAUDE.md` carried
+"1650 / 1669" as measured state. It never was: the 2026-07-29 audit read 1647
+and the doc added +3 for `hard2_0082`, `hard3_0131`, `hard3_0271` — verified
+individually, then written into the metrics table as a sum. `hard3_0131` and
+`hard3_0271` do land (hence +2 there); `hard2_0082` does not, under parallelism.
+
+**Second, the movement is scheduling, not coverage.** Each suspect row was
+re-run standalone:
+
+| Row | Standalone | Reading |
+| --- | --- | --- |
+| `hard2_0082` | **74.1 s**, `true:egg_bootstrap:product_constant` | needs 74 s to itself; never lands under 16-way parallelism |
+| `hard2_0001` | **1.3 s**, `false:dual:...:witness:S5B` — and SKIP at 90.8 s in a second run of the *same code* | the cheap witness portfolio runs on a 2 s budget, so load alone decides it |
+| `hard2_0092` | SKIP | open on both versions, see below |
+| the other 8 | SKIP at 300-500 s each | genuinely open at `fast` |
+
+`hard2_0001` is the clearest specimen: identical code, opposite outcomes, minutes
+apart. Any row whose route sits behind a 2 s budget is a coin flip under load.
+
+**Third, the one row that needed an A/B got one.** `hard2_0092` was the only
+suspect not explained by mechanism, so it was run against the true pre-change
+solver (commit `9535246`, verified `MAX_WITNESS_ORDER = 10` and zero references
+to the new functions):
+
+| Solver | `hard2_0092` | `hard2_0001` (control) |
+| --- | --- | --- |
+| pre-change `9535246` | SKIP, 100.8 s | SKIP, 92.8 s |
+| current | SKIP, **100.9 s** | SKIP, **92.4 s** |
+
+Run back to back in one sequence, so the load is the same for both halves: the
+two `hard2_0092` timings land 0.1 s apart on a 100 s row. Note the control
+skipped on *both* sides, which says the machine was loaded, not that either
+version lost the row — the same current-code binary solved `hard2_0001` in 1.3 s
+when the machine was calmer. That is the ceiling on what a loaded A/B can show:
+it can demonstrate the two versions behaving identically, which it does, but it
+cannot establish either one's clean-machine row set.
+
+Consistent with the mechanical argument,
+which is the stronger evidence anyway: the new gate can only reject a witness of
+order > 10, and no pre-change route could emit one, so no previously-solved row
+can newly fail.
+
+**Caveat on all of the above.** None of it was measured on an idle machine — an
+earlier audit was killed with `TaskStop` without confirming its worker pool died,
+and an unrelated Solo sweep started partway through. The soundness numbers do not
+care (0 mismatches over 1863 rows is not a timing artifact), but the 1647
+headline does. An isolated re-audit is still owed.
+
+Methodological notes worth keeping: `git show HEAD:file` emits LF where the
+working tree has CRLF, so a byte-size mismatch between the two is not evidence of
+different content (8,873 bytes here = 8,873 lines). And piping a long background
+run through `tail` buffers the entire output until it exits — use a file and
+poll it instead.
 
 ## What this cost, and the rail it earned
 

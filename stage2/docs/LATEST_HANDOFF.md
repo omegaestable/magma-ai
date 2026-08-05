@@ -1,13 +1,106 @@
 # Latest Handoff
 
-Updated: 2026-07-31 (rules review — the witness-order rail was ours, and is gone).
+Updated: 2026-08-03 (real-judge broad runs — two Marathon-only bugs found, both fixed and real-judge confirmed on all nine official + HF sets, 2639/2669, 0 rejected).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
 **Start at `CLAUDE.md`** for current numbers, commands and rails; this file is the
 dated session log.
 
-## 2026-07-31: official rules review, and the order-10 rail retired (newest — read first)
+## 2026-08-01/03: real Solo/Marathon runs found two Marathon-only bugs — both fixed and confirmed on all nine official + HF sets, 2639/2669, 0 rejected (newest — read first)
+
+Full detail: `stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`.
+
+First-ever session running the packaged solver through the **real** official
+harness at scale (real Lean judge, real proxy, real `openai/gpt-oss-120b` via
+OpenRouter) instead of the offline oracle path every prior baseline in this
+file used. It found something the offline path is structurally blind to.
+
+- **Real Solo is clean.** `sample_20` 20/20, `hard1` full 69/69, 0 LLM calls
+  needed for either, 0 judge rejections anywhere. Matches/exceeds offline
+  expectations.
+- **Real Marathon is not.** `normal.jsonl` scored **287/1000** (offline `fast`
+  baseline: 989/1000); `hard1.jsonl` scored **31/69** against the *same rows*
+  Solo had just solved 69/69. Both 0 rejected — pure coverage loss.
+- **Root cause, confirmed:** `_mem_reclaims_left` (module-level global,
+  `solver.py` ~4752) only ever decrements and is never reset per-problem
+  inside `run_marathon()`'s loop. After 3 memory-guard trips *anywhere in the
+  whole manifest*, `_engine_gate()` (~7338) permanently fails closed for every
+  remaining problem, silently disabling `equational_closure`,
+  `derived_cp_closure`, every `egg_*` engine, `lemma_chain_bootstrap`, the
+  FALSE `constraint_countermodel` tiers — everything except the cheap ungated
+  syntactic routes checked before the first gate (`singleton` alone was
+  243/287 of `normal.jsonl`'s solves). `try_reclaim_memory()` logs nothing, so
+  this is completely invisible except via route-count skew.
+- **Why the offline 1650/1669 baseline never caught it:** `audit_corpus.py`
+  never arms the memory guard at all. **Why Solo never hits it:** one fresh
+  subprocess per problem resets all module state, `_mem_reclaims_left`
+  included, every single row. Only a real, long, single-process Marathon
+  manifest exposes it.
+- **Fix shipped:** new `reset_memory_reclaims()`, called alongside the
+  existing per-problem `clear_term_caches()` in `run_marathon()`'s
+  deterministic loop. `pytest stage2/tests`: 202 passed, 2 skipped, no
+  regression. Repackaged, 364,728 bytes.
+- **Real-judge revalidation: CONFIRMED.** Post-fix, run to completion:
+  `hard1.jsonl` Marathon **69/69 accepted, 0 rejected** (full recovery,
+  matches Solo on the identical rows); `normal.jsonl` Marathon **988/1000
+  accepted, 0 rejected**, 12 `not_attempted` — a real, single, ~7.3-hour
+  Marathon process, essentially matching the 989/1000 offline ceiling. Route
+  mix fully restored (`derived_cp_closure`:142, `equational_closure`:27,
+  `egg_closure`/`egg_collapse` firing, 30+ FALSE witness families) versus the
+  pre-fix near-total collapse into `true:singleton` alone. One unrelated infra
+  hiccup along the way: the first `normal.jsonl` scoring pass crashed on a
+  `lake env` 30 s timeout (documented gotcha, triggered after 7.3 h of solver
+  CPU load) — recovered with `scripts/run_marathon.py --score-only` against
+  the already-written `answers.jsonl` instead of re-running the solve.
+  **`hard2.jsonl` also confirmed: 196/200 accepted, 0 rejected, 4
+  `not_attempted`.**
+- **A second bug, found getting `hard3.jsonl` to a full run.** The first full
+  rerun attempt crashed silently at 283/400 — no traceback anywhere (not the
+  solver's own output, not the harness log, not the Windows event log).
+  Root cause: `run_marathon()`'s deterministic loop called `solve_problem()`
+  with **zero exception handling**, unlike the LLM lane a few lines below it
+  in the same function (which already wraps each result in `try/except` +
+  `continue`). One bad row could kill the entire multi-hour process, even
+  though every row solved before it was already safely on disk. Fixed by
+  adding the same `try/except` + `log_stderr({"route":"solve:crash",...})` +
+  `continue` pattern — **but only around the `solve_problem()` call itself**.
+  Rerun under that narrow fix completed clean (`hard3.jsonl` 396/400, 0
+  `solve:crash` entries), which looked like confirmation but was
+  incomplete: a later real run on HF `evaluation_extra_hard.jsonl` crashed
+  the **identical** way at 75/200, faster, still zero `solve:crash` entries —
+  proving the exception was somewhere else in the loop (`clear_term_caches()`,
+  `reset_memory_reclaims()`, `append_answer()`, or the bookkeeping), not the
+  `solve_problem()` call. **Widened** the `try/except` to wrap the entire
+  per-problem loop body. Reruns of both crash sites then completed clean
+  under the wide fix: `hard3.jsonl` 396/400, `evaluation_extra_hard` 200/200,
+  both 0 rejected, 0 `solve:crash` entries.
+- **All four official sets real-judge confirmed: 1649/1669 (98.8%), 0
+  rejected across every single row.** First time the real Marathon track has
+  matched the offline ceiling, not just the offline oracle.
+- **All five HF mirror sets real-judge confirmed, 0 rejected anywhere:**
+  `hf_hard` 200/200 (0 tokens — fully deterministic), `evaluation_normal`
+  198/200, `evaluation_hard` 197/200, `evaluation_extra_hard` 200/200,
+  `evaluation_order5` 195/200. Total 990/1000 (99.0%).
+- **Grand total across all nine sets: 2639/2669 (98.9%), 0 rejected
+  anywhere.**
+- **Not reached this session, still queued:** a 200-row random ETP sample
+  already built at `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl`
+  (from the full `data/exports/general_outcomes.json.gz` matrix) — the only
+  real-run work left. Stopped cleanly between sets, nothing interrupted
+  mid-run at this stop point.
+- **Zero soundness issues anywhere, before or after either fix.** Every real
+  judge verdict across this whole campaign — pre-fix and post-fix, official
+  and HF, both crash sites — was `accepted` whenever it reached the judge at
+  all. The entire measured gap, throughout, was always coverage or crashes,
+  never a wrong answer.
+- Secondary: real Solo per-row latency is genuinely high at its `deep` effort
+  tier (many rows 80-900+ s even when solved) — expected given the full
+  60-minute budget, not a bug. `hard1_0062`/`hard1_0025` (previously flagged
+  needing the node-cap fix) solved deterministically here with no further
+  changes.
+
+## 2026-07-31: official rules review, and the order-10 rail retired
 
 Triggered by three organizer clarifications on the playground forum. Two were
 no-ops for us; reviewing the third is what exposed a self-inflicted ceiling.

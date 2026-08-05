@@ -4769,6 +4769,23 @@ def try_reclaim_memory() -> bool:
     return not memory_exceeded()
 
 
+def reset_memory_reclaims() -> None:
+    """Per-problem reset for the memory guard's reclaim budget.
+
+    ``_mem_reclaims_left`` only ever decrements (`try_reclaim_memory`), so
+    without a per-problem reset, 3 memory-guard trips anywhere in a long
+    Marathon manifest permanently fail `_engine_gate()` closed for every
+    remaining problem — including ones far cheaper than whatever tripped it.
+    Solo never hits this (fresh subprocess, fresh module state, per problem);
+    Marathon runs one process for the whole manifest, so this must be reset
+    explicitly alongside `clear_term_caches()`.
+    """
+    global _mem_reclaims_left, _mem_exceeded, _mem_check_counter
+    _mem_reclaims_left = 3
+    _mem_exceeded = False
+    _mem_check_counter = 0
+
+
 def deadline_expired(deadline: float | None) -> bool:
     if memory_exceeded():
         return True
@@ -8681,17 +8698,28 @@ def run_marathon() -> int:
     for priority, problem in prioritized:
         if time.monotonic() + 5.0 >= min(deterministic_deadline, deadline):
             break
-        clear_term_caches()
-        answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
-        if answer_record is None:
+        try:
+            clear_term_caches()
+            reset_memory_reclaims()
+            answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
+            if answer_record is None:
+                continue
+            if not append_answer(output_path, answer_record["answer"]):
+                continue
+            route = str(answer_record["route"])
+            route_counts[route] = route_counts.get(route, 0) + 1
+            solved += 1
+            deterministic_submitted += 1
+            solved_ids.add(str(problem.get("id")))
+        except Exception as exc:  # noqa: BLE001 - one bad row must not kill the whole manifest
+            log_stderr(
+                {
+                    "route": "solve:crash",
+                    "id": str(problem.get("id")),
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
             continue
-        if not append_answer(output_path, answer_record["answer"]):
-            continue
-        route = str(answer_record["route"])
-        route_counts[route] = route_counts.get(route, 0) + 1
-        solved += 1
-        deterministic_submitted += 1
-        solved_ids.add(str(problem.get("id")))
 
     llm_calls = 0
     call_llm, tokens_used, budget_remaining = load_marathon_llm()

@@ -5,7 +5,60 @@ This is the short-lived operational truth for the Stage 2 lab. Update it when th
 **Headline numbers and commands now live in `CLAUDE.md`.** This file keeps the
 dated session history and the operational detail behind them.
 
-Last updated: 2026-07-29 (v4b: wide-domain witnesses, node-cap fix).
+Last updated: 2026-08-03 (real-judge broad runs found two Marathon-only bugs; both fixed and real-judge confirmed on all nine official + HF sets, 2639/2669, 0 rejected).
+
+## Read This First (2026-08-01/03, two real-judge Marathon bugs — both fixed and confirmed on all 9 sets)
+
+First session to run the packaged solver through the **real** official Solo
+and Marathon harness at scale (real Lean judge, real proxy, real
+`openai/gpt-oss-120b`) instead of the offline oracle. Full detail:
+`stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`;
+compressed version in `stage2/docs/LATEST_HANDOFF.md`.
+
+- **Real Solo: clean.** `sample_20` 20/20, `hard1` full 69/69, 0 LLM calls
+  needed, 0 judge rejections.
+- **Real Marathon: was not.** `normal.jsonl` 287/1000 (offline baseline
+  989/1000); `hard1.jsonl` 31/69 against rows Solo had just cleared 69/69. 0
+  rejected in either — pure coverage loss.
+- **Root cause:** `_mem_reclaims_left` (`stage2/solver/solver.py` ~4752) is a
+  module-level global that only decrements and was never reset per-problem in
+  `run_marathon()`'s loop. 3 memory-guard trips anywhere in a manifest
+  permanently fail `_engine_gate()` closed for every remaining problem —
+  invisible (no logging), and structurally undetectable by the offline audit
+  (never arms the guard) or by Solo (fresh subprocess per problem resets it
+  for free).
+- **Fix shipped, offline-gated, and real-judge confirmed** (`pytest`: 202
+  passed, 2 skipped; repackaged 364,728 bytes). Post-fix real Marathon:
+  `hard1.jsonl` **69/69 accepted, 0 rejected** (full recovery, matches Solo);
+  `normal.jsonl` **988/1000 accepted, 0 rejected**, 12 `not_attempted` (was
+  287/1000) — a real ~7.3-hour single Marathon process now essentially
+  matches the 989/1000 offline ceiling. Route diversity fully restored
+  (`derived_cp_closure`, `equational_closure`, `egg_closure`/`egg_collapse`,
+  30+ FALSE witness families) versus the pre-fix collapse into `singleton`
+  alone. **`hard2.jsonl` also confirmed: 196/200 accepted, 0 rejected.**
+- **`hard3.jsonl` also confirmed: 396/400 accepted, 0 rejected**, 4
+  `not_attempted` — but getting there surfaced a **second bug**: the first
+  full-rerun attempt crashed silently at 283/400, no traceback anywhere.
+  Root cause: `run_marathon()`'s deterministic loop called `solve_problem()`
+  with zero exception handling, so one bad row could kill the whole
+  multi-hour process. First fix wrapped only `solve_problem()` — looked
+  confirmed (clean `hard3.jsonl` rerun) but wasn't: `evaluation_extra_hard`
+  crashed the same way at 75/200 with zero `solve:crash` entries, proving the
+  exception was elsewhere in the loop body. **Widened** to wrap the entire
+  per-problem iteration (cache clear, memory-guard reset, solve, append,
+  bookkeeping); reruns of both crash sites then completed clean.
+- **All four official sets confirmed via the real judge: 1649/1669 (98.8%), 0
+  rejected across every row.** Essentially matches the offline ceiling for
+  the first time via real Marathon, not just the offline oracle.
+- **All five HF mirror sets confirmed, 0 rejected**: `hf_hard` 200/200,
+  `evaluation_normal` 198/200, `evaluation_hard` 197/200,
+  `evaluation_extra_hard` 200/200, `evaluation_order5` 195/200. Total
+  990/1000 (99.0%).
+- **Grand total across all nine real-judge Marathon sets: 2639/2669 (98.9%),
+  0 rejected anywhere.**
+- Still queued: the 200-row ETP random sample already built at
+  `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl` — the only
+  real-run work left. No interrupted runs — clean stop between sets.
 
 ## Read This First (2026-07-29, v4 coverage push)
 
