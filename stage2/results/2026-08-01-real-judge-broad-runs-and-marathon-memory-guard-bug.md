@@ -1,10 +1,12 @@
-# 2026-08-01/03: real-judge broad runs, two Marathon-only bugs — BOTH FIXED AND CONFIRMED ON ALL NINE OFFICIAL + HF SETS
+# 2026-08-01/03: real-judge broad runs — CAMPAIGN COMPLETE, two Marathon-only bugs found and fixed, 2863/2894 real-judge rows, 0 rejected anywhere
 
 Session goal: spend real OpenRouter budget on extensive real Solo/Marathon runs
 (real Lean judge, real proxy, real LLM) to see how the packaged solver actually
 fares, log every mistake with root cause, and hand off to the next session. The
 broad sweep surfaced two severe, previously-undocumented Marathon-only bugs;
-fixing and confirming them became the focus.
+fixing and confirming them became the focus. The full planned campaign —
+all four official sets, all five HF mirror sets, and a 200-row random sample
+from the full ETP outcome matrix (both Marathon and Solo) — is now complete.
 
 **Both fixes are now confirmed by the real judge on all four official sets:**
 
@@ -32,8 +34,21 @@ official corpus, with zero rejected certificates anywhere.
 | **Total** | **1000** | **990/1000 (99.0%)** | **0** | 103,168 |
 
 **Grand total across all nine real-judge Marathon sets: 2639/2669 (98.9%), 0
-rejected across every single row.** The ETP sample is the only work still
-queued. See "Session stop point" below for exact status.
+rejected across every single row.**
+
+**The 200-row random ETP sample (drawn from the full ~22M-pair
+`data/exports/general_outcomes.json.gz` outcome matrix, the solver's never
+been sampled against this distribution before) is also done, both tracks:**
+
+| Run | Rows | Result | Rejected |
+| --- | ---: | --- | ---: |
+| Marathon, ETP 200 | 200 | **199/200 accepted**, 1 not_attempted | 0 |
+| Solo, ETP slice | 25 | **25/25 solved, 0 failed**, 0 LLM calls | 0 |
+
+**Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
+anywhere, across every official set, every HF mirror set, and a random
+sample of the full ETP matrix.** See "Session stop point" below for the
+final wrap-up.
 
 ## What ran (real judge, real `openai/gpt-oss-120b` via OpenRouter)
 
@@ -49,6 +64,14 @@ queued. See "Session stop point" below for exact status.
 | Marathon `hard2.jsonl` (**post-fix**) | 200 | **196/200 accepted, 0 rejected**, 4 `not_attempted` | — | solver+score 14896s (~4.1h) |
 | Marathon `hard3.jsonl` (**post-fix, first attempt**) | 400 | crashed silently at 283/400 (see "second bug" below) | — | ~unknown, no traceback |
 | Marathon `hard3.jsonl` (**post-fix, after crash fix**) | 400 | **396/400 accepted, 0 rejected**, 4 `not_attempted` | 4 (0 accepted) | solve 14171s (~3.9h) + score 1510s (~25min) |
+| Marathon `hf_hard` | 200 | **200/200 accepted, 0 rejected** | 0 | 6076s (~1.7h) |
+| Marathon `evaluation_normal` | 200 | **198/200 accepted, 0 rejected**, 2 `not_attempted` | — | 6483s (~1.8h) |
+| Marathon `evaluation_hard` | 200 | **197/200 accepted, 0 rejected**, 3 `not_attempted` | — | 6499s (~1.8h) |
+| Marathon `evaluation_extra_hard` (**first attempt**) | 200 | crashed silently at 75/200 (same signature as `hard3`'s first crash) | — | ~unknown, no traceback |
+| Marathon `evaluation_extra_hard` (**after widened fix**) | 200 | **200/200 accepted, 0 rejected**, 0 tokens | 0 | 2990s (~50min) |
+| Marathon `evaluation_order5` | 200 | **195/200 accepted, 0 rejected**, 5 `not_attempted` | — | 12407s (~3.4h) |
+| Marathon, ETP 200-row random sample | 200 | **199/200 accepted, 0 rejected**, 1 `not_attempted` | — | 2728s (~45min) |
+| Solo, ETP 25-row slice | 25 | **25/25 solved, 0 failed** | 0 | 532s |
 
 Every one of these is a **real** run: real Lean judge acceptance, real OpenRouter
 key, real official Solo/Marathon harness (`vendor/stage2-official`), packaged
@@ -203,7 +226,7 @@ score** — offline evidence was never affected by this bug, but real Marathon
 coverage on `normal.jsonl` went from 28.7% to 98.8% of the offline ceiling
 from a 15-line change.
 
-## Session stop point (updated 2026-08-03, stopped cleanly at user request)
+## Campaign complete (updated 2026-08-03)
 
 - **Confirmed post-fix, done, all four official sets:** `hard1.jsonl` 69/69,
   `normal.jsonl` 988/1000, `hard2.jsonl` 196/200, `hard3.jsonl` 396/400 — all
@@ -212,12 +235,13 @@ from a 15-line change.
   `evaluation_normal` 198/200, `evaluation_hard` 197/200,
   `evaluation_extra_hard` 200/200, `evaluation_order5` 195/200 — all real
   judge, all 0 rejected. Total **990/1000 (99.0%)**.
-- **Grand total: 2639/2669 (98.9%), 0 rejected anywhere**, across every
-  official and HF set this campaign touched.
-- **Not started:** the 200-row ETP random sample (via both Solo and
-  Marathon) — the only work still queued. No partial or interrupted runs at
-  this stop point, clean stop between sets.
+- **Confirmed, done, ETP 200-row random sample**: Marathon 199/200, Solo
+  25/25 — both real judge, both 0 rejected.
+- **Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
+  anywhere.** Every planned real-run item is done.
 - No process left running; verified via `Get-Process` before ending.
+- Nothing committed to git — `solver.py` (both fixes), the packaged
+  submission, and all doc updates are uncommitted working-tree changes.
 
 ## A second bug: one bad row could kill the entire Marathon process, silently
 
@@ -287,22 +311,42 @@ have been in `clear_term_caches()`, `reset_memory_reclaims()`,
 wrapping those additional calls is the only change between the crashing and
 clean runs.
 
-## Next session: do this first
+## Next session: no fixed real-run item is left queued — but there is a concrete solver-improvement lead
 
-1. The 200-row random ETP sample already built at
-   `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl` (drawn from
-   `data/exports/general_outcomes.json.gz`, balanced 100 true / 100 false,
-   non-reflexive, seed `20260731`) — run through both Solo (a slice) and
-   Marathon (the full 200). This is the **only** real-run work left queued —
-   every official and HF set is done.
-2. Consider whether `MEM_CHECK_EVERY`/reclaim-count tuning is still right now
+The planned campaign (all official sets, all HF mirror sets, an ETP random
+sample, both tracks) is complete with 0 rejected certificates anywhere. There
+is no mandatory next real run. What *is* worth doing: every `not_attempted`
+row across all nine sets plus the ETP sample was extracted and saved at
+`tmp_stage2_smoke/real-run-tools/real_judge_misses_2026-08.json` (31 rows,
+regenerable via the `find_misses.py` script alongside it). The pattern is
+sharp: **29/31 (94%) are TRUE-labeled**, and **30/31 (97%) share the exact
+`eq1: x = <nested term>` shape** (a bare-variable-LHS universal identity —
+the known-hard frontier per rail 5d). The 2 FALSE misses (`hard2_0027`,
+`hard2_0093`) already have prior evidence of no finite countermodel — a
+concrete, evidence-backed case for finally using the official rules'
+"infinite countermodels are allowed" clause, unused so far because the
+finite reach was cheaper everywhere else. Full concrete next-steps plan (what
+to trace, which dev tools to reuse, what not to do) is in
+`tmp_stage2_smoke/real-run-tools/HANDOVER_PROMPT.md` under "The actual next
+work."
+
+1. **Promotion housekeeping**: this is by far the strongest real-judge
+   evidence base this repo has had. Consider whether `EVAL_WORKFLOW.md`'s
+   promotion rule ("A cloud judge sweep is still owed before promotion") is
+   now satisfied, and update `CLAUDE.md`'s headline framing accordingly if
+   so.
+2. **A second, larger or differently-seeded ETP random sample**, since 200
+   rows is a small fraction of the ~22M-pair matrix — more samples would
+   tighten confidence, though 199/200 and 25/25 with 0 rejected is already
+   strong signal.
+3. Consider whether `MEM_CHECK_EVERY`/reclaim-count tuning is still right now
    that the guard resets per problem — it was tuned as a within-row safety net,
    not a between-row one, so it may not need to change, but worth a second
    look with more real post-fix Marathon telemetry (e.g. does `normal.jsonl`'s
    7.3-hour solver wall-clock compress down at a smaller compression ratio
    closer to the real 5-min/problem-average competition rule, or does it need
    the full budget to reach 988?).
-3. `judge/verify.py:_get_lake_lean_path`'s `lake env` call has no timeout
+4. `judge/verify.py:_get_lake_lean_path`'s `lake env` call has no timeout
    exception handling despite the function's own docstring describing a
    static-glob fallback for exactly this case — worth a small hardening patch
    if the crash recurs on a future long scoring pass (this is vendored
@@ -378,7 +422,11 @@ clean runs.
   by this clean rerun.
 - `tmp_stage2_smoke/real-run-2026-08-03/marathon-hf-eval-order5/` — real
   Marathon, HF `evaluation_order5.jsonl`, **195/200 CONFIRMED, 0 rejected**.
-- `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl` — built, not yet
-  run: 200-row random sample from the full ETP outcome matrix.
+- `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl` — the 200-row
+  random ETP sample manifest itself (100 true / 100 false, seed `20260731`).
+- `tmp_stage2_smoke/real-run-2026-08-03/marathon-etp-200/` — real Marathon,
+  the ETP sample, **199/200 CONFIRMED, 0 rejected**, 1 `not_attempted`.
+- `tmp_stage2_smoke/real-run-2026-08-03/solo_etp_slice.json` — real Solo, a
+  25-row slice of the ETP sample, **25/25 CONFIRMED, 0 failed**, 0 LLM calls.
 - `git diff -- stage2/solver/solver.py` — both fixes, including the widened
   crash-resilience fix (also summarized above).

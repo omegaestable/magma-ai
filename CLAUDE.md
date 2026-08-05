@@ -111,7 +111,8 @@ bound on judge acceptance, except for the 34 certificates with real judge
 evidence. A cloud judge sweep is still owed before promotion.
 
 **2026-08-01/03: that cloud-judge sweep started, found two Marathon-only bugs,
-and both are now real-judge confirmed fixed on all nine official + HF sets.**
+and both are now real-judge confirmed fixed on all nine official + HF sets
+plus a random ETP sample — the whole planned real-run campaign is complete.**
 A real-judge, real-key Solo/Marathon run found the first bug this table cannot
 see, because `audit_corpus.py` never arms the memory guard: `_mem_reclaims_left`
 (a module-level global) was never reset per-problem inside `run_marathon()`,
@@ -133,10 +134,11 @@ total 1649/1669 (98.8%), matching this table's offline ceiling for the first
 time via the real judge. **And on all five HF mirror sets**: `hf_hard`
 200/200, `evaluation_normal` 198/200, `evaluation_hard` 197/200,
 `evaluation_extra_hard` 200/200, `evaluation_order5` 195/200 — total 990/1000
-(99.0%), 0 rejected. **Grand total: 2639/2669 (98.9%), 0 rejected anywhere.**
-Detail: rails 10-11 below and
+(99.0%), 0 rejected. **And on a 200-row random sample of the full ETP outcome
+matrix** (never tuned against): Marathon 199/200, Solo 25/25, 0 rejected.
+**Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
+anywhere.** Detail: rails 10-11 below and
 `stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`.
-Still queued: an ETP random sample via real Solo/Marathon.
 
 Regenerate everything with the four commands below.
 

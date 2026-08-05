@@ -1,13 +1,13 @@
 # Latest Handoff
 
-Updated: 2026-08-03 (real-judge broad runs — two Marathon-only bugs found, both fixed and real-judge confirmed on all nine official + HF sets, 2639/2669, 0 rejected).
+Updated: 2026-08-03 (real-judge broad runs — two Marathon-only bugs found, both fixed and real-judge confirmed campaign-wide: 2863/2894 rows, 0 rejected. Campaign complete).
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 
 **Start at `CLAUDE.md`** for current numbers, commands and rails; this file is the
 dated session log.
 
-## 2026-08-01/03: real Solo/Marathon runs found two Marathon-only bugs — both fixed and confirmed on all nine official + HF sets, 2639/2669, 0 rejected (newest — read first)
+## 2026-08-01/03: real Solo/Marathon runs found two Marathon-only bugs — CAMPAIGN COMPLETE, 2863/2894 real-judge rows, 0 rejected anywhere (newest — read first)
 
 Full detail: `stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`.
 
@@ -82,13 +82,15 @@ file used. It found something the offline path is structurally blind to.
   `hf_hard` 200/200 (0 tokens — fully deterministic), `evaluation_normal`
   198/200, `evaluation_hard` 197/200, `evaluation_extra_hard` 200/200,
   `evaluation_order5` 195/200. Total 990/1000 (99.0%).
-- **Grand total across all nine sets: 2639/2669 (98.9%), 0 rejected
-  anywhere.**
-- **Not reached this session, still queued:** a 200-row random ETP sample
-  already built at `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl`
-  (from the full `data/exports/general_outcomes.json.gz` matrix) — the only
-  real-run work left. Stopped cleanly between sets, nothing interrupted
-  mid-run at this stop point.
+- **All nine official + HF sets: 2639/2669 (98.9%), 0 rejected anywhere.**
+- **200-row random ETP sample (never tuned against this distribution), also
+  confirmed, 0 rejected:** Marathon 199/200, Solo 25/25 — built from
+  `data/exports/general_outcomes.json.gz`, seed `20260731`.
+- **Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
+  anywhere.** Every planned real-run item is done — no fixed next real-run
+  item is queued. Non-mandatory follow-ups (promotion housekeeping, a
+  larger/differently-seeded ETP sample, minor infra hardening) are in the
+  results doc's "Next session" section.
 - **Zero soundness issues anywhere, before or after either fix.** Every real
   judge verdict across this whole campaign — pre-fix and post-fix, official
   and HF, both crash sites — was `accepted` whenever it reached the judge at

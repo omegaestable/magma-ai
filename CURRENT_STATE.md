@@ -5,9 +5,9 @@ This is the short-lived operational truth for the Stage 2 lab. Update it when th
 **Headline numbers and commands now live in `CLAUDE.md`.** This file keeps the
 dated session history and the operational detail behind them.
 
-Last updated: 2026-08-03 (real-judge broad runs found two Marathon-only bugs; both fixed and real-judge confirmed on all nine official + HF sets, 2639/2669, 0 rejected).
+Last updated: 2026-08-03 (real-judge broad runs found two Marathon-only bugs; both fixed and real-judge confirmed on all official + HF sets plus a random ETP sample — 2863/2894, 0 rejected. Campaign complete).
 
-## Read This First (2026-08-01/03, two real-judge Marathon bugs — both fixed and confirmed on all 9 sets)
+## Read This First (2026-08-01/03, two real-judge Marathon bugs — both fixed and confirmed, full campaign complete)
 
 First session to run the packaged solver through the **real** official Solo
 and Marathon harness at scale (real Lean judge, real proxy, real
@@ -54,11 +54,14 @@ compressed version in `stage2/docs/LATEST_HANDOFF.md`.
   `evaluation_normal` 198/200, `evaluation_hard` 197/200,
   `evaluation_extra_hard` 200/200, `evaluation_order5` 195/200. Total
   990/1000 (99.0%).
-- **Grand total across all nine real-judge Marathon sets: 2639/2669 (98.9%),
-  0 rejected anywhere.**
-- Still queued: the 200-row ETP random sample already built at
-  `tmp_stage2_smoke/real-run-2026-07-31/etp_random_200.jsonl` — the only
-  real-run work left. No interrupted runs — clean stop between sets.
+- **All nine official + HF sets: 2639/2669 (98.9%), 0 rejected anywhere.**
+- **200-row random ETP sample, both tracks, also confirmed, 0 rejected**:
+  Marathon 199/200, Solo 25/25.
+- **Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
+  anywhere.** Every planned real-run item is done; no fixed next real-run
+  item is queued. See the results doc's "Next session" section for
+  non-mandatory follow-ups (promotion housekeeping, a larger/differently-seeded
+  ETP sample, minor infra hardening).
 
 ## Read This First (2026-07-29, v4 coverage push)
 
