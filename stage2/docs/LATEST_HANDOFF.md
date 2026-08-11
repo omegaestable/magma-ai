@@ -1,6 +1,61 @@
 # Latest Handoff
 
-Updated: 2026-08-03 (real-judge broad runs — two Marathon-only bugs found, both fixed and real-judge confirmed campaign-wide: 2863/2894 rows, 0 rejected. Campaign complete).
+Updated: 2026-08-07 (distilled certificate library + early egg probe: official 1647 → **1658/1669**, `hard1` complete, both FALSE holdouts closed, 24/24 new certs judge-accepted).
+
+## 2026-08-07: distilled library, early egg probe, first infinite countermodel (newest — read first)
+
+Full detail: `stage2/results/2026-08-07-distilled-library-and-egg-probe.md`.
+
+Session goal was to finalize the deployment solver. Trigger: a user-supplied
+playground error log. **Triage found 6 of its 12 rows already solve under the
+current package** — that upload predated the 07-29..08-03 fixes. The `exact h`
+entries in it are Solo's *insurance* submission (banked so a wall-clock kill
+cannot produce a harness ERROR); the rest were the known frontier.
+
+- **A 16-agent discovery workflow** over the campaign's 31 real-judge misses:
+  one ETP pivot-mining agent (outcome matrix + teorth provenance), 13
+  mathematician agents grouped by equation family, 2 countermodel specialists.
+  Result: 21 TRUE mechanisms kernel-verified, both FALSE holdouts closed.
+- **The frontier is overwhelmingly collapse-shaped.** ETP's own proof route for
+  most of these rows passes through `Eq2 (x = y)` — eq1 forces a one-element
+  magma and the goal is downstream. `egg_collapse` derives them in 0.07–10 s.
+  They were missed because **the egg family runs last**: at `standard`/`deep`
+  the tier-scaled closure engines consume the per-row clock first. A scheduling
+  defect, not a mathematical gap.
+- **Shipped**: `DISTILLED_CERTS` (20 judge-accepted certs keyed by canonical
+  equation text — transfers across `◇`/`*` notation and across sets, verified);
+  `egg_probe_route` (unscaled early collapse/row-constancy probe, first among
+  the general engines); row/column-constancy added to `EGG_PRIORITY_LEMMAS`;
+  `S6B` witness table; `CONSTRAINT_MAX_NODES` 3M → 100M; an oracle escape that
+  accepts judge-pinned FALSE certs by byte match; +20 fixture entries.
+- **`hard2_0027` ships the project's first infinite countermodel** — `Nat` with
+  a parity op, eq1 proved by `omega` under the allowlist. `hard2_0093` got an
+  order-6 finite witness from ETP's FinitePoly refutation database; the search
+  had missed it because the node cap bound before the wall clock **for the
+  third time** (rail 5f).
+- **Latent catastrophic bug found and fixed while verifying the package**:
+  `is_reflexive_problem` compared two `.get()` results, so a payload without
+  equation ids read `None == None` as reflexive and would emit `exact h` for
+  every row. Not live (the official pipeline always supplies ids) but now
+  guarded and pinned by a test — rail 5g.
+- **Measured**: official 1658/1669 (TRUE 810, FALSE 848), `hard1` 69/69, 0
+  oracle failures / crashes / label mismatches; gate 205 passed; packaged
+  443,416 bytes of 500,000.
+- **Real-runner validation done, both tracks clean.** A stratified 38-row
+  manifest (`distilled_true` 18, `distilled_false` 1, `named_witness` 1,
+  `egg_probe` 2, plus 16 controls) through real Marathon: **38/38 accepted, 0
+  rejected, 0 not attempted**. Real Solo on a 12-row slice: **12/12, 0 failed,
+  0 LLM calls**. Attribution was done by certificate **bytes** rather than log
+  lines (`attribute_answers.py`) — stronger, and necessary because
+  `--score-only` truncates `run.log`. Every new path demonstrably fired; the
+  held-out `egg_probe` rows took ~71 s (genuinely re-derived) against 3.4 s for
+  a library hit; no control row was hijacked.
+- Two operational findings, now in the handover: the official runner **rejects
+  a submission directory containing anything but `solver.py`** (verifying the
+  package by importing it in place leaves a `__pycache__` and fails the run
+  instantly), and the `lake env` 30 s timeout hit again mid-scoring —
+  `--score-only` recovered it as documented.
+- **Not done** (optional): spotcheck batches, `hard2_0125` deep retest.
 
 This is the short team-memory note for the current Stage 2 solver state. Use the result files for detailed evidence and `tmp_stage2_smoke/` only for raw artifacts.
 

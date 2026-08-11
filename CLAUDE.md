@@ -46,18 +46,45 @@ Three organizer answers on the forum, all checked against the vendored snapshot
    Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
    row resists every finite order.
 
-## Current measured state (2026-07-31)
+## Current measured state (2026-08-07)
 
 | Metric | Value |
 | --- | --- |
-| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1647 / 1669 (98.7%)** |
-| Official TRUE | **803 / 819** |
-| Official FALSE | **844 / 850** |
-| Remaining unsolved at `fast` | **22** — see the budget-marginal caveat below |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0** across 1863 solved rows |
-| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, **3/3** order-13/17/25 `List.getD` witnesses |
-| Offline gate | **202 passed, 2 skipped, ~45 s** (`-n auto`) |
-| Packaged size | 363,919 bytes of 500,000 (size is not binding) |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1658 / 1669 (99.3%)** |
+| Official TRUE | **810 / 819** |
+| Official FALSE | **848 / 850** |
+| `hard1` | **69 / 69 — complete** |
+| Remaining unsolved at `fast` | **11** (was 22) |
+| Oracle failures / crashes / label mismatches | **0 / 0 / 0** |
+| HF mirror sets | **792 / 800** (0 oracle failures) — combined offline **2450/2469** |
+| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, **24/24 distilled-library certs (2026-08-07)** |
+| Real-runner evidence, new routes | **Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected, 0 LLM calls** |
+| Offline gate | **205 passed, 2 skipped, ~20 s** (`-n auto`) |
+| Packaged size | 443,416 bytes of 500,000 (size is not binding) |
+
+**2026-08-07 session** (`stage2/results/2026-08-07-distilled-library-and-egg-probe.md`):
++11 official rows from a 16-agent discovery pass over the 31 real-judge misses
+of the 08-01/03 campaign. Three shipped mechanisms, all content-keyed:
+
+- **`DISTILLED_CERTS`** — 20 judge-accepted certificates keyed by *canonical
+  equation text* (`canonical_eq_text`), looked up O(1) after the singleton
+  recogniser. Certificates are complete Lean files and alpha-invariant, so a
+  key hit transfers across notation and set: verified emitting the same cert
+  for the HF `*` spelling of an official `◇` row. Never keyed by row id
+  (rail 9). Most entries came from **ETP's own implication chains** — the
+  frontier is overwhelmingly collapse-shaped (`eq1 ⇒ x = y`, goal downstream),
+  the rest are projection/rotation ladders transcribed from teorth Vampire
+  proofs.
+- **`egg_probe_route`** — a small *unscaled* early egg probe (collapse 6 s,
+  row/column-constancy 2 s) placed first among the general engines. The
+  campaign's dominant miss mode was scheduling, not math: egg lands these rows
+  in 0.07–10 s but ran last, after the tier-scaled closure engines had eaten
+  the per-row clock at `standard`/`deep`. Free gates keep it ~free elsewhere.
+- **First infinite countermodel** (`hard2_0027`): carrier `Nat`,
+  `op a b = if b % 2 = a % 2 then b + 1 else b - 1`, eq1 by parity (`omega`
+  passes the allowlist), eq2 false at (0,1,0). Judge-accepted, 1268 bytes.
+  `hard2_0093` got an order-6 *finite* witness (`S6B`) from ETP's FinitePoly
+  refutation database — both FALSE holdouts are closed.
 
 **The 1650 that stood here from 2026-07-29 was never measured.** The last full
 audit before this one read 1647; the doc then added +3 for `hard2_0082`,
@@ -252,7 +279,30 @@ judge** (see below). It is the only thing that is not an upper bound.
    The dev-tool twin (`mace_finder.py`) never had this cap and found both. If a
    search is time-bounded, that is the real stopping criterion; a node cap
    should be a safety net far above measured throughput, not a second binding
-   constraint.
+   constraint. **This has now bitten three times.** The 3,000,000 replacement
+   bound again on 2026-08-07: `hard2_0093`'s family runs at ~22,500 nodes/s, so
+   the order-6 search burned 3M nodes in 133 s *with clock remaining* and
+   reported "no countermodel" for a row whose minimal witness ETP already had on
+   file. Now 100,000,000. When raising such a cap, compute deadline × throughput
+   for the **fastest** family, not the slowest.
+5g. **A fast path keyed on `.get(a) == .get(b)` fires on two missing keys.**
+   `is_reflexive_problem` read `problem.get("eq1_id") == problem.get("eq2_id")`,
+   so a payload carrying only equation text made `None == None` true and the
+   solver answered `exact h` — a guaranteed rejection — for *every* row. The
+   official pipeline always supplies both ids (`verify.py` `PROBLEM_KEYS`;
+   `_resolve_problems` maps custom equation text back to catalog ids), so this
+   was latent, not live. Hardened 2026-08-07 to require both ids present, plus a
+   regression test. Any equality-on-optional-fields gate deserves the same look:
+   absence must not read as a match.
+5h. **Distillation is content-keying, not id-keying — and that is what makes it
+   legal under rail 9.** `DISTILLED_CERTS` maps *canonical equation text* (the
+   renaming-invariant `canonical_eq_text` of both equations) to a judge-accepted
+   certificate. The key is mathematical content, so one entry covers the
+   official row, its HF `*`-notation mirror, and any future ETP sample of the
+   same implication — verified by test. A pasted list of row ids would cover
+   exactly the snapshot and nothing else. **Never** put a certificate in this
+   table that the real judge has not accepted; every entry is byte-pinned in
+   `stage2/fixtures/judge_verified_certs.jsonl`.
 6. **Never mix LLM calls and certificate verification in one `ThreadPoolExecutor`.**
    Verification is CPU-bound and the GIL serialises it (~10x slowdown). Use the
    two-phase shape in `llm_balanced_eval.py`: threads for network, processes for
@@ -404,20 +454,32 @@ solver primitive cannot hide itself in the oracle.
 
 ## Known open frontier
 
-**22 official skips** (measured 2026-07-31, replacing a stale "52" that predated
-three engines): `normal_0090/0491/0549/0582`, `hard1_0062`,
-`hard2_0001/0027/0028/0073/0079/0082/0092/0093/0098/0123/0162`,
-`hard3_0135/0192/0204/0214/0266/0314`. Two of those (`hard2_0001`,
-`hard2_0082`) solve standalone and are lost only to parallel scheduling, so the
-true frontier is ~20. `hard2_0051` left this list on 2026-07-31 — see rail 3b.
+**11 official skips** (measured 2026-08-07, isolated audit): `normal_0090`,
+`normal_0491`, `hard2_0073`, `hard2_0092`, `hard2_0123`, `hard2_0162`,
+`hard3_0135`, `hard3_0204`, `hard3_0214`, `hard3_0266`, `hard3_0314`.
+`hard2_0073` solves standalone at `standard` (scheduling-marginal) and
+`hard2_0123` needs the `standard` constraint tier, so the hard frontier is ~9.
 
-Ranked next levers (evidence-backed, see `LATEST_HANDOFF.md`):
+Ranked next levers (evidence-backed; the 2026-08-07 discovery pass produced a
+diagnosis for most remaining rows — see that session's results doc):
 
-1. Run `egg_closure` at `standard` effort — it is budget-bound at `fast`; the
-   prototype reached ~8 more official rows at 20 s/row.
-2. Shrink egg proof extraction — some proofs still hit the byte cap and get
-   dropped, so better cycle-cutting means more shippable rows.
-3. Replace wall-clock with step-count budgets, making route selection
+1. **Bytes-weighted egg extraction.** `normal_0491` is *proved* — the e-graph
+   merges everything into one class in seconds — but the shortest extractable
+   proof renders at 135 KB against the judge's 50 KB cap. Extraction currently
+   minimises step count, not rendered bytes. This is the single most concrete
+   open lever: a ~3x byte reduction ships the row through an existing route
+   with no new oracle surface.
+2. **Multi-rule egg saturation seeded with self-overlap helpers.** The
+   `evaluation_order5_*` and `evaluation_hard_0116/0196` rows all reduce to one
+   missing hop that single-rule egg cannot make; hand CP-overlaps of eq1 with
+   itself (instantiating eq1's own RHS subterms as redexes) produce helper laws
+   with free 2-step proofs. Kernel-verified partial chains exist for several.
+3. **`hard3_0314`**: eq1 is equivalent to right projection; the unlock law
+   `(a ◇ b) ◇ a = a` yields it in two kernel steps. Try deep-effort
+   `egg_priority_bootstrap` on the right-projection target first — possibly
+   zero-code.
+4. **`hard3_0214`**: models are exactly `x ◇ y = f(x)` with `f³ = id`; needs
+   `LEMMA_ENUM_MAX_RHS_OPS` 3→4 for bare-`a` LHS laws, or egg pool seeding with
+   eq1-expansions of the goal variables.
+5. Step-count instead of wall-clock budgets, making route selection
    deterministic and letting the golden gate return to strict equality.
-4. Re-run the LLM lemma lane: egg raises its ceiling (model names a law, egg
-   derives it, the kernel checks it).

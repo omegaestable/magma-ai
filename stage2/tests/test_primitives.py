@@ -953,3 +953,27 @@ def test_model_oracle_accepts_a_true_implication(solver):
     battery = oracles.model_battery(eq1, [], fin3_samples=200, seed=3)
     assert battery
     oracles.model_check_true(eq2, battery)
+
+
+def test_reflexive_fast_path_requires_both_equation_ids(solver):
+    """A problem with no equation ids must not be treated as `EqN => EqN`.
+
+    `problem.get("eq1_id") == problem.get("eq2_id")` reads two absent keys as
+    `None == None`, which would answer `exact h` — a guaranteed rejection — for
+    every row of such a manifest. The official pipeline always supplies both
+    ids, so this only pins the fail-open behaviour for anything that does not.
+    """
+    assert solver.is_reflexive_problem({"eq1_id": 7, "eq2_id": 7})
+    assert not solver.is_reflexive_problem({"eq1_id": 7, "eq2_id": 8})
+    assert not solver.is_reflexive_problem({})
+    assert not solver.is_reflexive_problem({"eq1_id": None, "eq2_id": None})
+    assert not solver.is_reflexive_problem({"equation1": "x = y ◇ x"})
+
+    # End to end: an id-less non-reflexive problem must not emit `exact h`.
+    record = solver.solve_problem({
+        "equation1": "x = y ◇ (x ◇ ((z ◇ y) ◇ y))",
+        "equation2": "x = ((y ◇ z) ◇ (z ◇ z)) ◇ x",
+    })
+    if record is not None:
+        assert record["route"] != "true:reflexive"
+        assert "exact h\n" not in record["answer"]["code"]

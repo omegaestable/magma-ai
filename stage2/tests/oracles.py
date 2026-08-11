@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import random
+from pathlib import Path
 import re
 import time
 from itertools import product
@@ -599,8 +600,39 @@ def check_no_banned_tactics(code: str, route: str = "") -> None:
 # parser is involved and cells may hold any value below `n`. Judge-accepted at
 # orders 13, 17 and 25 on 2026-07-31. What bounds this shape is the judge's
 # 10,000-byte FALSE cap and its 120 s Lean timeout, both checked below.
+def _judge_pinned_false_certs() -> frozenset[str]:
+    """Byte-exact FALSE certificates the real Lean judge accepted.
+
+    The infinite-countermodel shape (a Nat carrier with a parity op, allowed by
+    the official rules since 2026-07-31) has no finite table for this function
+    to re-verify, so it is accepted only by exact match against
+    `stage2/fixtures/judge_verified_certs.jsonl` — the judge-pinning pattern:
+    trust nothing about the shape, only the bytes the judge already accepted.
+    """
+    global _PINNED_FALSE_CACHE
+    if _PINNED_FALSE_CACHE is None:
+        pinned: set[str] = set()
+        fixture = (Path(__file__).resolve().parents[1]
+                   / "fixtures" / "judge_verified_certs.jsonl")
+        if fixture.exists():
+            for line in fixture.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                entry = json.loads(line)
+                if (entry.get("verdict") == "false"
+                        and entry.get("judge_status") == "accepted"):
+                    pinned.add(entry["code"])
+        _PINNED_FALSE_CACHE = frozenset(pinned)
+    return _PINNED_FALSE_CACHE
+
+
+_PINNED_FALSE_CACHE: frozenset[str] | None = None
+
+
 def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any]) -> None:
     """Independently re-verify a FALSE certificate's finite witness table."""
+    if code in _judge_pinned_false_certs():
+        return
     fm = _FIN_RE.search(code)
     if fm is None:
         raise OracleError("FALSE certificate missing Fin marker")

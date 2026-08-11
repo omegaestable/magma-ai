@@ -5,7 +5,39 @@ This is the short-lived operational truth for the Stage 2 lab. Update it when th
 **Headline numbers and commands now live in `CLAUDE.md`.** This file keeps the
 dated session history and the operational detail behind them.
 
-Last updated: 2026-08-03 (real-judge broad runs found two Marathon-only bugs; both fixed and real-judge confirmed on all official + HF sets plus a random ETP sample — 2863/2894, 0 rejected. Campaign complete).
+Last updated: 2026-08-07 (distilled certificate library + early egg probe: official 1647 → 1658/1669, `hard1` complete, both FALSE holdouts closed, 24/24 new certs judge-accepted, packaged 443,416 bytes).
+
+## Read This First (2026-08-07, deployment candidate)
+
+Full detail: `stage2/results/2026-08-07-distilled-library-and-egg-probe.md`;
+compressed in `stage2/docs/LATEST_HANDOFF.md`; numbers in `CLAUDE.md`.
+
+- **Official `fast` audit (isolated): 1658/1669 (99.3%)**, TRUE 810, FALSE 848,
+  `hard1` 69/69 complete, 0 oracle failures / crashes / label mismatches.
+- **Packaged and standalone-verified: `stage2/submissions/solver.py`,
+  443,416 bytes** of the 500,000 cap. Gate: 205 passed, 2 skipped.
+- **24/24 new certificates accepted by the real Lean judge** before any entered
+  the solver; all 20 solver-emitted copies byte-pinned in the fixture.
+- **Both FALSE holdouts closed**: `hard2_0093` by an order-6 witness from ETP's
+  FinitePoly database, `hard2_0027` by the project's first **infinite**
+  countermodel (`Nat`, parity op, `omega` under the allowlist).
+- **Latent catastrophic bug fixed**: `is_reflexive_problem` treated a payload
+  with no equation ids as reflexive (`None == None`) and would have emitted
+  `exact h` for every row. Not reachable through the official pipeline, now
+  guarded and tested (rail 5g).
+- **HF mirror audit: 792/800**; combined offline **2450/2469**.
+- **Real-runner validation of the new routes: complete and clean.** A
+  stratified 38-row manifest through real Marathon (real proxy, real key, real
+  Lean judge) scored **38/38 accepted, 0 rejected, 0 not attempted**; a 12-row
+  Solo slice scored **12/12, 0 failed, 0 LLM calls**. Route attribution was
+  done by certificate bytes: all 18 distilled TRUE rows, the infinite
+  countermodel, and the `S6B` witness were served by the new paths, the two
+  held-out `egg_probe` rows were re-derived by the probe (~71 s at Solo depth
+  vs 3.4 s for a lookup), and all 16 controls kept their pre-existing routes.
+- **Still owed** (optional, not blocking): spotcheck batches and the
+  `hard2_0125` deep-effort retest.
+
+## Previous entry (2026-08-01/03)
 
 ## Read This First (2026-08-01/03, two real-judge Marathon bugs — both fixed and confirmed, full campaign complete)
 
