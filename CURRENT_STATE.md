@@ -7,6 +7,72 @@ dated session history and the operational detail behind them.
 
 Last updated: 2026-08-07 (distilled certificate library + early egg probe: official 1647 → 1658/1669, `hard1` complete, both FALSE holdouts closed, 24/24 new certs judge-accepted, packaged 443,416 bytes).
 
+## Read This First (2026-08-11, the lemma ladder)
+
+Full detail: `stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`.
+
+**Measured (isolated official audit, `fast` tier): 1666/1669 (99.82%)**, TRUE
+816/819, **FALSE 850/850 complete**, `normal` 1000/1000 and `hard1` 69/69 both
+complete, 0 oracle failures, 0 crashes, 0 label mismatches. Diffed by row id
+against 2026-08-07: **+9 / −0**. **HF mirrors 795/800** (FALSE 400/400 complete,
+0 oracle failures) — combined offline **2461/2469**. Offline gate **201 passed,
+2 skipped, 16.5 s**. Real judge: **11/11 accepted, 0 rejected** (6 `egg_ladder`,
+3 FALSE controls, 2 newly distilled). Packaged **480,115 bytes of 500,000** and
+verified standalone from a copy (import, an id-less payload, the same row with
+ids), leaving the submission directory containing only `solver.py`.
+
+**Watch the package size:** 19,885 bytes of headroom (4.0%). A 10 KB win was just
+taken for free — the packager now writes LF instead of copying the CRLF working
+tree. `DISTILLED_CERTS` is 14.8% of the file, so a distilled row costs 2–12 KB.
+
+**All three remaining official rows are TRUE**: `hard2_0073`, `hard3_0214`,
+`hard3_0314` (plus five HF). Every one is *known* true — the vendored ETP matrix
+confirms it — and the blocker is measured to be the proof search, not the
+candidate set: `etp_chain.py --mode ladder` supplies laws the matrix guarantees
+follow from eq1, and equality saturation cannot derive even the size-6 ones
+(13 candidates, 60–120 s each; `hard2_0073` also fails at `deep` in 1336 s).
+
+Entry state was 11 open official rows at `fast` tier. A per-row probe over all
+19 open rows (official + HF) split that list into four different failure modes,
+and only one of them was the "hard proof search" it had been read as:
+
+- **7 rows: single-rule saturation terminates short of the pivot.** More clock
+  cannot help. Fixed by a new engine, `true:egg_ladder` — multi-rule equality
+  saturation over eq1 *plus derived laws*, each bound with `have`. On
+  `hard3_0266`: right projection is unreachable in 60 s single-rule, idempotence
+  is derivable in under 2 s, and with idempotence in scope right projection
+  follows in **0.01 s / 267 bytes**.
+- **2 rows: the pivot was proved, but the explanation could not be shipped**
+  (`normal_0491`'s collapse: 4510 steps, 400 KB rendered against a 46 KB cap).
+  Those chains are incompressible — a full BFS over the replayed states finds no
+  shortcut, and a context-factoring renderer buys only 2.4–2.9x — because a flat
+  chain over one hypothesis cannot *name* an intermediate law and so re-derives
+  the same fact at every instance (1548 steps, 38 distinct eq1 instances). The
+  ladder makes the length unnecessary: `normal_0491` ships at **4755 bytes**.
+- **1 row was not a proof problem at all.** `hard2_0092` has a witness the
+  solver already owned (`false:dual:false:witness:S5B`). Two independent guards
+  hid it: `constraint_countermodel` refused any row with >4 variables (it has 5;
+  the search finds an order-5 witness in 0.33 s), and `find_counterexample` ran
+  its whole portfolio *and* the dual pass on one shared 2 s deadline with the
+  dual last, which on a 5-variable row (where each table test costs `n**5`)
+  leaves the dual ~0.4 s for work it needs 0.1 s to do. It fit on an idle
+  machine and never fit under the audit's 16-way parallelism. Both fixed; the
+  row now solves in **1.75 s**.
+- **1 row (`hard2_0123`) was already fine** at `standard` effort, which is what
+  Solo and Marathon actually run.
+
+Everything the ladder emits is the existing `lemma_chain` certificate shape, so
+`oracles.check_true_lemma_chain_certificate` verifies every rung independently
+against the `ProofKernel` — no new oracle surface. The single-rule engine is
+untouched on purpose: 249 audited rows ride on it.
+
+Three cost bugs were found while building this and are worth remembering: a
+deadline polled once per outer loop level is not a deadline (saturation
+overshot a 2 s attempt by minutes while *building* its application list);
+greedy proof bridging is O(states²) × rules and needs a hard state cap, not just
+a clock; and a portfolio sharing one deadline gives its last stage whatever the
+earlier ones leave, which is not a budget.
+
 ## Read This First (2026-08-07, deployment candidate)
 
 Full detail: `stage2/results/2026-08-07-distilled-library-and-egg-probe.md`;

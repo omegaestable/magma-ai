@@ -46,21 +46,41 @@ Three organizer answers on the forum, all checked against the vendored snapshot
    Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
    row resists every finite order.
 
-## Current measured state (2026-08-07)
+## Current measured state (2026-08-11)
 
 | Metric | Value |
 | --- | --- |
-| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1658 / 1669 (99.3%)** |
-| Official TRUE | **810 / 819** |
-| Official FALSE | **848 / 850** |
-| `hard1` | **69 / 69 — complete** |
-| Remaining unsolved at `fast` | **11** (was 22) |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1666 / 1669 (99.82%)** |
+| Official TRUE | **816 / 819** |
+| Official FALSE | **850 / 850 — complete** |
+| `normal` / `hard1` | **1000 / 1000** and **69 / 69** — both complete |
+| Remaining unsolved at `fast` | **3**, all TRUE (was 11) |
 | Oracle failures / crashes / label mismatches | **0 / 0 / 0** |
-| HF mirror sets | **792 / 800** (0 oracle failures) — combined offline **2450/2469** |
-| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, **24/24 distilled-library certs (2026-08-07)** |
-| Real-runner evidence, new routes | **Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected, 0 LLM calls** |
-| Offline gate | **205 passed, 2 skipped, ~20 s** (`-n auto`) |
-| Packaged size | 443,416 bytes of 500,000 (size is not binding) |
+| HF mirror sets | **795 / 800** (FALSE 400/400 complete, 0 oracle failures) — combined offline **2461 / 2469** |
+| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, 24/24 distilled-library certs, **11/11 new certs 2026-08-11** (6 `egg_ladder`, 3 FALSE controls, 2 newly distilled) |
+| Real-runner evidence, new routes | **Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected, 0 LLM calls** (2026-08-07 routes; `egg_ladder` has judge but not yet real-runner evidence) |
+| Offline gate | **201 passed, 2 skipped, ~16 s** (`-n auto`) |
+| Packaged size | **480,115 bytes of 500,000 — 19,885 bytes (4.0%) headroom.** Size *is* now close to binding; see rail 1. |
+
+**2026-08-11 session** (`stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`):
+`1658 → 1666`, TRUE `810 → 816`, FALSE `848 → 850`, diffed by row id across two
+isolated audits: **+9 gained, 0 lost**, 0 oracle failures, 0 crashes.
+
+- `true:egg_ladder` (new engine, multi-rule saturation with `have`-bound derived
+  laws) closed `normal_0090`, `normal_0491`, `hard2_0162`, `hard3_0135`,
+  `hard3_0204`, `hard3_0266`.
+- `hard2_0092` was a named witness two guards had been hiding.
+- `hard1_0062` and `hard2_0123` are **distilled**: both solve at `standard`
+  (315 s / 405 s, judge-accepted), and content-keying them makes that result cost
+  a dict probe at every tier. `hard2_0123`'s 405 s was more than a whole
+  problem's average Marathon budget.
+- **FALSE is complete at 850/850**, and `normal` and `hard1` are both complete.
+
+**All three remaining rows are TRUE**: `hard2_0073`, `hard3_0214`, `hard3_0314`.
+Each has a viable, non-refutable pivot that equality saturation cannot prove at
+any budget up to `deep` — `hard2_0073` was measured failing at `deep` with 1336 s,
+the full candidate set, and an explanation over 20,000 steps. See the refuted
+levers below before attempting these.
 
 **2026-08-07 session** (`stage2/results/2026-08-07-distilled-library-and-egg-probe.md`):
 +11 official rows from a 16-agent discovery pass over the 31 real-judge misses
@@ -176,10 +196,11 @@ Regenerate everything with the four commands below.
 .\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
 # 2. Full corpus audit (official sets; add --hf for the HF mirrors).
-#    Now 25-40 min, not the ~450 s it used to be: the last-resort engines
-#    (egg_collapse 40 s, egg_bootstrap, the wide constraint tier at 45 s x 7
-#    orders) all run on every unsolved row. Only unsolved rows pay, so the cost
-#    scales with the frontier, not the corpus. Run it once per session, not per edit.
+#    ~35 min wall clock (measured 2026-08-11), not the ~450 s it used to be: the
+#    last-resort engines (egg_collapse 40 s, egg_bootstrap, egg_ladder 60 s, the
+#    wide constraint tier at 45 s x 7 orders) all run on every unsolved row. Only
+#    unsolved rows pay, so the cost scales with the frontier, not the corpus. Run
+#    it once per session, not per edit — and never two at once (rail 5e).
 .\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
 
 # 3. The standing accuracy loop. Run it every session; fix whatever it pins.
@@ -196,8 +217,23 @@ judge** (see below). It is the only thing that is not an upper bound.
 
 1. **Never delete solver routes to "de-bloat".** Disproved with evidence
    2026-07-21: "subsumed" routes are cheap high-volume fast paths, and 29 routes
-   look dead on the official sets but are live on the HF sets. File size is not
-   binding. De-bloat means junk files and stale docs, never coverage.
+   look dead on the official sets but are live on the HF sets. De-bloat means
+   junk files and stale docs, never coverage.
+   **Amended 2026-08-11: "file size is not binding" is no longer safely true.**
+   The package is 480,115 of 500,000 bytes — 19,885 left, 4.0%. That is still not a
+   licence to delete routes; it *is* a reason to check the number before adding a
+   large one. Where the bytes actually are, measured: `DISTILLED_CERTS` is **14.8%
+   of the file** (71 KB over 22 entries, the two largest 12.6 KB and 11.9 KB), and
+   full-line comments are 10.3%. So a distilled row costs 2–12 KB of the cap —
+   worth knowing before distilling a big egg proof, and the reason 2026-08-07 left
+   two oversized certs out. The `WarnBytes = 150000` figure in the packager is
+   long-dead history, not a target.
+   **Free 10 KB already taken:** the packager used to `Copy-Item` the CRLF working
+   copy, spending one byte per line of a ~10,400-line file on carriage returns the
+   judge does not need. It now writes LF (UTF-8, no BOM): 490,503 → 480,115 bytes,
+   2% of the cap, no content change. If more headroom is ever needed, stripping
+   comments *from the submission only* is the next lever — but verify by importing
+   the stripped artifact and running the gate against it, not by eyeballing it.
 2. **Compare TRUE counts, not solved counts, and diff by row id.** The FALSE
    search is wall-clock bounded, so solved totals carry a ±7 run-to-run noise
    band. A route change is judged by row-id diff.
@@ -238,6 +274,19 @@ judge** (see below). It is the only thing that is not an upper bound.
    `F(...) = x ≥ 10`, impossible for an output capped at 9.
    `_eq1_has_bare_variable_side()` detects this for free. Those rows are exactly
    what the complete-table orders 11–25 are now for.
+3b-iii. **`maxRecDepth` is driven by `n ** variables`, not by order — same axis
+   mistake as the retired order-10 ceiling.** The renderer emitted
+   `set_option maxRecDepth 20000` only for `n >= 7`. Verified against the real
+   judge 2026-08-11 on `hard2_0092` (a 5-variable row): a `Fin 6` table is
+   6⁵ = 7,776 `decideFin!` applications and came back **`LEAN_REJECTED`**
+   without the option and **`accepted`** with it, byte-identical table. The same
+   table against a 4-variable goal (1,296) and a `Fin 5` table against the same
+   5-variable goal (3,125) are accepted either way, so the trigger sits in
+   (3,125, 7,776]; `DECIDE_MAX_REC_DEPTH_APPLICATIONS = 4_096`. It stayed latent
+   because nothing shipped had reached order 6 with 5 variables until the
+   constraint search was allowed to (rail 5f-ii) — **a coverage fix can expose a
+   rendering bug, so re-judge the rows a widened search newly reaches**, not just
+   the ones you were aiming at.
 3c. **A sound witness is not automatically a shippable one.** Every local check
    reads the parsed Python table, so all of them are blind to rendering. When a
    witness route changes, verify against the real judge.
@@ -264,6 +313,31 @@ judge** (see below). It is the only thing that is not an upper bound.
    collapses the magma and the goal is irrelevant. `true:egg_collapse` proves 10 of
    them; the critical-pair closure proves none. When a row resists, ask what the
    smallest sufficient law is, not how to push harder on the goal.
+5d-iii. **The ETP matrix can source candidates that are *guaranteed* derivable —
+    use it to isolate the prover, not to find a path.** `lemma_survives_models`
+    only says "not obviously refutable"; `{M : eq1 ⇒ M}` from the outcome matrix
+    says **derivable**. `etp_chain.py --mode ladder` enumerates it smallest-first,
+    which turns "is the candidate set wrong or is the prover weak?" into a clean
+    experiment. Answer, measured 2026-08-11 on the three remaining official rows:
+    the prover. Even `a ◇ a = a ◇ b` and `a ◇ b = a ◇ c` — size-6 laws the matrix
+    confirms follow from `hard3_0214`'s eq1 — are unreachable in 60 s each.
+    Corollary worth keeping: **walking the eq1 → eq2 path is the wrong use of the
+    graph.** Every law on that path is a *consequence* of the previous one, so the
+    first hop carries all the difficulty; what a ladder needs is side facts that
+    follow from eq1 without implying the goal (idempotence unlocked `hard3_0266`
+    and does not imply its goal at all).
+5d-ii. **When a proof cannot be shortened, change the shape so it needn't be.**
+    Two sessions of next-lever notes pointed at compressing `normal_0491`'s
+    collapse proof (4510 extracted steps, 400 KB rendered, 46 KB cap). It is
+    genuinely incompressible: cycle-cutting gets 4510 → 1548 and a full BFS over
+    the replayed state sequence then finds **no** shortcut, while a
+    context-factoring renderer buys only 2.4–2.9x. The reason it is that long is
+    that a flat `.trans` chain over one hypothesis cannot **name** an
+    intermediate law, so it re-derives the same fact at every instance — those
+    1548 steps use only 38 distinct eq1 instances. One `have` makes the whole
+    chain unnecessary: `true:egg_ladder` ships the row at **4755 bytes**. Before
+    optimising the rendering of a proof, ask whether the certificate shape is
+    what is forcing its size.
 5e. **Never run two `audit_corpus.py` sweeps concurrently.** All engines below
    `equational_closure` are wall-clock-budgeted, so 16-worker pools competing
    for the same cores starve each other and produce spurious "losses" on
@@ -285,6 +359,43 @@ judge** (see below). It is the only thing that is not an upper bound.
    reported "no countermodel" for a row whose minimal witness ETP already had on
    file. Now 100,000,000. When raising such a cap, compute deadline × throughput
    for the **fastest** family, not the slowest.
+5f-ii. **Rail 5f, fourth instance — and this time the gate was on the whole
+    row, not the search.** `constraint_countermodel` opened with
+    `if len(eq1 vars) > 4 or len(eq2 vars) > 4: return None`. `hard2_0092` has
+    5 variables and an order-5 countermodel the search finds in **0.33 s /
+    126 nodes**; it never got to look, for four sessions. The blow-up the gate
+    guarded against is real (`_cp_propagate` walks `n ** vars` instances per
+    node) but it is **per order**, so bound the instance count and skip only the
+    orders that exceed it. Replaced by `n ** variables <= 20_000`, applied only
+    in the wide tier — the cheap tier keeps `max_variables = 4` on purpose,
+    because it runs before the TRUE engines on every row and 168 corpus rows
+    with ≥5 variables are TRUE, where no witness can exist. **An order skipped
+    for cost must leave the search incomplete**: `constraint_search_exhausted()`
+    licenses a speculative TRUE verdict (rail 5), so "skipped" reading as
+    "searched" would turn a cost cap into a wrong answer. The dev twin
+    `mace_finder.py` has never had this gate, which is why the constant's own
+    comment already recorded a witness the shipped solver could not claim —
+    when a dev tool outperforms the solver on a row, the gap is a bug, not a
+    tuning difference.
+5f-iii. **One shared deadline across a portfolio starves whatever runs last.**
+    `find_counterexample` ran the named tables, the structured/affine/quadratic
+    families, bounded enumeration **and** the dual of all of it on a single 2 s
+    deadline, dual last. `witness_check` costs `n ** variables`, so on a
+    5-variable row every table test is ~n² dearer: on `hard2_0092` the primary
+    passes alone spent 1.6 s of the 2 s, leaving 0.4 s for a dual pass that
+    needs 0.1 s. It just fit on an idle machine and never fit under the audit's
+    16-way parallelism, so the row read as a permanent skip — while the witness
+    (`false:dual:false:witness:S5B`) had been in the solver for months. The dual
+    now gets its own slice. Look for this shape wherever a cheap-to-expensive
+    portfolio shares one clock: the last stage's budget is whatever the earlier
+    ones happen to leave, which is not a budget.
+5f-iv. **A deadline checked once per outer iteration is not a deadline.**
+    `_egg_run_saturation` polled the clock once per e-class while *building* its
+    application list. With several rules the orientation count doubles per rule
+    and a free-variable product over the pool is hundreds of candidates per
+    match, so a 2 s rung attempt ran for minutes and stalled a whole probe.
+    Poll per unit of work, not per loop level — and note the failure mode is
+    silent overshoot, which looks exactly like a hard row.
 5g. **A fast path keyed on `.get(a) == .get(b)` fires on two missing keys.**
    `is_reflexive_problem` read `problem.get("eq1_id") == problem.get("eq2_id")`,
    so a payload carrying only equation text made `None == None` true and the
@@ -390,16 +501,32 @@ than skipping.
   fixed order — cheap syntactic routes first, expensive search engines last.
   **Order is load-bearing**; it is what keeps solved rows from paying for the
   hungry engines.
-- The general TRUE engines, in order: `equational_closure`,
+- The general TRUE engines, in order: `egg_probe`, `equational_closure`,
   `deep_absorption_closure`, `derived_cp_closure`, `projection_bootstrap`,
   `lemma_bootstrap`, `lemma_chain_bootstrap`, `egg_closure`, **`egg_collapse`**,
-  **`egg_bootstrap`**, then the demoted `narrow_grind`.
+  `egg_priority_bootstrap`, **`egg_bootstrap`**, **`egg_ladder`**, then the
+  demoted `narrow_grind`.
+- **`egg_ladder` (2026-08-11) is the only engine that reasons with more than one
+  law at a time.** `egg_saturate_prove_multi` saturates under a *set* of rules,
+  each carrying the Lean hypothesis name that justifies it; the route derives a
+  small law from eq1, binds it with `have`, and saturates again with that law in
+  scope (up to 4 rungs). It exists for rows where single-rule saturation
+  *terminates* short of the pivot, which no extra clock can fix. Certificates
+  are the existing `lemma_chain` shape, so `check_true_lemma_chain_certificate`
+  verifies every rung independently — no new oracle surface. The measurement
+  that justifies it, on `hard3_0266`: single-rule egg cannot reach right
+  projection in 60 s, idempotence is derivable in under 2 s, and with idempotence
+  in scope right projection follows in **0.01 s with a 267-byte proof**.
 - FALSE: named compact witnesses → structured/affine/quadratic families →
   bounded `Fin 2..3` enumeration → **`constraint_countermodel` cheap tier
   (orders 8,9,6,4,10 — most successes land in ~0.5 s)** → [TRUE engines] →
   `local_model_counterexample` (randomized `Fin 4..6` repair search) →
   **`constraint_countermodel` wide tier (45 s per order)**. Everything after the
   cheap tier runs only on rows nothing else claimed, so solved rows pay nothing.
+  The cheap tier is capped at 4 variables and the wide tier at 6 with a per-order
+  instance bound (`n ** variables <= 20_000`) — see rail 5f-ii for why those two
+  numbers differ. The named-table pass also runs its **dual** on its own time
+  slice rather than on the leftovers (rail 5f-iii).
 - The two newest levers, both from the same idea (aim at a smaller target):
   `egg_collapse` proves `eq1 ⇒ (x = y)` by equality saturation, and
   `constraint_countermodel` is a Mace4-style propagation search for quasigroup
@@ -454,32 +581,71 @@ solver primitive cannot hide itself in the oracle.
 
 ## Known open frontier
 
-**11 official skips** (measured 2026-08-07, isolated audit): `normal_0090`,
-`normal_0491`, `hard2_0073`, `hard2_0092`, `hard2_0123`, `hard2_0162`,
-`hard3_0135`, `hard3_0204`, `hard3_0214`, `hard3_0266`, `hard3_0314`.
-`hard2_0073` solves standalone at `standard` (scheduling-marginal) and
-`hard2_0123` needs the `standard` constraint tier, so the hard frontier is ~9.
+**3 official skips** (measured 2026-08-11, isolated audit), all TRUE:
+`hard2_0073`, `hard3_0214`, `hard3_0314`. FALSE is complete.
 
-Ranked next levers (evidence-backed; the 2026-08-07 discovery pass produced a
-diagnosis for most remaining rows — see that session's results doc):
+For each: a viable pivot is identified and `lemma_survives_models` confirms it is
+not refutable, and **neither the pivot nor any rung is provable by equality
+saturation at any budget tried up to `deep`.** `hard2_0073` is the one measured
+exhaustively — 1336 s at `deep`, every curated pivot, every goal generalisation,
+the full rung scan, and an explanation over 20,000 steps when its projections do
+merge. eq1 for this family also has **no critical pairs with itself** (the pattern
+has 4 operations; every proper subterm has at most 3), so any proof must go
+through expanded terms — which is exactly the search ETP's Vampire proofs run and
+an e-graph seeded from the goal does not.
 
-1. **Bytes-weighted egg extraction.** `normal_0491` is *proved* — the e-graph
-   merges everything into one class in seconds — but the shortest extractable
-   proof renders at 135 KB against the judge's 50 KB cap. Extraction currently
-   minimises step count, not rendered bytes. This is the single most concrete
-   open lever: a ~3x byte reduction ships the row through an existing route
-   with no new oracle surface.
-2. **Multi-rule egg saturation seeded with self-overlap helpers.** The
-   `evaluation_order5_*` and `evaluation_hard_0116/0196` rows all reduce to one
-   missing hop that single-rule egg cannot make; hand CP-overlaps of eq1 with
-   itself (instantiating eq1's own RHS subterms as redexes) produce helper laws
-   with free 2-step proofs. Kernel-verified partial chains exist for several.
-3. **`hard3_0314`**: eq1 is equivalent to right projection; the unlock law
-   `(a ◇ b) ◇ a = a` yields it in two kernel steps. Try deep-effort
-   `egg_priority_bootstrap` on the right-projection target first — possibly
-   zero-code.
-4. **`hard3_0214`**: models are exactly `x ◇ y = f(x)` with `f³ = id`; needs
-   `LEMMA_ENUM_MAX_RHS_OPS` 3→4 for bare-`a` LHS laws, or egg pool seeding with
-   eq1-expansions of the goal variables.
-5. Step-count instead of wall-clock budgets, making route selection
-   deterministic and letting the golden gate return to strict equality.
+Six HF rows remain open with the same shape (`evaluation_hard_0116`/`0196`,
+`evaluation_order5_0014`/`0040`/`0042`/`0164`).
+
+Ranked next levers, updated 2026-08-11 after the ladder. Two of the four levers
+that stood here are now **closed or refuted**, so read the refutations too —
+they are the more useful half:
+
+- ~~Bytes-weighted egg extraction~~ — **refuted as a lever, and worth knowing
+  why** (rail 5d-ii). `normal_0491`'s chain is incompressible: 4510 → 1548 steps
+  by cycle-cutting, then a full BFS over the replayed states finds no shortcut,
+  and a context-factoring renderer buys 2.4–2.9x against a ~9x shortfall. The
+  size was a *symptom* of a certificate shape that cannot name a lemma. Closed by
+  `egg_ladder` at 4755 bytes.
+- ~~Multi-rule egg saturation~~ — **built** (`egg_saturate_prove_multi` +
+  `egg_ladder`), 6 official rows. But note the seeding idea in the old note was
+  wrong: rungs cannot be harvested from a saturated generic-term graph, because
+  every merged pair there is a direct *instance* of eq1 (640 of them on
+  `hard3_0314`, all 9-byte proofs). They come from the small-law library instead.
+
+Also refuted in the second pass, so nobody spends a session on them again:
+
+- ~~Rungs from a wider candidate set~~ — **built and measured insufficient.**
+  `goal_generalization_pivots` derives candidates from eq2's own structure and
+  demonstrably finds the right one (it produces ETP's Eq267 for `hard3_0214`), and
+  the row still does not close. Candidate generation was not the binding
+  constraint; *proving* the candidate is. Keep the mechanism — it is cheap, sound
+  and general — but do not expect more rows from widening it further.
+- ~~`hard2_0073` is an extraction problem~~ — **no.** Raising the explanation depth
+  limit 400 → 20,000 only moves the failure from "recursion too deep" to
+  "explanation too long": the explanation is over 20,000 steps. The row also fails
+  at **`deep`** effort (1336 s) with every pivot, every generalisation and the full
+  rung scan.
+- ~~Self-overlap helper laws~~ — **structurally impossible for this family.** eq1's
+  pattern has 4 operations and every proper subterm has at most 3, so eq1 has no
+  critical pairs with itself. There is nothing to seed with.
+- ~~`hard1_0062` / `hard2_0123` need a bigger wide-tier slice~~ — closed a better
+  way. Both solve at `standard` (315 s / 405 s, judge-accepted) and are now
+  **distilled**, so they cost a dict probe at every tier. No budget change needed.
+
+1. **The nine remaining TRUE rows need a different proof search, not more of this
+   one — and that is measured, not inferred.** Three official (`hard2_0073`,
+   `hard3_0214`, `hard3_0314`) and six HF. All are known-true; the vendored matrix
+   confirms it. `etp_chain.py --mode ladder` supplies candidate laws the matrix
+   **guarantees** are derivable from eq1, and equality saturation still cannot
+   derive them: 13 candidates across three rows at 60–120 s each, plus
+   `hard2_0073` at `deep` for 1336 s. eq1 also has no self-critical-pairs for this
+   family. So: ordered superposition with term indexing (what found ETP's proofs),
+   or hand-derived certificates through `distill_certs.py`, which judges before it
+   emits and refuses anything the judge did not accept. **Do not re-try more
+   clock, a wider candidate list, or another pivot heuristic** — each was tried
+   and measured this session.
+2. Step-count instead of wall-clock budgets, making route selection
+   deterministic and letting the golden gate return to strict equality. This is
+   now the *most* valuable structural item: three separate cost bugs this session
+   (rails 5f-iii, 5f-iv) were all "a wall-clock bound in the wrong place".

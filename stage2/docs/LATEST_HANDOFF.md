@@ -1,8 +1,87 @@
 # Latest Handoff
 
-Updated: 2026-08-07 (distilled certificate library + early egg probe: official 1647 → **1658/1669**, `hard1` complete, both FALSE holdouts closed, 24/24 new certs judge-accepted).
+Updated: 2026-08-11 (the lemma ladder + gap-closing pass: official 1658 → **1666/1669 (99.82%)**, **FALSE 850/850 complete**, `normal` and `hard1` complete, HF 792 → **795/800**, combined **2461/2469**, **+12/−0** by row id, 11/11 new certs judge-accepted, packaged 480,115 B).
 
-## 2026-08-07: distilled library, early egg probe, first infinite countermodel (newest — read first)
+## 2026-08-11: the lemma ladder, and three searches that were being starved (newest — read first)
+
+Full detail: `stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`.
+
+The entry state's top next-lever was "bytes-weighted egg extraction" for
+`normal_0491`. It was aimed at the wrong thing, and finding that out produced the
+session's result.
+
+- **A per-row probe over all 19 open rows split "unsolved" into four different
+  failure modes.** New durable tooling: `pivot_probe.py`, `egg_bytes_probe.py`,
+  `frontier_dossier.py`, `ladder_probe.py`, `egg_cert_snapshot.py`,
+  `distill_certs.py`.
+- **The bytes lever is dead on its own terms, and that is informative.**
+  `normal_0491`'s collapse explanation is 4510 steps / 400 KB against a 46 KB
+  cap. Shortening cuts it to 1548 and then a full BFS over the replayed states
+  finds **no** shortcut; a context-factoring renderer (prototyped, measured)
+  buys 2.4–2.9x. But those 1548 steps use only **38 distinct eq1 instances** at
+  positions up to depth 16 — the chain is long because a flat `.trans` proof over
+  one hypothesis cannot **name** an intermediate law, so it re-derives the same
+  fact at every instance.
+- **Shipped `true:egg_ladder`** — `egg_saturate_prove_multi` saturates under a
+  *set* of rules, each carrying the Lean hypothesis name that justifies it, and
+  the route derives a small law, binds it with `have`, and saturates again with
+  that law in scope (up to 4 rungs). The measurement that decided the design, on
+  `hard3_0266`: right projection unreachable in 60 s single-rule, idempotence
+  derivable in under 2 s, right projection then **0.01 s / 267 bytes**.
+  `normal_0491` ships at 4755 bytes.
+- **Rungs cannot come from the e-graph.** The first implementation read merged
+  pairs off a saturated generic-term graph; on `hard3_0314` that produced 640
+  "laws" and every one was a direct **instance of eq1** (9-byte proofs), because
+  only 10 of 1431 classes held more than one term. Candidates come from the
+  small-law library in size order, gated by `lemma_survives_models` (free: ~10 ms
+  for all 601, rejecting 429 of them).
+- **Shipped `lemma_closes_goal`** — the pivot gate searched `eq2.lhs -> eq2.rhs`
+  only, and every frontier goal is `x = <big term>`, so the pivot has to reduce
+  the *big* side. Right projection closes `hard3_0314`'s goal in three
+  reductions; the forward-only gate reported nothing, so that row never got an
+  egg attempt at the one law its eq1 is equivalent to.
+- **`hard2_0092` was never a proof problem.** Two independent guards hid a
+  witness the solver already owned: `constraint_countermodel` refused any row
+  with >4 variables (it has 5; the search finds an order-5 witness in 0.33 s /
+  126 nodes), and `find_counterexample` ran its whole portfolio *and* the dual
+  pass on one shared 2 s deadline with the dual last — on a 5-variable row, where
+  each table test costs `n**5`, the primary passes ate 1.6 s and left the dual
+  0.4 s for 0.1 s of work. Fit on an idle machine, never under 16-way audit
+  parallelism. Now 1.75 s via `false:dual:false:witness:S5B`.
+- **Three cost bugs found building this**, all worth internalising: a deadline
+  polled once per outer loop level is not a deadline (saturation overshot a 2 s
+  attempt by minutes while *building* its application list); greedy proof
+  bridging is O(states²) × rules and needs a hard state cap, not just a clock;
+  and the step budget on explanation extraction is really a bound on BFS
+  traversals of the whole proof forest, so it must be sized by what can actually
+  render (20_000, not 200_000).
+- No new oracle surface: certificates are the existing `lemma_chain` shape, and
+  `check_true_lemma_chain_certificate` verifies each rung independently. The
+  single-rule engine is untouched — 249 audited rows ride on it (rail 1).
+
+**Gap-closing pass (same session).** Official skips 11 → **3, all TRUE**:
+
+- `hard1_0062` and `hard2_0123` were never mathematically open — both solve at
+  `standard` (315 s / 405 s, judge-accepted) and are now **distilled**, so that
+  result costs a dict probe at every tier. 405 s was more than a whole problem's
+  average Marathon budget.
+- **`goal_generalization_pivots`** derives pivots from eq2's own structure (a law
+  `G` with `G[s]` syntactically eq2, closing the goal by instantiation). It finds
+  the right candidate — ETP's Eq267 for `hard3_0214` — and the rows *still* do not
+  close.
+- **`etp_chain.py`** is the new instrument and the sharp result. The vendored ETP
+  matrix gives the exact set `{M : eq1 ⇒ M}`, so candidates can be *guaranteed*
+  derivable rather than merely "not obviously refutable". Given those,
+  equality saturation still cannot derive even the size-6 ones: 13 candidates
+  across three rows at 60–120 s each, and `hard2_0073` also fails at `deep`
+  (1336 s). **The candidate set was never the constraint; the proof search is.**
+  Also: walking the eq1 → eq2 path is the *wrong* use of the graph — every law on
+  it is a consequence of the previous, so the first hop carries all the difficulty.
+- Package: **10 KB recovered for free** by writing the submission with LF instead
+  of copying the CRLF tree (490,503 → 480,115). `DISTILLED_CERTS` is 14.8% of the
+  file, so a distilled row costs 2–12 KB — budget it deliberately.
+
+## 2026-08-07: distilled library, early egg probe, first infinite countermodel
 
 Full detail: `stage2/results/2026-08-07-distilled-library-and-egg-probe.md`.
 

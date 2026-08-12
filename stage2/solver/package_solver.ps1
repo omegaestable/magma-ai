@@ -36,7 +36,16 @@ if ($outDir) {
     Get-ChildItem -Force -Path $outDir | Remove-Item -Force -Recurse
 }
 
-Copy-Item -Force $sourcePath $OutPath
+# Write the submission with LF line endings instead of copying the CRLF source.
+# This is worth ~10 KB of the 500 KB cap and costs nothing: the working tree is
+# CRLF (Windows + git autocrlf), the file is ~10,400 lines, and every one of those
+# carries a byte the judge does not need. Measured 2026-08-11: 490,503 bytes as a
+# straight copy, 480,115 with LF — 2% of the cap recovered with no content change.
+# Python is indifferent to line endings, and the 500 KB limit is on file bytes.
+# UTF8Encoding($false) = no BOM; the file contains ◇ and a BOM would be junk the
+# judge has to parse.
+$text = [System.IO.File]::ReadAllText($sourcePath) -replace "`r`n", "`n"
+[System.IO.File]::WriteAllText($OutPath, $text, (New-Object System.Text.UTF8Encoding($false)))
 $sizeBytes = (Get-Item $OutPath).Length
 
 if ($sizeBytes -gt $limitBytes) {

@@ -33,6 +33,9 @@ GOLDEN_PATH = REPO_ROOT / "stage2" / "tests" / "golden_routes.json"
 # load). Route labels within a family are timing-dependent (which library
 # index or witness matched first), so pinning the marginal one is what made
 # the pre-package gate flaky (2026-07-23).
+# Audit seconds above which a row is not golden material. See the filter below.
+GOLDEN_MAX_SECONDS = 10.0
+
 _GENERAL_CLOSURE_FAMILIES = {
     "true:absorption_closure",
     "true:equational_closure",
@@ -93,15 +96,32 @@ def main() -> int:
                 # which is how a gate ends up routinely skipped. Their
                 # certificates are kernel-checked (the `lemma` shape) in every
                 # audit and spotcheck run, and 10 of them are judge-verified.
+                # `egg_ladder` joins them for the same reason and more strongly:
+                # it is the very last kernel-verifiable engine, it re-solves in
+                # 4-27 s at `fast`, and it spends part of that budget scanning
+                # the lemma library for a rung — so which rung it finds, and
+                # therefore which pivot closes the row, is wall-clock dependent.
                 if row["route"].startswith(("true:egg_collapse",
-                                            "true:egg_bootstrap")):
+                                            "true:egg_bootstrap",
+                                            "true:egg_ladder")):
                     continue
-                # The wide constraint tier is likewise last-resort and
-                # per-order budgeted (45 s x 7 orders). The cheap tier
-                # (`false:constraint_fin*` landing in ~0.5 s) is fine to pin and
-                # is not excluded — only rows that took real time are dropped.
-                if (row["route"].startswith("false:constraint_fin")
-                        and row.get("seconds", 0) > 10):
+                # A row that took real time in the audit is budget-marginal by
+                # definition, whatever route claimed it, and the audit's own
+                # `seconds` predicts the gate almost exactly — measured
+                # 2026-08-11 on `evaluation_order5_0065`: 170.3 s audited,
+                # 170.7 s in the gate. Pinning those is how a 22 s gate became a
+                # 208 s one, and a slow gate is a gate people `-SkipTests`.
+                #
+                # This started life as a `false:constraint_fin`-only rule. It
+                # should never have been route-specific: what makes a row unfit
+                # for the gate is its cost, and the routes that run *after* the
+                # TRUE engines (`local_model`, the wide constraint tier) now pay
+                # for `egg_ladder` too, so more of them cross the line. Families
+                # whose cheapest instance is over the line simply go unpinned;
+                # their certificates are still kernel-checked in every audit and
+                # spotcheck run, which is the same argument the egg exclusions
+                # above rest on.
+                if row.get("seconds", 0) > GOLDEN_MAX_SECONDS:
                     continue
                 by_route[_route_family(row["route"])].append(row)
 

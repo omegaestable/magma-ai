@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 import time
 from pathlib import Path
 
@@ -726,6 +727,292 @@ def test_egg_collapse_certificate_is_kernel_checkable(solver, problems_by_id):
     # Both halves replayed: collapse from eq1, goal from the stated collapse law.
     oracles.check_true_lemma_certificate(code, eq1, eq2)
     oracles.check_no_banned_tactics(code, route)
+
+
+def test_egg_ladder_certificate_is_kernel_checkable(solver, problems_by_id):
+    """`true:egg_ladder` must emit the kernel-checkable `lemma_chain` shape.
+
+    The ladder derives a small law, binds it with `have`, and saturates again
+    with that law in scope. `normal_0090` is the motivating row: single-rule egg
+    cannot reach right projection there in 60 s, and the ladder closes the goal
+    in ~17 s at `fast`. Every rung is verified independently by the kernel, so
+    an unsound rung cannot hide behind a sound final step.
+    """
+    problem = problems_by_id.get("normal_0090")
+    if problem is None:
+        pytest.skip("normal_0090 not present locally")
+    eq1 = solver.parse_equation(str(problem["equation1"]))
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    solver.set_effort("fast")
+    solver.clear_term_caches()
+    found = solver.egg_ladder_route(eq1, eq2)
+    if found is None:
+        pytest.skip("egg_ladder did not fire within its budget on this machine")
+    route, code = found
+    assert route.startswith("true:egg_ladder:")
+    assert oracles.classify_true_certificate(code) == "lemma_chain"
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+    oracles.check_no_banned_tactics(code, route)
+
+
+def test_lemma_chain_oracle_rejects_a_rung_that_is_not_proved(solver):
+    """A ladder is only as sound as the weakest rung, so the oracle must check
+    each `have` body against its own stated law rather than trusting the chain.
+
+    Mutation test: build a valid two-part chain, then change one rung's
+    *statement* while leaving its proof alone. That is exactly what a builder bug
+    would produce — a proof of one law presented as another — and it must be
+    rejected even though the final step still looks right.
+    """
+    eq1 = solver.parse_equation("x = y ◇ x")
+    eq2 = solver.parse_equation("x ◇ y = y")
+    lemma = solver.lemma_goal("a ◇ b = b")
+    goal_expr = solver.lemma_applies_to_goal(lemma, eq2)
+    assert goal_expr is not None
+    # `lemma_applies_to_goal` always cites `hlem`, which is why the final block
+    # carries that name and the rungs are `hlem0..`; build through the real
+    # builder so the test cannot drift from that contract.
+    rung = solver.lemma_goal("a ◇ a = a")
+    code = solver.lemma_chain_certificate(
+        [("hlem0", rung, "(h a a).symm")], lemma, "(h b a).symm",
+        list(eq2["variables"]), goal_expr)
+    assert oracles.classify_true_certificate(code) == "lemma_chain"
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+
+    lied = code.replace("(a ◇ b) = b := by", "(a ◇ b) = a := by")
+    assert lied != code
+    with pytest.raises(OracleError):
+        oracles.check_true_lemma_chain_certificate(lied, eq1, eq2)
+
+    # And a goal citing a rung that was never proved must not slip through.
+    dangling = code.replace("exact hlem ", "exact hlem9 ")
+    assert dangling != code
+    with pytest.raises(OracleError):
+        oracles.check_true_lemma_chain_certificate(dangling, eq1, eq2)
+
+
+def test_goal_generalizations_really_prove_the_goal(solver, problems_by_id):
+    """Every generalisation must close the goal by instantiation alone.
+
+    The whole point of the mechanism is that no chain search is needed — the
+    proof is `hlem <args>` — which also means nothing else checks it. So each
+    returned pair is verified here with the independent kernel, using the law as
+    the hypothesis exactly as the certificate scopes it.
+    """
+    for row_id in ("hard3_0214", "hard3_0314", "hard2_0073"):
+        problem = problems_by_id.get(row_id)
+        if problem is None:
+            continue
+        eq2 = solver.parse_equation(str(problem["equation2"]))
+        pivots = solver.goal_generalization_pivots(eq2)
+        assert pivots, f"no generalisation found for {row_id}"
+        for name, law, proof in pivots:
+            kernel = ProofKernel(
+                list(law["variables"]), law["lhs"], law["rhs"],
+                set(eq2["variables"]), "hlem")
+            proved = kernel.prove(proof)
+            assert proved == (eq2["lhs"], eq2["rhs"]), (
+                f"{row_id}/{name}: {law['text']} with {proof} proved "
+                f"{proved}, not the goal")
+            # A generalisation must be strictly more general: the goal must be an
+            # instance of it, and it must not simply *be* the goal.
+            assert solver.canonical_law_key(law) != solver.canonical_law_key(eq2)
+
+
+def test_goal_generalization_finds_the_etp_pivot_for_hard3_0214(solver, problems_by_id):
+    """`hard3_0214`'s goal is `x = ((x ◇ y) ◇ (z ◇ w)) ◇ y`. Abstracting only the
+    middle subterm gives `a = ((a ◇ b) ◇ c) ◇ b` — ETP's Eq267, a genuine pivot
+    for that row and weaker than the maximal generalisation `triple_left`, which
+    is measured unprovable there. Losing the *partial* abstractions would quietly
+    reduce this mechanism to the fixed pivot list it was built to escape."""
+    problem = problems_by_id.get("hard3_0214")
+    if problem is None:
+        pytest.skip("hard3_0214 not present locally")
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    wanted = solver.canonical_law_key(solver.lemma_goal("a = ((a ◇ b) ◇ c) ◇ b"))
+    keys = {solver.canonical_law_key(law)
+            for _n, law, _p in solver.goal_generalization_pivots(eq2)}
+    assert wanted in keys
+
+
+def test_egg_multi_render_rejects_a_corrupted_step(solver):
+    """The multi-rule renderer must replay every step, not trust the e-graph.
+
+    Mutation test: take a valid one-step proof and move the rewrite position.
+    The step no longer matches the term it claims to rewrite, so the renderer
+    has to fail closed rather than emit a proof of something else.
+    """
+    eq1 = solver.parse_equation("x = y ◇ x")
+    rule = solver._egg_rule_from(eq1, "h")
+    a, b = ("var", "a"), ("var", "b")
+    start = a
+    target = ("op", b, a)
+    subst = {"X": a, "Y": b}
+    good = solver._egg_render_steps_multi(
+        start, target, [((), 0, subst, False)], [rule], ["a", "b"],
+        max_bytes=10_000)
+    assert good is not None
+    # Same step, but claimed at a position that does not exist in `start`.
+    assert solver._egg_render_steps_multi(
+        start, target, [(("L",), 0, subst, False)], [rule], ["a", "b"],
+        max_bytes=10_000) is None
+    # Same step, but pointing at a rule index that is not in the rule set.
+    assert solver._egg_render_steps_multi(
+        start, target, [((), 7, subst, False)], [rule], ["a", "b"],
+        max_bytes=10_000) is None
+
+
+def test_egg_multi_shorten_rejects_an_unbound_substitution(solver):
+    """A step whose substitution misses a rule variable must be rejected.
+
+    `_egg_substitute` would raise `KeyError` on it; the shortener has to catch
+    that shape up front so the route returns None instead of crashing the row.
+    """
+    eq1 = solver.parse_equation("x = y ◇ x")
+    rule = solver._egg_rule_from(eq1, "h")
+    incomplete = {"X": ("var", "a")}  # "Y" missing
+    assert solver._egg_shorten_steps_multi(
+        ("var", "a"), [((), 0, incomplete, False)], [rule]) is None
+
+
+def test_lemma_closes_goal_sees_a_reverse_reduction(solver, problems_by_id):
+    """`lemma_applies_to_goal` only searches lhs -> rhs, and every remaining
+    frontier goal is shaped `x = <big term>`, so the pivot has to reduce the
+    *big* side. `hard3_0314` is the measured case: right projection closes its
+    goal in three reductions, and the forward-only gate reports nothing, which
+    is why the row never got an egg attempt at the law its eq1 is equivalent to.
+    """
+    problem = problems_by_id.get("hard3_0314")
+    if problem is None:
+        pytest.skip("hard3_0314 not present locally")
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    right = solver.lemma_goal("a ◇ b = b")
+    assert solver.lemma_applies_to_goal(right, eq2) is None
+    expr = solver.lemma_closes_goal(right, eq2)
+    assert expr is not None
+    # A permissive gate is worthless if the expression it hands back is not a
+    # real proof: the `.symm` wrapper has to make the reversed chain prove the
+    # goal in the stated direction. Checked by the independent kernel, with the
+    # pivot standing in as the hypothesis exactly as the certificate scopes it.
+    kernel = ProofKernel(
+        list(right["variables"]), right["lhs"], right["rhs"],
+        set(eq2["variables"]), "hlem")
+    assert kernel.prove(expr) == (eq2["lhs"], eq2["rhs"])
+
+
+def test_constraint_countermodel_reaches_five_variable_rows(solver, problems_by_id):
+    """`hard2_0092` has an order-5 countermodel the search finds in ~0.3 s, and
+    a blanket `> 4 variables -> return None` gate meant it never looked (rail
+    5f, third instance). The wide tier now bounds cost per order instead."""
+    problem = problems_by_id.get("hard2_0092")
+    if problem is None:
+        pytest.skip("hard2_0092 not present locally")
+    eq1 = solver.parse_equation(str(problem["equation1"]))
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    assert len(eq1["variables"]) == 5
+    solver.set_effort("fast")
+    found = solver.constraint_countermodel(
+        eq1, eq2, orders=(5,), time_budget=30.0, per_order=True,
+        max_variables=solver.CONSTRAINT_WIDE_MAX_VARIABLES)
+    assert found is not None
+    n, table, route = found
+    assert n == 5 and route == "false:constraint_fin5"
+    # Never trusted: the table must genuinely satisfy eq1 and refute eq2.
+    assert solver.table_is_counterexample(eq1, eq2, table)
+    oracles.check_false_certificate(solver.false_certificate(n, table), eq1, eq2)
+
+
+def test_constraint_cheap_tier_still_skips_five_variable_rows(solver):
+    """The cheap tier runs on *every* row before the TRUE engines, and 168 of
+    the corpus's five- and six-variable rows are TRUE, where no witness exists.
+    Widening it would spend budget on all of them, so it stays at 4."""
+    eq1 = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ u) ◇ u")
+    eq2 = solver.parse_equation("x ◇ (y ◇ z) = (y ◇ w) ◇ u")
+    assert solver.CONSTRAINT_CHEAP_MAX_VARIABLES == 4
+    assert solver.constraint_countermodel(eq1, eq2) is None
+
+
+def test_constraint_skipped_order_does_not_count_as_exhausted(solver):
+    """An order skipped for cost was never searched, so the search is not
+    exhaustive — and `constraint_search_exhausted()` is what licenses a
+    speculative TRUE verdict (rail 5). Reading "skipped" as "searched" would
+    turn a cost cap into a wrong answer."""
+    eq1 = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ u) ◇ u")
+    eq2 = solver.parse_equation("x ◇ (y ◇ z) = (y ◇ w) ◇ u")
+    solver.set_effort("fast")
+    solver.reset_constraint_evidence()
+    # Every order here exceeds the instance cap for a 5-variable row.
+    assert solver.constraint_countermodel(
+        eq1, eq2, orders=(9, 10), time_budget=5.0,
+        max_variables=solver.CONSTRAINT_WIDE_MAX_VARIABLES) is None
+    assert not solver.constraint_search_exhausted()
+
+
+def test_max_rec_depth_is_driven_by_decide_cost_not_order(solver):
+    """`hard2_0092`'s order-6 witness, and the rule it taught us.
+
+    A `Fin 6` table against a 5-variable goal is 6**5 = 7,776 `decideFin!`
+    applications, and the judge **rejected** it (`LEAN_REJECTED`) without
+    `set_option maxRecDepth`, then accepted the identical table with it
+    (verified against the real judge, 2026-08-11). The same table against a
+    4-variable goal, and a `Fin 5` table against the same 5-variable goal
+    (3,125 applications), are accepted either way.
+
+    So the trigger is `n ** variables`, not the order — the same mistake the
+    retired order-10 ceiling made (rail 3b-ii). What must never happen again is a
+    high-variable witness going out without the option, so that is what is pinned.
+    """
+    eq1 = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ u) ◇ u")
+    eq2 = solver.parse_equation("x ◇ (y ◇ z) = (y ◇ w) ◇ u")
+    order6 = [[2, 3, 3, 3, 2, 3], [2, 3, 3, 3, 2, 3], [3, 5, 3, 3, 3, 3],
+              [3, 3, 3, 3, 3, 3], [2, 3, 3, 3, 2, 3], [2, 3, 3, 3, 2, 3]]
+    assert solver.table_is_counterexample(eq1, eq2, order6)
+    assert solver.witness_decide_applications(6, eq1, eq2) == 6 ** 5
+
+    deep = solver.false_certificate(
+        6, order6, decide_applications=solver.witness_decide_applications(6, eq1, eq2))
+    assert "set_option maxRecDepth" in deep
+
+    # Order 5 at the same variable count is under the measured band, and the
+    # whole accepted corpus is orders <= 6 with <= 4 variables: both must stay
+    # byte-identical to what the judge has already accepted.
+    order5 = [[2, 3, 3, 3, 3], [2, 3, 3, 3, 3], [3, 4, 3, 3, 3],
+              [3, 3, 3, 3, 3], [2, 3, 3, 3, 3]]
+    shallow = solver.false_certificate(
+        5, order5, decide_applications=solver.witness_decide_applications(5, eq1, eq2))
+    assert "set_option maxRecDepth" not in shallow
+    assert shallow == solver.false_certificate(5, order5)
+
+    four_vars = solver.parse_equation("x ◇ (y ◇ z) = (w ◇ y) ◇ z")
+    assert solver.witness_decide_applications(6, four_vars) == 6 ** 4
+    plain = solver.false_certificate(
+        6, order6,
+        decide_applications=solver.witness_decide_applications(6, four_vars))
+    assert "set_option maxRecDepth" not in plain
+    assert plain == solver.false_certificate(6, order6)
+
+
+def test_solve_problem_guards_a_high_variable_witness(solver, problems_by_id):
+    """End to end: whatever route claims `hard2_0092`, the emitted certificate
+    must carry `maxRecDepth` if its decide cost is above the measured band. The
+    renderer is reached through `make_false_answer`, so a plumbing break here is
+    invisible to the unit test above."""
+    problem = problems_by_id.get("hard2_0092")
+    if problem is None:
+        pytest.skip("hard2_0092 not present locally")
+    eq1 = solver.parse_equation(str(problem["equation1"]))
+    eq2 = solver.parse_equation(str(problem["equation2"]))
+    solver.set_effort("fast")
+    solver.clear_term_caches()
+    record = solver.solve_problem(problem, false_time_budget=2.0)
+    if record is None or record["answer"]["verdict"] != "false":
+        pytest.skip("no FALSE witness claimed on this machine")
+    code = record["answer"]["code"]
+    oracles.check_false_certificate(code, eq1, eq2)
+    n = int(re.search(r"Fin (\d+)", code).group(1))
+    if solver.witness_decide_applications(n, eq1, eq2) > \
+            solver.DECIDE_MAX_REC_DEPTH_APPLICATIONS:
+        assert "set_option maxRecDepth" in code
 
 
 def test_multi_digit_table_never_uses_the_finOpTable_shape(solver):
