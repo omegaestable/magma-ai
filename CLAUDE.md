@@ -46,22 +46,60 @@ Three organizer answers on the forum, all checked against the vendored snapshot
    Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
    row resists every finite order.
 
-## Current measured state (2026-08-12)
+## Current measured state (2026-08-12, session 2)
+
+Every number below is from a **fresh isolated audit run this session** — the
+1669/1669 that stood here had never actually been measured end to end (the
+completion session re-measured only the 9 rows it closed, per instruction).
 
 | Metric | Value |
 | --- | --- |
 | Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669 (100%)** |
-| Official TRUE | **819 / 819 — complete** |
-| Official FALSE | **850 / 850 — complete** |
-| `normal` / `hard1` | **1000 / 1000** and **69 / 69** — both complete |
-| Remaining unsolved | **0 — corpus complete** (official 1669/1669, HF 800/800) |
+| Official TRUE / FALSE | **819 / 819** and **850 / 850** — both complete |
+| HF mirror sets | **800 / 800 — complete** |
+| `sample_200` (a 200-row **ETP** sample, disjoint from `normal`) | **200 / 200** — was 197/200; the last three local skips were closed this session |
+| Remaining unsolved, anywhere local | **0** — combined offline **2689 / 2689** |
 | Oracle failures / crashes / label mismatches | **0 / 0 / 0** |
-| HF mirror sets | **800 / 800 — complete** — combined offline **2469 / 2469** |
-| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, 24/24 distilled-library certs, 11/11 certs 2026-08-11, **9/9 completion-derived certs 2026-08-12 (the final nine)** |
-| Real-runner evidence, new routes | **Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected, 0 LLM calls** (2026-08-07 routes; `egg_ladder` has judge but not yet real-runner evidence) |
-| Offline gate | **210 passed, 2 skipped, ~16 s** (`-n auto`) |
-| Packaged size | **382,824 bytes of 500,000 — 117,176 bytes (23.4%) headroom.** |
-| Solver source | **9,043 lines** (was 10,388 before the 2026-08-11 simplification pass) |
+| Audit wall clock, official (16 workers) | **980 s → 330 s (3.0x faster)** — a lower bound; see the caveat below |
+| Audit wall clock, HF | **773 s → 344 s (2.2x)**; `hf_evaluation_order5` **611.5 s → 162.9 s** |
+| Worst-case per-row latency, off the packaged artifact | `normal_0823` **252.7 s → 0.07 ms**, `hard1_0025` **217.3 s → 0.31 ms** |
+| Real-judge evidence, individually verified | 99 certificates byte-pinned and **all 99 re-checked by the gate** (was 69 checked / 31 skipped). Includes **34/34 accepted this session** — 19 official + 12 HF distilled, plus 3 completion-derived |
+| Real-runner evidence, this session | **Marathon `hard3.jsonl` 400/400 accepted, 0 rejected, 0 `not_attempted`, `llm_calls` 0 of a 200,000-token budget.** Was 396/400 with 4 `not_attempted` in the 08-01/03 campaign. 91 route kinds fired; 10 rows served by an exact `DISTILLED_CERTS` byte match, 5 of them distilled this session |
+| Real-runner evidence, older routes | Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected (2026-08-07). **Solo has no evidence for the new tier ladder yet** — it runs `deep`, so three passes, and nothing has exercised that end to end |
+| Real-runner generalization | **Marathon on 200 fresh ETP rows (seed `20260812`, benchmark ids excluded): 200/200 accepted, 0 rejected, 0 `not_attempted`, 0 tokens.** Closing evidence totals **600/600 real-judge rows, 0 rejected, 0 LLM calls** |
+| Spotcheck (standing loop) | **108 rows / 9 sources, 100% accuracy, 100% coverage, 0 mistakes** (seed `20260812`) |
+| Offline gate | **252 passed, 2 skipped, ~24 s** (`-n auto`) |
+| Packaged size | **445,233 bytes of 500,000 — 54,767 bytes (11.0%) headroom.** |
+| Solver source | ~9,100 lines plus a 65-entry `DISTILLED_CERTS` block |
+
+**2026-08-12 session 2** (`stage2/results/2026-08-12-tier-inversion-and-latency.md`)
+— goal was efficiency without losing coverage, and both halves of that were met
+by **row-id diff across three isolated audits: 0 lost, +3 gained**:
+
+- **The tier inversion is fixed** (rail 12). We audit at `fast` and deploy at
+  `standard`/`deep`, and more budget was making the solver *worse*: at `deep`
+  with a 360 s row bound, `normal_0491` and `hard2_0162` were SKIP and now solve
+  in 97.6 s / 173.9 s. `solve_problem` walks the tier ladder instead of jumping.
+- **Marathon now bounds each row** (rail 13) — it previously bounded only the sum.
+- **The single-rule egg engine never got the deadline fix its twin got**
+  (rail 5f-v). Its 6 s probe budget was running **40 s at 11 GB RSS with zero
+  polls**, straight through an armed memory guard. `normal_0823`: **252.7 s →
+  1.09 s**, and a dozen `normal` rows moved from `derived_cp_closure` to the
+  cheaper `egg_collapse` the probe was built to find.
+- **34 certificates distilled**, all judge-accepted, taking the slow tail to O(1).
+- **The last three open rows closed** by reusing the ordered-completion pipeline
+  from the final nine — unchanged, no tuning, each joining in under 0.2 s.
+
+**Timing caveat, stated so nobody over-reads the wall-clock rows.** Part of this
+session's later measurement ran against heavy unrelated CPU load on the same
+machine (another project's search jobs, several at 1,000+ CPU-seconds, box at
+90%). The **coverage** numbers are unaffected — 0 mismatches over thousands of
+rows does not come and go with load, which is rail 5e's own lesson — but the
+speedup figures are **lower bounds on the improvement, not precise
+measurements**. The trustworthy timing evidence is the isolated single-row
+before/after probes (`normal_0491`, `hard2_0162`, `normal_0823`) and the
+packaged-artifact latency row above. **Check what else is on the machine before
+quoting a wall clock.**
 
 **2026-08-11 session** (`stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`):
 `1658 → 1666`, TRUE `810 → 816`, FALSE `848 → 850`, diffed by row id across two
@@ -200,11 +238,17 @@ Regenerate everything with the four commands below.
 .\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
 # 2. Full corpus audit (official sets; add --hf for the HF mirrors).
-#    ~35 min wall clock (measured 2026-08-11), not the ~450 s it used to be: the
-#    last-resort engines (egg_collapse 40 s, egg_bootstrap, egg_ladder 60 s, the
-#    wide constraint tier at 45 s x 7 orders) all run on every unsolved row. Only
-#    unsolved rows pay, so the cost scales with the frontier, not the corpus. Run
-#    it once per session, not per edit — and never two at once (rail 5e).
+#    ~17 min wall clock on 16 workers (measured 2026-08-12). Only unsolved and
+#    late-solving rows pay for the last-resort engines, so the cost scales with
+#    the frontier, not the corpus. Run it once per session, not per edit — and
+#    never two at once (rail 5e).
+#
+#    ADD --row-budget WHEN MEASURING A DEPLOYED TIER. Solo and Marathon always
+#    bound a row; the audit does not unless told to, so `--effort standard/deep`
+#    without it measures a solver no runner will ever be. Real Marathon at the
+#    default compression ratio is `standard` with ~180 s per row on average
+#    (`--effort standard --row-budget 540` models the borrow ceiling); real Solo
+#    is `deep` with 1980 s. See rail 12.
 .\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
 
 # 3. The standing accuracy loop. Run it every session; fix whatever it pins.
@@ -223,9 +267,12 @@ judge** (see below). It is the only thing that is not an upper bound.
    2026-07-21: "subsumed" routes are cheap high-volume fast paths, and 29 routes
    look dead on the official sets but are live on the HF sets. De-bloat means
    junk files and stale docs, never coverage.
-   **Size was briefly binding (4.0% headroom on 2026-08-11) and no longer is.**
-   The package is 355,879 of 500,000 bytes — 144,121 left, 28.8%. Two levers got
-   it there, in this order:
+   **Size was briefly binding (4.0% headroom on 2026-08-11), then was not, and
+   is now worth watching again.** The package is **445,233 of 500,000 bytes —
+   54,767 left, 11.0%**, after 2026-08-12 session 2 spent ~60 KB distilling the
+   slow tail. That was a deliberate trade of bytes for latency, not drift: it
+   took the official audit's wall clock from 980 s to 330 s. Two earlier levers
+   bought the room, in this order:
    - **Simplification, −51 KB.** 37 bespoke `*_source` pattern matchers became one
      `law_matcher` plus a table row each, and the route families that wrapped them
      became factories. Source: 10,388 → 9,043 lines. This is *not* de-bloat by
@@ -239,11 +286,13 @@ judge** (see below). It is the only thing that is not an upper bound.
      the judge. The stripper proves the artifact parses to the same tree as the
      source before writing, and the whole offline gate was run against the stripped
      artifact itself (201 passed) — that is what rail 1 asked for, done.
-   Where the bytes still are, measured: `DISTILLED_CERTS` is 72.8 KB over 22
-   entries (the two largest 12.6 KB and 11.9 KB), so a distilled row costs 2–12 KB
-   of the cap — worth knowing before distilling a big egg proof, and the reason
-   2026-08-07 left two oversized certs out. `WarnBytes` in the packager is now
-   450,000: a "within 10% of the cap" alarm, not a de-bloat target.
+   Where the bytes are, measured 2026-08-12: `DISTILLED_CERTS` is **65 entries**
+   and the dominant cost in the file. A distilled row costs anywhere from 232 B
+   to 14.6 KB, so **rank distillation candidates by seconds-saved per byte, not
+   by seconds** — the best trade of that session was `normal_0823` at 232 bytes
+   for 253 seconds and the worst rejected one was `hard3_0134` at 34.9 KB for
+   46 s. `WarnBytes` in the packager is 450,000: a "within 10% of the cap"
+   alarm, not a de-bloat target.
 2. **Compare TRUE counts, not solved counts, and diff by row id.** The FALSE
    search is wall-clock bounded, so solved totals carry a ±7 run-to-run noise
    band. A route change is judged by row-id diff.
@@ -406,6 +455,31 @@ judge** (see below). It is the only thing that is not an upper bound.
     match, so a 2 s rung attempt ran for minutes and stalled a whole probe.
     Poll per unit of work, not per loop level — and note the failure mode is
     silent overshoot, which looks exactly like a hard row.
+5f-v. **When you fix a bug in one engine, fix its twin the same day.** The
+    2026-08-11 fix above went into `_egg_run_saturation` (multi-rule) and *not*
+    into `egg_saturate_prove` (single-rule) — which is the engine `egg_probe`,
+    `egg_closure`, `egg_collapse`, `egg_priority_bootstrap` and `egg_bootstrap`
+    all actually run. Same site, same three defects: the poll sat on
+    `for cid in classes` while `_egg_ematch` is a **recursive generator with no
+    bound on the substitutions one e-class yields** (and for an op-pattern
+    `classes` is every class in the graph); the `break` exited only the class
+    loop so the orientation loop restarted the phase; and `apps` was unbounded
+    while `EGG_EXPAND_CAP` bounds only what gets *applied*. Measured 2026-08-12
+    on `normal_0823` at **`fast`** — so never a deep-tier-only bug — the probe's
+    unscaled 6.0 s budget ran **40 s (6.7x) at 11,346 MB RSS with zero polls**.
+    It also **defeated an armed memory guard**, because `memory_exceeded()` is
+    only consulted through `deadline_expired()` / `_engine_gate()` and this loop
+    called neither: a loop with no deadline poll has no memory guard either.
+    Fixed by mirroring the twin plus `EGG_MAX_APPS`; the row went 252.7 s → 1.09 s
+    and changed to the route the probe was built to find. A structural test now
+    pins the poll in **both** engines.
+5f-vi. **Localize an overshoot by sampling the stack, not by arithmetic.** This
+    one was first blamed on `derived_cp_closure`, from a clean-looking argument:
+    its budget is `_eff_time(8.0)` = 8 s and the row took 253 s. Wrong function —
+    with the probe bounded the same row solves through `derived_cp_closure` in
+    **0.4 s**. `faulthandler.dump_traceback_later(N, repeat=True)` in a probe
+    process names the real site in one run, and the fix landed only because the
+    measurement overruled the inference.
 5g. **A fast path keyed on `.get(a) == .get(b)` fires on two missing keys.**
    `is_reflexive_problem` read `problem.get("eq1_id") == problem.get("eq2_id")`,
    so a payload carrying only equation text made `None == None` true and the
@@ -473,6 +547,36 @@ judge** (see below). It is the only thing that is not an upper bound.
     one-iteration failures, don't narrow the `try/except` to "the call that
     seems most likely to fail" — wrap the whole iteration, then narrow later
     only with evidence.
+12. **More budget must never mean fewer rows — walk the tier ladder, don't jump
+    to it.** `EFFORT_TIERS` scales *every* engine together (`standard` 7.5x,
+    `deep` 22x), so on a row whose answer lives in a **late** engine the early
+    engines eat the whole per-row clock and the late one is never reached. This
+    is the **tier inversion**, and it was live at the tiers we actually deploy:
+    measured 2026-08-12 at `deep` with a 360 s row budget, `normal_0491` and
+    `hard2_0162` were **SKIP** (each burning the full 360 s) and solve in 97.6 s
+    / 173.9 s once fixed; `sample_20` is 20/20 at `fast` in 32 s but 15/20 at
+    `deep` under a 45 s row bound and needs **313 s (10x)** to reach the same
+    20/20. `solve_problem` now runs one pass per tier of
+    `effort_ladder_to(effort_tier())`, cheapest first, returning the first pass
+    that certifies (`solve_problem_pass` is the single pass). At `fast` that is
+    exactly one pass, so the audit default is unchanged. **The audit could not
+    see any of this**, because `audit_corpus.py` set no per-row deadline while
+    Solo and Marathon always do — hence `--row-budget`. Corollary: *measure at
+    the tier you ship*, and give the measurement the bound deployment imposes.
+13. **A per-row deadline is not optional in Marathon.** The deterministic loop
+    bounded only the **sum** (`MARATHON_DETERMINISTIC_SHARE` of the run, then
+    `break`), so one slow row could spend everything left and every row after it
+    was never attempted — what `not_attempted` meant in the 08-01/03 campaign.
+    `marathon_row_budget` recomputes each row's fair share from what is actually
+    left, lets a hard row borrow `MARATHON_ROW_BORROW = 3` rows' worth, and
+    reserves `MARATHON_ROW_MIN_SECONDS` for every row still queued — **borrowing
+    alone is not enough**: if every row took its full allowance the remainder
+    decays geometrically and the tail is starved anyway, just later. A test
+    caught that; the borrow-only version failed it. Restore the global deadline
+    in a `finally` afterwards: every engine the LLM lane invokes clamps to
+    `_HARD_DEADLINE`, so a stale expired bound turns every LLM candidate into
+    `lemma_not_derivable_from_hypothesis` — tokens spent, zero accepts, nothing
+    logged.
 
 ## Environment gotchas that will bite you
 
@@ -604,7 +708,18 @@ solver primitive cannot hide itself in the oracle.
 
 ## Known open frontier
 
-**None. The corpus is complete: official 1669/1669, HF 800/800 (2026-08-12).**
+**None, anywhere local: official 1669/1669, HF 800/800, `sample_200` 200/200 —
+2689/2689 (2026-08-12, session 2).**
+
+`sample_200`'s three holdouts (`true_2860_3458`, `true_2135_2128`,
+`true_2055_2656`) were the last ones, and they closed the same way the final
+nine did — **ordered completion, reused unchanged**. That is the durable result
+worth carrying forward: the pipeline in
+`tmp_stage2_smoke/final-nine-2026-08-12/` is row-agnostic, needed no tuning, and
+joined each row in under 0.2 s against 60-90 s budgets. **A new ETP row of this
+family now costs about five seconds.** If a fresh corpus ever appears, run that
+before anything else — and consider productising it as a route, since it is
+strictly stronger than the e-graph on this problem class.
 
 The nine rows that stood here — `hard2_0073`, `hard3_0214`, `hard3_0314`,
 `evaluation_hard_0116`/`0196`, `evaluation_order5_0014`/`0040`/`0042`/`0164` —

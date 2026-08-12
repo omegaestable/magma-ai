@@ -1,11 +1,77 @@
 # Latest Handoff
 
-> **Next session is planned in `stage2/docs/NEXT_SESSION_BRIEF.md`** — removing
-> skips, trimming long-running queries, and closing with a full real Marathon
-> with LLM calls. Its headline finding: **we audit at `fast` but deploy at
-> `standard` (Marathon) and `deep` (Solo), and tier changes outcomes in both
-> directions** — `normal_0491` solves at `fast` and skips at `standard`. Start
-> there.
+## 2026-08-12 session 2: the tier inversion, the egg deadline, and the last three rows
+
+Full detail: `stage2/results/2026-08-12-tier-inversion-and-latency.md`.
+This session executed `stage2/docs/NEXT_SESSION_BRIEF.md` — remove skips, trim
+long-running queries, close with a real Marathon. All three done.
+
+**Coverage is now complete everywhere local: official 1669/1669, HF 800/800,
+`sample_200` 200/200 — 2689/2689.** Diffed by row id across three isolated
+audits: **0 lost, +3 gained, 0 oracle failures, 0 crashes.**
+
+- **The tier inversion was real and live** (now rail 12). `EFFORT_TIERS` scales
+  every engine together, so on a row whose answer lives in a late engine the
+  early engines ate the clock: at `deep` with a 360 s row bound, `normal_0491`
+  and `hard2_0162` were **SKIP** and now solve in 97.6 s / 173.9 s.
+  `solve_problem` walks `fast → standard → deep` and returns on the first pass
+  that certifies. At `fast` it is one pass, so the audit default is unchanged.
+- **The audit could not see any of this**, because it set no per-row deadline
+  while Solo and Marathon always do. `audit_corpus.py --row-budget` fixes that.
+  *Measure at the tier you ship, with the bound deployment imposes.*
+- **Marathon had no per-problem deadline** — only a bound on the sum, which is
+  the mechanism behind `not_attempted`. `marathon_row_budget` gives each row a
+  recomputed fair share, a 3x borrow, and a floor for every row still queued.
+  Borrowing alone was not enough and a test caught it.
+- **The single-rule egg engine never got the deadline fix its twin got in
+  2026-08-11** (rail 5f-v). `egg_saturate_prove` polled per e-class while
+  `_egg_ematch` yields unboundedly many substitutions per class. Measured at
+  **`fast`**, not `deep`: the probe's 6 s budget ran **40 s at 11,346 MB RSS
+  with zero polls**, and it defeated an armed memory guard because the loop
+  called neither `deadline_expired` nor `_engine_gate`. `normal_0823`:
+  **252.7 s → 1.09 s**, and a dozen `normal` rows moved to the cheaper
+  `egg_collapse` the probe exists to find.
+  **First attributed to the wrong function** from an arithmetic argument;
+  `faulthandler.dump_traceback_later` found the real site in one run.
+- **34 certificates distilled, 34/34 judge-accepted** (19 official, 12 HF, 3
+  completion). Audit wall clock: official **980 s → 330 s**, HF **773 s →
+  344 s**, `hf_evaluation_order5` **611.5 s → 162.9 s**.
+- **The last three open rows closed** by reusing the final-nine ordered-completion
+  pipeline **unchanged** — no tuning, each joined in under 0.2 s. A new ETP row
+  of this family now costs about five seconds.
+- **The gate was skipping the certs it should check hardest.**
+  `test_judge_verified.py` skips on route drift, and a newly distilled row always
+  drifts — so 31 of 34 new entries verified nothing. Treating `*:distilled:*` as
+  the same certificate rather than drift took it to **99 checked / 0 skipped**,
+  and immediately caught a stripped trailing newline that would have shipped
+  bytes the judge never saw.
+
+- **Closing real Marathon on `hard3.jsonl`: 400/400 accepted, 0 rejected, 0
+  `not_attempted`, `llm_calls` 0 of a 200,000-token budget.** The same set
+  scored 396/400 with **4 `not_attempted`** in the 08-01/03 campaign — exactly
+  the failure the per-row deadline targets. 91 route kinds fired, and 10 rows
+  were served by an exact `DISTILLED_CERTS` byte match (5 distilled this
+  session), so the new path demonstrably fires in a real run. Per the entry
+  brief's own criterion, **`llm_calls == 0` is the success signal**: the LLM lane
+  only sees rows the deterministic pass missed, and there were none. The
+  OpenRouter key was verified live (`source=repo_env`, `deepinfra/bf16`) before
+  the run, so the lane was armed, not absent.
+
+- **And on a fresh untuned ETP sample: 200/200 accepted**, 0 rejected, 0
+  `not_attempted`, 0 tokens — 200 rows drawn at random from the full ~22M-pair
+  outcome matrix (seed `20260812`, benchmark ids excluded). **Closing evidence
+  totals 600/600 real-judge rows accepted, 0 rejected, 0 LLM calls.**
+- **Spotcheck 108 rows / 9 sources: 100% accuracy, 100% coverage, 0 mistakes.**
+
+Gate **252 passed, 2 skipped**. Packaged **445,233 bytes** of 500,000.
+
+**Not done:** Solo has no real-runner evidence for the new ladder — it picks
+`deep`, so three passes, and nothing has exercised that path. That is the first
+item in the next-session brief.
+
+---
+
+## Older sessions
 
 ## 2026-08-12: the corpus is complete (official 1669/1669, HF 800/800)
 

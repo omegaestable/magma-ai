@@ -440,6 +440,146 @@ def test_set_effort_ignores_unknown_tier(solver):
         solver.set_effort(original)
 
 
+def test_effort_ladder_is_a_cheapest_first_prefix(solver):
+    assert solver.effort_ladder_to("fast") == ("fast",)
+    assert solver.effort_ladder_to("standard") == ("fast", "standard")
+    assert solver.effort_ladder_to("deep") == ("fast", "standard", "deep")
+    # An unknown tier must not silently become a three-pass run.
+    assert solver.effort_ladder_to("nonsense") == ("nonsense",)
+
+
+def test_solve_problem_walks_the_effort_ladder(solver, monkeypatch):
+    """Tier inversion guard: `deep` must try `fast` budgets FIRST.
+
+    `EFFORT_TIERS` scales every engine together, so a single `deep` pass lets
+    the engines that run first spend the whole per-row clock and the late ones
+    never run. Measured 2026-08-12: `sample_20` is 20/20 at `fast` in 32 s and
+    15/20 at `deep` under a 45 s row deadline.
+    """
+    original = solver.effort_tier()
+    seen: list[str] = []
+
+    def fake_pass(problem, *, false_time_budget=None):
+        seen.append(solver.effort_tier())
+        return None
+
+    try:
+        monkeypatch.setattr(solver, "solve_problem_pass", fake_pass)
+        solver.set_hard_deadline(None)
+
+        solver.set_effort("fast")
+        seen.clear()
+        assert solver.solve_problem({}) is None
+        assert seen == ["fast"], "fast must stay exactly one pass"
+
+        solver.set_effort("deep")
+        seen.clear()
+        assert solver.solve_problem({}) is None
+        assert seen == ["fast", "standard", "deep"]
+        assert solver.effort_tier() == "deep", "the caller's tier must be restored"
+    finally:
+        solver.set_hard_deadline(None)
+        solver.set_effort(original)
+
+
+def test_solve_problem_ladder_stops_at_the_first_certificate(solver, monkeypatch):
+    original = solver.effort_tier()
+    seen: list[str] = []
+
+    def fake_pass(problem, *, false_time_budget=None):
+        seen.append(solver.effort_tier())
+        return {"answer": {}, "route": "stub", "priority": (0, 0, "")}
+
+    try:
+        monkeypatch.setattr(solver, "solve_problem_pass", fake_pass)
+        solver.set_hard_deadline(None)
+        solver.set_effort("deep")
+        assert solver.solve_problem({})["route"] == "stub"
+        assert seen == ["fast"], "a fast answer must not pay for the wider tiers"
+    finally:
+        solver.set_hard_deadline(None)
+        solver.set_effort(original)
+
+
+def test_solve_problem_ladder_does_not_escalate_into_a_spent_clock(solver, monkeypatch):
+    original = solver.effort_tier()
+    seen: list[str] = []
+
+    def fake_pass(problem, *, false_time_budget=None):
+        seen.append(solver.effort_tier())
+        return None
+
+    try:
+        monkeypatch.setattr(solver, "solve_problem_pass", fake_pass)
+        solver.set_effort("deep")
+        solver.set_hard_deadline(time.monotonic() - 1.0)
+        assert solver.solve_problem({}) is None
+        assert seen == ["fast"], "a passed deadline must end the ladder"
+    finally:
+        solver.set_hard_deadline(None)
+        solver.set_effort(original)
+
+
+def test_solve_problem_restores_effort_when_a_pass_raises(solver, monkeypatch):
+    original = solver.effort_tier()
+
+    def boom(problem, *, false_time_budget=None):
+        raise RuntimeError("engine exploded")
+
+    try:
+        monkeypatch.setattr(solver, "solve_problem_pass", boom)
+        solver.set_hard_deadline(None)
+        solver.set_effort("deep")
+        with pytest.raises(RuntimeError):
+            solver.solve_problem({})
+        assert solver.effort_tier() == "deep"
+    finally:
+        solver.set_hard_deadline(None)
+        solver.set_effort(original)
+
+
+def test_marathon_row_budget_bounds_one_row(solver):
+    """No row may hold the deterministic pass hostage (rail: `not_attempted`)."""
+    # 1000 rows, 360 s of fair share each: a row may borrow MARATHON_ROW_BORROW
+    # rows' worth, never the whole remainder.
+    assert solver.marathon_row_budget(360_000.0, 1000) == pytest.approx(
+        solver.MARATHON_ROW_BORROW * 360.0)
+    # With nobody left to starve, the last row may use everything.
+    assert solver.marathon_row_budget(100.0, 1) == pytest.approx(100.0)
+    # With two left, the one behind still keeps its floor.
+    assert solver.marathon_row_budget(100.0, 2) == pytest.approx(
+        100.0 - solver.MARATHON_ROW_MIN_SECONDS)
+    # Degenerate inputs must not produce a negative or unbounded deadline.
+    assert solver.marathon_row_budget(-5.0, 10) == 0.0
+    assert solver.marathon_row_budget(100.0, 0) == pytest.approx(100.0)
+    assert solver.marathon_row_budget(100.0, -3) == pytest.approx(100.0)
+    # The floor never exceeds what is actually left.
+    assert solver.marathon_row_budget(0.4, 50) == pytest.approx(0.4)
+
+
+def test_marathon_row_budget_leaves_a_tail(solver):
+    """Even if EVERY row burns its full allowance, the tail still gets attempts.
+
+    The failure this replaces is unbounded: one row took the whole remainder
+    and rows 2..N were never attempted. Here the worst case is a graceful
+    decay, so the last row still receives a positive budget.
+    """
+    remaining = 360_000.0
+    total = 1000
+    budgets = []
+    for attempted in range(total):
+        budget = solver.marathon_row_budget(remaining, total - attempted)
+        budgets.append(budget)
+        remaining -= budget
+    assert all(b >= solver.MARATHON_ROW_MIN_SECONDS for b in budgets)
+    # The first row cannot take more than three rows' worth of a 1000-row run.
+    assert budgets[0] == pytest.approx(solver.MARATHON_ROW_BORROW * 360.0)
+    # The pass never overspends its own clock.
+    assert sum(budgets) <= 360_000.0 + 1e-6
+    # Most rows still get a substantial attempt, not just the floor.
+    assert sum(1 for b in budgets if b >= 60.0) > 0.5 * total
+
+
 def test_marathon_budget_uses_available_clock(solver):
     """The old cap returned 4.0 s no matter how much budget existed."""
     reference = solver.marathon_reference_seconds()
@@ -502,6 +642,49 @@ def test_no_judge_call_outside_solo(solver):
             offenders.append(f"{node.name} calls {sorted(hits)}")
     assert not offenders, (
         "stdin/stdout proxy traffic must stay inside run_solo: " + "; ".join(offenders))
+
+
+def test_egg_saturation_polls_the_deadline_per_match(solver):
+    """Both saturation engines must poll inside the e-match loop, not outside it.
+
+    `_egg_ematch` is a recursive generator with no bound on the substitutions a
+    single e-class can yield, and when the pattern is an op the loop above it
+    walks every class in the graph. A deadline polled only per class is
+    therefore not polled at all (rail 5f-iv). Measured 2026-08-12 on
+    `normal_0823` at `fast`: `egg_probe`'s 6.0 s budget ran 40 s (6.7x) with
+    zero polls and 11,346 MB of RSS, and because the loop called neither
+    `deadline_expired` nor `_engine_gate` an armed memory guard never saw it.
+
+    The multi-rule engine was fixed for this in 2026-08-11 and the single-rule
+    engine — which is what every `egg_*` route actually runs — was not. Checked
+    structurally because the failure mode is silent overshoot that reads exactly
+    like a hard row.
+    """
+    import ast
+    import inspect
+
+    tree = ast.parse(inspect.getsource(solver))
+    functions = {node.name: node for node in ast.walk(tree)
+                 if isinstance(node, ast.FunctionDef)}
+    for name in ("egg_saturate_prove", "_egg_run_saturation"):
+        assert name in functions, f"{name} vanished; update this test deliberately"
+        ematch_loops = [
+            node for node in ast.walk(functions[name])
+            if isinstance(node, ast.For) and isinstance(node.iter, ast.Call)
+            and isinstance(node.iter.func, ast.Name)
+            and node.iter.func.id == "_egg_ematch"
+        ]
+        assert ematch_loops, f"{name}: no `for ... in _egg_ematch(...)` loop found"
+        for loop in ematch_loops:
+            polls = [
+                child for stmt in loop.body for child in ast.walk(stmt)
+                if isinstance(child, ast.Call) and isinstance(child.func, ast.Name)
+                and child.func.id == "deadline_expired"
+            ]
+            assert polls, (
+                f"{name}: the `for ... in _egg_ematch(...)` loop body has no "
+                "deadline_expired() call — one e-class can yield unboundedly "
+                "many substitutions, so an outer poll does not bound this")
 
 
 # ---------------------------------------------------------------------------

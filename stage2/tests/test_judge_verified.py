@@ -67,9 +67,15 @@ def test_judge_verified_cert_unchanged(solver, problems_by_id, entry):
     # bespoke route can lose its race to a general closure engine. That produces
     # a different — still oracle-checked — certificate, which is not a
     # regression in the builder this entry pins.
-    if got_route != entry["route"]:
+    if got_route != entry["route"] and ":distilled:" not in got_route:
         pytest.skip(f"route drifted {entry['route']} -> {got_route} "
                     f"(timing); nothing to compare")
+    # A `*:distilled:*` route is NOT drift: it is this same certificate served
+    # from the content-keyed table instead of re-derived by the engine, so the
+    # bytes must still match the ones the judge accepted. Comparing is strictly
+    # stronger than skipping, and it earns its place — it caught a stripped
+    # trailing newline in three spliced entries on 2026-08-12, which would have
+    # shipped bytes the judge never saw.
 
     assert record["answer"]["verdict"] == entry["verdict"]
     # The banned-tactic rule applies here too: a cert that reintroduced `grind`

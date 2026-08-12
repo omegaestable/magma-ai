@@ -81,6 +81,11 @@ def main() -> int:
     ap.add_argument("--false-budget", type=float, default=2.0)
     ap.add_argument("--out-python", type=Path, default=None)
     ap.add_argument("--append-fixture", action="store_true")
+    ap.add_argument("--fixture-out", type=Path, default=None,
+                    help="write the fixture lines here instead of appending to "
+                         "judge_verified_certs.jsonl — lets two distillation "
+                         "runs proceed in parallel without interleaving their "
+                         "appends into the shared fixture")
     args = ap.parse_args()
 
     from judge.verify import verify_answer
@@ -148,6 +153,10 @@ def main() -> int:
         else:
             print("\n# --- paste into DISTILLED_CERTS ---")
             print(blob)
+    if fixture_lines and args.fixture_out:
+        args.fixture_out.write_text("\n".join(fixture_lines) + "\n",
+                                    encoding="utf-8")
+        print(f"Wrote {len(fixture_lines)} fixture line(s) to {args.fixture_out}")
     if fixture_lines and args.append_fixture:
         with FIXTURE_PATH.open("a", encoding="utf-8") as handle:
             for line in fixture_lines:

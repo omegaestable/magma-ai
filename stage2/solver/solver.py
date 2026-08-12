@@ -224,6 +224,21 @@ MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
 MARATHON_DETERMINISTIC_SHARE = 0.6
+# How many times its fair share of the remaining deterministic clock one
+# Marathon row may borrow. The deterministic loop bounded only the whole pass,
+# so a single slow row starved every row after it and the tail was never
+# attempted at all -- the mechanism behind `not_attempted` in the 2026-08-01/03
+# real-judge campaign. 3.0 lets a genuinely hard row take three rows' worth and
+# no more; the share is recomputed from what is actually left after each row,
+# so the cheap majority hands its surplus back to the tail.
+MARATHON_ROW_BORROW = 3.0
+# Floor reserved for every row still queued behind the current one. Borrowing
+# alone is not enough: if every row took its full allowance the remainder decays
+# to zero and the last rows are starved again, just later. A second is far more
+# than the cheap majority needs (distilled is a dict probe, the syntactic routes
+# are microseconds), so this costs nothing on a real manifest and converts the
+# pathological case from "tail unattempted" into "tail gets its cheap routes".
+MARATHON_ROW_MIN_SECONDS = 1.0
 LLM_MAX_TABLE_N = 8
 LLM_MAX_OUTPUT_TOKENS = 16384
 LLM_HTTP_TIMEOUT_SECONDS = 75.0
@@ -234,6 +249,9 @@ EFFORT_TIERS = {
     "standard": (7.5, 4.6, 3.3, 6, 0),
     "deep": (22.0, 11.5, 6.6, 10, 1),
 }
+# Cheapest first. `solve_problem` walks this prefix rather than jumping straight
+# to the configured tier — see `effort_ladder_to`.
+EFFORT_LADDER: tuple[str, ...] = ("fast", "standard", "deep")
 _EFFORT = "fast"
 
 
@@ -256,6 +274,24 @@ def effort_for_seconds(per_problem_seconds: float) -> str:
     return "fast"
 
 
+def effort_ladder_to(tier: str) -> tuple[str, ...]:
+    """Tiers to attempt, cheapest first, ending at `tier`.
+
+    `EFFORT_TIERS` scales *every* engine budget together, so raising the tier
+    also raises what the engines that run FIRST are allowed to spend. On a row
+    whose answer lives in a late engine, those early engines eat the whole
+    per-row clock and the late one is never reached: more budget makes the
+    solver strictly worse. Measured 2026-08-12 on `sample_20` — `fast` solves
+    20/20 in 32 s, `deep` solves 15/20 under a 45 s row deadline and needs
+    313 s (10x) to reach the same 20. Walking the ladder makes the tier
+    monotone: whatever `fast` can solve is solved at `fast` speed, and the
+    extra budget only buys attempts on rows `fast` could not close.
+    """
+    if tier not in EFFORT_LADDER:
+        return (tier,)
+    return EFFORT_LADDER[: EFFORT_LADDER.index(tier) + 1]
+
+
 _HARD_DEADLINE: float | None = None
 
 
@@ -272,6 +308,26 @@ def local_deadline(time_budget: float | None) -> float | None:
     if local is None:
         return _HARD_DEADLINE
     return min(local, _HARD_DEADLINE)
+
+
+def hard_deadline_expired() -> bool:
+    """The GLOBAL bound only — not any engine's own budget.
+
+    Engine-local budgets are deliberately soft here: several engines poll their
+    deadline only at an outer loop level, and rows genuinely depend on the
+    overshoot. `normal_0823` is the measured case — `derived_cp_closure`'s
+    budget is `_eff_time(8.0)` = 8 s at `fast` and the row takes **253 s**, so
+    a strictly-enforced local deadline would lose it outright.
+
+    What must never be soft is the row/run deadline: Marathon now bounds each
+    problem (`marathon_row_budget`), and that bound is the only thing standing
+    between one pathological row and the rest of the manifest. Use this inside
+    the hot inner loops that `deadline_expired` cannot reach cheaply — it keeps
+    the useful local overshoot and caps the damage at the row boundary.
+    """
+    if memory_exceeded():
+        return True
+    return _HARD_DEADLINE is not None and time.monotonic() >= _HARD_DEADLINE
 
 
 def _eff_time(base: float) -> float:
@@ -4105,7 +4161,7 @@ def _canonicalize_derived_rule(lhs: Term, rhs: Term) -> tuple[Term, Term, dict[s
     return canon(lhs), canon(rhs), mapping
 
 
-_DERIVED_RULES_CACHE: dict[tuple[Term, Term], list[DerivedRule]] = {}
+_DERIVED_RULES_CACHE: dict[tuple[Term, Term, str, int, int], list[DerivedRule]] = {}
 
 
 def critical_pair_rules(
@@ -4115,7 +4171,11 @@ def critical_pair_rules(
     max_rules: int = DERIVED_CP_MAX_RULES,
     hyp_name: str = "h",
 ) -> list[DerivedRule]:
-    cache_key = (eq1["lhs"], eq1["rhs"], hyp_name)
+    # The cached list is truncated by `max_rules` and filtered by
+    # `max_rule_size`, so both belong in the key. Neither is tier-scaled today,
+    # which is the only reason a key without them has been safe — and that is a
+    # property of the call sites, not of this function.
+    cache_key = (eq1["lhs"], eq1["rhs"], hyp_name, max_rule_size, max_rules)
     cached = _DERIVED_RULES_CACHE.get(cache_key)
     if cached is not None:
         return cached
@@ -4823,6 +4883,13 @@ EGG_ROUNDS = 30
 EGG_POOL_MAX = 36
 EGG_EXPAND_CAP = 900
 EGG_MAX_ENODES = 60_000
+# Ceiling on the *candidate* list one saturation round builds, as opposed to
+# `EGG_EXPAND_CAP` which bounds only how many of them get applied. Sized well
+# above the cap so the ordering `apps.sort` performs still has plenty to choose
+# from — a safety net against unbounded allocation, not a second binding
+# constraint (rail 5f). Without it one round on `normal_0823` reached
+# 11,346 MB of RSS building candidates for 900 applications.
+EGG_MAX_APPS = 200_000
 # The production judge rejects code over JUDGE_MAX_CODE_LENGTH = 50_000 UTF-8
 # bytes as malformed (vendor judge/verify.py). Measured 2026-07-23:
 # 59,820-byte cert bounced, 48,526-byte cert accepted. Since 2026-07-29
@@ -5301,13 +5368,45 @@ def egg_saturate_prove(eq1: dict[str, Any], eq2: dict[str, Any], *,
         for node, cid in egg.enodes.items():
             by_class.setdefault(egg.find(cid), []).append(egg.canon(node))
 
+        # Rail 5f-iv, and this is the site that keeps costing: the multi-rule
+        # twin `_egg_run_saturation` was fixed for exactly this on 2026-08-11
+        # and the single-rule engine — which is what `egg_probe`, `egg_closure`,
+        # `egg_collapse`, `egg_priority_bootstrap` and `egg_bootstrap` all run —
+        # never got the same treatment. Three defects at one site, all measured
+        # 2026-08-12 on `normal_0823` at **fast** (so this was never a
+        # deep-tier-only bug):
+        #   1. `_egg_ematch` is a recursive generator with no bound on the
+        #      substitutions ONE e-class can yield, and when `a` is an op-pattern
+        #      `classes` is every class in the graph — so a deadline polled per
+        #      class is not polled at all. The probe's 6.0 s budget ran 40 s
+        #      (6.7x) with ZERO polls before being aborted externally.
+        #   2. the bare `break` left the orientation loop free to start the whole
+        #      phase again, so even a timely poll did not end the round.
+        #   3. `apps` was unbounded while `EGG_EXPAND_CAP` bounds only what gets
+        #      APPLIED — building millions of entries to apply 900 is what turned
+        #      the time overshoot into 11,346 MB of RSS climbing ~290 MB/s. That
+        #      also blew straight through an armed memory guard, because this
+        #      loop called neither `deadline_expired` nor `_engine_gate`.
+        # Cost of the fix, measured: `normal_0823` goes 252.7 s -> **1.09 s**, and
+        # changes route to `true:egg_collapse` — the probe now TERMINATES and
+        # finds the collapse it exists to find, instead of overrunning and
+        # leaving the row to a later engine. A dozen `normal` rows moved the same
+        # way. (Neutralising the probe entirely instead gets the row through
+        # `derived_cp_closure` in 0.4 s, which is how the site was localised.)
         apps = []
+        out_of_time = False
         for oi, (a, b, free, symm) in enumerate(orientations):
+            if out_of_time:
+                break
             classes = pool[:expand_targets] if a[0] == "var" else list(by_class)
             for cid in classes:
                 if deadline_expired(deadline):
+                    out_of_time = True
                     break
                 for subst in _egg_ematch(egg, a, cid, {}, by_class):
+                    if len(apps) >= EGG_MAX_APPS or deadline_expired(deadline):
+                        out_of_time = True
+                        break
                     key = (oi, egg.find(cid),
                            tuple(sorted((v, egg.find(c)) for v, c in subst.items())))
                     if not free:
@@ -5324,6 +5423,8 @@ def egg_saturate_prove(eq1: dict[str, Any], eq2: dict[str, Any], *,
                             cost = sum(egg.size_rep[egg.find(c)]
                                        for c in s2.values())
                             apps.append((cost, key2, a, b, s2, symm))
+                if out_of_time:
+                    break
         apps.sort(key=lambda x: x[0])
 
         merged_any = False
@@ -8043,6 +8144,626 @@ def submission : Goal := by
   refine Exists.intro m ?_
   decideFin!
 """),
+
+    # ---- distilled 2026-08-12 (session 2): the slow tail. Every entry
+    # below was ACCEPTED by the real Lean judge before inclusion; the
+    # rows they replace cost 28-253 s each of deterministic search.
+    ("v0 = ((v1 ◇ (v2 ◇ (v0 ◇ v3))) ◇ v4)",
+     "(v0 ◇ (v0 ◇ v1)) = ((v2 ◇ v1) ◇ v3)"): ("true", "e2380_e4422", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro x y z w
+  exact (h (x ◇ (x ◇ y)) z (w ◇ (w ◇ (y ◇ w))) w w).trans (congrArg (fun t => ((z ◇ t) ◇ w)) ((h y w w w ((x ◇ (x ◇ y)) ◇ w)).symm))
+"""),
+    ("v0 = (((v1 ◇ (v2 ◇ v2)) ◇ v0) ◇ v1)",
+     "v0 = (v1 ◇ ((v1 ◇ (v2 ◇ v0)) ◇ v2))"): ("false", "e3008_e1131", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 5) := {
+    op := finOpTable "[[1,2,4,3,0],[2,1,0,4,3],[3,0,1,2,4],[0,4,3,1,2],[4,3,2,0,1]]"
+  }
+  refine Exists.intro (Fin 5) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = (((v0 ◇ (v1 ◇ v2)) ◇ v2) ◇ v0)",
+     "v0 = (((v0 ◇ v0) ◇ (v1 ◇ v1)) ◇ v0)"): ("false", "e2890_e2652", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 6) := {
+    op := finOpTable "[[0,5,0,3,4,3],[2,1,2,2,1,2],[2,1,2,2,1,2],[0,3,0,3,4,3],[0,4,0,3,4,5],[5,4,5,5,4,5]]"
+  }
+  refine Exists.intro (Fin 6) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = ((v1 ◇ (v0 ◇ (v0 ◇ v2))) ◇ v1)",
+     "v0 = ((((v0 ◇ v1) ◇ v2) ◇ v1) ◇ v0)"): ("true", "e2297_e3089", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact (((((congrArg (fun t => (a ◇ t)) ((h a a a))).trans ((congrArg (fun t => (a ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h a a a))).trans (congrArg (fun t => (a ◇ ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))))).trans (((congrArg (fun t => (a ◇ ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => (a ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))).symm))).trans ((congrArg (fun t => (a ◇ (t ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ t) ◇ a))) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a))))))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) ◇ t)) ◇ a))) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)))).trans ((congrArg (fun t => (a ◇ t)) ((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) a (a ◇ a)).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ t) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ (a ◇ a))))))).trans (((congrArg (fun t => (a ◇ ((a ◇ (t ◇ a)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h (a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ (a ◇ a))))) a a))).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ ((a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ (a ◇ a))))) ◇ t)) ◇ a) ◇ a)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ (a ◇ a))).symm))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ t) ◇ a) ◇ a)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ (a ◇ a))).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ t)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ a)))))))).trans ((((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (t ◇ a))) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h (a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ a)))) a a))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ ((a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ a)))) ◇ t)) ◇ a) ◇ a))) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ a)).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ t) ◇ a) ◇ a))) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ a)).symm)))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ t))) ((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) a (a ◇ a)))).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) ◇ t)) ◇ a)))) ((h (a ◇ a) (a ◇ a) a).symm))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ t) ◇ a)))) ((h (a ◇ a) (a ◇ a) a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ (t ◇ a)))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a)))))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ t))) ((h a a a).symm))).trans ((congrArg (fun t => (a ◇ t)) ((h ((a ◇ a) ◇ a) a a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ t) ◇ a))) ((h a a a)))))))).trans (((((congrArg (fun t => (a ◇ ((a ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t)) ◇ a))) ((h a a a))).trans ((congrArg (fun t => (a ◇ t)) ((h (a ◇ (a ◇ (a ◇ a))) a a).symm)).trans (congrArg (fun t => (a ◇ (t ◇ (a ◇ (a ◇ a))))) ((h a a a))))).trans (((congrArg (fun t => (a ◇ (((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => (a ◇ (((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a)))).trans ((congrArg (fun t => (a ◇ (t ◇ (a ◇ (a ◇ a))))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))).symm)).trans (congrArg (fun t => (a ◇ t)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm))))).trans ((((h (a ◇ (a ◇ (a ◇ a))) a a)).trans ((congrArg (fun t => ((a ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t)) ◇ a)) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ t) ◇ a)) ((h a a a).symm)))).trans (((congrArg (fun t => ((a ◇ a) ◇ t)) ((h a a a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h a a a)))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))))))).trans ((((congrArg (fun t => ((a ◇ a) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))).symm)).trans ((congrArg (fun t => ((a ◇ a) ◇ (t ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ ((a ◇ t) ◇ a))) ((h (a ◇ a) (a ◇ a) a))))).trans (((congrArg (fun t => ((a ◇ a) ◇ ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) ◇ t)) ◇ a))) ((h (a ◇ a) (a ◇ a) a))).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) a (a ◇ a)).symm))).trans (((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) a (a ◇ a))).trans (congrArg (fun t => ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) ◇ t)) ◇ a)) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)).symm))))).trans (((congrArg (fun t => ((a ◇ t) ◇ a)) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)).symm)).trans ((congrArg (fun t => (t ◇ a)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => ((t ◇ (a ◇ (a ◇ a))) ◇ a)) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))))))).trans (((congrArg (fun t => ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm))).trans ((congrArg (fun t => ((t ◇ (a ◇ (a ◇ a))) ◇ a)) ((h a a a).symm)).trans ((h a a a).symm))))))
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact ((((h a b a)).trans ((congrArg (fun t => ((b ◇ (a ◇ t)) ◇ b)) ((hlem0 a))).trans (congrArg (fun t => ((b ◇ t) ◇ b)) ((hlem0 a))))).trans (((congrArg (fun t => (t ◇ b)) ((h (b ◇ a) b (b ◇ a)))).trans (congrArg (fun t => (((b ◇ ((b ◇ a) ◇ t)) ◇ b) ◇ b)) ((hlem0 (b ◇ a))))).trans ((congrArg (fun t => (((b ◇ t) ◇ b) ◇ b)) ((hlem0 (b ◇ a)))).trans (congrArg (fun t => (((b ◇ (b ◇ t)) ◇ b) ◇ b)) ((h a (a ◇ b) a)))))).trans (((congrArg (fun t => (((b ◇ (b ◇ (((a ◇ t) ◇ (a ◇ (a ◇ a))) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 b).symm)).trans ((congrArg (fun t => (((b ◇ (b ◇ (((a ◇ (b ◇ t)) ◇ (a ◇ (a ◇ a))) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 b).symm)).trans (congrArg (fun t => (((b ◇ (b ◇ (((a ◇ (b ◇ (b ◇ b))) ◇ (a ◇ t)) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 a))))).trans (((congrArg (fun t => (((b ◇ (b ◇ (((a ◇ (b ◇ (b ◇ b))) ◇ t) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 a))).trans (congrArg (fun t => (((b ◇ (b ◇ (t ◇ (a ◇ b)))) ◇ b) ◇ b)) ((h b a b).symm))).trans ((congrArg (fun t => (t ◇ b)) ((h b b (a ◇ b)).symm)).trans ((hlem0 b)))))
+  intro x y z
+  exact hlem x ((((x ◇ y) ◇ z) ◇ y) ◇ x)
+"""),
+    ("v0 = ((v1 ◇ ((v1 ◇ v0) ◇ v0)) ◇ v1)",
+     "(v0 ◇ (v0 ◇ v1)) = (v2 ◇ (v2 ◇ v1))"): ("false", "e2531_e4307", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
+
+def submission : Goal := by
+  let m : Magma (Fin 13) := { op := fun i j => Fin.mk (Nat.mod (List.getD [0,7,1,8,2,9,3,10,4,11,5,12,6,7,1,8,2,9,3,10,4,11,5,12,6,0,1,8,2,9,3,10,4,11,5,12,6,0,7,8,2,9,3,10,4,11,5,12,6,0,7,1,2,9,3,10,4,11,5,12,6,0,7,1,8,9,3,10,4,11,5,12,6,0,7,1,8,2,3,10,4,11,5,12,6,0,7,1,8,2,9,10,4,11,5,12,6,0,7,1,8,2,9,3,4,11,5,12,6,0,7,1,8,2,9,3,10,11,5,12,6,0,7,1,8,2,9,3,10,4,5,12,6,0,7,1,8,2,9,3,10,4,11,12,6,0,7,1,8,2,9,3,10,4,11,5,6,0,7,1,8,2,9,3,10,4,11,5,12] (Nat.add (Nat.mul (Fin.val i) 13) (Fin.val j)) 0) 13) (Nat.mod_lt _ (Nat.succ_pos 12)) }
+  refine Exists.intro (Fin 13) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = ((v1 ◇ (v2 ◇ (v2 ◇ v0))) ◇ v0)",
+     "v0 = ((v0 ◇ ((v1 ◇ v0) ◇ v0)) ◇ v0)"): ("true", "e2398_e2456", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((congrArg (fun t => (t ◇ a)) ((h a a a))).trans (congrArg (fun t => (((a ◇ (a ◇ (a ◇ a))) ◇ t) ◇ a)) ((h a a a)))).trans ((congrArg (fun t => (((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t)) ◇ a)) ((h a a a))).trans ((h a (a ◇ (a ◇ (a ◇ a))) (a ◇ (a ◇ (a ◇ a)))).symm))
+  intro x y
+  exact ((((hlem0 x).symm).trans (congrArg (fun t => (x ◇ t)) ((h x y x)))).trans ((congrArg (fun t => (x ◇ ((y ◇ (x ◇ t)) ◇ x))) ((hlem0 x))).trans ((congrArg (fun t => (x ◇ ((y ◇ t) ◇ x))) ((hlem0 x))).trans (congrArg (fun t => (t ◇ ((y ◇ x) ◇ x))) ((hlem0 x).symm))))).trans (((congrArg (fun t => ((x ◇ t) ◇ ((y ◇ x) ◇ x))) ((h x y x))).trans ((congrArg (fun t => ((x ◇ ((y ◇ (x ◇ t)) ◇ x)) ◇ ((y ◇ x) ◇ x))) ((hlem0 x))).trans (congrArg (fun t => ((x ◇ ((y ◇ t) ◇ x)) ◇ ((y ◇ x) ◇ x))) ((hlem0 x))))).trans ((congrArg (fun t => ((x ◇ ((y ◇ x) ◇ x)) ◇ ((y ◇ t) ◇ x))) ((hlem0 x).symm)).trans ((congrArg (fun t => ((x ◇ ((y ◇ x) ◇ x)) ◇ ((y ◇ (x ◇ t)) ◇ x))) ((hlem0 x).symm)).trans (congrArg (fun t => ((x ◇ ((y ◇ x) ◇ x)) ◇ t)) ((h x y x).symm)))))
+"""),
+    ("v0 = ((v1 ◇ ((v0 ◇ v2) ◇ v2)) ◇ v0)",
+     "v0 = ((v0 ◇ (v1 ◇ v2)) ◇ (v3 ◇ v0))"): ("true", "e2521_e1879", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((((congrArg (fun t => (t ◇ a)) ((h a a (a ◇ a)))).trans ((congrArg (fun t => (((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ ((a ◇ ((t ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)))).trans ((congrArg (fun t => (((a ◇ ((t ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ (a ◇ a)) ◇ (a ◇ a))) a))).trans ((congrArg (fun t => (((a ◇ (((t ◇ a) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a (a ◇ a)).symm)).trans (congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ t) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a)))))).trans (((congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ (t ◇ a)) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)).trans ((congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((t ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))).trans ((congrArg (fun t => (((a ◇ (t ◇ (a ◇ a))) ◇ a) ◇ a)) ((h (a ◇ a) ((a ◇ a) ◇ a) a).symm)).trans ((congrArg (fun t => (((a ◇ ((a ◇ t) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)))))).trans ((((congrArg (fun t => (((a ◇ t) ◇ a) ◇ a)) ((h (a ◇ a) a a).symm)).trans ((congrArg (fun t => (((a ◇ (t ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ ((t ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)))).trans ((congrArg (fun t => (((t ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ (a ◇ a)) ◇ (a ◇ a))) a))).trans ((congrArg (fun t => ((((t ◇ a) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a (a ◇ a)).symm)).trans (congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ t) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a)))))).trans (((congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ (t ◇ a)) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)).trans ((congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((t ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))).trans ((congrArg (fun t => ((t ◇ a) ◇ a)) ((h (a ◇ a) ((a ◇ a) ◇ a) a).symm)).trans ((congrArg (fun t => (t ◇ a)) ((h ((a ◇ a) ◇ a) (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) a))).trans ((h a ((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))))
+  have hlem : ∀ a b : G, (a ◇ b) = b := by
+    intro a b
+    exact ((congrArg (fun t => (t ◇ b)) ((hlem0 a).symm)).trans (congrArg (fun t => ((a ◇ t) ◇ b)) ((h a b a)))).trans ((congrArg (fun t => ((a ◇ ((b ◇ (t ◇ a)) ◇ a)) ◇ b)) ((hlem0 a))).trans ((congrArg (fun t => ((a ◇ ((b ◇ t) ◇ a)) ◇ b)) ((hlem0 a))).trans ((h b a a).symm)))
+  intro x y z w
+  exact ((hlem w x).symm).trans ((hlem (x ◇ (y ◇ z)) (w ◇ x)).symm)
+"""),
+    ("v0 = (v0 ◇ ((v1 ◇ (v2 ◇ v0)) ◇ v2))",
+     "v0 = ((v0 ◇ v1) ◇ (v1 ◇ (v1 ◇ v0)))"): ("true", "e1057_e1454", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem : ∀ a b : G, (a ◇ b) = a := by
+    intro a b
+    exact (congrArg (fun t => (a ◇ t)) (h b a (a ◇ b))).trans (((h a b ((a ◇ ((a ◇ b) ◇ b)) ◇ (a ◇ b))).trans (congrArg (fun t => (a ◇ (t ◇ ((a ◇ ((a ◇ b) ◇ b)) ◇ (a ◇ b))))) ((h b (a ◇ ((a ◇ b) ◇ b)) a).symm))).symm)
+  intro x y
+  exact ((hlem (x ◇ y) (y ◇ (y ◇ x))).trans (hlem x y)).symm
+"""),
+    ("v0 = ((v1 ◇ v0) ◇ ((v0 ◇ v2) ◇ v1))",
+     "v0 = ((((v0 ◇ v1) ◇ v2) ◇ v3) ◇ v3)"): ("true", "e1688_e3100", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((((h (a ◇ a) (a ◇ (a ◇ a)) (a ◇ a))).trans ((congrArg (fun t => (((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a))))) ((h a a a))).trans (congrArg (fun t => (t ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a))))) ((h (a ◇ a) a ((a ◇ a) ◇ a)).symm)))).trans (((congrArg (fun t => ((a ◇ a) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (t ◇ (a ◇ a))))) ((h a a a))).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)).symm))).trans ((congrArg (fun t => ((a ◇ a) ◇ t)) ((h (a ◇ a) (a ◇ a) a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((t ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h (a ◇ a) a ((a ◇ a) ◇ a))))))).trans ((((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (a ◇ a)) ◇ (a ◇ a)) ◇ t) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a))))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (a ◇ a)) ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (t ◇ (a ◇ a)))) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ (t ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h (a ◇ a) (a ◇ (a ◇ a)) (a ◇ a)).symm)))).trans (((congrArg (fun t => ((a ◇ a) ◇ ((a ◇ a) ◇ (((a ◇ a) ◇ a) ◇ t)))) ((h (a ◇ a) a ((a ◇ a) ◇ a)))).trans (congrArg (fun t => ((a ◇ a) ◇ ((a ◇ a) ◇ (((a ◇ a) ◇ a) ◇ ((a ◇ (a ◇ a)) ◇ (t ◇ a)))))) ((h a a a).symm))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((a ◇ a) ◇ t))) ((h a (a ◇ a) (a ◇ a)).symm)).trans ((h a a a).symm))))
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact (((((h a (a ◇ b) a)).trans ((congrArg (fun t => ((t ◇ a) ◇ ((a ◇ a) ◇ (a ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans (congrArg (fun t => ((((a ◇ b) ◇ (a ◇ b)) ◇ t) ◇ ((a ◇ a) ◇ (a ◇ b)))) ((h a (a ◇ b) b))))).trans ((congrArg (fun t => ((((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t)) ◇ ((a ◇ a) ◇ (a ◇ b)))) ((hlem0 (a ◇ b)))).trans ((congrArg (fun t => (t ◇ ((a ◇ a) ◇ (a ◇ b)))) ((h (a ◇ b) (a ◇ b) a).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ t))) ((h (a ◇ b) (a ◇ b) a)))))).trans (((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ (((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t))))) ((hlem0 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ (((a ◇ b) ◇ (a ◇ b)) ◇ t)))) ((h a (a ◇ b) b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ (t ◇ a)))) ((hlem0 (a ◇ b)))))).trans (((congrArg (fun t => ((a ◇ b) ◇ t)) ((h a a b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ t)) ((h a b b)))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (t ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((t ◇ (a ◇ b)) ◇ b)))) ((h (a ◇ b) (a ◇ b) a))))))).trans ((((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t)) ◇ (a ◇ b)) ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((((a ◇ b) ◇ (a ◇ b)) ◇ t) ◇ (a ◇ b)) ◇ b)))) ((h a (a ◇ b) b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((t ◇ a) ◇ (a ◇ b)) ◇ b)))) ((hlem0 (a ◇ b)))))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((((a ◇ b) ◇ a) ◇ t) ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (t ◇ b)))) ((h a (a ◇ b) b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ t))) ((hlem0 (a ◇ b)).symm))))).trans (((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (t ◇ (a ◇ b))))) ((h (a ◇ b) (a ◇ b) a))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t)) ◇ (a ◇ b))))) ((hlem0 (a ◇ b)).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((((a ◇ b) ◇ (a ◇ b)) ◇ t) ◇ (a ◇ b))))) ((h a (a ◇ b) b).symm)))).trans (((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((t ◇ a) ◇ (a ◇ b))))) ((hlem0 (a ◇ b)))).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((a ◇ b) ◇ a) ◇ t)))) ((hlem0 (a ◇ b)).symm))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ t))) ((h a (a ◇ b) b).symm)).trans ((h b a a).symm)))))
+  intro x y z w
+  exact hlem x ((((x ◇ y) ◇ z) ◇ w) ◇ w)
+"""),
+    ("v0 = ((v1 ◇ ((v2 ◇ v0) ◇ v2)) ◇ v0)",
+     "v0 = (((v1 ◇ v2) ◇ v3) ◇ (v3 ◇ v0))"): ("true", "e2575_e2227", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem : ∀ a b : G, (a ◇ b) = b := by
+    intro a b
+    exact (((congrArg (fun t => (t ◇ b)) ((h a (((a ◇ a) ◇ a) ◇ ((a ◇ (((a ◇ b) ◇ a) ◇ (a ◇ b))) ◇ a)) (a ◇ b)))).trans ((congrArg (fun t => ((t ◇ a) ◇ b)) ((h (((a ◇ b) ◇ a) ◇ (a ◇ b)) ((a ◇ a) ◇ a) a).symm)).trans (congrArg (fun t => (((t ◇ (a ◇ b)) ◇ a) ◇ b)) ((h ((a ◇ b) ◇ a) (a ◇ ((a ◇ b) ◇ a)) b))))).trans (((congrArg (fun t => ((((((a ◇ ((a ◇ b) ◇ a)) ◇ t) ◇ ((a ◇ b) ◇ a)) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h b b a).symm)).trans (congrArg (fun t => ((((t ◇ ((a ◇ b) ◇ a)) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h b a a).symm))).trans ((congrArg (fun t => ((((b ◇ t) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h ((a ◇ b) ◇ a) a (a ◇ b)))).trans (congrArg (fun t => ((((b ◇ ((a ◇ (((a ◇ t) ◇ ((a ◇ b) ◇ a)) ◇ (a ◇ b))) ◇ ((a ◇ b) ◇ a))) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h b b a)))))).trans ((((congrArg (fun t => ((((b ◇ ((a ◇ (t ◇ (a ◇ b))) ◇ ((a ◇ b) ◇ a))) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h ((a ◇ b) ◇ a) a b).symm)).trans (congrArg (fun t => ((((b ◇ ((t ◇ (((a ◇ b) ◇ a) ◇ (a ◇ b))) ◇ ((a ◇ b) ◇ a))) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h a ((a ◇ ((a ◇ a) ◇ a)) ◇ ((a ◇ ((a ◇ a) ◇ a)) ◇ a)) a)))).trans ((congrArg (fun t => ((((b ◇ (((t ◇ a) ◇ (((a ◇ b) ◇ a) ◇ (a ◇ b))) ◇ ((a ◇ b) ◇ a))) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) (a ◇ ((a ◇ a) ◇ a)) a).symm)).trans (congrArg (fun t => ((((b ◇ (((((a ◇ a) ◇ a) ◇ t) ◇ (((a ◇ b) ◇ a) ◇ (a ◇ b))) ◇ ((a ◇ b) ◇ a))) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h a a (a ◇ b)))))).trans (((congrArg (fun t => ((((b ◇ (t ◇ ((a ◇ b) ◇ a))) ◇ (a ◇ b)) ◇ a) ◇ b)) ((h (((a ◇ b) ◇ a) ◇ (a ◇ b)) ((a ◇ a) ◇ a) a).symm)).trans (congrArg (fun t => ((t ◇ a) ◇ b)) ((h (a ◇ b) b ((a ◇ b) ◇ a)).symm))).trans ((congrArg (fun t => (t ◇ b)) ((h ((a ◇ b) ◇ a) (a ◇ ((a ◇ b) ◇ a)) b))).trans ((h b ((a ◇ ((a ◇ b) ◇ a)) ◇ ((b ◇ ((a ◇ b) ◇ a)) ◇ b)) a).symm))))
+  intro x y z w
+  exact ((hlem w x).symm).trans ((hlem ((y ◇ z) ◇ w) (w ◇ x)).symm)
+"""),
+    ("v0 = (((v1 ◇ (v2 ◇ v1)) ◇ v2) ◇ v0)",
+     "(v0 ◇ v0) = ((v0 ◇ (v1 ◇ v1)) ◇ v0)"): ("false", "e2998_e3870", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 4) := {
+    op := finOpTable "[[1,2,3,0],[0,1,2,3],[3,0,3,2],[0,1,2,3]]"
+  }
+  refine Exists.intro (Fin 4) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = ((v0 ◇ v1) ◇ ((v2 ◇ v3) ◇ v0))",
+     "(v0 ◇ v1) = (((v0 ◇ v2) ◇ v0) ◇ v1)"): ("false", "e1676_e4138", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 4) := {
+    op := finOpTable "[[3,2,3,2],[1,2,1,2],[1,0,1,0],[3,0,3,0]]"
+  }
+  refine Exists.intro (Fin 4) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = (((v0 ◇ (v1 ◇ v1)) ◇ v2) ◇ v0)",
+     "v0 = (((v0 ◇ (v1 ◇ v2)) ◇ v3) ◇ v0)"): ("false", "e2878_e2894", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 4) := {
+    op := finOpTable "[[1,1,1,1],[2,2,2,3],[0,0,0,0],[0,0,0,1]]"
+  }
+  refine Exists.intro (Fin 4) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = (v1 ◇ ((v2 ◇ (v0 ◇ v0)) ◇ v1))",
+     "v0 = (v0 ◇ (v1 ◇ ((v1 ◇ v0) ◇ v2)))"): ("true", "e1147_e641", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact ((((h a (b ◇ (b ◇ a)) a)).trans (congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (t ◇ (b ◇ (b ◇ a))))) ((h (a ◇ (a ◇ a)) (b ◇ b) (a ◇ (a ◇ a)))))).trans ((congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ (t ◇ (b ◇ b))) ◇ (b ◇ (b ◇ a))))) ((h a (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ t) ◇ (b ◇ (b ◇ a))))) ((h (a ◇ (b ◇ b)) b (a ◇ (b ◇ b))))))).trans (((congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ (b ◇ (t ◇ b))) ◇ (b ◇ (b ◇ a))))) ((h b (a ◇ (b ◇ b)) a).symm)).trans (congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ (t ◇ (b ◇ b))) ◇ (b ◇ (b ◇ a))))) ((h b (b ◇ (b ◇ b)) b)))).trans ((congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (t ◇ (b ◇ (b ◇ a))))) ((h (b ◇ (b ◇ b)) (b ◇ b) (b ◇ (b ◇ b))).symm)).trans ((h b (b ◇ (b ◇ a)) b).symm)))
+  intro x y z
+  exact hlem x (x ◇ (y ◇ ((y ◇ x) ◇ z)))
+"""),
+    ("v0 = ((v1 ◇ (v0 ◇ (v2 ◇ v3))) ◇ v1)",
+     "v0 = ((((v1 ◇ v2) ◇ v0) ◇ v1) ◇ v0)"): ("true", "e2323_e3180", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, a = ((b ◇ (a ◇ c)) ◇ b) := by
+    intro a b c
+    exact (h a b (a ◇ (c ◇ (a ◇ a))) a).trans (congrArg (fun t => ((b ◇ (a ◇ t)) ◇ b)) ((h c a a a).symm))
+  have hlem1 : ∀ a b c d e f : G, a = (b ◇ ((a ◇ (c ◇ d)) ◇ (b ◇ (e ◇ f)))) := by
+    intro a b c d e f
+    exact (h a ((a ◇ (c ◇ d)) ◇ (b ◇ (e ◇ f))) c d).trans (congrArg (fun t => (t ◇ ((a ◇ (c ◇ d)) ◇ (b ◇ (e ◇ f))))) ((h b (a ◇ (c ◇ d)) e f).symm))
+  have hlem2 : ∀ a b c d e f : G, ((a ◇ b) ◇ (c ◇ (d ◇ e))) = ((f ◇ c) ◇ f) := by
+    intro a b c d e f
+    exact (h ((a ◇ b) ◇ (c ◇ (d ◇ e))) f a b).trans (congrArg (fun t => ((f ◇ t) ◇ f)) ((h c (a ◇ b) d e).symm))
+  have hlem3 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((hlem1 (a ◇ a) (a ◇ (a ◇ a)) a a ((a ◇ a) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ a) ◇ (a ◇ a)) a a a a).symm))).trans (hlem0 a a a).symm
+  have hlem4 : ∀ a b c : G, (a ◇ b) = (a ◇ c) := by
+    intro a b c
+    exact ((hlem1 (a ◇ b) (a ◇ (a ◇ a)) a a ((a ◇ b) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ b) ◇ (a ◇ a)) a a a a).symm))).trans ((hlem1 (a ◇ c) (a ◇ (a ◇ a)) a a ((a ◇ c) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ c) ◇ (a ◇ a)) a a a a).symm))).symm
+  have hlem5 : ∀ a b c : G, (a ◇ b) = (c ◇ b) := by
+    intro a b c
+    exact ((hlem1 (a ◇ b) (a ◇ (a ◇ a)) a a ((a ◇ b) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ b) ◇ (a ◇ a)) a a a a).symm))).trans ((hlem1 (c ◇ b) (a ◇ (a ◇ a)) a a ((c ◇ b) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((c ◇ b) ◇ (a ◇ a)) a a a a).symm))).symm
+  have hlem6 : ∀ a b c d : G, (a ◇ b) = (c ◇ d) := by
+    intro a b c d
+    exact (hlem5 a b c).trans (hlem4 c d b).symm
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact ((hlem1 a (a ◇ (b ◇ a)) a a (a ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (b ◇ a)) ◇ t)) ((hlem1 a (a ◇ (a ◇ a)) b a a a).symm))).trans (hlem0 b a a).symm
+  intro x y z
+  exact hlem x ((((y ◇ z) ◇ x) ◇ y) ◇ x)
+"""),
+    ("v0 = ((v1 ◇ v0) ◇ (v2 ◇ (v2 ◇ v0)))",
+     "(v0 ◇ v0) = ((v0 ◇ v0) ◇ v0)"): ("true", "e1506_e359", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro x
+  exact ((((h (x ◇ x) x x)).trans (congrArg (fun t => (t ◇ (x ◇ (x ◇ (x ◇ x))))) ((h (x ◇ (x ◇ x)) (x ◇ x) (x ◇ x))))).trans ((congrArg (fun t => ((t ◇ ((x ◇ x) ◇ ((x ◇ x) ◇ (x ◇ (x ◇ x))))) ◇ (x ◇ (x ◇ (x ◇ x))))) ((h x x x).symm)).trans (congrArg (fun t => ((x ◇ ((x ◇ x) ◇ t)) ◇ (x ◇ (x ◇ (x ◇ x))))) ((h x x x).symm)))).trans (((congrArg (fun t => ((x ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ t))) ((h (x ◇ (x ◇ x)) (x ◇ x) (x ◇ x)))).trans (congrArg (fun t => ((x ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ (t ◇ ((x ◇ x) ◇ ((x ◇ x) ◇ (x ◇ (x ◇ x)))))))) ((h x x x).symm))).trans ((congrArg (fun t => ((x ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ (x ◇ ((x ◇ x) ◇ t))))) ((h x x x).symm)).trans ((h ((x ◇ x) ◇ x) x x).symm)))
+"""),
+    ("(v0 ◇ v1) = (v1 ◇ (v0 ◇ (v2 ◇ v1)))",
+     "((v0 ◇ v1) ◇ v2) = ((v1 ◇ v3) ◇ v2)"): ("true", "e3349_e4682", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem : ∀ a b : G, (a ◇ b) = (b ◇ b) := by
+    intro a b
+    exact (((((h a b a)).trans ((h b (a ◇ (a ◇ b)) b))).trans ((congrArg (fun t => ((a ◇ (a ◇ b)) ◇ (b ◇ t))) ((h a b a).symm)).trans ((congrArg (fun t => ((a ◇ (a ◇ b)) ◇ t)) ((h b (a ◇ b) a))).trans ((h (a ◇ b) (a ◇ (a ◇ b)) b).symm)))).trans (((congrArg (fun t => ((a ◇ b) ◇ t)) ((h a (a ◇ b) a))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ t))) ((h a (a ◇ (a ◇ b)) b))).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ ((a ◇ (a ◇ b)) ◇ (a ◇ t))))) ((h a b a).symm)))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ ((a ◇ (a ◇ b)) ◇ t)))) ((h a (a ◇ b) a))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ t))) ((h (a ◇ b) (a ◇ (a ◇ b)) a).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ t))) ((h (a ◇ b) (a ◇ (a ◇ b)) b))))))).trans ((((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ ((a ◇ (a ◇ b)) ◇ t)))) ((h b (a ◇ b) a).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ ((a ◇ (a ◇ b)) ◇ (b ◇ t))))) ((h a b a)))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ b) ◇ t))) ((h b (a ◇ (a ◇ b)) b).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ t)) ((h b (a ◇ b) a).symm)).trans ((h (a ◇ b) (b ◇ (a ◇ b)) (b ◇ b)))))).trans (((congrArg (fun t => ((b ◇ (a ◇ b)) ◇ t)) ((h (b ◇ b) (a ◇ b) b).symm)).trans ((congrArg (fun t => ((b ◇ (a ◇ b)) ◇ ((b ◇ b) ◇ t))) ((h a b b))).trans (congrArg (fun t => ((b ◇ (a ◇ b)) ◇ t)) ((h b (b ◇ b) a).symm)))).trans ((congrArg (fun t => ((b ◇ (a ◇ b)) ◇ (b ◇ t))) ((h b b a))).trans (((h b (b ◇ (a ◇ b)) b).symm).trans ((h b b a).symm)))))
+  intro x y z w
+  exact (hlem (x ◇ y) z).trans ((hlem (y ◇ w) z).symm)
+"""),
+    ("v0 = ((v0 ◇ v1) ◇ (v0 ◇ (v1 ◇ v2)))",
+     "v0 = ((v0 ◇ v1) ◇ (v0 ◇ (v2 ◇ v1)))"): ("false", "e1446_e1448", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 4) := {
+    op := finOpTable "[[2,3,3,2],[3,3,3,3],[3,3,0,0],[2,0,0,1]]"
+  }
+  refine Exists.intro (Fin 4) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = (v0 ◇ (v1 ◇ ((v0 ◇ v2) ◇ v1)))",
+     "v0 = (v0 ◇ ((v1 ◇ (v2 ◇ v3)) ◇ v3))"): ("true", "e636_e1070", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b : G, a = (a ◇ (b ◇ (a ◇ b))) := by
+    intro a b
+    exact (h a b (a ◇ ((a ◇ a) ◇ a))).trans (congrArg (fun t => (a ◇ (b ◇ (t ◇ b)))) ((h a a a).symm))
+  have hlem1 : ∀ a b c d : G, a = (a ◇ ((b ◇ (((a ◇ c) ◇ d) ◇ b)) ◇ (a ◇ c))) := by
+    intro a b c d
+    exact (h a (b ◇ (((a ◇ c) ◇ d) ◇ b)) c).trans (congrArg (fun t => (a ◇ ((b ◇ (((a ◇ c) ◇ d) ◇ b)) ◇ t))) ((h (a ◇ c) b d).symm))
+  have hlem2 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact (congrArg (fun t => (a ◇ t)) ((hlem0 a (a ◇ (a ◇ a))).trans (congrArg (fun t => (a ◇ ((a ◇ (a ◇ a)) ◇ t))) ((hlem0 a a).symm)))).trans (h a a (a ◇ a)).symm
+  have hlem3 : ∀ a : G, a = (a ◇ a) := by
+    intro a
+    exact (hlem2 a).symm
+  have hlem4 : ∀ a : G, a = ((a ◇ a) ◇ a) := by
+    intro a
+    exact ((hlem2 a).symm).trans (congrArg (fun t => (t ◇ a)) (hlem2 a)).symm
+  have hlem5 : ∀ a b : G, a = ((a ◇ a) ◇ b) := by
+    intro a b
+    exact (((hlem2 a).symm).trans (h (a ◇ a) b (b ◇ (a ◇ a)))).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((hlem0 b ((a ◇ a) ◇ (b ◇ (a ◇ a)))).trans (congrArg (fun t => (b ◇ (((a ◇ a) ◇ (b ◇ (a ◇ a))) ◇ t))) ((hlem0 b (a ◇ a)).symm)))).symm
+  have hlem : ∀ a b : G, (a ◇ b) = a := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ b)) ((hlem2 a).symm)).trans (hlem5 a b).symm
+  intro x y z w
+  exact (hlem x ((y ◇ (z ◇ w)) ◇ w)).symm
+"""),
+    ("v0 = (v1 ◇ ((((v2 ◇ v3) ◇ v2) ◇ v0) ◇ v2))",
+     "v0 = ((v1 ◇ (v0 ◇ v0)) ◇ ((v1 ◇ v2) ◇ v3))"): ("true", "e16886_e22457", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro x y z w
+  exact (((h x (y ◇ (x ◇ x)) ((((w ◇ w) ◇ w) ◇ ((y ◇ z) ◇ w)) ◇ w) w).trans (congrArg (fun t => ((y ◇ (x ◇ x)) ◇ t)) ((h ((y ◇ z) ◇ w) (((((((w ◇ w) ◇ w) ◇ ((y ◇ z) ◇ w)) ◇ w) ◇ w) ◇ ((((w ◇ w) ◇ w) ◇ ((y ◇ z) ◇ w)) ◇ w)) ◇ x) w w).symm))).symm).symm
+"""),
+    ("v0 = (v1 ◇ (v0 ◇ ((v0 ◇ v2) ◇ (v2 ◇ v1))))",
+     "v0 = (((v1 ◇ v2) ◇ v2) ◇ (v0 ◇ (v0 ◇ v3)))"): ("false", "e6681_e23774", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 4) := {
+    op := finOpTable "[[2,0,1,3],[0,2,3,1],[1,3,2,0],[3,1,0,2]]"
+  }
+  refine Exists.intro (Fin 4) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ("v0 = ((v1 ◇ v2) ◇ (((v3 ◇ v0) ◇ v4) ◇ v4))",
+     "v0 = ((v0 ◇ (v1 ◇ v1)) ◇ (v0 ◇ (v2 ◇ v0)))"): ("true", "e21241_e21453", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro x y z
+  exact (((h x x (y ◇ y) x (((x ◇ (x ◇ (z ◇ x))) ◇ x) ◇ x)).trans (congrArg (fun t => ((x ◇ (y ◇ y)) ◇ t)) ((h (x ◇ (z ◇ x)) (x ◇ x) (((x ◇ (x ◇ (z ◇ x))) ◇ x) ◇ x) x x).symm))).symm).symm
+"""),
+    ("v0 = ((v1 ◇ (v1 ◇ ((v2 ◇ v0) ◇ v1))) ◇ v2)",
+     "v0 = ((v0 ◇ (v1 ◇ v2)) ◇ (v3 ◇ (v4 ◇ v4)))"): ("true", "e30562_e21559", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact ((((h a a (a ◇ (a ◇ b)))).trans ((congrArg (fun t => ((a ◇ (a ◇ (((a ◇ (a ◇ t)) ◇ a) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h b a a))).trans (congrArg (fun t => ((a ◇ (a ◇ (t ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h (a ◇ ((a ◇ b) ◇ a)) a a).symm)))).trans (((congrArg (fun t => ((a ◇ (a ◇ t)) ◇ (a ◇ (a ◇ b)))) ((h ((a ◇ ((a ◇ b) ◇ a)) ◇ a) b a))).trans (congrArg (fun t => ((a ◇ (a ◇ ((b ◇ (b ◇ (t ◇ b))) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h (a ◇ ((a ◇ ((a ◇ b) ◇ a)) ◇ a)) a a)))).trans ((congrArg (fun t => ((a ◇ (a ◇ ((b ◇ (b ◇ (((a ◇ (a ◇ t)) ◇ a) ◇ b))) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h ((a ◇ b) ◇ a) a a).symm)).trans (congrArg (fun t => ((a ◇ (a ◇ ((b ◇ (b ◇ (t ◇ b))) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h b a a).symm))))).trans (((congrArg (fun t => ((a ◇ (a ◇ ((b ◇ (b ◇ (t ◇ b))) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h b b a))).trans ((congrArg (fun t => ((a ◇ (a ◇ ((b ◇ (b ◇ (((b ◇ (b ◇ t)) ◇ a) ◇ b))) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h ((a ◇ b) ◇ b) a b))).trans (congrArg (fun t => ((a ◇ (a ◇ ((b ◇ (b ◇ (t ◇ b))) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h (a ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ a)) b a).symm)))).trans (((congrArg (fun t => ((a ◇ (a ◇ t)) ◇ (a ◇ (a ◇ b)))) ((h ((b ◇ ((a ◇ b) ◇ b)) ◇ a) b a).symm)).trans (congrArg (fun t => ((a ◇ (a ◇ (t ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h (b ◇ ((a ◇ b) ◇ b)) a b)))).trans ((congrArg (fun t => ((a ◇ (a ◇ (((a ◇ (a ◇ t)) ◇ b) ◇ a))) ◇ (a ◇ (a ◇ b)))) ((h b b a).symm)).trans ((h b a (a ◇ (a ◇ b))).symm))))
+  intro x y z w u
+  exact hlem x ((x ◇ (y ◇ z)) ◇ (w ◇ (u ◇ u)))
+"""),
+    ("v0 = (v1 ◇ (((v2 ◇ v1) ◇ v0) ◇ v1))",
+     "(v0 ◇ v1) = (v2 ◇ ((v1 ◇ v0) ◇ v0))"): ("true", "e1367_e3599", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact (((((h a (b ◇ a) a)).trans (congrArg (fun t => (t ◇ (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)))) ((h (b ◇ a) a (a ◇ (b ◇ a)))))).trans ((congrArg (fun t => ((a ◇ (t ◇ a)) ◇ (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)))) ((h (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)) a b))).trans (congrArg (fun t => ((a ◇ ((a ◇ (t ◇ a)) ◇ a)) ◇ (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)))) ((h a (b ◇ a) a).symm)))).trans (((congrArg (fun t => ((a ◇ ((a ◇ (t ◇ a)) ◇ a)) ◇ (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)))) ((h a (a ◇ a) a))).trans (congrArg (fun t => ((a ◇ (t ◇ a)) ◇ (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)))) ((h (((a ◇ (a ◇ a)) ◇ a) ◇ (a ◇ a)) a a).symm))).trans ((congrArg (fun t => (t ◇ (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)))) ((h (a ◇ a) a (a ◇ (a ◇ a))).symm)).trans ((congrArg (fun t => ((a ◇ a) ◇ t)) ((h (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)) a b))).trans (congrArg (fun t => ((a ◇ a) ◇ (a ◇ (t ◇ a)))) ((h a (b ◇ a) a).symm)))))).trans ((((congrArg (fun t => ((a ◇ a) ◇ (a ◇ t))) ((h (a ◇ a) a (a ◇ (a ◇ a))))).trans (congrArg (fun t => ((a ◇ a) ◇ (a ◇ (a ◇ (t ◇ a))))) ((h (((a ◇ (a ◇ a)) ◇ a) ◇ (a ◇ a)) a a)))).trans ((congrArg (fun t => ((a ◇ a) ◇ (a ◇ (a ◇ ((a ◇ (t ◇ a)) ◇ a))))) ((h a (a ◇ a) a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ (a ◇ (a ◇ ((a ◇ (t ◇ a)) ◇ a))))) ((h a (b ◇ a) a))))).trans (((congrArg (fun t => ((a ◇ a) ◇ (a ◇ (a ◇ (t ◇ a))))) ((h (((a ◇ (b ◇ a)) ◇ a) ◇ (b ◇ a)) a b).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ (a ◇ t))) ((h (b ◇ a) a (a ◇ (b ◇ a))).symm))).trans ((congrArg (fun t => ((a ◇ a) ◇ (a ◇ (t ◇ a)))) ((h b (a ◇ a) a))).trans ((congrArg (fun t => ((a ◇ a) ◇ t)) ((h (((a ◇ (a ◇ a)) ◇ b) ◇ (a ◇ a)) a a).symm)).trans ((h b (a ◇ a) a).symm)))))
+  intro x y z
+  exact hlem (x ◇ y) (z ◇ ((y ◇ x) ◇ x))
+"""),
+    ("v0 = ((((v1 ◇ v0) ◇ (v2 ◇ v3)) ◇ v0) ◇ v1)",
+     "v0 = ((v0 ◇ (v0 ◇ v1)) ◇ ((v0 ◇ v1) ◇ v0))"): ("true", "e39227_e22253", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, a = ((((b ◇ a) ◇ c) ◇ a) ◇ b) := by
+    intro a b c
+    exact (h a b (((a ◇ c) ◇ (a ◇ a)) ◇ c) a).trans (congrArg (fun t => ((((b ◇ a) ◇ t) ◇ a) ◇ b)) ((h c a a a).symm))
+  have hlem1 : ∀ a b c d : G, (a ◇ b) = ((c ◇ d) ◇ ((a ◇ b) ◇ (c ◇ d))) := by
+    intro a b c d
+    exact (h (a ◇ b) ((a ◇ b) ◇ (c ◇ d)) c d).trans (congrArg (fun t => (t ◇ ((a ◇ b) ◇ (c ◇ d)))) ((h (c ◇ d) (a ◇ b) a b).symm))
+  have hlem2 : ∀ a b c d e : G, a = ((a ◇ a) ◇ (((b ◇ c) ◇ a) ◇ (d ◇ e))) := by
+    intro a b c d e
+    exact (h a (((b ◇ c) ◇ a) ◇ (d ◇ e)) b c).trans (congrArg (fun t => ((t ◇ a) ◇ (((b ◇ c) ◇ a) ◇ (d ◇ e)))) ((h a (b ◇ c) d e).symm))
+  have hlem3 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((hlem0 (a ◇ a) ((a ◇ a) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => (t ◇ ((a ◇ a) ◇ (a ◇ a)))) ((hlem0 (a ◇ a) (a ◇ a) (a ◇ a)).symm))).trans ((hlem0 a ((a ◇ a) ◇ (a ◇ a)) a).trans (congrArg (fun t => ((t ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a)))) ((hlem0 a a (a ◇ a)).symm))).symm
+  have hlem4 : ∀ a : G, a = (a ◇ a) := by
+    intro a
+    exact (hlem3 a).symm
+  have hlem5 : ∀ a : G, a = ((a ◇ a) ◇ a) := by
+    intro a
+    exact ((hlem3 a).symm).trans (congrArg (fun t => (t ◇ a)) (hlem3 a)).symm
+  have hlem6 : ∀ a b : G, a = ((a ◇ a) ◇ b) := by
+    intro a b
+    exact (h a b a (b ◇ a)).trans (congrArg (fun t => ((t ◇ a) ◇ b)) ((hlem0 a (a ◇ (b ◇ a)) (b ◇ a)).trans (congrArg (fun t => (t ◇ (a ◇ (b ◇ a)))) ((hlem0 (b ◇ a) a a).symm)))).symm
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact (hlem6 a b).trans (((((hlem3 b).symm).trans ((hlem0 (b ◇ b) ((b ◇ b) ◇ a) a).trans (congrArg (fun t => (t ◇ ((b ◇ b) ◇ a))) ((hlem0 a (b ◇ b) (b ◇ b)).symm)))).trans (congrArg (fun t => (a ◇ t)) ((hlem6 b a).symm))).trans (congrArg (fun t => (t ◇ b)) ((hlem3 a).symm))).symm
+  intro x y
+  exact hlem x ((x ◇ (x ◇ y)) ◇ ((x ◇ y) ◇ x))
+"""),
+    ("v0 = (v1 ◇ ((v2 ◇ (v0 ◇ (v3 ◇ v4))) ◇ v3))",
+     "v0 = ((v1 ◇ v0) ◇ ((v0 ◇ (v2 ◇ v3)) ◇ v2))"): ("true", "e13167_e19841", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro x y z w
+  exact (((h x (y ◇ x) w ((w ◇ (((x ◇ (z ◇ w)) ◇ z) ◇ (w ◇ w))) ◇ w) w).trans (congrArg (fun t => ((y ◇ x) ◇ t)) ((h ((x ◇ (z ◇ w)) ◇ z) (w ◇ (x ◇ (((w ◇ (((x ◇ (z ◇ w)) ◇ z) ◇ (w ◇ w))) ◇ w) ◇ w))) w w w).symm))).symm).symm
+"""),
+    ("v0 = (v1 ◇ ((v2 ◇ (v0 ◇ (v1 ◇ v1))) ◇ v1))",
+     "v0 = (v1 ◇ ((v1 ◇ v2) ◇ (v0 ◇ (v3 ◇ v0))))"): ("true", "e13115_e9520", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, (a ◇ (b ◇ ((c ◇ c) ◇ (c ◇ c)))) = (c ◇ (b ◇ c)) := by
+    intro a b c
+    exact (h (a ◇ (b ◇ ((c ◇ c) ◇ (c ◇ c)))) c (c ◇ c)).trans (congrArg (fun t => (c ◇ (t ◇ c))) ((h b (c ◇ c) a).symm))
+  have hlem1 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((h (a ◇ a) a (a ◇ a)).trans (congrArg (fun t => (a ◇ (t ◇ a))) (((hlem0 a (a ◇ a) (a ◇ a)).symm).trans (congrArg (fun t => (a ◇ t)) (hlem0 (a ◇ a) ((a ◇ a) ◇ (a ◇ a)) a))))).trans ((h a a (a ◇ a)).trans (congrArg (fun t => (a ◇ (t ◇ a))) (((hlem0 a a (a ◇ a)).symm).trans (congrArg (fun t => (a ◇ t)) (hlem0 a ((a ◇ a) ◇ (a ◇ a)) a))))).symm
+  have hlem2 : ∀ a b : G, (a ◇ b) = a := by
+    intro a b
+    exact ((h (a ◇ b) a (a ◇ a)).trans (congrArg (fun t => (a ◇ (t ◇ a))) (((hlem0 a (a ◇ b) (a ◇ a)).symm).trans (congrArg (fun t => (a ◇ t)) (hlem0 (a ◇ b) ((a ◇ a) ◇ (a ◇ a)) a))))).trans ((h a a (a ◇ a)).trans (congrArg (fun t => (a ◇ (t ◇ a))) (((hlem0 a a (a ◇ a)).symm).trans (congrArg (fun t => (a ◇ t)) (hlem0 a ((a ◇ a) ◇ (a ◇ a)) a))))).symm
+  have hlem3 : ∀ a b : G, (a ◇ b) = b := by
+    intro a b
+    exact (hlem2 a b).trans ((h b a a).trans (hlem2 a ((a ◇ (b ◇ (a ◇ a))) ◇ a))).symm
+  have hlem4 : ∀ a : G, a = (a ◇ a) := by
+    intro a
+    exact (hlem1 a).symm
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact ((hlem3 b a).symm).trans ((hlem2 b a).symm).symm
+  intro x y z w
+  exact hlem x (y ◇ ((y ◇ z) ◇ (x ◇ (w ◇ x))))
+"""),
+    ("v0 = (v1 ◇ (v2 ◇ (((v0 ◇ v3) ◇ v2) ◇ v4)))",
+     "v0 = ((((v1 ◇ v2) ◇ v0) ◇ v1) ◇ (v3 ◇ v4))"): ("true", "e8773_e28912", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  intro x y z w u
+  exact (((h x (((y ◇ z) ◇ x) ◇ y) u u ((((w ◇ u) ◇ u) ◇ ((x ◇ u) ◇ u)) ◇ u)).trans (congrArg (fun t => ((((y ◇ z) ◇ x) ◇ y) ◇ t)) ((h (w ◇ u) u ((x ◇ u) ◇ u) u u).symm))).symm).symm
+"""),
+    ("v0 = (v1 ◇ (v2 ◇ (((v3 ◇ v2) ◇ v0) ◇ v2)))",
+     "v0 = ((v0 ◇ (v1 ◇ (v0 ◇ (v2 ◇ v1)))) ◇ v1)"): ("true", "e8993_e29328", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c d e : G, a = (b ◇ ((c ◇ (((d ◇ c) ◇ e) ◇ c)) ◇ e)) := by
+    intro a b c d e
+    exact (h a b (c ◇ (((d ◇ c) ◇ e) ◇ c)) a).trans (congrArg (fun t => (b ◇ ((c ◇ (((d ◇ c) ◇ e) ◇ c)) ◇ t))) ((h e ((a ◇ (c ◇ (((d ◇ c) ◇ e) ◇ c))) ◇ a) c d).symm))
+  have hlem1 : ∀ a b c d e : G, (a ◇ (((b ◇ a) ◇ c) ◇ a)) = (d ◇ (e ◇ (c ◇ e))) := by
+    intro a b c d e
+    exact (h (a ◇ (((b ◇ a) ◇ c) ◇ a)) d e a).trans (congrArg (fun t => (d ◇ (e ◇ (t ◇ e)))) ((h c (a ◇ e) a b).symm))
+  have hlem2 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact (hlem0 (a ◇ a) a a a a).trans ((hlem0 a a a a a).symm)
+  have hlem3 : ∀ a b c : G, (a ◇ b) = (a ◇ c) := by
+    intro a b c
+    exact (hlem0 (a ◇ b) a a a a).trans ((hlem0 (a ◇ c) a a a a).symm)
+  have hlem4 : ∀ a b c : G, (a ◇ b) = (c ◇ b) := by
+    intro a b c
+    exact (hlem0 (a ◇ b) a a a a).trans ((hlem0 (c ◇ b) a a a a).symm)
+  have hlem5 : ∀ a b c d : G, (a ◇ b) = (c ◇ d) := by
+    intro a b c d
+    exact (hlem0 (a ◇ b) a a a a).trans ((hlem0 (c ◇ d) a a a a).symm)
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact (hlem0 a a a a a).trans ((hlem0 b a a a a).symm)
+  intro x y z
+  exact hlem x ((x ◇ (y ◇ (x ◇ (z ◇ y)))) ◇ y)
+"""),
+    ("v0 = ((v1 ◇ ((v1 ◇ (v0 ◇ v1)) ◇ v2)) ◇ v1)",
+     "v0 = (((v1 ◇ v2) ◇ v3) ◇ (v2 ◇ (v3 ◇ v1)))"): ("true", "e32253_e23916", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b : G, (a ◇ (b ◇ a)) = ((a ◇ b) ◇ a) := by
+    intro a b
+    exact (h (a ◇ (b ◇ a)) a a).trans (congrArg (fun t => ((a ◇ t) ◇ a)) ((h b a a).symm))
+  have hlem1 : ∀ a b c d : G, (a ◇ ((a ◇ (b ◇ a)) ◇ c)) = ((a ◇ ((a ◇ b) ◇ d)) ◇ a) := by
+    intro a b c d
+    exact (h (a ◇ ((a ◇ (b ◇ a)) ◇ c)) a d).trans (congrArg (fun t => ((a ◇ ((a ◇ t) ◇ d)) ◇ a)) ((h b a c).symm))
+  have hlem2 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((congrArg (fun t => (t ◇ a)) (h a a (a ◇ a))).trans (congrArg (fun t => (((a ◇ t) ◇ a) ◇ a)) (((hlem0 (a ◇ a) a).trans (congrArg (fun t => (t ◇ (a ◇ a))) ((hlem0 a a).symm))).symm))).trans ((h a a a).trans (congrArg (fun t => (t ◇ a)) (hlem1 a a a (a ◇ (a ◇ a))))).symm
+  have hlem3 : ∀ a : G, a = (a ◇ a) := by
+    intro a
+    exact (hlem2 a).symm
+  have hlem : ∀ a b : G, a = b := by
+    intro a b
+    exact (((h a a a).trans (congrArg (fun t => (t ◇ a)) (hlem1 a a a (b ◇ a)))).trans (congrArg (fun t => (((a ◇ (t ◇ (b ◇ a))) ◇ a) ◇ a)) (hlem2 a))).trans ((h b a a).trans (congrArg (fun t => (t ◇ a)) (hlem0 a (a ◇ (b ◇ a))))).symm
+  intro x y z w
+  exact hlem x (((y ◇ z) ◇ w) ◇ (z ◇ (w ◇ y)))
+"""),
+    ("v0 = (v1 ◇ (v0 ◇ ((v2 ◇ v2) ◇ v1)))",
+     "(v0 ◇ v1) = (v1 ◇ (v0 ◇ (v0 ◇ v0)))"): ("false", "e695_e3342", """import JudgeProblem
+import JudgeDecide.DecideBang
+import JudgeFinOp.MemoFinOp
+open MemoFinOp
+
+def submission : Goal := by
+  let m : Magma (Fin 4) := {
+    op := finOpTable "[[1,0,2,3],[0,1,3,2],[2,3,1,0],[3,2,0,1]]"
+  }
+  refine Exists.intro (Fin 4) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ('v0 = (((v0 ◇ (v0 ◇ v1)) ◇ v2) ◇ v2)',
+     '(v0 ◇ v0) = (v0 ◇ ((v0 ◇ v1) ◇ v0))'): ("true", 'e2860_e3458', """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, a ◇ ((a ◇ (a ◇ c)) ◇ b) = a ◇ (a ◇ c) := by
+    intro a b c
+    exact (congrArg (fun t => t ◇ ((a ◇ (a ◇ c)) ◇ b)) (h a c ((a ◇ (a ◇ c)) ◇ b))).trans (((h (a ◇ (a ◇ c)) b ((a ◇ (a ◇ c)) ◇ b)).symm))
+  have hlem1 : ∀ a b c d : G, ((((a ◇ (a ◇ b)) ◇ d) ◇ a) ◇ c) ◇ c = (a ◇ (a ◇ b)) ◇ d := by
+    intro a b c d
+    exact (congrArg (fun t => ((((a ◇ (a ◇ b)) ◇ d) ◇ t) ◇ c) ◇ c) (h a b d)).trans (((h ((a ◇ (a ◇ b)) ◇ d) d c).symm))
+  have hlem2 : ∀ a b c : G, (a ◇ (a ◇ c)) ◇ a = (a ◇ (a ◇ c)) ◇ ((a ◇ (a ◇ c)) ◇ b) := by
+    intro a b c
+    exact (congrArg (fun t => (a ◇ (a ◇ c)) ◇ t) (h a c ((a ◇ (a ◇ c)) ◇ b))).trans ((hlem0 (a ◇ (a ◇ c)) ((a ◇ (a ◇ c)) ◇ b) b))
+  have hlem3 : ∀ a b c d : G, (((a ◇ (a ◇ c)) ◇ a) ◇ d) ◇ d = a ◇ (a ◇ c) := by
+    intro a b c d
+    exact (congrArg (fun t => (t ◇ d) ◇ d) (hlem2 a b c)).trans (((h (a ◇ (a ◇ c)) b d).symm))
+  have hlem4 : ∀ a b : G, b ◇ b = b ◇ (b ◇ a) := by
+    intro a b
+    exact (congrArg (fun t => t ◇ b) (h b a b)).trans ((hlem3 b a a b))
+  have hlem5 : ∀ a b c : G, ((c ◇ c) ◇ b) ◇ b = c := by
+    intro a b c
+    exact (congrArg (fun t => (t ◇ b) ◇ b) (hlem4 a c)).trans (((h c a b).symm))
+  have hlem6 : ∀ a b c : G, (c ◇ b) ◇ b = (c ◇ c) ◇ c := by
+    intro a b c
+    exact (congrArg (fun t => (t ◇ b) ◇ b) (h c a c)).trans ((hlem1 c a b c).trans ((congrArg (fun t => t ◇ c) ((hlem4 a c).symm))))
+  have hlem7 : ∀ a b : G, b ◇ ((b ◇ b) ◇ a) = b ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ ((b ◇ b) ◇ a)) ((hlem5 a ((b ◇ b) ◇ a) b).symm)).trans (((h (b ◇ b) a ((b ◇ b) ◇ a)).symm))
+  have hlem8 : ∀ a b : G, (b ◇ b) ◇ (b ◇ a) = (b ◇ b) ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (b ◇ a)) (hlem4 a b)).trans ((hlem6 a (b ◇ a) b))
+  have hlem9 : ∀ a b c : G, ((((b ◇ b) ◇ c) ◇ b) ◇ a) ◇ a = (b ◇ b) ◇ c := by
+    intro a b c
+    exact (congrArg (fun t => ((((b ◇ b) ◇ c) ◇ t) ◇ a) ◇ a) ((hlem5 a c b).symm)).trans (((h ((b ◇ b) ◇ c) c a).symm))
+  have hlem10 : ∀ a b : G, ((a ◇ b) ◇ (a ◇ b)) ◇ ((a ◇ a) ◇ a) = ((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b) := by
+    intro a b
+    exact (congrArg (fun t => ((a ◇ b) ◇ (a ◇ b)) ◇ t) ((hlem6 a b a).symm)).trans ((hlem8 b (a ◇ b)))
+  have hlem11 : ∀ a b : G, (((a ◇ b) ◇ (a ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ b) = a ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (a ◇ b)) (hlem10 a b)).trans ((hlem5 a (a ◇ b) (a ◇ b)))
+  have hlem12 : ∀ a b c : G, ((b ◇ c) ◇ a) ◇ a = ((b ◇ c) ◇ (b ◇ c)) ◇ ((b ◇ b) ◇ b) := by
+    intro a b c
+    exact (congrArg (fun t => (t ◇ a) ◇ a) ((hlem11 b c).symm)).trans ((hlem9 a (b ◇ c) ((b ◇ b) ◇ b)))
+  have hlem13 : ∀ a b : G, ((b ◇ b) ◇ b) ◇ a = ((b ◇ a) ◇ (b ◇ a)) ◇ ((b ◇ b) ◇ b) := by
+    intro a b
+    exact (congrArg (fun t => t ◇ a) ((hlem6 a a b).symm)).trans ((hlem12 a b a))
+  have hlem14 : ∀ a b : G, (((a ◇ a) ◇ a) ◇ b) ◇ (a ◇ b) = a ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (a ◇ b)) (hlem13 b a)).trans ((congrArg (fun t => t ◇ (a ◇ b)) (hlem10 a b)).trans ((hlem5 a (a ◇ b) (a ◇ b))))
+  have hlem15 : ∀ a b : G, (a ◇ b) ◇ ((a ◇ a) ◇ b) = (a ◇ a) ◇ b := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ b) ◇ ((a ◇ a) ◇ b)) ((hlem5 a (a ◇ a) a).symm)).trans ((hlem14 (a ◇ a) b))
+  have hlem16 : ∀ a b c : G, (((b ◇ b) ◇ c) ◇ a) ◇ a = b ◇ c := by
+    intro a b c
+    exact (congrArg (fun t => (t ◇ a) ◇ a) ((hlem15 b c).symm)).trans ((congrArg (fun t => (((b ◇ c) ◇ t) ◇ a) ◇ a) ((hlem15 b c).symm)).trans (((h (b ◇ c) ((b ◇ b) ◇ c) a).symm)))
+  have hlem17 : ∀ a b : G, (a ◇ b) ◇ a = (a ◇ a) ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ a) ((hlem16 a a b).symm)).trans ((hlem9 a a b))
+  have hlem18 : ∀ a b : G, a ◇ ((a ◇ b) ◇ a) = a ◇ a := by
+    intro a b
+    exact (congrArg (fun t => a ◇ t) (hlem17 a b)).trans ((hlem7 b a))
+  intro x y
+  exact ((hlem18 x y).symm)
+"""),
+
+    ('v0 = (((v1 ◇ v1) ◇ v1) ◇ (v0 ◇ v1))',
+     'v0 = (((v1 ◇ v1) ◇ v0) ◇ (v1 ◇ v1))'): ("true", 'e2135_e2128', """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b : G, (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) ◇ a = (b ◇ b) ◇ b := by
+    intro a b
+    exact (congrArg (fun t => (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) ◇ t) (h a b)).trans (((h ((b ◇ b) ◇ b) (a ◇ b)).symm))
+  have hlem1 : ∀ a b : G, ((a ◇ a) ◇ a) ◇ ((b ◇ b) ◇ b) = ((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b) := by
+    intro a b
+    exact (congrArg (fun t => ((a ◇ a) ◇ a) ◇ t) ((hlem0 a b).symm)).trans (((h (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) a).symm))
+  have hlem2 : ∀ a b c : G, (((b ◇ b) ◇ b) ◇ ((c ◇ c) ◇ c)) ◇ (a ◇ (b ◇ c)) = a := by
+    intro a b c
+    exact (congrArg (fun t => t ◇ (a ◇ (b ◇ c))) (hlem1 b c)).trans (((h a (b ◇ c)).symm))
+  have hlem3 : ∀ a b : G, (b ◇ b) ◇ (a ◇ (b ◇ b)) = a := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (a ◇ (b ◇ b))) (h (b ◇ b) b)).trans ((hlem2 a b b))
+  have hlem4 : ∀ a b c d : G, (((b ◇ b) ◇ b) ◇ (((c ◇ c) ◇ c) ◇ ((d ◇ d) ◇ d))) ◇ (a ◇ (b ◇ (c ◇ d))) = a := by
+    intro a b c d
+    exact (congrArg (fun t => (((b ◇ b) ◇ b) ◇ t) ◇ (a ◇ (b ◇ (c ◇ d)))) (hlem1 c d)).trans ((hlem2 a b (c ◇ d)))
+  have hlem5 : ∀ a b c : G, (((b ◇ b) ◇ b) ◇ (c ◇ c)) ◇ (a ◇ (b ◇ (c ◇ c))) = a := by
+    intro a b c
+    exact (congrArg (fun t => (((b ◇ b) ◇ b) ◇ t) ◇ (a ◇ (b ◇ (c ◇ c)))) (h (c ◇ c) c)).trans ((hlem4 a b c c))
+  have hlem6 : ∀ a b : G, b ◇ (a ◇ (b ◇ (b ◇ b))) = a := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (a ◇ (b ◇ (b ◇ b)))) (h b b)).trans ((hlem5 a b b))
+  have hlem7 : ∀ a b : G, (((a ◇ a) ◇ a) ◇ (b ◇ b)) ◇ a = b ◇ b := by
+    intro a b
+    exact (congrArg (fun t => (((a ◇ a) ◇ a) ◇ (b ◇ b)) ◇ t) ((hlem3 a b).symm)).trans ((hlem5 (b ◇ b) a b))
+  have hlem8 : ∀ a b c : G, ((((a ◇ a) ◇ a) ◇ ((b ◇ b) ◇ b)) ◇ (c ◇ c)) ◇ (a ◇ b) = c ◇ c := by
+    intro a b c
+    exact (congrArg (fun t => (t ◇ (c ◇ c)) ◇ (a ◇ b)) (hlem1 a b)).trans ((hlem7 (a ◇ b) c))
+  have hlem9 : ∀ a b : G, ((a ◇ a) ◇ (b ◇ b)) ◇ (a ◇ a) = b ◇ b := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ (b ◇ b)) ◇ (a ◇ a)) (h (a ◇ a) a)).trans ((hlem8 a a b))
+  have hlem10 : ∀ a b : G, (((a ◇ a) ◇ a) ◇ b) ◇ a = b := by
+    intro a b
+    exact (congrArg (fun t => (((a ◇ a) ◇ a) ◇ t) ◇ a) (h b b)).trans ((congrArg (fun t => (((a ◇ a) ◇ a) ◇ (((b ◇ b) ◇ b) ◇ t)) ◇ a) (h (b ◇ b) b)).trans ((congrArg (fun t => (((a ◇ a) ◇ a) ◇ (((b ◇ b) ◇ b) ◇ t)) ◇ a) (hlem1 b b)).trans ((congrArg (fun t => (((a ◇ a) ◇ a) ◇ (((b ◇ b) ◇ b) ◇ (((b ◇ b) ◇ (b ◇ b)) ◇ (b ◇ b)))) ◇ t) ((hlem6 a b).symm)).trans ((hlem4 b a b (b ◇ b))))))
+  have hlem11 : ∀ a b : G, ((b ◇ b) ◇ a) ◇ (b ◇ b) = a := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ a) ◇ (b ◇ b)) ((hlem9 b b).symm)).trans ((hlem10 (b ◇ b) a))
+  intro x y
+  exact ((hlem11 x y).symm)
+"""),
+
+    ('v0 = (((v0 ◇ v1) ◇ v0) ◇ (v1 ◇ v2))',
+     'v0 = (((v0 ◇ v0) ◇ (v1 ◇ v2)) ◇ v1)'): ("true", 'e2055_e2656', """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b : G, b ◇ (b ◇ a) = b ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (b ◇ a)) (h b b b)).trans (((h (b ◇ b) b a).symm))
+  have hlem1 : ∀ a b c d : G, ((a ◇ ((b ◇ c) ◇ b)) ◇ a) ◇ b = a := by
+    intro a b c d
+    exact (congrArg (fun t => ((a ◇ ((b ◇ c) ◇ b)) ◇ a) ◇ t) (h b c d)).trans (((h a ((b ◇ c) ◇ b) (c ◇ d)).symm))
+  have hlem2 : ∀ a b c : G, ((b ◇ b) ◇ b) ◇ ((b ◇ c) ◇ a) = b := by
+    intro a b c
+    exact (congrArg (fun t => (t ◇ b) ◇ ((b ◇ c) ◇ a)) ((hlem0 c b).symm)).trans (((h b (b ◇ c) a).symm))
+  have hlem3 : ∀ a b : G, (a ◇ ((a ◇ a) ◇ a)) ◇ a = (a ◇ a) ◇ a := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ ((a ◇ a) ◇ a)) ◇ a) ((hlem2 a a b).symm)).trans ((hlem1 ((a ◇ a) ◇ a) a b a))
+  have hlem4 : ∀ a : G, ((a ◇ a) ◇ a) ◇ a = a := by
+    intro a
+    exact (congrArg (fun t => t ◇ a) ((hlem3 a a).symm)).trans ((hlem1 a a a a))
+  have hlem5 : ∀ a b : G, (((b ◇ a) ◇ (b ◇ a)) ◇ (b ◇ a)) ◇ b = b ◇ a := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ (b ◇ a)) ◇ b) ((hlem0 b (b ◇ a)).symm)).trans ((hlem1 (b ◇ a) b a a))
+  have hlem6 : ∀ a b : G, (b ◇ ((b ◇ b) ◇ b)) ◇ (b ◇ a) = (b ◇ b) ◇ b := by
+    intro a b
+    exact (congrArg (fun t => (t ◇ ((b ◇ b) ◇ b)) ◇ (b ◇ a)) ((hlem4 b).symm)).trans (((h ((b ◇ b) ◇ b) b a).symm))
+  have hlem7 : ∀ a : G, a ◇ a = a ◇ ((a ◇ a) ◇ a) := by
+    intro a
+    exact (congrArg (fun t => t ◇ a) (h a a ((a ◇ a) ◇ a))).trans ((congrArg (fun t => (t ◇ (a ◇ ((a ◇ a) ◇ a))) ◇ a) ((hlem6 ((a ◇ a) ◇ a) a).symm)).trans ((hlem5 ((a ◇ a) ◇ a) a)))
+  have hlem8 : ∀ a b : G, (b ◇ b) ◇ (b ◇ a) = (b ◇ b) ◇ b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ (b ◇ a)) (hlem7 b)).trans ((congrArg (fun t => (t ◇ ((b ◇ b) ◇ b)) ◇ (b ◇ a)) ((hlem4 b).symm)).trans (((h ((b ◇ b) ◇ b) b a).symm)))
+  have hlem9 : ∀ a b c : G, b ◇ ((b ◇ c) ◇ a) = b ◇ b := by
+    intro a b c
+    exact (congrArg (fun t => t ◇ ((b ◇ c) ◇ a)) (h b b b)).trans ((congrArg (fun t => (t ◇ (b ◇ b)) ◇ ((b ◇ c) ◇ a)) ((hlem8 c b).symm)).trans (((h (b ◇ b) (b ◇ c) a).symm)))
+  have hlem10 : ∀ a b c : G, (a ◇ a) ◇ c = (a ◇ (c ◇ b)) ◇ a := by
+    intro a b c
+    exact (congrArg (fun t => t ◇ c) ((hlem9 a a (c ◇ b)).symm)).trans ((congrArg (fun t => (t ◇ ((a ◇ (c ◇ b)) ◇ a)) ◇ c) (h a (c ◇ b) c)).trans ((hlem1 ((a ◇ (c ◇ b)) ◇ a) c b a)))
+  have hlem11 : ∀ a b c d : G, ((a ◇ a) ◇ (b ◇ c)) ◇ b = a := by
+    intro a b c d
+    exact (congrArg (fun t => t ◇ b) (hlem10 a b (b ◇ c))).trans ((congrArg (fun t => ((a ◇ ((b ◇ c) ◇ b)) ◇ a) ◇ t) (h b c d)).trans (((h a ((b ◇ c) ◇ b) (c ◇ d)).symm)))
+  intro x y z
+  exact ((hlem11 x y z x).symm)
+"""),
 }
 
 
@@ -8051,8 +8772,63 @@ def solve_problem(
     *,
     false_time_budget: float | None = None,
 ) -> dict[str, Any] | None:
+    """Solve one row, escalating the effort tier only as far as it has to.
+
+    One pass per tier of `effort_ladder_to(effort_tier())`, cheapest first,
+    returning the first pass that produces a certificate. At `fast` that is
+    exactly one pass, so the audit's default behaviour is unchanged byte for
+    byte; at `standard`/`deep` it removes the tier inversion documented on
+    `effort_ladder_to`.
+
+    Passes cannot contaminate each other: every cached function in this module
+    was checked for a transitive read of `_EFFORT` / `EFFORT_TIERS` / `_eff_*`
+    and none has one, so no fast-pass cache entry can poison a wider pass.
+
+    The escalation is not free — the FALSE witness portfolio and the syntactic
+    route table are tier-independent, so each extra pass re-runs work that
+    cannot find anything the previous pass missed. Measured over 60 `hard3` rows
+    at `fast`, that duplicated prefix is **0.152 s median, 0.360 s mean, 3.087 s
+    worst** per escalation, against a Marathon row budget of minutes, and it is
+    only ever paid by a row the previous tier could not close. Re-running is
+    still preferred to skipping, because a stage the clock cut off in one pass
+    may finish in the next.
+    """
+    target = effort_tier()
+    # Reset the search-evidence globals ONCE, not per pass: `run_solo`'s
+    # speculative-TRUE gate reads them after we return, and it wants what the
+    # whole solve searched. Resetting per pass would let a final pass cut off in
+    # its cheap prefix report `hypothesis_models_seen() == 0` for a row where an
+    # earlier pass had exhausted a real order schedule.
     reset_hypothesis_model_count()
     reset_constraint_evidence()
+    try:
+        for tier in effort_ladder_to(target):
+            set_effort(tier)
+            record = solve_problem_pass(
+                problem, false_time_budget=false_time_budget)
+            if record is not None:
+                return record
+            # No point escalating into a spent clock or a tripped memory guard;
+            # the next pass would only re-run the same engines with budgets it
+            # cannot use, and a wider tier costs MORE memory, not less. Checked
+            # inline rather than through `_engine_gate()` because that would
+            # spend one of the row's three `try_reclaim_memory` attempts on
+            # bookkeeping (rail 10's shape: a per-row budget quietly consumed by
+            # something that is not a row).
+            if _HARD_DEADLINE is not None and time.monotonic() >= _HARD_DEADLINE:
+                return None
+            if memory_exceeded():
+                return None
+    finally:
+        set_effort(target)
+    return None
+
+
+def solve_problem_pass(
+    problem: dict[str, Any],
+    *,
+    false_time_budget: float | None = None,
+) -> dict[str, Any] | None:
     try:
         eq1 = parse_equation(str(problem["equation1"]))
         eq2 = parse_equation(str(problem["equation2"]))
@@ -9134,6 +9910,36 @@ def marathon_reference_seconds() -> float:
     return MARATHON_REF_SECONDS_DEFAULT
 
 
+def marathon_row_budget(remaining: float, rows_not_yet_attempted: int) -> float:
+    """Wall clock one Marathon row may hold the deterministic pass for.
+
+    `run_marathon`'s loop bounded only the *sum* (`MARATHON_DETERMINISTIC_SHARE`
+    of the run, then `break`), so one slow row could spend everything left and
+    every row after it was never attempted at all — which is what
+    `not_attempted` meant in the 2026-08-01/03 real-judge campaign. The fair
+    share is recomputed from what is actually left before each row, so the
+    instant majority (distilled, singleton, syntactic) hands its surplus
+    straight back to the tail; `MARATHON_ROW_BORROW` lets a genuinely hard row
+    take a few rows' worth and no more.
+
+    Borrowing alone is not sufficient. If every row took its full allowance the
+    remainder decays geometrically and the last rows get nothing — the same
+    starvation, deferred — so the budget also leaves `MARATHON_ROW_MIN_SECONDS`
+    for each row still queued. That floor is what keeps the tail's cheap routes
+    reachable in the worst case.
+
+    This is a deadline, not a second cap racing one (rail 5f): it is the only
+    per-row stopping criterion, and the engines' own budgets clamp to it
+    through `local_deadline`.
+    """
+    remaining = max(0.0, remaining)
+    rows_left = max(1, rows_not_yet_attempted)
+    borrowed = MARATHON_ROW_BORROW * remaining / rows_left
+    reserved = MARATHON_ROW_MIN_SECONDS * (rows_left - 1)
+    budget = min(borrowed, max(0.0, remaining - reserved))
+    return min(remaining, max(budget, MARATHON_ROW_MIN_SECONDS))
+
+
 def marathon_per_problem_budget(total_budget: float, problem_count: int, ref_seconds: float) -> float:
     """Wall-clock the FALSE portfolio may spend on one problem.
 
@@ -9213,31 +10019,48 @@ def run_marathon() -> int:
     solved = 0
     deterministic_submitted = 0
     solved_ids: set[str] = set()
-    for priority, problem in prioritized:
-        if time.monotonic() + 5.0 >= min(deterministic_deadline, deadline):
-            break
-        try:
-            clear_term_caches()
-            reset_memory_reclaims()
-            answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
-            if answer_record is None:
+    pass_deadline = min(deterministic_deadline, deadline)
+    total_rows = len(prioritized)
+    attempted = 0
+    try:
+        for priority, problem in prioritized:
+            if time.monotonic() + 5.0 >= pass_deadline:
+                break
+            row_budget = marathon_row_budget(
+                pass_deadline - time.monotonic(), total_rows - attempted)
+            attempted += 1
+            set_hard_deadline(time.monotonic() + row_budget)
+            try:
+                clear_term_caches()
+                reset_memory_reclaims()
+                answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
+                if answer_record is None:
+                    continue
+                if not append_answer(output_path, answer_record["answer"]):
+                    continue
+                route = str(answer_record["route"])
+                route_counts[route] = route_counts.get(route, 0) + 1
+                solved += 1
+                deterministic_submitted += 1
+                solved_ids.add(str(problem.get("id")))
+            except Exception as exc:  # noqa: BLE001 - one bad row must not kill the whole manifest
+                log_stderr(
+                    {
+                        "route": "solve:crash",
+                        "id": str(problem.get("id")),
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+                )
                 continue
-            if not append_answer(output_path, answer_record["answer"]):
-                continue
-            route = str(answer_record["route"])
-            route_counts[route] = route_counts.get(route, 0) + 1
-            solved += 1
-            deterministic_submitted += 1
-            solved_ids.add(str(problem.get("id")))
-        except Exception as exc:  # noqa: BLE001 - one bad row must not kill the whole manifest
-            log_stderr(
-                {
-                    "route": "solve:crash",
-                    "id": str(problem.get("id")),
-                    "error": f"{type(exc).__name__}: {exc}",
-                }
-            )
-            continue
+    finally:
+        # Hand the rest of the run back to the whole-run deadline. Every engine
+        # the LLM lane invokes while parsing candidates clamps to
+        # `_HARD_DEADLINE` through `local_deadline`, so leaving the last row's
+        # (already expired) per-problem bound in place would silently turn every
+        # candidate into `lemma_not_derivable_from_hypothesis` — tokens spent,
+        # zero accepts, nothing logged. `finally` because the `break` above and
+        # the per-row `except` both leave the loop with a stale deadline live.
+        set_hard_deadline(deadline - 20.0)
 
     llm_calls = 0
     call_llm, tokens_used, budget_remaining = load_marathon_llm()
