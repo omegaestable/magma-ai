@@ -60,7 +60,8 @@ Three organizer answers on the forum, all checked against the vendored snapshot
 | Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, 24/24 distilled-library certs, **11/11 new certs 2026-08-11** (6 `egg_ladder`, 3 FALSE controls, 2 newly distilled) |
 | Real-runner evidence, new routes | **Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected, 0 LLM calls** (2026-08-07 routes; `egg_ladder` has judge but not yet real-runner evidence) |
 | Offline gate | **201 passed, 2 skipped, ~16 s** (`-n auto`) |
-| Packaged size | **480,115 bytes of 500,000 — 19,885 bytes (4.0%) headroom.** Size *is* now close to binding; see rail 1. |
+| Packaged size | **355,879 bytes of 500,000 — 144,121 bytes (28.8%) headroom.** No longer close to binding; see rail 1. |
+| Solver source | **9,043 lines** (was 10,388 before the 2026-08-11 simplification pass) |
 
 **2026-08-11 session** (`stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`):
 `1658 → 1666`, TRUE `810 → 816`, FALSE `848 → 850`, diffed by row id across two
@@ -219,21 +220,27 @@ judge** (see below). It is the only thing that is not an upper bound.
    2026-07-21: "subsumed" routes are cheap high-volume fast paths, and 29 routes
    look dead on the official sets but are live on the HF sets. De-bloat means
    junk files and stale docs, never coverage.
-   **Amended 2026-08-11: "file size is not binding" is no longer safely true.**
-   The package is 480,115 of 500,000 bytes — 19,885 left, 4.0%. That is still not a
-   licence to delete routes; it *is* a reason to check the number before adding a
-   large one. Where the bytes actually are, measured: `DISTILLED_CERTS` is **14.8%
-   of the file** (71 KB over 22 entries, the two largest 12.6 KB and 11.9 KB), and
-   full-line comments are 10.3%. So a distilled row costs 2–12 KB of the cap —
-   worth knowing before distilling a big egg proof, and the reason 2026-08-07 left
-   two oversized certs out. The `WarnBytes = 150000` figure in the packager is
-   long-dead history, not a target.
-   **Free 10 KB already taken:** the packager used to `Copy-Item` the CRLF working
-   copy, spending one byte per line of a ~10,400-line file on carriage returns the
-   judge does not need. It now writes LF (UTF-8, no BOM): 490,503 → 480,115 bytes,
-   2% of the cap, no content change. If more headroom is ever needed, stripping
-   comments *from the submission only* is the next lever — but verify by importing
-   the stripped artifact and running the gate against it, not by eyeballing it.
+   **Size was briefly binding (4.0% headroom on 2026-08-11) and no longer is.**
+   The package is 355,879 of 500,000 bytes — 144,121 left, 28.8%. Two levers got
+   it there, in this order:
+   - **Simplification, −51 KB.** 37 bespoke `*_source` pattern matchers became one
+     `law_matcher` plus a table row each, and the route families that wrapped them
+     became factories. Source: 10,388 → 9,043 lines. This is *not* de-bloat by
+     deletion: every route survives, `TRUE_ROUTES` is identical entry for entry,
+     and the emitted Lean is byte-identical (proved over all 5,090 equations of the
+     real domain — see the session note).
+   - **Submission-only stripping, −74 KB.** `package_solver.ps1` now calls
+     `stage2/solver/minify_submission.py`, which removes comments and docstrings
+     and writes LF/UTF-8 without BOM. Comments stay in the working tree, where most
+     of them record a measurement that cost a session; they are worth nothing to
+     the judge. The stripper proves the artifact parses to the same tree as the
+     source before writing, and the whole offline gate was run against the stripped
+     artifact itself (201 passed) — that is what rail 1 asked for, done.
+   Where the bytes still are, measured: `DISTILLED_CERTS` is 72.8 KB over 22
+   entries (the two largest 12.6 KB and 11.9 KB), so a distilled row costs 2–12 KB
+   of the cap — worth knowing before distilling a big egg proof, and the reason
+   2026-08-07 left two oversized certs out. `WarnBytes` in the packager is now
+   450,000: a "within 10% of the cap" alarm, not a de-bloat target.
 2. **Compare TRUE counts, not solved counts, and diff by row id.** The FALSE
    search is wall-clock bounded, so solved totals carry a ±7 run-to-run noise
    band. A route change is judged by row-id diff.
@@ -495,12 +502,24 @@ than skipping.
 
 ## How the solver is organised
 
-`stage2/solver/solver.py` (~8.4k lines, single file by contract):
+`stage2/solver/solver.py` (~9.0k lines, single file by contract):
 
 - `solve_problem()` dispatches through `TRUE_ROUTES` / the general engines in a
   fixed order — cheap syntactic routes first, expensive search engines last.
   **Order is load-bearing**; it is what keeps solved rows from paying for the
   hungry engines.
+- **The hand-recognised law families are data, not code (2026-08-11).** A family
+  is `law_matcher(pattern, args, distinct=, symm=, both_orientations=)`: eq1 must
+  match `pattern` up to renaming with every pattern variable landing on a bare
+  equation variable, and `args` says which Lean argument each becomes. It returns
+  a `LawMatch` carrying the `h ...` call and the bindings. On top of it,
+  `collapse_family_route` and `projection_collapse_route` turn a whole route into
+  a table row, and `submission_certificate` / `law_have` render the one
+  certificate skeleton they all share. Adding a family is now one row; the law
+  text in the row is the same string the certificate emits, so the two cannot
+  drift. The 37 bespoke matchers this replaced were proved equivalent over the
+  entire real input domain (4,694 ETP equations plus every equation in every
+  benchmark set) before being deleted.
 - The general TRUE engines, in order: `egg_probe`, `equational_closure`,
   `deep_absorption_closure`, `derived_cp_closure`, `projection_bootstrap`,
   `lemma_bootstrap`, `lemma_chain_bootstrap`, `egg_closure`, **`egg_collapse`**,

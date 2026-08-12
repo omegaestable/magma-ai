@@ -1,11 +1,15 @@
 param(
     [string]$OutPath = "stage2/submissions/solver.py",
     [switch]$SkipTests,
-    [int]$WarnBytes = 150000
+    # Headroom warning, not a de-bloat target: routes are never deleted to save
+    # bytes (CLAUDE.md rail 1). This fires when the artifact is within 10% of the
+    # hard cap, which is when adding a large distilled certificate needs thought.
+    [int]$WarnBytes = 450000
 )
 
 $sourcePath = "stage2/solver/solver.py"
 $limitBytes = 500000
+$python = if (Test-Path ".venv/Scripts/python.exe") { ".venv/Scripts/python.exe" } else { "python" }
 
 if (-not (Test-Path $sourcePath)) {
     throw "Missing solver source: $sourcePath"
@@ -15,7 +19,6 @@ if (-not (Test-Path $sourcePath)) {
 # (proof kernel + finite-model checks + golden routes) are the local guard
 # against shipping `incorrect` certificates. Do not package around a failure.
 if (-not $SkipTests) {
-    $python = if (Test-Path ".venv/Scripts/python.exe") { ".venv/Scripts/python.exe" } else { "python" }
     Write-Host "Running offline correctness gate..."
     # -n auto: the gate re-solves ~170 real problems, which is ~160 s serially
     # and ~47 s across cores. Speed matters here because a slow gate is a gate
@@ -36,16 +39,16 @@ if ($outDir) {
     Get-ChildItem -Force -Path $outDir | Remove-Item -Force -Recurse
 }
 
-# Write the submission with LF line endings instead of copying the CRLF source.
-# This is worth ~10 KB of the 500 KB cap and costs nothing: the working tree is
-# CRLF (Windows + git autocrlf), the file is ~10,400 lines, and every one of those
-# carries a byte the judge does not need. Measured 2026-08-11: 490,503 bytes as a
-# straight copy, 480,115 with LF — 2% of the cap recovered with no content change.
-# Python is indifferent to line endings, and the 500 KB limit is on file bytes.
-# UTF8Encoding($false) = no BOM; the file contains ◇ and a BOM would be junk the
-# judge has to parse.
-$text = [System.IO.File]::ReadAllText($sourcePath) -replace "`r`n", "`n"
-[System.IO.File]::WriteAllText($OutPath, $text, (New-Object System.Text.UTF8Encoding($false)))
+# Write the submission with LF line endings and no comments or docstrings.
+# Both are pure byte savings the judge does not need: LF instead of the CRLF
+# working tree is worth ~2% of the cap, and comments plus docstrings are ~17%.
+# `minify_submission.py` proves the artifact parses to the same tree as the
+# source before writing it, so this cannot silently change behaviour.
+# UTF-8 without BOM: the file contains ◇ and a BOM would be junk to parse.
+& $python stage2/solver/minify_submission.py $sourcePath $OutPath
+if ($LASTEXITCODE -ne 0) {
+    throw "Minifying the submission failed; refusing to package."
+}
 $sizeBytes = (Get-Item $OutPath).Length
 
 if ($sizeBytes -gt $limitBytes) {
@@ -53,7 +56,7 @@ if ($sizeBytes -gt $limitBytes) {
 }
 
 if ($sizeBytes -gt $WarnBytes) {
-    Write-Warning "Packaged solver is $sizeBytes bytes, above the $WarnBytes byte de-bloat target (hard limit $limitBytes)."
+    Write-Warning "Packaged solver is $sizeBytes bytes, within 10% of the $limitBytes byte hard cap."
 }
 
 Write-Host "Packaged $OutPath ($sizeBytes bytes)."

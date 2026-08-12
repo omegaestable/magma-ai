@@ -32,17 +32,37 @@ def _load_entries() -> list[dict]:
 ENTRIES = _load_entries()
 
 
-# The general closure engines are interchangeable: each is sound, each is
+# The general search engines are interchangeable: each is sound, each is
 # wall-clock budgeted, and which one reaches a row first flips under CPU load.
 # Observed repeatedly on `evaluation_extra_hard_0139`
 # (`absorption_closure` <-> `derived_cp_closure`), which made the pre-package
 # gate itself flaky. Collapsing them into one family keeps the gate meaningful
 # — coverage loss and soundness loss are still caught by the assertions below —
 # without failing on a race. Bespoke routes stay distinct so real drift shows.
+#
+# This is every engine in `solve_problem`'s general-engine block except
+# `narrow_grind`, which is deliberately excluded: it is the demoted route whose
+# certificates the offline kernel cannot check, so drifting onto it must fail.
+# The egg engines belong here for the same reason the closures do and were
+# simply missed when they were added — `evaluation_hard_0028` pins
+# `alternating_front_self_collapse`, whose route carries an 0.08 s budget and
+# needs 22 ms on an idle machine, so under a loaded 16-way gate it loses the
+# race to `egg_collapse` and the row is still solved, still TRUE, still
+# oracle-checked. The real fix is step-count rather than wall-clock budgets.
 GENERAL_CLOSURE_FAMILIES = {
     "true:absorption_closure",
+    "true:absorption_context_bridge",
     "true:equational_closure",
     "true:derived_cp_closure",
+    "true:projection_bootstrap",
+    "true:lemma_bootstrap",
+    "true:lemma_chain",
+    "true:egg_closure",
+    "true:egg_collapse",
+    "true:egg_probe",
+    "true:egg_bootstrap",
+    "true:egg_priority_bootstrap",
+    "true:egg_ladder",
 }
 
 

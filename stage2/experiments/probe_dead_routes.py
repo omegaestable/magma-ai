@@ -9,6 +9,15 @@ A function that is called but never succeeds contributes nothing on this
 corpus and is a de-bloat candidate; one that is never even called is
 unreachable from the current dispatch order.
 
+**Instrumentation happens after import, so anything the module already called
+while executing is invisible to it.** Since 2026-08-11 that is the normal case
+for the `*_block` certificate-text builders: the route families are built by
+factories at import time, so `singleton_from_1111_block("h1111")` runs once
+during module execution and never again. Those names are recovered statically
+by `_called_at_import` and reported separately — without that, this tool says
+18 live builders are unreachable, and rail 1 exists because acting on that
+would cost real coverage.
+
 Usage:
     python stage2/experiments/probe_dead_routes.py --limit 0
 """
@@ -16,6 +25,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import os
 import re
@@ -25,10 +35,25 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SOLVER_PATH = REPO_ROOT / "stage2" / "solver" / "solver.py"
 sys.path.insert(0, str(REPO_ROOT / "stage2" / "solver"))
 sys.path.insert(0, str(REPO_ROOT / "stage2" / "experiments"))
 
 TARGET_RE = re.compile(r"_(route|source|block)$")
+
+
+def _called_at_import(path: Path = SOLVER_PATH) -> set[str]:
+    """Target names invoked by module-level code, which runs before wrapping."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for statement in tree.body:
+        if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        for node in ast.walk(statement):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                if TARGET_RE.search(node.func.id):
+                    names.add(node.func.id)
+    return names
 
 
 def _instrument(mod):
@@ -128,19 +153,27 @@ def main() -> int:
         and getattr(getattr(S, n), "__module__", None) in (S.__name__, None)
     )
 
-    never_called = [n for n in all_targets if not called.get(n)]
+    at_import = _called_at_import()
+    never_called = [n for n in all_targets
+                    if not called.get(n) and n not in at_import]
     never_succeeded = [n for n in all_targets
                        if called.get(n) and not succeeded.get(n)]
     live = [n for n in all_targets if succeeded.get(n)]
+    import_live = sorted(n for n in all_targets
+                         if n in at_import and not called.get(n))
 
     print(f"\nsolved {solved}/{len(problems)}")
     print(f"live (ever succeeded):   {len(live)}")
+    print(f"live at import time:     {len(import_live)}")
     print(f"called but never useful: {len(never_succeeded)}")
     print(f"never called at all:     {len(never_called)}")
 
     print("\n=== CALLED BUT NEVER SUCCEEDED (dead on this corpus) ===")
     for n in never_succeeded:
         print(f"  {n:56s} calls={called[n]}")
+    print("\n=== LIVE AT IMPORT (evaluated once while the module loads) ===")
+    for n in import_live:
+        print(f"  {n}")
     print("\n=== NEVER CALLED (unreachable in current dispatch) ===")
     for n in never_called:
         print(f"  {n}")
@@ -149,6 +182,7 @@ def main() -> int:
     args.out.write_text(json.dumps({
         "problems": len(problems), "solved": solved,
         "live": {n: succeeded[n] for n in live},
+        "live_at_import": import_live,
         "called_never_succeeded": {n: called[n] for n in never_succeeded},
         "never_called": never_called,
     }, indent=2), encoding="utf-8")

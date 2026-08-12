@@ -133,13 +133,6 @@ Output exactly ONE JSON object (first char {, last char }). No markdown, no
 <think>, no prose.
 """
 
-MAX_SUBMISSION_BYTES = 500_000
-
-# Hard limits enforced by the official judge, mirrored from
-# vendor/stage2-official/judge/verify.py (MAX_CODE_LENGTH / MAX_FALSE_CERT_BYTES).
-# A certificate over these is rejected with the row scored as attempted, so
-# emitting one is strictly worse than skipping. Keep these two in sync with any
-# harness sync.
 JUDGE_MAX_CODE_LENGTH = 50_000
 JUDGE_MAX_FALSE_CERT_BYTES = 10_000
 
@@ -271,12 +264,6 @@ def set_hard_deadline(deadline: float | None) -> None:
     _HARD_DEADLINE = deadline
 
 
-def hard_deadline_passed() -> bool:
-    if memory_exceeded():
-        return True
-    return _HARD_DEADLINE is not None and time.monotonic() >= _HARD_DEADLINE
-
-
 def local_deadline(time_budget: float | None) -> float | None:
     """Engine-local deadline clamped to the global hard deadline."""
     local = time.monotonic() + time_budget if time_budget else None
@@ -373,29 +360,9 @@ WITNESS_TABLES = (
 
 
 def reflexive_true_certificate() -> str:
-    return """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  exact h
-"""
+    return submission_certificate([], "  exact h\n")
 
 
-# `decideFin!` needs `maxRecDepth` raised once the exhaustive walk gets deep, and
-# what makes it deep is the number of *applications*, `n ** variables` — not the
-# order. Measured against the real judge on `hard2_0092` (a 5-variable row):
-#
-#   Fin 5, 5 vars =  3,125 applications  ->  accepted with and without
-#   Fin 6, 5 vars =  7,776 applications  ->  LEAN_REJECTED without, accepted with
-#
-# so the trigger sits somewhere in (3_125, 7_776]. 4_096 is inside that band and
-# leaves every previously-accepted certificate byte-identical: the whole accepted
-# corpus is orders <= 6 with <= 4 variables (6**4 = 1,296) or order >= 7, which
-# was already covered by the old order-only rule and stays covered below.
-#
-# This is the same mistake as the retired order-10 ceiling (rail 3b-ii): order is
-# not the cost axis. It stayed latent only because no shipped row had reached
-# order 6 with 5 variables until the constraint search was allowed to.
 DECIDE_MAX_REC_DEPTH_APPLICATIONS = 4_096
 
 
@@ -495,76 +462,30 @@ def singleton_true_certificate(
 ) -> str:
     if not eq1_vars:
         return reflexive_true_certificate()
-
-    args_a: list[str] = []
-    args_b: list[str] = []
-    for var in eq1_vars:
-        if var == singleton_var:
-            args_a.append("a")
-            args_b.append("b")
-        else:
-            args_a.append("b")
-            args_b.append("b")
-
-    call_a = "h" if not args_a else "h " + " ".join(args_a)
-    call_b = "h" if not args_b else "h " + " ".join(args_b)
-    if singleton_on_lhs:
-        collapse = f"({call_a}).trans ({call_b}).symm"
-    else:
-        collapse = f"({call_a}).symm.trans ({call_b})"
-    intro_vars = " ".join(eq2_vars)
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-
-    return (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
+    call_a = "h " + " ".join("a" if var == singleton_var else "b" for var in eq1_vars)
+    call_b = "h " + " ".join("b" for _ in eq1_vars)
+    collapse = (f"({call_a}).trans ({call_b}).symm" if singleton_on_lhs
+                else f"({call_a}).symm.trans ({call_b})")
+    return submission_certificate(
+        eq2_vars, "  exact hall _ _\n",
         "  have hall : ∀ a b : G, a = b := by\n"
         "    intro a b\n"
-        f"    exact {collapse}\n"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
+        f"    exact {collapse}\n")
 
 
-def substitution_true_certificate(
-    eq2_vars: list[str],
-    call_expr: str,
-) -> str:
-    intro_vars = " ".join(eq2_vars)
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    return (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{intro_line}"
-        f"  exact {call_expr}\n"
-    )
+def substitution_true_certificate(eq2_vars: list[str], call_expr: str) -> str:
+    return submission_certificate(eq2_vars, f"  exact {call_expr}\n")
 
 
 def projection_true_certificate(eq2_vars: list[str], proof_expr: str) -> str:
-    intro_vars = " ".join(eq2_vars)
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    return (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{intro_line}"
-        f"  exact {proof_expr}\n"
-    )
+    return submission_certificate(eq2_vars, f"  exact {proof_expr}\n")
 
 
 def grind_true_certificate(eq2_vars: list[str], *, heartbeats: int = 100000) -> str:
-    intro_vars = " ".join(eq2_vars)
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    return (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{intro_line}"
+    return submission_certificate(
+        eq2_vars,
         f"  set_option maxHeartbeats {heartbeats} in\n"
-        "  grind\n"
-    )
+        "  grind\n")
 
 
 Term = tuple[Any, ...]
@@ -732,29 +653,6 @@ def canonical_term_shape(term: Term, names: dict[str, str]) -> Term:
     return "op", canonical_term_shape(term[1], names), canonical_term_shape(term[2], names)
 
 
-def equation_pair_shape_key(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[Term, Term, Term, Term]:
-    names: dict[str, str] = {}
-    return (
-        canonical_term_shape(eq1["lhs"], names),
-        canonical_term_shape(eq1["rhs"], names),
-        canonical_term_shape(eq2["lhs"], names),
-        canonical_term_shape(eq2["rhs"], names),
-    )
-
-
-# Removed 2026-07-23: `LARGE_WITNESS_SHAPE_KEYS` pinned the 9-element witness
-# `S9A` to the exact (eq1, eq2) pair it was discovered on, so it was never
-# tried on any other goal. A witness table is a property of the *hypothesis*
-# alone -- whether it refutes the goal is what `table_is_counterexample`
-# already decides, and it short-circuits on `equation_holds(eq1, table)`, so
-# the guard bought 0.021 ms/problem. It cost eight playground rows: the whole
-# `eq1 = Eq168` (central groupoid) family has no model of order <= 3 and none
-# in the structured/affine/quadratic families, so `S9A` was the only witness
-# the solver owned for them and the gate hid it. Gate large tables on measured
-# cost if they ever matter -- never on a full equation-pair shape, which is a
-# benchmark id in disguise (Operational Note 2).
-
-
 @lru_cache(maxsize=1)
 def narrow_grind_true_shape_keys() -> frozenset[tuple[Term, Term, Term, Term]]:
     keys: set[tuple[Term, Term, Term, Term]] = set()
@@ -821,10 +719,6 @@ def term_subterms_tuple(term: Term) -> tuple[Term, ...]:
         out.extend(term_subterms_tuple(term[1]))
         out.extend(term_subterms_tuple(term[2]))
     return tuple(out)
-
-
-def term_subterms(term: Term) -> list[Term]:
-    return list(term_subterms_tuple(term))
 
 
 @lru_cache(maxsize=None)
@@ -1219,33 +1113,91 @@ def singleton_route(eq1: dict[str, Any]) -> tuple[str, bool] | None:
     return None
 
 
-def nested_square_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1][0] != "var" or op_side[2][0] != "op":
-            continue
-        lead = str(op_side[1][1])
-        tail = op_side[2]
-        if tail[1][0] != "op" or tail[2][0] != "var":
-            continue
-        extra = str(tail[2][1])
-        middle = tail[1]
-        if middle[1] != ("var", lead) or middle[2][0] != "op":
-            continue
-        square = middle[2]
-        if square[1] != ("var", root) or square[2] != ("var", root):
-            continue
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+class LawMatch(NamedTuple):
+    """eq1 recognised as an instance of one law family."""
+
+    call: str
+    """The `h ...` instance of eq1 that proves the family's law."""
+    bound: dict[str, str]
+    """eq1 variable -> the Lean argument it is instantiated with."""
+
+    def var(self, arg: str) -> str:
+        """The eq1 variable that carries Lean argument `arg`."""
+        return next(name for name, value in self.bound.items() if value == arg)
+
+
+def law_matcher(
+    pattern: str,
+    args: dict[str, str] | None = None,
+    *,
+    distinct: bool = False,
+    symm: str = "({}).symm",
+    both_orientations: bool = True,
+) -> Callable[[dict[str, Any]], LawMatch | None]:
+    """Recogniser for one hand-identified law family.
+
+    `pattern` is the shape eq1 must have up to renaming of its variables, and
+    `args` gives the Lean argument each pattern variable is instantiated with
+    (identity by default; an argument may be a compound term). `distinct`
+    additionally requires the pattern variables to land on distinct equation
+    variables, and `both_orientations` says whether eq1 may also match reversed
+    — in which case the call is wrapped with `symm`.
+    """
+    law = parse_equation(pattern)
+    lhs_pattern, rhs_pattern = law["lhs"], law["rhs"]
+    lean_args = args if args is not None else {var: var for var in law["variables"]}
+    orientations = (("lhs", "rhs"), ("rhs", "lhs"))[:2 if both_orientations else 1]
+
+    def match(eq1: dict[str, Any]) -> LawMatch | None:
+        for index, (left, right) in enumerate(orientations):
+            subst: dict[str, Term] = {}
+            if not match_term(lhs_pattern, eq1[left], subst):
+                continue
+            if not match_term(rhs_pattern, eq1[right], subst):
+                continue
+            bound: dict[str, str] = {}
+            for var, image in subst.items():
+                arg = lean_args[var]
+                if image[0] != "var" or bound.setdefault(str(image[1]), arg) != arg:
+                    break
+            else:
+                if distinct and len(bound) != len(subst):
+                    continue
+                if set(bound) != set(eq1["variables"]):
+                    continue
+                call = call_expression_lean_args(eq1["variables"], bound)
+                return LawMatch(symm.format(call) if index else call, bound)
+        return None
+
+    return match
+
+
+def law_have(hypothesis: str, binders: str, law: str, call: str) -> str:
+    """The `have <name> : forall <binders> : G, <law>` block proving it from eq1."""
+    return (f"  have {hypothesis} : ∀ {binders} : G, {law} := by\n"
+            f"    intro {binders}\n"
+            f"    exact {call}\n")
+
+
+def submission_certificate(
+    eq2_vars: list[str],
+    closing: str,
+    prelude: str = "",
+) -> str:
+    """The certificate skeleton every TRUE builder shares.
+
+    `prelude` holds whatever must be in scope before eq2's own binders (local
+    helpers, a derived law); `closing` is the line that discharges the goal.
+    """
+    intro_vars = " ".join(eq2_vars)
+    return (
+        "import JudgeProblem\n\n"
+        "def submission : Goal := by\n"
+        "  intro G _ h\n"
+        + prelude
+        + (f"  intro {intro_vars}\n" if intro_vars else "")
+        + closing
+    )
 
 
 def singleton_from_1111_block(source_name: str) -> str:
@@ -1271,36 +1223,6 @@ def singleton_from_1111_block(source_name: str) -> str:
         "    let v16 := M (M x (M v15 v15)) x\n"
         f"    exact T (T (T ({source_name} x x v8) (C h3 (T (T (T (C (T (T (T ({source_name} v12 x v16) (C h3 (T (T (T (C h14 (R v16)) (S ({source_name} v15 x x))) (C (C h3 (C h13 h13)) h3)) (C (T (T (C h3 (C h14 h14)) ({source_name} v12 x x)) (C h3 (C (T h14 h11) h11))) h3)))) (S ({source_name} (M y (M v10 v10)) x x))) (S h11)) (R v8)) (S ({source_name} v7 x x))) (C (C h3 (C h5 h5)) h3)) (C (T (T (C h3 (C h6 h6)) ({source_name} v4 x y)) (C h3 (C (T h6 h2) h2))) h3)))) (S ({source_name} (M y (M v1 v1)) x x))) (S h2)\n"
     )
-
-
-def tail_square_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1][0] != "var" or op_side[2][0] != "op":
-            continue
-        lead = str(op_side[1][1])
-        tail = op_side[2]
-        if tail[1][0] != "op" or tail[2][0] != "var":
-            continue
-        extra_tail = str(tail[2][1])
-        middle = tail[1]
-        if middle[1][0] != "op" or middle[2][0] != "var":
-            continue
-        extra = str(middle[2][1])
-        square = middle[1]
-        if square[1] != ("var", root) or square[2] != ("var", root):
-            continue
-        if len({root, lead, extra}) != 3 or extra_tail in {root, lead}:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra, extra_tail}:
-            continue
-        return root, lead, extra, extra_tail, swapped
-    return None
 
 
 def singleton_from_1283_block(source_name: str) -> str:
@@ -1329,36 +1251,6 @@ def singleton_from_1283_block(source_name: str) -> str:
         "    have h19 := T (C (C (C h7 h7) h6) h6) (C (T (C (C h9 h8) h6) (C (C (T h8 h11) h11) h6)) h6)\n"
         f"    exact T (T (T ({source_name} x y x) (C h17 (T ({source_name} v1 v4 v1) (C h16 (T (T (C (T (T (C h8 h19) h18) h12) h19) h18) h12))))) (C h17 (T (C h16 (T (T h11 h15) (C (T (T h11 ({source_name} v14 y x)) (C ({source_name} y v5 y) h13)) h13))) (S ({source_name} v5 v4 v1))))) (S ({source_name} y y y))\n"
     )
-
-
-def paired_tail_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1][0] != "op" or op_side[2][0] != "op":
-            continue
-        left = op_side[1]
-        right = op_side[2]
-        if left[1][0] != "var" or left[2][0] != "op":
-            continue
-        lead = str(left[1][1])
-        left_tail = left[2]
-        if left_tail[1] != ("var", root) or left_tail[2][0] != "var":
-            continue
-        extra = str(left_tail[2][1])
-        if right[1] != ("var", root) or right[2][0] != "var":
-            continue
-        extra_tail = str(right[2][1])
-        if len({root, lead, extra, extra_tail}) != 4:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra, extra_tail}:
-            continue
-        return root, lead, extra, extra_tail, swapped
-    return None
 
 
 def singleton_from_1906_block(source_name: str) -> str:
@@ -1400,32 +1292,6 @@ def singleton_from_1906_block(source_name: str) -> str:
     )
 
 
-def wrapped_tail_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1][0] != "var" or op_side[2][0] != "op":
-            continue
-        lead = str(op_side[1][1])
-        tail = op_side[2]
-        if tail[1][0] != "op" or tail[2][0] != "var":
-            continue
-        extra = str(tail[2][1])
-        inner = tail[1]
-        if inner[1] != ("var", extra) or inner[2] != ("var", root):
-            continue
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
-
-
 def singleton_from_1773_block(source_name: str) -> str:
     return (
         "  have hall : ∀ x y : G, x = y := by\n"
@@ -1442,133 +1308,6 @@ def singleton_from_1773_block(source_name: str) -> str:
     )
 
 
-def nested_square_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = nested_square_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have h1111 : ∀ x y z : G, x = y ◇ ((y ◇ (x ◇ x)) ◇ z) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_1111_block('h1111')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:nested_square_singleton", code
-
-
-def tail_square_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = tail_square_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, extra_tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z", extra_tail: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have h1283 : ∀ x y z : G, x = y ◇ (((x ◇ x) ◇ z) ◇ z) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_1283_block('h1283')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:tail_square_singleton", code
-
-
-def paired_tail_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = paired_tail_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, extra_tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z", extra_tail: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have h1906 : ∀ x y z : G, x = (y ◇ (x ◇ z)) ◇ (x ◇ z) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_1906_block('h1906')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:paired_tail_singleton", code
-
-
-def wrapped_tail_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = wrapped_tail_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "(y ◇ z)", extra: "y"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have h1773 : ∀ x y z : G, x = (y ◇ z) ◇ ((y ◇ x) ◇ y) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_1773_block('h1773')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:wrapped_tail_singleton", code
-
-
-def deep_repeat_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1][0] != "var" or op_side[2][0] != "op" or op_side[2][1][0] != "var":
-            continue
-        lead = str(op_side[1][1])
-        repeat = str(op_side[2][1][1])
-        root_term = ("var", root)
-        repeat_term = ("var", repeat)
-        expected = (
-            "op",
-            ("var", lead),
-            ("op", repeat_term, ("op", root_term, ("op", root_term, repeat_term))),
-        )
-        if op_side != expected or len({root, lead, repeat}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, repeat}:
-            continue
-        return root, lead, repeat, swapped
-    return None
-
-
 def singleton_from_deep_repeat_block(source_name: str) -> str:
     return (
         "  have hall : ∀ x y : G, x = y := by\n"
@@ -1578,56 +1317,6 @@ def singleton_from_deep_repeat_block(source_name: str) -> str:
         "    have h2 := R v1\n"
         f"    exact T (T (T ({source_name} x v1 v1) (C h2 (C h2 (T (C (R x) (S ({source_name} v0 x x))) (S ({source_name} y x x)))))) (C h2 (C h2 (T ({source_name} y y x) (C (R y) ({source_name} v0 y x)))))) (S ({source_name} y v1 v1))\n"
     )
-
-
-def deep_repeat_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = deep_repeat_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, repeat, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", repeat: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x = y ◇ (z ◇ (x ◇ (x ◇ z))) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_deep_repeat_block('hsource')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:deep_repeat_singleton", code
-
-
-def sandwich_repeat_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
-            continue
-        root = str(variable_side[1])
-        lead = str(op_side[1][1])
-        tail = op_side[2]
-        if tail[0] != "op" or tail[1][0] != "op" or tail[2] != ("var", lead):
-            continue
-        inner = tail[1]
-        if inner[1] != ("var", lead) or inner[2][0] != "op":
-            continue
-        root_tail = inner[2]
-        if root_tail[1] != ("var", root) or root_tail[2][0] != "var":
-            continue
-        extra = str(root_tail[2][1])
-        if len({root, lead, extra}) != 3 or set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
 
 
 def singleton_from_sandwich_repeat_block(source_name: str) -> str:
@@ -1640,115 +1329,25 @@ def singleton_from_sandwich_repeat_block(source_name: str) -> str:
     )
 
 
-def sandwich_repeat_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = sandwich_repeat_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x = y ◇ ((y ◇ (x ◇ z)) ◇ y) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_sandwich_repeat_block('hsource')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:sandwich_repeat_singleton", code
-
-
-def repeated_prefix_product_constancy_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[2][0] != "var":
-            continue
-        root = str(variable_side[1])
-        tail = str(op_side[2][1])
-        prefix = op_side[1]
-        if prefix[0] != "op" or prefix[1][0] != "var" or prefix[2][0] != "op":
-            continue
-        repeat = str(prefix[1][1])
-        root_term = ("var", root)
-        repeat_term = ("var", repeat)
-        expected = (
-            "op",
-            ("op", repeat_term, ("op", repeat_term, ("op", root_term, root_term))),
-            ("var", tail),
-        )
-        if op_side != expected or len({root, repeat, tail}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, repeat, tail}:
-            continue
-        return root, repeat, tail, swapped
-    return None
+_REPEATED_PREFIX_PRODUCT_LAW = "x = (y ◇ (y ◇ (x ◇ x))) ◇ z"
+_repeated_prefix_product = law_matcher(_REPEATED_PREFIX_PRODUCT_LAW)
 
 
 def repeated_prefix_product_constancy_route(
     eq1: dict[str, Any], eq2: dict[str, Any]
 ) -> tuple[str, str] | None:
-    source = repeated_prefix_product_constancy_source(eq1)
-    if source is None or eq2["lhs"][0] != "op" or eq2["rhs"][0] != "op":
+    found = _repeated_prefix_product(eq1)
+    if found is None or eq2["lhs"][0] != "op" or eq2["rhs"][0] != "op":
         return None
-    root, repeat, tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", repeat: "y", tail: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        "  have hsource : ∀ x y z : G, x = (y ◇ (y ◇ (x ◇ x))) ◇ z := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
+    body = law_have("hsource", "x y z", _REPEATED_PREFIX_PRODUCT_LAW, found.call) + (
         "  have hconst : ∀ a b c d : G, a ◇ b = c ◇ d := by\n"
         "    intro a\n"
         "    repeat intro\n"
         "    try { rw [hsource a, ← hsource] }\n"
         "    try { rw [hsource a a, ← hsource] }\n"
-        f"{intro_line}"
-        "  exact hconst _ _ _ _\n"
     )
-    return "true:repeated_prefix_product_constancy", code
-
-
-def reverse_deep_repeat_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[2][0] != "var":
-            continue
-        root = str(variable_side[1])
-        tail = str(op_side[2][1])
-        prefix = op_side[1]
-        if prefix[0] != "op" or prefix[2][0] != "var" or prefix[1][0] != "op":
-            continue
-        repeat = str(prefix[2][1])
-        root_term = ("var", root)
-        repeat_term = ("var", repeat)
-        expected = (
-            "op",
-            ("op", ("op", ("op", repeat_term, root_term), root_term), repeat_term),
-            ("var", tail),
-        )
-        if op_side != expected or len({root, repeat, tail}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, repeat, tail}:
-            continue
-        return root, repeat, tail, swapped
-    return None
+    return "true:repeated_prefix_product_constancy", submission_certificate(
+        eq2["variables"], "  exact hconst _ _ _ _\n", body)
 
 
 def singleton_from_reverse_deep_repeat_block(source_name: str) -> str:
@@ -1762,67 +1361,6 @@ def singleton_from_reverse_deep_repeat_block(source_name: str) -> str:
     )
 
 
-def reverse_deep_repeat_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = reverse_deep_repeat_singleton_source(eq1)
-    if source is None:
-        return None
-    root, repeat, tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", repeat: "y", tail: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x = (((y ◇ x) ◇ x) ◇ y) ◇ z := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_reverse_deep_repeat_block('hsource')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:reverse_deep_repeat_singleton", code
-
-
-def outer_sandwich_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[2][0] != "var":
-            continue
-        root = str(variable_side[1])
-        surround = str(op_side[2][1])
-        prefix = op_side[1]
-        if prefix[0] != "op" or prefix[1] != ("var", surround) or prefix[2][0] != "op":
-            continue
-        inner = prefix[2]
-        if inner[1][0] != "op" or inner[2] != ("var", surround):
-            continue
-        pair = inner[1]
-        if pair[1][0] != "var" or pair[2] != ("var", root):
-            continue
-        extra = str(pair[1][1])
-        expected = (
-            "op",
-            (
-                "op",
-                ("var", surround),
-                ("op", ("op", ("var", extra), ("var", root)), ("var", surround)),
-            ),
-            ("var", surround),
-        )
-        if op_side != expected or len({root, surround, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, surround, extra}:
-            continue
-        return root, surround, extra, swapped
-    return None
-
-
 def singleton_from_outer_sandwich_block(source_name: str) -> str:
     return (
         "  have hall : ∀ x y : G, x = y := by\n"
@@ -1831,56 +1369,6 @@ def singleton_from_outer_sandwich_block(source_name: str) -> str:
         "    have h1 := R x\n"
         f"    exact T (T ({source_name} x x x) (C (C h1 (C ({source_name} v0 y x) h1)) h1)) (S ({source_name} y x (M y (M (M x v0) y))))\n"
     )
-
-
-def outer_sandwich_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = outer_sandwich_singleton_source(eq1)
-    if source is None:
-        return None
-    root, surround, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", surround: "y", extra: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x = (y ◇ ((z ◇ x) ◇ y)) ◇ y := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_outer_sandwich_block('hsource')}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:outer_sandwich_singleton", code
-
-
-def forked_square_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var":
-            continue
-        root = str(variable_side[1])
-        if op_side[0] != "op" or op_side[1][0] != "var":
-            continue
-        lead = str(op_side[1][1])
-        root_term = ("var", root)
-        tail = op_side[2]
-        if tail[0] != "op" or tail[1] != ("op", root_term, root_term):
-            continue
-        fork = tail[2]
-        if fork[0] != "op" or fork[1] != root_term or fork[2][0] != "var":
-            continue
-        extra = str(fork[2][1])
-        if len({root, lead, extra}) != 3 or set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
 
 
 def singleton_from_forked_square_block() -> str:
@@ -1943,55 +1431,6 @@ def singleton_from_forked_square_block() -> str:
         "    have h53 := T (T (T (C (T h47 h46) h47) (C (T h45 h43) (T h46 h45))) (C (T h42 h48) (T h43 h42))) (C (T (T (T (T (T (T (T h40 h37) h36) h34) h33) h31) h22) h50) (T (T (T (T (T (T h37 h36) h34) h33) h31) h22) h50))\n"
         "    exact T (T (hsource x v1 v5) (C h12 (T (T (T (T (T (T h24 h52) (C h28 h6)) (S (hsource v1 v1 v1))) (hsource v1 v0 v1)) (C (T (T (T (T (T (T (T (C h29 h15) (C h44 h15)) (C h41 h15)) (C (T (T (T (T h20 h18) h9) h16) (C h53 (C h51 h15))) h15)) (C (T (T (T (T (T (C h49 (C h28 h15)) h14) h10) h17) h25) (C h53 h52)) h15)) (C (T (T (T (T (C h49 (C h28 h21)) h20) h18) h9) h16) h15)) (C (T h14 h10) (T (hsource y v8 v5) (C (R v8) (C h4 (S (hsource x y x))))))) (S (hsource v3 x x))) h7)) (C h4 (hsource x y y))))) (S (hsource y v1 v2))\n"
     )
-
-
-def forked_square_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = forked_square_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
-    if swapped:
-        call = f"S ({call})"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x = y ◇ ((x ◇ x) ◇ (x ◇ z)) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_forked_square_block()}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:forked_square_singleton", code
-
-
-def crossed_pair_singleton_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var":
-            continue
-        root = str(variable_side[1])
-        if op_side[0] != "op" or op_side[1][0] != "op" or op_side[2][0] != "op":
-            continue
-        left_pair = op_side[1]
-        right_pair = op_side[2]
-        if left_pair[1][0] != "var" or left_pair[2] != ("var", root):
-            continue
-        lead = str(left_pair[1][1])
-        if right_pair[1] != ("op", ("var", root), ("var", lead)) or right_pair[2][0] != "var":
-            continue
-        extra = str(right_pair[2][1])
-        if len({root, lead, extra}) != 3 or set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
 
 
 def singleton_from_crossed_pair_block() -> str:
@@ -2058,53 +1497,88 @@ def singleton_from_crossed_pair_block() -> str:
     )
 
 
-def crossed_pair_singleton_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = crossed_pair_singleton_source(eq1)
-    if source is None:
-        return None
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
-    if swapped:
-        call = f"S ({call})"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x = (y ◇ x) ◇ ((x ◇ y) ◇ z) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{singleton_from_crossed_pair_block()}"
-        f"{intro_line}"
-        "  exact hall _ _\n"
-    )
-    return "true:crossed_pair_singleton", code
+def collapse_family_route(
+    label: str,
+    hypothesis: str,
+    law: str,
+    block: str,
+    *,
+    binders: str = "x y z",
+    pattern: str | None = None,
+    args: dict[str, str] | None = None,
+    distinct: bool = False,
+    symm: str = "({}).symm",
+) -> Callable[[dict[str, Any], dict[str, Any]], tuple[str, str] | None]:
+    """A route recognising one collapse law in eq1 and proving `x = y` from it.
+
+    Every family below emits the same certificate: the law, discharged by one
+    instance of eq1, followed by a transcribed derivation of `hall`. Only the
+    law and that derivation differ, so a family is a table row.
+    """
+    match = law_matcher(pattern or law, args, distinct=distinct, symm=symm)
+
+    def route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+        found = match(eq1)
+        if found is None:
+            return None
+        body = law_have(hypothesis, binders, law, found.call) + block
+        return label, submission_certificate(
+            eq2["variables"], "  exact hall _ _\n",
+            right_projection_local_helpers() + body)
+
+    # Keep the recogniser reachable (problem_priority wants it without paying
+    # for a certificate) and the name honest, so a traceback names the route.
+    route.match = match
+    route.__name__ = route.__qualname__ = f"{label.split(':')[1]}_route"
+    return route
 
 
-def double_tail_square_product_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, product_side, nested_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if product_side[0] != "op" or product_side[1][0] != "var" or product_side[2][0] != "var":
-            continue
-        left = str(product_side[1][1])
-        right = str(product_side[2][1])
-        if left == right or nested_side[0] != "op" or nested_side[2] != ("var", left):
-            continue
-        prefix = nested_side[1]
-        if prefix[0] != "op" or prefix[2] != ("var", left) or prefix[1][0] != "op":
-            continue
-        inner = prefix[1]
-        if inner[1][0] != "var" or inner[2] != ("var", right):
-            continue
-        extra = str(inner[1][1])
-        if len({left, right, extra}) != 3 or set(eq1["variables"]) != {left, right, extra}:
-            continue
-        return left, right, extra, swapped
-    return None
+nested_square_singleton_route = collapse_family_route(
+    "true:nested_square_singleton", "h1111",
+    "x = y ◇ ((y ◇ (x ◇ x)) ◇ z)",
+    singleton_from_1111_block("h1111"))
+tail_square_singleton_route = collapse_family_route(
+    "true:tail_square_singleton", "h1283",
+    "x = y ◇ (((x ◇ x) ◇ z) ◇ z)",
+    singleton_from_1283_block("h1283"),
+    pattern="x = y ◇ (((x ◇ x) ◇ z) ◇ w)",
+    args={"x": "x", "y": "y", "z": "z", "w": "z"})
+paired_tail_singleton_route = collapse_family_route(
+    "true:paired_tail_singleton", "h1906",
+    "x = (y ◇ (x ◇ z)) ◇ (x ◇ z)",
+    singleton_from_1906_block("h1906"),
+    pattern="x = (y ◇ (x ◇ z)) ◇ (x ◇ w)",
+    args={"x": "x", "y": "y", "z": "z", "w": "z"}, distinct=True)
+wrapped_tail_singleton_route = collapse_family_route(
+    "true:wrapped_tail_singleton", "h1773",
+    "x = (y ◇ z) ◇ ((y ◇ x) ◇ y)",
+    singleton_from_1773_block("h1773"),
+    pattern="x = y ◇ ((z ◇ x) ◇ z)",
+    args={"x": "x", "y": "(y ◇ z)", "z": "y"})
+deep_repeat_singleton_route = collapse_family_route(
+    "true:deep_repeat_singleton", "hsource",
+    "x = y ◇ (z ◇ (x ◇ (x ◇ z)))",
+    singleton_from_deep_repeat_block("hsource"))
+sandwich_repeat_singleton_route = collapse_family_route(
+    "true:sandwich_repeat_singleton", "hsource",
+    "x = y ◇ ((y ◇ (x ◇ z)) ◇ y)",
+    singleton_from_sandwich_repeat_block("hsource"))
+reverse_deep_repeat_singleton_route = collapse_family_route(
+    "true:reverse_deep_repeat_singleton", "hsource",
+    "x = (((y ◇ x) ◇ x) ◇ y) ◇ z",
+    singleton_from_reverse_deep_repeat_block("hsource"))
+outer_sandwich_singleton_route = collapse_family_route(
+    "true:outer_sandwich_singleton", "hsource",
+    "x = (y ◇ ((z ◇ x) ◇ y)) ◇ y",
+    singleton_from_outer_sandwich_block("hsource"))
+forked_square_singleton_route = collapse_family_route(
+    "true:forked_square_singleton", "hsource",
+    "x = y ◇ ((x ◇ x) ◇ (x ◇ z))",
+    singleton_from_forked_square_block(), symm="S ({})")
+crossed_pair_singleton_route = collapse_family_route(
+    "true:crossed_pair_singleton", "hsource",
+    "x = (y ◇ x) ◇ ((x ◇ y) ◇ z)",
+    singleton_from_crossed_pair_block(), symm="S ({})")
 
 
 def square_product_basis_goal(eq2: dict[str, Any]) -> tuple[Term, Term, Term, bool] | None:
@@ -2155,70 +1629,39 @@ def square_product_from_double_tail_block() -> str:
     )
 
 
+_DOUBLE_TAIL_SQUARE_PRODUCT_LAW = "x ◇ y = ((z ◇ y) ◇ x) ◇ x"
+_double_tail_square_product = law_matcher(
+    _DOUBLE_TAIL_SQUARE_PRODUCT_LAW, symm="S ({})")
+
+
 def double_tail_square_product_route(
     eq1: dict[str, Any], eq2: dict[str, Any]
 ) -> tuple[str, str] | None:
-    source = double_tail_square_product_source(eq1)
+    found = _double_tail_square_product(eq1)
     goal = square_product_basis_goal(eq2)
-    if source is None or goal is None:
+    if found is None or goal is None:
         return None
-    left, right, extra, source_swapped = source
     square_arg, product_left, product_right, goal_swapped = goal
-    call = call_expression_lean_args(eq1["variables"], {left: "x", right: "y", extra: "z"})
-    if source_swapped:
-        call = f"S ({call})"
     proof_expr = (
         f"h41 {term_to_lean(square_arg)} {term_to_lean(product_left)} {term_to_lean(product_right)}"
     )
     if goal_swapped:
         proof_expr = f"S ({proof_expr})"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have hsource : ∀ x y z : G, x ◇ y = ((z ◇ y) ◇ x) ◇ x := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{square_product_from_double_tail_block()}"
-        f"{intro_line}"
-        f"  exact {proof_expr}\n"
-    )
-    return "true:double_tail_square_product", code
+    body = (law_have("hsource", "x y z", _DOUBLE_TAIL_SQUARE_PRODUCT_LAW, found.call)
+            + square_product_from_double_tail_block())
+    return "true:double_tail_square_product", submission_certificate(
+        eq2["variables"], f"  exact {proof_expr}\n",
+        right_projection_local_helpers() + body)
 
 
-def middle_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "op" or op_side[2][0] != "var":
-            continue
-        root = str(variable_side[1])
-        inner = op_side[1]
-        tail = op_side[2]
-        if inner[1][0] != "var" or inner[2] != ("var", root):
-            continue
-        lead = str(inner[1][1])
-        tail_name = str(tail[1])
-        if len({root, lead, tail_name}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, tail_name}:
-            continue
-        return root, lead, tail_name, swapped
-    return None
+_middle_self_collapse = law_matcher("a = (b ◇ a) ◇ c")
 
 
 def middle_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = middle_self_collapse_source(eq1)
-    if source is None:
+    found = _middle_self_collapse(eq1)
+    if found is None:
         return None
-    root, lead, tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", tail: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -2244,38 +1687,14 @@ def middle_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tupl
     return "true:middle_self_collapse", code
 
 
-def front_double_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
-            continue
-        root = str(variable_side[1])
-        lead = str(op_side[1][1])
-        middle = op_side[2]
-        if middle[0] != "op" or middle[1] != ("var", root):
-            continue
-        tail = middle[2]
-        if tail[0] != "op" or tail[1] != ("var", root) or tail[2][0] != "var":
-            continue
-        tail_name = str(tail[2][1])
-        if len({root, lead, tail_name}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, tail_name}:
-            continue
-        return root, lead, tail_name, swapped
-    return None
+_front_double_self_collapse = law_matcher("a = b ◇ (a ◇ (a ◇ c))")
 
 
 def front_double_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = front_double_self_collapse_source(eq1)
-    if source is None:
+    found = _front_double_self_collapse(eq1)
+    if found is None:
         return None
-    root, lead, tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", tail: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -2311,32 +1730,14 @@ def front_double_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -
     return "true:front_double_self_collapse", code
 
 
-def alternating_front_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str] | None:
-    for variable_side, op_side in ((eq1["lhs"], eq1["rhs"]), (eq1["rhs"], eq1["lhs"])):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
-            continue
-        root = str(variable_side[1])
-        lead = str(op_side[1][1])
-        middle = op_side[2]
-        if middle[0] != "op" or middle[1] != ("var", root):
-            continue
-        tail = middle[2]
-        if tail[0] != "op" or tail[1] != ("var", lead) or tail[2][0] != "var":
-            continue
-        tail_name = str(tail[2][1])
-        if len({root, lead, tail_name}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, tail_name}:
-            continue
-        return root, lead, tail_name
-    return None
+_alternating_front_self_collapse = law_matcher("a = b ◇ (a ◇ (b ◇ c))")
 
 
 def alternating_front_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = alternating_front_self_collapse_source(eq1)
-    if source is None:
+    found = _alternating_front_self_collapse(eq1)
+    if found is None:
         return None
-    root, lead, _tail = source
+    root, lead = found.var("a"), found.var("b")
     singleton_goal = {
         "lhs": ("var", root),
         "rhs": ("var", lead),
@@ -2375,38 +1776,14 @@ def alternating_front_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, An
     return "true:alternating_front_self_collapse", code
 
 
-def mirrored_alternating_front_self_collapse_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op" or op_side[1][0] != "var":
-            continue
-        root = str(variable_side[1])
-        lead = str(op_side[1][1])
-        middle = op_side[2]
-        if middle[0] != "op" or middle[1] != ("var", root):
-            continue
-        tail = middle[2]
-        if tail[0] != "op" or tail[1][0] != "var" or tail[2] != ("var", lead):
-            continue
-        tail_name = str(tail[1][1])
-        if len({root, lead, tail_name}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, tail_name}:
-            continue
-        return root, lead, tail_name, swapped
-    return None
+_mirrored_alternating_front_self_collapse = law_matcher("a = b ◇ (a ◇ (c ◇ b))")
 
 
 def mirrored_alternating_front_self_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = mirrored_alternating_front_self_collapse_source(eq1)
-    if source is None:
+    found = _mirrored_alternating_front_self_collapse(eq1)
+    if found is None:
         return None
-    root, lead, tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", tail: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -2433,31 +1810,7 @@ def mirrored_alternating_front_self_collapse_route(eq1: dict[str, Any], eq2: dic
     return "true:mirrored_alternating_front_self_collapse", code
 
 
-def sandwich_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        root_term = ("var", root)
-        if op_side[1] != root_term:
-            continue
-        tail = op_side[2]
-        if tail[0] != "op" or tail[1][0] != "var":
-            continue
-        lead = str(tail[1][1])
-        inner = tail[2]
-        if inner[0] != "op" or inner[1][0] != "var" or inner[2] != ("var", lead):
-            continue
-        middle = str(inner[1][1])
-        if len({root, lead, middle}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, middle}:
-            continue
-        return root, lead, middle, swapped
-    return None
+_sandwich_left_projection = law_matcher("a = a ◇ (b ◇ (c ◇ b))")
 
 
 def projection_proof_expr_from_law(
@@ -2483,16 +1836,13 @@ def projection_proof_expr_from_law(
 
 
 def sandwich_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = sandwich_left_projection_source(eq1)
-    if source is None:
+    found = _sandwich_left_projection(eq1)
+    if found is None:
         return None
     proof_expr = projection_proof_expr_from_law(eq2, "left", hypothesis_name="hleft")
     if proof_expr is None:
         return None
-    root, lead, middle, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", middle: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -2514,35 +1864,7 @@ def sandwich_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> 
     return "true:sandwich_left_projection", code
 
 
-def left_row_constancy_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        left = op_side[1]
-        extra = op_side[2]
-        if left[0] != "op" or extra[0] != "var":
-            continue
-        left_left = left[1]
-        left_right = left[2]
-        if left_left[0] != "op" or left_right[0] != "op":
-            continue
-        if left_left[1] != ("var", root) or left_left[2][0] != "var":
-            continue
-        bridge = str(left_left[2][1])
-        if left_right[1] != ("var", bridge) or left_right[2][0] != "var":
-            continue
-        tail = str(left_right[2][1])
-        extra_name = str(extra[1])
-        if len({root, bridge, tail, extra_name}) != 4:
-            continue
-        if set(eq1["variables"]) != {root, bridge, tail, extra_name}:
-            continue
-        return root, bridge, tail, extra_name, swapped
-    return None
+_left_row_constancy = law_matcher("a = ((a ◇ b) ◇ (b ◇ c)) ◇ d")
 
 
 @lru_cache(maxsize=None)
@@ -2571,16 +1893,13 @@ def left_row_constancy_term_proof(src: Term, dst: Term, *, hypothesis_name: str 
 
 
 def left_row_constancy_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = left_row_constancy_source(eq1)
-    if source is None:
+    found = _left_row_constancy(eq1)
+    if found is None:
         return None
     proof_expr = left_row_constancy_term_proof(eq2["lhs"], eq2["rhs"])
     if proof_expr is None:
         return None
-    root, bridge, tail, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", bridge: "b", tail: "c", extra: "d"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -2599,46 +1918,14 @@ def left_row_constancy_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[
     return "true:left_row_constancy", code
 
 
-def product_constancy_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
-    for swapped, source_lhs, source_rhs in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if source_lhs[0] != "op" or source_rhs[0] != "op":
-            continue
-        if source_lhs[1][0] != "var" or source_lhs[2][0] != "var":
-            continue
-        left_name = str(source_lhs[1][1])
-        right_name = str(source_lhs[2][1])
-        square = source_rhs[1]
-        tail = source_rhs[2]
-        if left_name == right_name:
-            continue
-        if square != ("op", ("var", right_name), ("var", right_name)):
-            continue
-        if tail[0] != "op" or tail[1][0] != "var" or tail[2][0] != "var":
-            continue
-        tail_left = str(tail[1][1])
-        tail_right = str(tail[2][1])
-        if len({left_name, right_name, tail_left, tail_right}) != 4:
-            continue
-        if set(eq1["variables"]) != {left_name, right_name, tail_left, tail_right}:
-            continue
-        return left_name, right_name, tail_left, tail_right, swapped
-    return None
+_product_constancy = law_matcher("a ◇ b = (b ◇ b) ◇ (c ◇ d)")
 
 
 def product_constancy_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = product_constancy_source(eq1)
-    if source is None or eq2["lhs"][0] != "op" or eq2["rhs"][0] != "op":
+    found = _product_constancy(eq1)
+    if found is None or eq2["lhs"][0] != "op" or eq2["rhs"][0] != "op":
         return None
-    left_name, right_name, tail_left, tail_right, swapped = source
-    call = call_expression_lean_args(
-        eq1["variables"],
-        {left_name: "a", right_name: "b", tail_left: "c", tail_right: "d"},
-    )
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     lhs_left = term_to_lean(eq2["lhs"][1])
@@ -2661,27 +1948,7 @@ def product_constancy_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[s
     return "true:product_constancy", code
 
 
-def square_twist_comm_source(eq1: dict[str, Any]) -> tuple[str, str, bool] | None:
-    for swapped, source_lhs, source_rhs in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if source_lhs[0] != "op" or source_rhs[0] != "op" or source_rhs[1][0] != "op":
-            continue
-        if source_lhs[1][0] != "var" or source_lhs[2][0] != "var" or source_rhs[2][0] != "var":
-            continue
-        left_name = str(source_lhs[1][1])
-        right_name = str(source_lhs[2][1])
-        square = source_rhs[1]
-        tail_name = str(source_rhs[2][1])
-        if left_name == right_name or tail_name != left_name:
-            continue
-        if square != ("op", ("var", right_name), ("var", right_name)):
-            continue
-        if set(eq1["variables"]) != {left_name, right_name}:
-            continue
-        return left_name, right_name, swapped
-    return None
+_square_twist_comm = law_matcher("a ◇ b = (b ◇ b) ◇ a")
 
 
 @lru_cache(maxsize=None)
@@ -2757,13 +2024,10 @@ def commutative_term_proof(src: Term, dst: Term, *, hypothesis_name: str = "hcom
 
 
 def square_twist_comm_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = square_twist_comm_source(eq1)
-    if source is None or commutative_term_key(eq2["lhs"]) != commutative_term_key(eq2["rhs"]):
+    found = _square_twist_comm(eq1)
+    if found is None or commutative_term_key(eq2["lhs"]) != commutative_term_key(eq2["rhs"]):
         return None
-    left_name, right_name, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {left_name: "a", right_name: "b"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     proof_expr = commutative_term_proof(eq2["lhs"], eq2["rhs"])
     if proof_expr is None:
         return None
@@ -2830,241 +2094,39 @@ def projection_from_lemma_goal_proof(eq2: dict[str, Any], side: str, *, hypothes
     return f"({left_proof}).trans ({right_proof}).symm"
 
 
-def tail_square_right_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[2] != ("var", root) or op_side[1][0] != "op":
-            continue
-        middle = op_side[1]
-        if middle[2][0] != "var" or middle[1][0] != "op":
-            continue
-        repeat = str(middle[2][1])
-        inner = middle[1]
-        if inner[1][0] != "var" or inner[2] != ("var", repeat):
-            continue
-        lead = str(inner[1][1])
-        if len({root, lead, repeat}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, repeat}:
-            continue
-        return root, lead, repeat, swapped
-    return None
+_tail_square_right_projection = law_matcher(
+    "x = ((y ◇ z) ◇ z) ◇ x", {"x": "x", "y": "(y ◇ z)", "z": "z"})
 
 
-def nested_tail_right_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[2] != ("var", root) or op_side[1][0] != "op":
-            continue
-        middle = op_side[1]
-        if middle[2][0] != "var" or middle[1][0] != "op":
-            continue
-        repeat = str(middle[2][1])
-        left = middle[1]
-        if left[1][0] != "var" or left[2][0] != "op":
-            continue
-        lead = str(left[1][1])
-        tail = left[2]
-        if tail[1][0] != "var" or tail[2] != ("var", repeat):
-            continue
-        middle_var = str(tail[1][1])
-        if len({root, lead, middle_var, repeat}) != 4:
-            continue
-        if set(eq1["variables"]) != {root, lead, middle_var, repeat}:
-            continue
-        return root, lead, middle_var, repeat, swapped
-    return None
+_nested_tail_right_projection = law_matcher(
+    "x = ((y ◇ (z ◇ w)) ◇ w) ◇ x",
+    {"x": "x", "y": "y", "z": "x", "w": "z"}, distinct=True)
 
 
-def left_pair_tail_right_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[2][0] != "var" or op_side[1][0] != "op":
-            continue
-        lead = str(op_side[2][1])
-        body = op_side[1]
-        if body[1][0] != "op" or body[2][0] != "op":
-            continue
-        left = body[1]
-        right = body[2]
-        if left[1] != ("var", lead) or left[2][0] != "var":
-            continue
-        extra = str(left[2][1])
-        if right[1] != ("var", lead) or right[2] != ("var", root):
-            continue
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_left_pair_tail_right_projection = law_matcher("x = ((y ◇ z) ◇ (y ◇ x)) ◇ y")
 
 
-def nested_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1] != ("var", root) or op_side[2][0] != "op":
-            continue
-        tail = op_side[2]
-        if tail[1][0] != "var" or tail[2][0] != "op":
-            continue
-        lead = str(tail[1][1])
-        inner = tail[2]
-        if inner[1][0] != "op" or inner[2][0] != "var":
-            continue
-        extra_tail = str(inner[2][1])
-        pair = inner[1]
-        if pair[1] != ("var", lead) or pair[2][0] != "var":
-            continue
-        extra = str(pair[2][1])
-        if len({root, lead, extra, extra_tail}) != 4:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra, extra_tail}:
-            continue
-        return root, lead, extra, extra_tail, swapped
-    return None
+_nested_left_projection = law_matcher(
+    "x = x ◇ (y ◇ ((y ◇ z) ◇ w))",
+    {"x": "x", "y": "y", "z": "x", "w": "z"}, distinct=True)
 
 
-def right_nested_tail_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1] != ("var", root) or op_side[2][0] != "op":
-            continue
-        tail = op_side[2]
-        if tail[1][0] != "op" or tail[2][0] != "var":
-            continue
-        extra_tail = str(tail[2][1])
-        pair = tail[1]
-        if pair[1][0] != "var" or pair[2][0] != "op":
-            continue
-        lead = str(pair[1][1])
-        inner = pair[2]
-        if inner[1][0] != "var" or inner[2][0] != "var":
-            continue
-        extra = str(inner[1][1])
-        repeat = str(inner[2][1])
-        if repeat != extra_tail:
-            continue
-        if len({root, lead, extra, repeat}) != 4:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra, repeat}:
-            continue
-        return root, lead, extra, repeat, extra_tail, swapped
-    return None
+_right_nested_tail_left_projection = law_matcher(
+    "x = x ◇ ((y ◇ (z ◇ w)) ◇ w)",
+    {"x": "x", "y": "y", "z": "z", "w": "z"}, distinct=True)
 
 
-def bracket_tail_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1] != ("var", root) or op_side[2][0] != "op":
-            continue
-        tail = op_side[2]
-        if tail[1][0] != "op" or tail[2][0] != "var":
-            continue
-        final = str(tail[2][1])
-        left = tail[1]
-        if left[1][0] != "op" or left[2][0] != "var":
-            continue
-        repeat = str(left[2][1])
-        pair = left[1]
-        if pair[1][0] != "var" or pair[2][0] != "var":
-            continue
-        lead = str(pair[1][1])
-        extra = str(pair[2][1])
-        if len({root, lead, extra, repeat, final}) != 5:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra, repeat, final}:
-            continue
-        return root, lead, extra, repeat, final, swapped
-    return None
+_bracket_tail_left_projection = law_matcher(
+    "x = x ◇ (((y ◇ z) ◇ w) ◇ u)",
+    {"x": "x", "y": "y", "z": "z", "w": "z", "u": "z"}, distinct=True)
 
 
-def pair_square_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1] != ("var", root) or op_side[2][0] != "op":
-            continue
-        tail = op_side[2]
-        if tail[1][0] != "op" or tail[2][0] != "op":
-            continue
-        left = tail[1]
-        right = tail[2]
-        if left[1][0] != "var" or left[2][0] != "var" or right[1][0] != "var" or right[2][0] != "var":
-            continue
-        lead = str(left[1][1])
-        extra = str(left[2][1])
-        square_left = str(right[1][1])
-        square_right = str(right[2][1])
-        if len({root, lead, extra, square_left, square_right}) != 5:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra, square_left, square_right}:
-            continue
-        return root, lead, extra, square_left, square_right, swapped
-    return None
+_pair_square_left_projection = law_matcher(
+    "x = x ◇ ((y ◇ z) ◇ (w ◇ u))",
+    {"x": "x", "y": "y", "z": "z", "w": "y", "u": "y"}, distinct=True)
 
 
-def sandwich_tail_right_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[2] != ("var", root) or op_side[1][0] != "op":
-            continue
-        tail = op_side[1]
-        if tail[2][0] != "var" or tail[1][0] != "op":
-            continue
-        lead = str(tail[2][1])
-        middle = tail[1]
-        if middle[2][0] != "var" or middle[1][0] != "op":
-            continue
-        extra = str(middle[2][1])
-        pair = middle[1]
-        if pair[1] != ("var", lead) or pair[2] != ("var", root):
-            continue
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_sandwich_tail_right_projection = law_matcher("x = (((y ◇ x) ◇ z) ◇ y) ◇ x")
 
 
 def right_projection_local_helpers() -> str:
@@ -3271,241 +2333,96 @@ def right_projection_from_2788_block(source_name: str) -> str:
     )
 
 
-def right_projection_collapse_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    proof_expr = projection_from_lemma_goal_proof(eq2, "right", hypothesis_name="hright")
-    if proof_expr is None:
+_RIGHT_PROJECTION_LEMMA = (
+    "  have hright : ∀ a b : G, a ◇ b = b := by\n"
+    "    intro a b\n"
+    "    exact (hproj b a).symm\n"
+)
+_LEFT_PROJECTION_LEMMA = (
+    "  have hleft : ∀ a b : G, a ◇ b = a := by\n"
+    "    intro a b\n"
+    "    exact (hproj a b).symm\n"
+)
+
+
+def projection_collapse_route(
+    name: str,
+    side: str,
+    families: tuple[tuple[str, Any, str, str, str, bool], ...],
+) -> Callable[[dict[str, Any], dict[str, Any]], tuple[str, str] | None]:
+    """Derive a one-sided projection law from eq1, then discharge eq2 with it.
+
+    Each family recognises a different eq1 shape but lands on the same lemma, so
+    the arms differ only in the law, its transcribed derivation, and whether that
+    derivation needs the local `T/S/R/M/C` helpers.
+    """
+
+    def route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
+        for label, match, hypothesis, law, block, helpers in families:
+            found = match(eq1)
+            if found is None:
+                continue
+            # Only now is the eq2 side worth building: every arm needs it, and
+            # no arm can fire without it.
+            proof_expr = projection_from_lemma_goal_proof(
+                eq2, side, hypothesis_name=f"h{side}")
+            if proof_expr is None:
+                return None
+            prelude = right_projection_local_helpers() if helpers else ""
+            return label, submission_certificate(
+                eq2["variables"], f"  exact {proof_expr}\n",
+                prelude + law_have(hypothesis, "x y z", law, found.call) + block)
         return None
 
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    tail_source = tail_square_right_projection_source(eq1)
-    if tail_source is not None:
-        root, lead, repeat, swapped = tail_source
-        call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "(y ◇ z)", repeat: "z"})
-        if swapped:
-            call = f"({call}).symm"
-        code = (
-            "import JudgeProblem\n\n"
-            "def submission : Goal := by\n"
-            "  intro G _ h\n"
-            f"{right_projection_local_helpers()}"
-            "  have h3218 : ∀ x y z : G, x = (((y ◇ z) ◇ z) ◇ z) ◇ x := by\n"
-            "    intro x y z\n"
-            f"    exact {call}\n"
-            f"{right_projection_from_3218_block()}"
-            "  have hright : ∀ a b : G, a ◇ b = b := by\n"
-            "    intro a b\n"
-            "    exact (hproj b a).symm\n"
-            f"{intro_line}"
-            f"  exact {proof_expr}\n"
-        )
-        return "true:right_projection_collapse:tail_square", code
-
-    nested_source = nested_tail_right_projection_source(eq1)
-    if nested_source is not None:
-        root, lead, middle, repeat, swapped = nested_source
-        call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", middle: "x", repeat: "z"})
-        if swapped:
-            call = f"({call}).symm"
-        code = (
-            "import JudgeProblem\n\n"
-            "def submission : Goal := by\n"
-            "  intro G _ h\n"
-            f"{right_projection_local_helpers()}"
-            "  have h2927 : ∀ x y z : G, x = ((y ◇ (x ◇ z)) ◇ z) ◇ x := by\n"
-            "    intro x y z\n"
-            f"    exact {call}\n"
-            f"{right_projection_from_2927_block()}"
-            "  have hright : ∀ a b : G, a ◇ b = b := by\n"
-            "    intro a b\n"
-            "    exact (hproj b a).symm\n"
-            f"{intro_line}"
-            f"  exact {proof_expr}\n"
-        )
-        return "true:right_projection_collapse:nested_tail", code
-
-    sandwich_source = sandwich_tail_right_projection_source(eq1)
-    if sandwich_source is not None:
-        root, lead, extra, swapped = sandwich_source
-        call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
-        if swapped:
-            call = f"({call}).symm"
-        code = (
-            "import JudgeProblem\n\n"
-            "def submission : Goal := by\n"
-            "  intro G _ h\n"
-            f"{right_projection_local_helpers()}"
-            "  have h3126 : ∀ x y z : G, x = (((y ◇ x) ◇ z) ◇ y) ◇ x := by\n"
-            "    intro x y z\n"
-            f"    exact {call}\n"
-            f"{right_projection_from_3126_block('h3126')}"
-            "  have hright : ∀ a b : G, a ◇ b = b := by\n"
-            "    intro a b\n"
-            "    exact (hproj b a).symm\n"
-            f"{intro_line}"
-            f"  exact {proof_expr}\n"
-        )
-        return "true:right_projection_collapse:sandwich_tail", code
-
-    left_pair_source = left_pair_tail_right_projection_source(eq1)
-    if left_pair_source is not None:
-        root, lead, extra, swapped = left_pair_source
-        call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z"})
-        if swapped:
-            call = f"({call}).symm"
-        # No `set_option maxHeartbeats` here: the only step that needed a raised
-        # budget was the `grind` in right_projection_from_2788_block, now a
-        # derived proof term (2026-07-29).
-        code = (
-            "import JudgeProblem\n\n"
-            "def submission : Goal := by\n"
-            "  intro G _ h\n"
-            "  have h2788 : ∀ x y z : G, x = ((y ◇ z) ◇ (y ◇ x)) ◇ y := by\n"
-            "    intro x y z\n"
-            f"    exact {call}\n"
-            f"{right_projection_from_2788_block('h2788')}"
-            f"{intro_line}"
-            f"  exact {proof_expr}\n"
-        )
-        return "true:right_projection_collapse:left_pair_tail", code
-
-    return None
+    route.__name__ = route.__qualname__ = name
+    return route
 
 
-def nested_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = nested_left_projection_source(eq1)
-    if source is None:
-        return None
-    proof_expr = projection_from_lemma_goal_proof(eq2, "left", hypothesis_name="hleft")
-    if proof_expr is None:
-        return None
-    root, lead, extra, extra_tail, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "x", extra_tail: "z"})
-    if swapped:
-        call = f"({call}).symm"
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-    code = (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"{right_projection_local_helpers()}"
-        "  have h641 : ∀ x y z : G, x = x ◇ (y ◇ ((y ◇ x) ◇ z)) := by\n"
-        "    intro x y z\n"
-        f"    exact {call}\n"
-        f"{left_projection_from_641_block('h641')}"
-        "  have hleft : ∀ a b : G, a ◇ b = a := by\n"
-        "    intro a b\n"
-        "    exact (hproj a b).symm\n"
-        f"{intro_line}"
-        f"  exact {proof_expr}\n"
-    )
-    return "true:nested_left_projection", code
+right_projection_collapse_route = projection_collapse_route(
+    "right_projection_collapse_route", "right", (
+        ("true:right_projection_collapse:tail_square", _tail_square_right_projection,
+         "h3218", "x = (((y ◇ z) ◇ z) ◇ z) ◇ x",
+         right_projection_from_3218_block() + _RIGHT_PROJECTION_LEMMA, True),
+        ("true:right_projection_collapse:nested_tail", _nested_tail_right_projection,
+         "h2927", "x = ((y ◇ (x ◇ z)) ◇ z) ◇ x",
+         right_projection_from_2927_block() + _RIGHT_PROJECTION_LEMMA, True),
+        ("true:right_projection_collapse:sandwich_tail", _sandwich_tail_right_projection,
+         "h3126", "x = (((y ◇ x) ◇ z) ◇ y) ◇ x",
+         right_projection_from_3126_block("h3126") + _RIGHT_PROJECTION_LEMMA, True),
+        # This block derives `hright` itself and needs no local helpers: the `grind`
+        # that once forced a raised heartbeat budget became a proof term 2026-07-29.
+        ("true:right_projection_collapse:left_pair_tail", _left_pair_tail_right_projection,
+         "h2788", "x = ((y ◇ z) ◇ (y ◇ x)) ◇ y",
+         right_projection_from_2788_block("h2788"), False),
+    ))
+
+nested_left_projection_route = projection_collapse_route(
+    "nested_left_projection_route", "left", (
+        ("true:nested_left_projection", _nested_left_projection,
+         "h641", "x = x ◇ (y ◇ ((y ◇ x) ◇ z))",
+         left_projection_from_641_block("h641") + _LEFT_PROJECTION_LEMMA, True),
+    ))
+
+specialized_left_projection_route = projection_collapse_route(
+    "specialized_left_projection_route", "left", (
+        ("true:left_projection_collapse:right_nested_tail", _right_nested_tail_left_projection,
+         "h1065", "x = x ◇ ((y ◇ (z ◇ z)) ◇ z)",
+         left_projection_from_1065_block("h1065") + _LEFT_PROJECTION_LEMMA, True),
+        ("true:left_projection_collapse:bracket_tail", _bracket_tail_left_projection,
+         "h1268", "x = x ◇ (((y ◇ z) ◇ z) ◇ z)",
+         left_projection_from_1268_block("h1268") + _LEFT_PROJECTION_LEMMA, True),
+        ("true:left_projection_collapse:pair_square", _pair_square_left_projection,
+         "h857", "x = x ◇ ((y ◇ z) ◇ (y ◇ y))",
+         left_projection_from_857_block("h857") + _LEFT_PROJECTION_LEMMA, True),
+    ))
 
 
-def specialized_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    proof_expr = projection_from_lemma_goal_proof(eq2, "left", hypothesis_name="hleft")
-    if proof_expr is None:
-        return None
-    intro_vars = " ".join(eq2["variables"])
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
-
-    def make_code(source_name: str, source_statement: str, call: str, block: str) -> str:
-        return (
-            "import JudgeProblem\n\n"
-            "def submission : Goal := by\n"
-            "  intro G _ h\n"
-            f"{right_projection_local_helpers()}"
-            f"  have {source_name} : {source_statement} := by\n"
-            f"{call}"
-            f"{block}"
-            "  have hleft : ∀ a b : G, a ◇ b = a := by\n"
-            "    intro a b\n"
-            "    exact (hproj a b).symm\n"
-            f"{intro_line}"
-            f"  exact {proof_expr}\n"
-        )
-
-    right_nested = right_nested_tail_left_projection_source(eq1)
-    if right_nested is not None:
-        root, lead, extra, repeat, extra_tail, swapped = right_nested
-        call_expr = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z", repeat: "z", extra_tail: "z"})
-        if swapped:
-            call_expr = f"({call_expr}).symm"
-        code = make_code(
-            "h1065",
-            "∀ x y z : G, x = x ◇ ((y ◇ (z ◇ z)) ◇ z)",
-            "    intro x y z\n"
-            f"    exact {call_expr}\n",
-            left_projection_from_1065_block("h1065"),
-        )
-        return "true:left_projection_collapse:right_nested_tail", code
-
-    bracket_tail = bracket_tail_left_projection_source(eq1)
-    if bracket_tail is not None:
-        root, lead, extra, repeat, final, swapped = bracket_tail
-        call_expr = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z", repeat: "z", final: "z"})
-        if swapped:
-            call_expr = f"({call_expr}).symm"
-        code = make_code(
-            "h1268",
-            "∀ x y z : G, x = x ◇ (((y ◇ z) ◇ z) ◇ z)",
-            "    intro x y z\n"
-            f"    exact {call_expr}\n",
-            left_projection_from_1268_block("h1268"),
-        )
-        return "true:left_projection_collapse:bracket_tail", code
-
-    pair_square = pair_square_left_projection_source(eq1)
-    if pair_square is not None:
-        root, lead, extra, square_left, square_right, swapped = pair_square
-        call_expr = call_expression_lean_args(eq1["variables"], {root: "x", lead: "y", extra: "z", square_left: "y", square_right: "y"})
-        if swapped:
-            call_expr = f"({call_expr}).symm"
-        code = make_code(
-            "h857",
-            "∀ x y z : G, x = x ◇ ((y ◇ z) ◇ (y ◇ y))",
-            "    intro x y z\n"
-            f"    exact {call_expr}\n",
-            left_projection_from_857_block("h857"),
-        )
-        return "true:left_projection_collapse:pair_square", code
-
-    return None
-
-
-def derived_left_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1] != ("var", root) or op_side[2][0] != "op":
-            continue
-        tail1 = op_side[2]
-        if tail1[1][0] != "var" or tail1[2][0] != "op":
-            continue
-        lead = str(tail1[1][1])
-        tail2 = tail1[2]
-        if tail2[1] != ("var", root) or tail2[2][0] != "op":
-            continue
-        tail3 = tail2[2]
-        if tail3[1] != ("var", lead) or tail3[2][0] != "var":
-            continue
-        extra = str(tail3[2][1])
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_derived_left_projection = law_matcher("a = a ◇ (b ◇ (a ◇ (b ◇ c)))")
 
 
 def derived_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = derived_left_projection_source(eq1)
-    if source is None:
+    found = _derived_left_projection(eq1)
+    if found is None:
         return None
     left = projection_from_lemma_term_proof(eq2["lhs"], "left", hypothesis_name="hleft")
     right = projection_from_lemma_term_proof(eq2["rhs"], "left", hypothesis_name="hleft")
@@ -3521,10 +2438,7 @@ def derived_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> t
         proof_expr = left_proof
     else:
         proof_expr = f"({left_proof}).trans ({right_proof}).symm"
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -3555,35 +2469,12 @@ def derived_left_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> t
     return "true:derived_left_projection", code
 
 
-def derived_right_projection_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[2] != ("var", root) or op_side[1][0] != "op":
-            continue
-        prefix = op_side[1]
-        if prefix[1][0] != "op" or prefix[2][0] != "var":
-            continue
-        square = prefix[1]
-        if square[1][0] != "var" or square[2] != square[1]:
-            continue
-        lead = str(square[1][1])
-        extra = str(prefix[2][1])
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_derived_right_projection = law_matcher("a = ((b ◇ b) ◇ c) ◇ a")
 
 
 def derived_right_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = derived_right_projection_source(eq1)
-    if source is None:
+    found = _derived_right_projection(eq1)
+    if found is None:
         return None
     left = projection_from_lemma_term_proof(eq2["lhs"], "right", hypothesis_name="hright")
     right = projection_from_lemma_term_proof(eq2["rhs"], "right", hypothesis_name="hright")
@@ -3599,10 +2490,7 @@ def derived_right_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> 
         proof_expr = left_proof
     else:
         proof_expr = f"({left_proof}).trans ({right_proof}).symm"
-    root, lead, extra, swapped = source
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -3626,30 +2514,7 @@ def derived_right_projection_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> 
     return "true:derived_right_projection", code
 
 
-def square_to_right_product_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1][0] != "op" or op_side[2][0] != "op":
-            continue
-        left = op_side[1]
-        right = op_side[2]
-        if left[1] != ("var", root) or left[2][0] != "var":
-            continue
-        lead = str(left[2][1])
-        if right[1][0] != "var" or right[2] != right[1]:
-            continue
-        extra = str(right[1][1])
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_square_to_right_product = law_matcher("a = (a ◇ b) ◇ (c ◇ c)")
 
 
 def square_to_right_product_goal(eq2: dict[str, Any]) -> tuple[str, Term, Term, bool] | None:
@@ -3667,17 +2532,15 @@ def square_to_right_product_goal(eq2: dict[str, Any]) -> tuple[str, Term, Term, 
 
 
 def square_to_right_product_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = square_to_right_product_source(eq1)
+    found = _square_to_right_product(eq1)
     goal = square_to_right_product_goal(eq2)
-    if source is None or goal is None:
+    if found is None or goal is None:
         return None
-    root, lead, extra, source_swapped = source
+    root = found.var("a")
     goal_root, first, second, goal_swapped = goal
     if goal_root != root:
         return None
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
-    if source_swapped:
-        call = f"({call}).symm"
+    call = found.call
     proof_expr = f"hprod {root} {term_to_lean(first)} {term_to_lean(second)}"
     if goal_swapped:
         proof_expr = f"({proof_expr}).symm"
@@ -3701,40 +2564,14 @@ def square_to_right_product_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> t
     return "true:square_to_right_product", code
 
 
-def right_self_absorption_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[1] != ("var", root) or op_side[2][0] != "op":
-            continue
-        tail1 = op_side[2]
-        if tail1[1][0] != "var" or tail1[2][0] != "op":
-            continue
-        lead = str(tail1[1][1])
-        tail2 = tail1[2]
-        if tail2[1] != ("var", root) or tail2[2][0] != "op":
-            continue
-        tail3 = tail2[2]
-        if tail3[1] != ("var", root) or tail3[2][0] != "var":
-            continue
-        extra = str(tail3[2][1])
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_right_self_absorption = law_matcher("a = a ◇ (b ◇ (a ◇ (a ◇ c)))")
 
 
 def right_self_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = right_self_absorption_source(eq1)
-    if source is None:
+    found = _right_self_absorption(eq1)
+    if found is None:
         return None
-    root, lead, extra, swapped = source
+    root = found.var("a")
     root_term = ("var", root)
     rhs = eq2["rhs"]
     if eq2["lhs"] != root_term or rhs[0] != "op" or rhs[1] != ("op", root_term, root_term):
@@ -3745,9 +2582,7 @@ def right_self_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tup
     if goal_lead[0] != "var":
         return None
     goal_lead_name = str(goal_lead[1])
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -3766,31 +2601,15 @@ def right_self_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tup
     return "true:right_self_absorption", code
 
 
-def repeated_right_square_source(eq1: dict[str, Any]) -> tuple[str, str] | None:
-    lhs = eq1["lhs"]
-    rhs = eq1["rhs"]
-    if lhs[0] != "var" or rhs[0] != "op":
-        return None
-    root = str(lhs[1])
-    left = rhs[1]
-    right = rhs[2]
-    if right[0] != "op" or right[1][0] != "var" or right[2][0] != "var":
-        return None
-    param = str(right[1][1])
-    if right[2] != ("var", param):
-        return None
-    if left != ("op", ("op", ("var", root), ("var", param)), ("var", param)):
-        return None
-    if root == param or set(eq1["variables"]) != {root, param}:
-        return None
-    return root, param
+_repeated_right_square = law_matcher(
+    "a = ((a ◇ b) ◇ b) ◇ (b ◇ b)", both_orientations=False)
 
 
 def repeated_right_square_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = repeated_right_square_source(eq1)
-    if source is None:
+    found = _repeated_right_square(eq1)
+    if found is None:
         return None
-    root, param = source
+    root = found.var("a")
     root_term = ("var", root)
     rhs = eq2["rhs"]
     if eq2["lhs"] != root_term or rhs[0] != "op" or rhs[2][0] != "var" or rhs[1][0] != "op":
@@ -3824,29 +2643,15 @@ def repeated_right_square_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tup
     return "true:repeated_right_square", code
 
 
-def self_tail_triple_source(eq1: dict[str, Any]) -> tuple[str, str] | None:
-    lhs = eq1["lhs"]
-    rhs = eq1["rhs"]
-    if lhs[0] != "var" or rhs[0] != "op" or rhs[2] != lhs:
-        return None
-    root = str(lhs[1])
-    mid = rhs[1]
-    if mid[0] != "op" or mid[2] != lhs:
-        return None
-    head = mid[1]
-    if head[0] != "op" or head[1][0] != "var" or head[2] != ("op", ("var", head[1][1]), lhs):
-        return None
-    lead = str(head[1][1])
-    if root == lead or set(eq1["variables"]) != {root, lead}:
-        return None
-    return root, lead
+_self_tail_triple = law_matcher(
+    "a = ((b ◇ (b ◇ a)) ◇ a) ◇ a", both_orientations=False)
 
 
 def self_tail_triple_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = self_tail_triple_source(eq1)
-    if source is None:
+    found = _self_tail_triple(eq1)
+    if found is None:
         return None
-    root, _lead = source
+    root = found.var("a")
     root_term = ("var", root)
     if eq2["lhs"] != root_term or eq2["rhs"] != ("op", ("op", root_term, root_term), root_term):
         return None
@@ -3867,37 +2672,14 @@ def self_tail_triple_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[st
     return "true:self_tail_triple", code
 
 
-def nested_left_absorption_source(eq1: dict[str, Any]) -> tuple[str, str, str, bool] | None:
-    for swapped, variable_side, op_side in (
-        (False, eq1["lhs"], eq1["rhs"]),
-        (True, eq1["rhs"], eq1["lhs"]),
-    ):
-        if variable_side[0] != "var" or op_side[0] != "op":
-            continue
-        root = str(variable_side[1])
-        if op_side[2] != ("var", root) or op_side[1][0] != "op":
-            continue
-        head = op_side[1]
-        if head[1][0] != "var" or head[2][0] != "op":
-            continue
-        lead = str(head[1][1])
-        tail = head[2]
-        if tail[1] != ("var", lead) or tail[2][0] != "var":
-            continue
-        extra = str(tail[2][1])
-        if len({root, lead, extra}) != 3:
-            continue
-        if set(eq1["variables"]) != {root, lead, extra}:
-            continue
-        return root, lead, extra, swapped
-    return None
+_nested_left_absorption = law_matcher("a = (b ◇ (b ◇ c)) ◇ a")
 
 
 def nested_left_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = nested_left_absorption_source(eq1)
-    if source is None:
+    found = _nested_left_absorption(eq1)
+    if found is None:
         return None
-    root, lead, extra, swapped = source
+    root = found.var("a")
     root_term = ("var", root)
     if eq2["lhs"] != root_term:
         return None
@@ -3916,9 +2698,7 @@ def nested_left_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tu
     goal_param = str(tail3[2][1])
     if goal_param == root:
         return None
-    call = call_expression_lean_args(eq1["variables"], {root: "a", lead: "b", extra: "c"})
-    if swapped:
-        call = f"({call}).symm"
+    call = found.call
     intro_vars = " ".join(eq2["variables"])
     intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     code = (
@@ -3989,20 +2769,13 @@ def projection_law_route(eq1: dict[str, Any]) -> str | None:
 
 
 def goal_term_pool(eq2: dict[str, Any]) -> list[Term]:
-    pool: list[Term] = []
-    seen: set[Term] = set()
-    lhs_subterms = term_subterms_tuple(eq2["lhs"])
-    rhs_subterms = term_subterms_tuple(eq2["rhs"])
-    for term in (eq2["lhs"], eq2["rhs"], *lhs_subterms[1:], *rhs_subterms[1:]):
-        if term not in seen:
-            seen.add(term)
-            pool.append(term)
-    for var in eq2["variables"]:
-        term = ("var", var)
-        if term not in seen:
-            seen.add(term)
-            pool.append(term)
-    return pool or [("var", "x")]
+    terms = (
+        eq2["lhs"], eq2["rhs"],
+        *term_subterms_tuple(eq2["lhs"])[1:],
+        *term_subterms_tuple(eq2["rhs"])[1:],
+        *(("var", var) for var in eq2["variables"]),
+    )
+    return list(dict.fromkeys(terms)) or [("var", "x")]
 
 
 def completed_bridge_route(
@@ -4088,26 +2861,15 @@ def call_expression_lean_args(eq1_vars: list[str], subst: dict[str, str], name: 
     return name if not args else name + " " + " ".join(args)
 
 
-def self_square_absorption_source(eq1: dict[str, Any]) -> tuple[str, str] | None:
-    lhs = eq1["lhs"]
-    rhs = eq1["rhs"]
-    if lhs[0] != "var" or rhs[0] != "op" or rhs[1] != rhs[2]:
-        return None
-    root = str(lhs[1])
-    square_root = rhs[1]
-    if square_root[0] != "op" or square_root[2] != ("var", root) or square_root[1][0] != "var":
-        return None
-    square_var = str(square_root[1][1])
-    if square_var == root or set(eq1["variables"]) != {root, square_var}:
-        return None
-    return root, square_var
+_self_square_absorption = law_matcher(
+    "a = (b ◇ a) ◇ (b ◇ a)", both_orientations=False)
 
 
 def self_square_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = self_square_absorption_source(eq1)
-    if source is None:
+    found = _self_square_absorption(eq1)
+    if found is None:
         return None
-    root, square_var = source
+    root, square_var = found.var("a"), found.var("b")
     if eq2["lhs"] != ("var", root):
         return None
     rhs = eq2["rhs"]
@@ -4142,36 +2904,16 @@ def self_square_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tu
     return "true:self_square_absorption", code
 
 
-def repeat_tail_absorption_source(eq1: dict[str, Any]) -> tuple[str, str, str] | None:
-    lhs = eq1["lhs"]
-    rhs = eq1["rhs"]
-    if lhs[0] != "var" or rhs[0] != "op":
-        return None
-    root_name = str(lhs[1])
-    lead_term = rhs[1]
-    tail = rhs[2]
-    if lead_term[0] != "var" or tail[0] != "op":
-        return None
-    repeat_term = tail[1]
-    repeated_tail = tail[2]
-    if repeat_term[0] != "var" or repeated_tail[0] != "op":
-        return None
-    if repeated_tail[1] != repeat_term or repeated_tail[2] != ("var", root_name):
-        return None
-    lead_name = str(lead_term[1])
-    repeat_name = str(repeat_term[1])
-    if len({root_name, lead_name, repeat_name}) != 3:
-        return None
-    if set(eq1["variables"]) != {root_name, lead_name, repeat_name}:
-        return None
-    return root_name, lead_name, repeat_name
+_repeat_tail_absorption = law_matcher(
+    "a = b ◇ (c ◇ (c ◇ a))", both_orientations=False)
 
 
 def repeat_tail_absorption_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str, str] | None:
-    source = repeat_tail_absorption_source(eq1)
-    if source is None:
+    found = _repeat_tail_absorption(eq1)
+    if found is None:
         return None
-    root_name, lead_name, repeat_name = source
+    root_name = found.var("a")
+    lead_name, repeat_name = found.var("b"), found.var("c")
     root_term = ("var", root_name)
     if eq2["lhs"] != root_term:
         return None
@@ -5156,18 +3898,17 @@ def _closure_route_impl(
     depth_slack: int,
     time_budget: float | None,
 ) -> tuple[str, str] | None:
+    """`_closure_proof_expr_impl` rendered as a certificate.
+
+    The budget parameters stay explicit rather than `**kwargs`: forwarding blind
+    would let a caller that omits one silently pick up `_closure_proof_expr_impl`'s
+    `seed_terms` default instead of failing.
+    """
     result = _closure_proof_expr_impl(
-        eq1,
-        eq2,
-        route_name=route_name,
-        chain_max_depth=chain_max_depth,
-        pool_limit=pool_limit,
-        frontier_limit=frontier_limit,
-        max_fills=max_fills,
-        term_slack=term_slack,
-        depth_slack=depth_slack,
-        time_budget=time_budget,
-    )
+        eq1, eq2, route_name=route_name, chain_max_depth=chain_max_depth,
+        pool_limit=pool_limit, frontier_limit=frontier_limit,
+        max_fills=max_fills, term_slack=term_slack, depth_slack=depth_slack,
+        time_budget=time_budget)
     if result is None:
         return None
     route, proof_expr = result
@@ -5329,19 +4070,26 @@ class DerivedRule:
         self.label = label
 
 
-def _derived_base_rules(eq1: dict[str, Any], hyp_name: str = "h") -> list[DerivedRule]:
-    ev = list(eq1["variables"])
+def _equation_rules(
+    equation: dict[str, Any], name: str, fwd_tag: str, bwd_tag: str
+) -> list[DerivedRule]:
+    """Both orientations of `equation` as rewrite rules justified by `name`."""
+    binders = list(equation["variables"])
 
     def fwd(subst: dict[str, Term]) -> str:
-        return call_expression(ev, subst, hyp_name)
+        return call_expression(binders, subst, name)
 
     def bwd(subst: dict[str, Term]) -> str:
-        return f"({call_expression(ev, subst, hyp_name)}).symm"
+        return f"({call_expression(binders, subst, name)}).symm"
 
     return [
-        DerivedRule(eq1["lhs"], eq1["rhs"], fwd, "base_fwd"),
-        DerivedRule(eq1["rhs"], eq1["lhs"], bwd, "base_bwd"),
+        DerivedRule(equation["lhs"], equation["rhs"], fwd, fwd_tag),
+        DerivedRule(equation["rhs"], equation["lhs"], bwd, bwd_tag),
     ]
+
+
+def _derived_base_rules(eq1: dict[str, Any], hyp_name: str = "h") -> list[DerivedRule]:
+    return _equation_rules(eq1, hyp_name, "base_fwd", "base_bwd")
 
 
 def _canonicalize_derived_rule(lhs: Term, rhs: Term) -> tuple[Term, Term, dict[str, str]]:
@@ -5743,25 +4491,23 @@ def lemma_certificate(
     eq2_vars: list[str],
     proof_expr: str,
 ) -> str:
-    """A certificate that proves a named lemma, then the goal from it.
+    """Prove a named lemma, then the goal from it.
 
     Both halves stay inside the offline kernel's grammar, so
     `oracles.check_true_lemma_certificate` can verify each independently.
+
+    This is `lemma_chain_certificate` with no helpers, but it is not written as
+    that call: `_lemma_chain_goal_certificate` guards the intro line on the
+    binder LIST while every other builder guards it on the JOINED string, and the
+    two disagree for a variable literally named "". `parse_equation` cannot
+    produce one, so the difference is unreachable — which is exactly why it would
+    survive unnoticed if this delegated.
     """
     binders = " ".join(lemma["variables"])
-    intro_vars = " ".join(eq2_vars)
-    intro_line = f"  intro {intro_vars}\n" if intro_vars else ""
     statement = f"{term_to_lean(lemma['lhs'])} = {term_to_lean(lemma['rhs'])}"
-    return (
-        "import JudgeProblem\n\n"
-        "def submission : Goal := by\n"
-        "  intro G _ h\n"
-        f"  have hlem : ∀ {binders} : G, {statement} := by\n"
-        f"    intro {binders}\n"
-        f"    exact {lemma_proof}\n"
-        f"{intro_line}"
-        f"  exact {proof_expr}\n"
-    )
+    return submission_certificate(
+        eq2_vars, f"  exact {proof_expr}\n",
+        law_have("hlem", binders, statement, lemma_proof))
 
 
 def lemma_applies_to_goal(lemma: dict[str, Any], eq2: dict[str, Any]) -> str | None:
@@ -5907,18 +4653,7 @@ def cp_rule_helpers(
 
 
 def _helper_lemma_rules(name: str, lemma: dict[str, Any]) -> list[DerivedRule]:
-    binders = list(lemma["variables"])
-
-    def fwd(subst: dict[str, Term], binders=binders, name=name) -> str:
-        return call_expression(binders, subst, name)
-
-    def bwd(subst: dict[str, Term], binders=binders, name=name) -> str:
-        return f"({call_expression(binders, subst, name)}).symm"
-
-    return [
-        DerivedRule(lemma["lhs"], lemma["rhs"], fwd, f"{name}:fwd"),
-        DerivedRule(lemma["rhs"], lemma["lhs"], bwd, f"{name}:bwd"),
-    ]
+    return _equation_rules(lemma, name, f"{name}:fwd", f"{name}:bwd")
 
 
 def _lemma_chain_goal_certificate(
@@ -7744,59 +6479,59 @@ def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     return eq1_left != eq2_left or eq1_right != eq2_right
 
 
+# Scheduling cues: which cheap route would claim this row, decided from the
+# recognisers alone so nothing here pays for a certificate. Order mirrors
+# `TRUE_ROUTES`; `guard` is the extra eq2 condition the route imposes.
+_PRIORITY_CUES: tuple[tuple[int, str, tuple[Any, ...], Any], ...] = (
+    (1, "true:deep_repeat_singleton", (deep_repeat_singleton_route.match,), None),
+    (1, "true:reverse_deep_repeat_singleton", (reverse_deep_repeat_singleton_route.match,), None),
+    (1, "true:sandwich_repeat_singleton", (sandwich_repeat_singleton_route.match,), None),
+    (1, "true:outer_sandwich_singleton", (outer_sandwich_singleton_route.match,), None),
+    (1, "true:forked_square_singleton", (forked_square_singleton_route.match,), None),
+    (1, "true:crossed_pair_singleton", (crossed_pair_singleton_route.match,), None),
+    (1, "true:nested_square_singleton", (nested_square_singleton_route.match,), None),
+    (1, "true:tail_square_singleton", (tail_square_singleton_route.match,), None),
+    (1, "true:paired_tail_singleton", (paired_tail_singleton_route.match,), None),
+    (1, "true:wrapped_tail_singleton", (wrapped_tail_singleton_route.match,), None),
+    (1, "true:middle_self_collapse", (_middle_self_collapse,), None),
+    (1, "true:front_double_self_collapse", (_front_double_self_collapse,), None),
+    (1, "true:alternating_front_self_collapse", (_alternating_front_self_collapse,), None),
+    (1, "true:mirrored_alternating_front_self_collapse", (_mirrored_alternating_front_self_collapse,), None),
+    (2, "true:sandwich_left_projection", (_sandwich_left_projection,),
+     lambda eq2: projection_proof_expr_from_law(eq2, "left", hypothesis_name="hleft")),
+    (2, "true:nested_left_projection", (_nested_left_projection,),
+     lambda eq2: projection_from_lemma_goal_proof(eq2, "left", hypothesis_name="hleft")),
+    (2, "true:left_projection_collapse",
+     (_right_nested_tail_left_projection, _bracket_tail_left_projection,
+      _pair_square_left_projection),
+     lambda eq2: projection_from_lemma_goal_proof(eq2, "left", hypothesis_name="hleft")),
+    (2, "true:left_row_constancy", (_left_row_constancy,),
+     lambda eq2: left_row_constancy_term_proof(eq2["lhs"], eq2["rhs"])),
+    (2, "true:product_constancy", (_product_constancy,),
+     lambda eq2: eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op"),
+    (2, "true:repeated_prefix_product_constancy", (_repeated_prefix_product,),
+     lambda eq2: eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op"),
+    (2, "true:double_tail_square_product", (_double_tail_square_product,),
+     square_product_basis_goal),
+    (2, "true:square_twist_comm", (_square_twist_comm,),
+     lambda eq2: commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"])),
+    (2, "true:square_to_right_product", (_square_to_right_product,),
+     square_to_right_product_goal),
+    (2, "true:right_projection_collapse",
+     (_tail_square_right_projection, _nested_tail_right_projection,
+      _sandwich_tail_right_projection, _left_pair_tail_right_projection),
+     lambda eq2: projection_from_lemma_goal_proof(eq2, "right", hypothesis_name="hright")),
+)
+
+
 def problem_priority(problem: dict[str, Any], eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[int, int, str]:
     if is_reflexive_problem(problem):
         return (0, len(eq2["text"]), "true:reflexive")
     if singleton_route(eq1):
         return (1, len(eq2["text"]), "true:singleton")
-    if deep_repeat_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:deep_repeat_singleton")
-    if reverse_deep_repeat_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:reverse_deep_repeat_singleton")
-    if sandwich_repeat_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:sandwich_repeat_singleton")
-    if outer_sandwich_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:outer_sandwich_singleton")
-    if forked_square_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:forked_square_singleton")
-    if crossed_pair_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:crossed_pair_singleton")
-    if nested_square_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:nested_square_singleton")
-    if tail_square_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:tail_square_singleton")
-    if paired_tail_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:paired_tail_singleton")
-    if wrapped_tail_singleton_source(eq1):
-        return (1, len(eq2["text"]), "true:wrapped_tail_singleton")
-    if middle_self_collapse_source(eq1):
-        return (1, len(eq2["text"]), "true:middle_self_collapse")
-    if front_double_self_collapse_source(eq1):
-        return (1, len(eq2["text"]), "true:front_double_self_collapse")
-    if alternating_front_self_collapse_source(eq1):
-        return (1, len(eq2["text"]), "true:alternating_front_self_collapse")
-    if mirrored_alternating_front_self_collapse_source(eq1):
-        return (1, len(eq2["text"]), "true:mirrored_alternating_front_self_collapse")
-    if sandwich_left_projection_source(eq1) and projection_proof_expr_from_law(eq2, "left", hypothesis_name="hleft"):
-        return (2, len(eq2["text"]), "true:sandwich_left_projection")
-    if nested_left_projection_source(eq1) and projection_from_lemma_goal_proof(eq2, "left", hypothesis_name="hleft"):
-        return (2, len(eq2["text"]), "true:nested_left_projection")
-    if (right_nested_tail_left_projection_source(eq1) or bracket_tail_left_projection_source(eq1) or pair_square_left_projection_source(eq1)) and projection_from_lemma_goal_proof(eq2, "left", hypothesis_name="hleft"):
-        return (2, len(eq2["text"]), "true:left_projection_collapse")
-    if left_row_constancy_source(eq1) and left_row_constancy_term_proof(eq2["lhs"], eq2["rhs"]):
-        return (2, len(eq2["text"]), "true:left_row_constancy")
-    if product_constancy_source(eq1) and eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op":
-        return (2, len(eq2["text"]), "true:product_constancy")
-    if repeated_prefix_product_constancy_source(eq1) and eq2["lhs"][0] == "op" and eq2["rhs"][0] == "op":
-        return (2, len(eq2["text"]), "true:repeated_prefix_product_constancy")
-    if double_tail_square_product_source(eq1) and square_product_basis_goal(eq2):
-        return (2, len(eq2["text"]), "true:double_tail_square_product")
-    if square_twist_comm_source(eq1) and commutative_term_key(eq2["lhs"]) == commutative_term_key(eq2["rhs"]):
-        return (2, len(eq2["text"]), "true:square_twist_comm")
-    if square_to_right_product_source(eq1) and square_to_right_product_goal(eq2):
-        return (2, len(eq2["text"]), "true:square_to_right_product")
-    if (tail_square_right_projection_source(eq1) or nested_tail_right_projection_source(eq1) or sandwich_tail_right_projection_source(eq1) or left_pair_tail_right_projection_source(eq1)) and projection_from_lemma_goal_proof(eq2, "right", hypothesis_name="hright"):
-        return (2, len(eq2["text"]), "true:right_projection_collapse")
+    for tier, label, matchers, guard in _PRIORITY_CUES:
+        if any(match(eq1) for match in matchers) and (guard is None or guard(eq2)):
+            return (tier, len(eq2["text"]), label)
     if (*equation_shape_key(eq1), *equation_shape_key(eq2)) in narrow_grind_true_shape_keys():
         return (2, len(eq2["text"]), "true:narrow_grind")
     if direct_substitution_route(eq1, eq2):
@@ -9006,15 +7741,13 @@ def solve_problem(
     for route_fn in TRUE_ROUTES:
         found = route_fn(eq1, eq2)
         if found is not None:
-            route, code = found
-            return true_record(route, code)
+            return true_record(*found)
 
     if _engine_gate():
         return None
     counterexample = find_counterexample(eq1, eq2, time_budget=false_time_budget)
     if counterexample is not None:
-        n, table, route = counterexample
-        return false_record(n, table, route)
+        return false_record(*counterexample)
 
     # Constraint-propagation witness search, cheap tier. Placed here rather than
     # with the other last-resort search because when it succeeds it succeeds in
@@ -9024,8 +7757,7 @@ def solve_problem(
         return None
     constrained = constraint_countermodel(eq1, eq2)
     if constrained is not None:
-        n, table, route = constrained
-        return false_record(n, table, route)
+        return false_record(*constrained)
 
     # General TRUE engines. Each is expensive, so `_engine_gate()` is checked
     # before every one: it enforces the global hard deadline and the memory
@@ -9087,8 +7819,7 @@ def solve_problem(
             return None
         found = engine(eq1, eq2)
         if found is not None:
-            route, code = found
-            return true_record(route, code)
+            return true_record(*found)
 
     # Last resort: the row is unresolved either way, so a randomized model
     # search costs nothing that was already being won. Runs after the TRUE
@@ -9097,8 +7828,7 @@ def solve_problem(
         return None
     late = local_model_counterexample(eq1, eq2)
     if late is not None:
-        n, table, route = late
-        return false_record(n, table, route)
+        return false_record(*late)
 
     # Linear models over Z_n for n > 10. Cheap (a few thousand candidate tables,
     # each abandoned at the first assignment that violates eq1), and placed here
@@ -9126,8 +7856,7 @@ def solve_problem(
         time_budget=CONSTRAINT_WIDE_PER_ORDER_BUDGET, per_order=True,
         max_variables=CONSTRAINT_WIDE_MAX_VARIABLES)
     if wide is not None:
-        n, table, route = wide
-        return false_record(n, table, route)
+        return false_record(*wide)
 
     # Wide-domain, narrow-range tier: reachable orders beyond 10 for equation
     # shapes without a bare variable alone on one side of eq1 (that shape rules
@@ -9137,8 +7866,7 @@ def solve_problem(
         return None
     wide_domain = constraint_countermodel_wide_domain(eq1, eq2)
     if wide_domain is not None:
-        n, table, route = wide_domain
-        return false_record(n, table, route)
+        return false_record(*wide_domain)
     return None
 
 
@@ -9620,19 +8348,8 @@ def candidate_from_llm_text(
 
 
 def terms_preview(terms: list[Term] | tuple[Term, ...], *, limit: int = 10) -> str:
-    rendered: list[str] = []
-    seen: set[str] = set()
-    for term in terms:
-        text = term_to_lean(term)
-        if text in seen:
-            continue
-        seen.add(text)
-        rendered.append(text)
-        if len(rendered) >= limit:
-            break
-    if not rendered:
-        return "(none)"
-    return ", ".join(rendered)
+    rendered = list(dict.fromkeys(term_to_lean(term) for term in terms))[:limit]
+    return ", ".join(rendered) if rendered else "(none)"
 
 
 def llm_middle_term_hints(eq1: dict[str, Any], eq2: dict[str, Any], *, limit: int = 18) -> list[Term]:
@@ -9747,6 +8464,11 @@ def render_marathon_prompt(problem: dict[str, Any], analysis: str) -> str:
 
 def log_stderr(record: dict[str, Any]) -> None:
     print(json.dumps(record, separators=(",", ":")), file=sys.stderr, flush=True)
+
+
+def log_progress(record: dict[str, Any]) -> None:
+    """Solo/Marathon progress line: default separators, unflushed."""
+    print(json.dumps(record), file=sys.stderr)
 
 
 def log_route_count_chunks(route_counts: dict[str, int], *, max_chars: int = 850) -> None:
@@ -9878,29 +8600,16 @@ def run_solo() -> int:
         attempted.add((str(answer.get("verdict")), str(answer.get("code"))))
         response = judge_via_solo_proxy(answer)
         if response:
-            print(
-                json.dumps(
-                    {
-                        "judge_status": response.get("status"),
-                        "route": solved["route"],
-                    }
-                ),
-                file=sys.stderr,
-            )
+            log_progress({'judge_status': response.get('status'), 'route': solved['route']})
             if response.get("status") == "accepted":
                 return 0
 
     analysis = solver_analysis(problem)
     if solved is None:
-        print(
-            json.dumps(
-                {
-                    "route": "skip:deterministic",
-                    "reason": "No deterministic certificate available; escalating through proxy LLM.",
-                }
-            ),
-            file=sys.stderr,
-        )
+        log_progress({
+            'route': 'skip:deterministic',
+            'reason': 'No deterministic certificate available; escalating through proxy LLM.',
+        })
         # Insurance: bank one judged verdict now, so that even a wall-clock
         # kill mid-LLM-round leaves the run with a real judge status instead
         # of a harness ERROR. Cheap (the reflexive cert fails Lean fast), and
@@ -9911,15 +8620,10 @@ def run_solo() -> int:
         attempted.add(insurance_key)
         insurance_response = judge_via_solo_proxy(insurance)
         if insurance_response:
-            print(
-                json.dumps(
-                    {
-                        "judge_status": insurance_response.get("status"),
-                        "route": "fallback:insurance_reflexive",
-                    }
-                ),
-                file=sys.stderr,
-            )
+            log_progress({
+                'judge_status': insurance_response.get('status'),
+                'route': 'fallback:insurance_reflexive',
+            })
             if insurance_response.get("status") == "accepted":
                 return 0
 
@@ -9930,10 +8634,7 @@ def run_solo() -> int:
     feedback = ""
     for round_idx in range(solo_llm_rounds()):
         if time.monotonic() >= full_deadline - SOLO_LLM_ROUND_MIN_SECONDS:
-            print(
-                json.dumps({"route": "llm:stop_deadline", "round": round_idx}),
-                file=sys.stderr,
-            )
+            log_progress({'route': 'llm:stop_deadline', 'round': round_idx})
             break
         llm_response = send_proxy_call(
             {
@@ -9946,16 +8647,11 @@ def run_solo() -> int:
             }
         )
         if not llm_response or "error" in llm_response:
-            print(
-                json.dumps(
-                    {
-                        "route": "llm:skip",
-                        "round": round_idx,
-                        "error": (llm_response or {}).get("error", "no response"),
-                    }
-                ),
-                file=sys.stderr,
-            )
+            log_progress({
+                'route': 'llm:skip',
+                'round': round_idx,
+                'error': (llm_response or {}).get('error', 'no response'),
+            })
             break
         response_text = str(llm_response.get("response", ""))
         candidate, reject_reason = candidate_from_llm_text_with_reason(problem, response_text)
@@ -9971,38 +8667,28 @@ def run_solo() -> int:
                 "prefer proof_kind guided_chain with small single-rewrite steps "
                 "whose first term is the goal LHS and last term is the goal RHS."
             )
-            print(
-                json.dumps(
-                    {
-                        "route": "llm:reject",
-                        "round": round_idx,
-                        "reason": reject_reason,
-                        "response_chars": len(response_text),
-                        "response_preview": text_preview(response_text),
-                    }
-                ),
-                file=sys.stderr,
-            )
+            log_progress({
+                'route': 'llm:reject',
+                'round': round_idx,
+                'reason': reject_reason,
+                'response_chars': len(response_text),
+                'response_preview': text_preview(response_text),
+            })
             continue
         feedback = ""
         answer = dict(candidate["answer"])
         key = (str(answer.get("verdict")), str(answer.get("code")))
         if key in attempted:
-            print(json.dumps({"route": "llm:duplicate", "round": round_idx}), file=sys.stderr)
+            log_progress({'route': 'llm:duplicate', 'round': round_idx})
             continue
         attempted.add(key)
         judge_response = judge_via_solo_proxy(answer)
         if judge_response:
-            print(
-                json.dumps(
-                    {
-                        "judge_status": judge_response.get("status"),
-                        "route": candidate["route"],
-                        "round": round_idx,
-                    }
-                ),
-                file=sys.stderr,
-            )
+            log_progress({
+                'judge_status': judge_response.get('status'),
+                'route': candidate['route'],
+                'round': round_idx,
+            })
             if judge_response.get("status") == "accepted":
                 return 0
     # Final fallback: one speculative grind attempt beats the never-passing
@@ -10018,18 +8704,10 @@ def run_solo() -> int:
     # judge's full Lean timeout. Measured 2026-07-23: seven `Eq168` playground
     # rows returned `TRUE INCORRECT` this way in 400-630 s each.
     if hypothesis_models_seen() == 0:
-        print(
-            json.dumps(
-                {
-                    "route": "fallback:skip_no_model_evidence",
-                    "reason": (
-                        "FALSE search inspected 0 models of the hypothesis; "
-                        "a speculative TRUE verdict has no evidence behind it."
-                    ),
-                }
-            ),
-            file=sys.stderr,
-        )
+        log_progress({
+            'route': 'fallback:skip_no_model_evidence',
+            'reason': 'FALSE search inspected 0 models of the hypothesis; a speculative TRUE verdict has no evidence behind it.',
+        })
         return 0
     # `models_seen > 0` on its own is a much weaker signal than it looks. On the
     # six FALSE playground rows this fallback misfired on (2026-07-29) it read
@@ -10057,26 +8735,13 @@ def run_solo() -> int:
         return 0
     judge_response = judge_via_solo_proxy(fallback)
     if judge_response:
-        print(
-            json.dumps(
-                {
-                    "judge_status": judge_response.get("status"),
-                    "route": fallback_route,
-                }
-            ),
-            file=sys.stderr,
-        )
+        log_progress({'judge_status': judge_response.get('status'), 'route': fallback_route})
     return 0
 
 
 def iter_manifest(path: str) -> list[dict[str, Any]]:
-    problems: list[dict[str, Any]] = []
     with open(path, "r", encoding="utf-8") as manifest_file:
-        for line in manifest_file:
-            stripped = line.strip()
-            if stripped:
-                problems.append(json.loads(stripped))
-    return problems
+        return [json.loads(line) for line in manifest_file if line.strip()]
 
 
 def append_answer(path: str, answer: dict[str, Any]) -> bool:
@@ -10212,29 +8877,19 @@ def run_marathon() -> int:
     call_llm, tokens_used, budget_remaining = load_marathon_llm()
     unresolved_count = len(prioritized) - len(solved_ids)
     if unresolved_count > 0 and call_llm is None:
-        print(
-            json.dumps(
-                {
-                    "route": "llm:disabled",
-                    "reason": "missing_marathon_proxy_library",
-                    "unresolved": unresolved_count,
-                    "budget_tokens": budget_tokens,
-                }
-            ),
-            file=sys.stderr,
-        )
+        log_progress({
+            'route': 'llm:disabled',
+            'reason': 'missing_marathon_proxy_library',
+            'unresolved': unresolved_count,
+            'budget_tokens': budget_tokens,
+        })
     if unresolved_count > 0 and budget_tokens == 0:
-        print(
-            json.dumps(
-                {
-                    "route": "llm:disabled",
-                    "reason": "zero_token_budget",
-                    "unresolved": unresolved_count,
-                    "budget_tokens": budget_tokens,
-                }
-            ),
-            file=sys.stderr,
-        )
+        log_progress({
+            'route': 'llm:disabled',
+            'reason': 'zero_token_budget',
+            'unresolved': unresolved_count,
+            'budget_tokens': budget_tokens,
+        })
     if call_llm is not None and budget_tokens != 0:
         unresolved = [
             (llm_problem_priority(priority, problem), problem)

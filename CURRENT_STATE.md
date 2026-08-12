@@ -21,9 +21,15 @@ against 2026-08-07: **+9 / −0**. **HF mirrors 795/800** (FALSE 400/400 complet
 verified standalone from a copy (import, an id-less payload, the same row with
 ids), leaving the submission directory containing only `solver.py`.
 
-**Watch the package size:** 19,885 bytes of headroom (4.0%). A 10 KB win was just
-taken for free — the packager now writes LF instead of copying the CRLF working
-tree. `DISTILLED_CERTS` is 14.8% of the file, so a distilled row costs 2–12 KB.
+**Package size is no longer a constraint (2026-08-11, later the same day):**
+**355,879 bytes, 144,121 of headroom (28.8%)**, up from 4.0%. Two levers, neither
+of which deleted a route: a simplification pass took the source from 10,388 to
+9,043 lines (−51 KB), and `package_solver.ps1` now strips comments and docstrings
+from the artifact only via `minify_submission.py` (−74 KB), which proves the
+artifact parses to the same tree as the source before writing it. The whole gate
+was re-run against the stripped artifact itself: 201 passed, 2 skipped.
+`DISTILLED_CERTS` is still the biggest block at 72.8 KB, so a distilled row costs
+2–12 KB — there is simply room for a lot more of them now.
 
 **All three remaining official rows are TRUE**: `hard2_0073`, `hard3_0214`,
 `hard3_0314` (plus five HF). Every one is *known* true — the vendored ETP matrix
