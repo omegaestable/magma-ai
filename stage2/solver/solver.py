@@ -7296,6 +7296,372 @@ def canonical_eq_text(eq: dict[str, Any]) -> str:
 
 
 DISTILLED_CERTS: dict[tuple[str, str], tuple[str, str, str]] = {
+    ("v0 = (((v1 ◇ (v0 ◇ v2)) ◇ v0) ◇ v1)",
+     "v0 = (v0 ◇ (((v1 ◇ v1) ◇ v0) ◇ v0))"): ("true", "e2920_e1248", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, (((a ◇ (b ◇ c)) ◇ b) ◇ a) = b := by
+    intro a b c
+    exact (h b a c).symm
+  have hlem1 : ∀ a b c : G, ((a ◇ b) ◇ (a ◇ ((a ◇ b) ◇ c))) = a := by
+    intro a b c
+    exact ((congrArg (fun t => (t ◇ (a ◇ ((a ◇ b) ◇ c)))) (hlem0 a (a ◇ b) c)).symm).trans (hlem0 (a ◇ ((a ◇ b) ◇ c)) a b)
+  have hlem2 : ∀ a b : G, ((a ◇ a) ◇ (a ◇ b)) = a := by
+    intro a b
+    exact ((congrArg (fun t => ((t ◇ a) ◇ (a ◇ b))) (hlem1 a b a)).symm).trans (hlem0 (a ◇ b) a ((a ◇ b) ◇ a))
+  have hlem3 : ∀ a b : G, ((a ◇ b) ◇ (a ◇ a)) = a := by
+    intro a b
+    exact ((congrArg (fun t => ((a ◇ b) ◇ (a ◇ t))) (hlem1 a b a)).symm).trans (hlem1 a b (a ◇ ((a ◇ b) ◇ a)))
+  have hlem4 : ∀ a b : G, (((a ◇ a) ◇ b) ◇ a) = (a ◇ a) := by
+    intro a b
+    exact ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ t)) (hlem2 a a)).symm).trans (hlem3 (a ◇ a) b)
+  have hlem5 : ∀ a b : G, ((a ◇ b) ◇ (a ◇ b)) = a := by
+    intro a b
+    exact ((hlem4 (a ◇ b) a).symm).trans (hlem0 (a ◇ b) a b)
+  have hlem6 : ∀ a b c : G, (((a ◇ b) ◇ c) ◇ a) = (a ◇ b) := by
+    intro a b c
+    exact ((congrArg (fun t => (((a ◇ b) ◇ c) ◇ t)) (hlem5 a b)).symm).trans (hlem3 (a ◇ b) c)
+  have hlem7 : ∀ a b c : G, (a ◇ (b ◇ c)) = b := by
+    intro a b c
+    exact ((hlem6 a (b ◇ c) b).symm).trans (hlem0 a b c)
+  have hlem8 : ∀ a b : G, a = b := by
+    intro a b
+    exact ((hlem7 (((a ◇ a) ◇ (b ◇ a)) ◇ b) a a).symm).trans (hlem0 (a ◇ a) b a)
+  intro x y
+  exact hlem8 x (x ◇ (((y ◇ y) ◇ x) ◇ x))
+"""),
+    ("v0 = (((v0 ◇ v0) ◇ v1) ◇ (v0 ◇ v2))",
+     "v0 = (((v0 ◇ v1) ◇ (v2 ◇ v3)) ◇ v1)"): ("true", "e2042_e2692", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b : G, (a ◇ a) = (a ◇ ((a ◇ a) ◇ b)) := by
+    intro a b
+    exact (h (a ◇ a) (a ◇ a) b).trans (congrArg (fun t => (t ◇ ((a ◇ a) ◇ b))) ((h a (a ◇ a) a).symm))
+  have hlem1 : ∀ a : G, ((a ◇ a) ◇ (a ◇ a)) = ((a ◇ a) ◇ a) := by
+    intro a
+    exact (hlem0 (a ◇ a) (a ◇ a)).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h a (a ◇ a) a).symm))
+  have hlem2 : ∀ a : G, a = (((a ◇ a) ◇ a) ◇ ((a ◇ a) ◇ a)) := by
+    intro a
+    exact (h a (a ◇ a) a).trans ((((hlem1 (a ◇ a)).symm).trans (congrArg (fun t => (t ◇ ((a ◇ a) ◇ (a ◇ a)))) (hlem1 a))).trans (congrArg (fun t => (((a ◇ a) ◇ a) ◇ t)) (hlem1 a)))
+  have hlem3 : ∀ a b c : G, ((a ◇ a) ◇ a) = ((a ◇ b) ◇ (((a ◇ a) ◇ a) ◇ c)) := by
+    intro a b c
+    exact (h ((a ◇ a) ◇ a) b c).trans (congrArg (fun t => ((t ◇ b) ◇ (((a ◇ a) ◇ a) ◇ c))) ((hlem2 a).symm))
+  have hlem4 : ∀ a b : G, ((a ◇ a) ◇ a) = ((a ◇ b) ◇ a) := by
+    intro a b
+    exact ((h ((a ◇ a) ◇ a) b ((a ◇ a) ◇ a)).trans (congrArg (fun t => (((((a ◇ a) ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ b) ◇ t)) ((hlem2 a).symm))).trans (congrArg (fun t => ((t ◇ b) ◇ a)) ((hlem2 a).symm))
+  have hlem5 : ∀ a b : G, (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) = a := by
+    intro a b
+    exact ((hlem4 (a ◇ b) (((a ◇ a) ◇ a) ◇ a)).trans (congrArg (fun t => (t ◇ (a ◇ b))) ((hlem3 a b a).symm))).trans ((h a a b).symm)
+  have hlem6 : ∀ a b : G, (a ◇ b) = (a ◇ a) := by
+    intro a b
+    exact ((hlem2 (a ◇ b)).trans (congrArg (fun t => (t ◇ (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)))) (hlem5 a b))).trans (congrArg (fun t => (a ◇ t)) (hlem5 a b))
+  have hlem7 : ∀ a b c : G, (a ◇ b) = (a ◇ c) := by
+    intro a b c
+    exact (hlem6 a b).trans ((hlem6 a c).symm)
+  intro x y z w
+  exact (((h x x x).trans (congrArg (fun t => ((t ◇ x) ◇ (x ◇ x))) (hlem7 x x y))).trans (congrArg (fun t => (t ◇ (x ◇ x))) (hlem7 (x ◇ y) x (z ◇ w)))).trans (hlem7 ((x ◇ y) ◇ (z ◇ w)) (x ◇ x) y)
+"""),
+    ("v0 = (((v1 ◇ (v0 ◇ v2)) ◇ v1) ◇ v0)",
+     "v0 = ((v1 ◇ v2) ◇ (v3 ◇ (v4 ◇ v0)))"): ("true", "e2923_e1623", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c d : G, ((a ◇ c) ◇ ((b ◇ ((a ◇ c) ◇ d)) ◇ b)) ◇ a = a := by
+    intro a b c d
+    exact (congrArg (fun t => (t ◇ ((b ◇ ((a ◇ c) ◇ d)) ◇ b)) ◇ a) (h (a ◇ c) b d)).trans (((h a ((b ◇ ((a ◇ c) ◇ d)) ◇ b) c).symm))
+  have hlem1 : ∀ a b c d : G, ((b ◇ a) ◇ b) ◇ ((c ◇ (a ◇ d)) ◇ c) = (c ◇ (a ◇ d)) ◇ c := by
+    intro a b c d
+    exact (congrArg (fun t => ((b ◇ t) ◇ b) ◇ ((c ◇ (a ◇ d)) ◇ c)) (h a c d)).trans (((h ((c ◇ (a ◇ d)) ◇ c) b a).symm))
+  have hlem2 : ∀ a b c d e : G, ((b ◇ ((c ◇ (a ◇ e)) ◇ c)) ◇ b) ◇ ((d ◇ a) ◇ d) = (d ◇ a) ◇ d := by
+    intro a b c d e
+    exact (congrArg (fun t => ((b ◇ t) ◇ b) ◇ ((d ◇ a) ◇ d)) ((hlem1 a d c e).symm)).trans (((h ((d ◇ a) ◇ d) b ((c ◇ (a ◇ e)) ◇ c)).symm))
+  have hlem3 : ∀ a b c d : G, ((b ◇ (a ◇ d)) ◇ (((b ◇ (a ◇ d)) ◇ b) ◇ ((c ◇ a) ◇ c))) ◇ b = b := by
+    intro a b c d
+    exact (congrArg (fun t => ((b ◇ (a ◇ d)) ◇ (t ◇ ((c ◇ a) ◇ c))) ◇ b) ((hlem1 a c b d).symm)).trans ((hlem0 b ((c ◇ a) ◇ c) (a ◇ d) b))
+  have hlem4 : ∀ a b c d : G, (((c ◇ (a ◇ d)) ◇ c) ◇ ((b ◇ a) ◇ b)) ◇ (c ◇ (a ◇ d)) = c ◇ (a ◇ d) := by
+    intro a b c d
+    exact (congrArg (fun t => (((c ◇ (a ◇ d)) ◇ c) ◇ ((b ◇ t) ◇ b)) ◇ (c ◇ (a ◇ d))) (h a c d)).trans ((hlem0 (c ◇ (a ◇ d)) b c a))
+  have hlem5 : ∀ a b c d e : G, (((d ◇ a) ◇ d) ◇ ((b ◇ ((c ◇ (a ◇ e)) ◇ c)) ◇ b)) ◇ (d ◇ a) = d ◇ a := by
+    intro a b c d e
+    exact (congrArg (fun t => (((d ◇ a) ◇ d) ◇ ((b ◇ t) ◇ b)) ◇ (d ◇ a)) ((hlem1 a d c e).symm)).trans ((hlem0 (d ◇ a) b d ((c ◇ (a ◇ e)) ◇ c)))
+  have hlem6 : ∀ a b c d e : G, (((b ◇ (a ◇ e)) ◇ b) ◇ ((d ◇ a) ◇ d)) ◇ ((c ◇ a) ◇ c) = (c ◇ a) ◇ c := by
+    intro a b c d e
+    exact (congrArg (fun t => (t ◇ ((d ◇ a) ◇ d)) ◇ ((c ◇ a) ◇ c)) ((hlem1 a d b e).symm)).trans ((hlem2 a ((d ◇ a) ◇ d) b c e))
+  have hlem7 : ∀ a b c d e : G, (((c ◇ a) ◇ c) ◇ (((b ◇ (a ◇ e)) ◇ b) ◇ ((d ◇ a) ◇ d))) ◇ (c ◇ a) = c ◇ a := by
+    intro a b c d e
+    exact (congrArg (fun t => (((c ◇ a) ◇ c) ◇ (t ◇ ((d ◇ a) ◇ d))) ◇ (c ◇ a)) ((hlem1 a d b e).symm)).trans ((hlem5 a ((d ◇ a) ◇ d) b c e))
+  have hlem8 : ∀ a b c d : G, ((b ◇ (b ◇ d)) ◇ b) ◇ ((a ◇ ((b ◇ (b ◇ d)) ◇ c)) ◇ a) = (a ◇ ((b ◇ (b ◇ d)) ◇ c)) ◇ a := by
+    intro a b c d
+    exact (congrArg (fun t => t ◇ ((a ◇ ((b ◇ (b ◇ d)) ◇ c)) ◇ a)) ((hlem1 b (b ◇ (b ◇ d)) b d).symm)).trans ((hlem1 (b ◇ (b ◇ d)) ((b ◇ (b ◇ d)) ◇ b) a c))
+  have hlem9 : ∀ a b c d e : G, ((a ◇ ((c ◇ ((b ◇ (b ◇ d)) ◇ e)) ◇ c)) ◇ a) ◇ ((b ◇ (b ◇ d)) ◇ b) = (b ◇ (b ◇ d)) ◇ b := by
+    intro a b c d e
+    exact (congrArg (fun t => ((a ◇ t) ◇ a) ◇ ((b ◇ (b ◇ d)) ◇ b)) ((hlem8 c b e d).symm)).trans (((h ((b ◇ (b ◇ d)) ◇ b) a ((c ◇ ((b ◇ (b ◇ d)) ◇ e)) ◇ c)).symm))
+  have hlem10 : ∀ a b c d : G, (((b ◇ ((a ◇ (a ◇ c)) ◇ d)) ◇ b) ◇ ((a ◇ (a ◇ c)) ◇ a)) ◇ ((a ◇ (a ◇ c)) ◇ a) = (a ◇ (a ◇ c)) ◇ a := by
+    intro a b c d
+    exact (congrArg (fun t => (t ◇ ((a ◇ (a ◇ c)) ◇ a)) ◇ ((a ◇ (a ◇ c)) ◇ a)) ((hlem8 b a d c).symm)).trans ((hlem9 ((a ◇ (a ◇ c)) ◇ a) a b c d))
+  have hlem11 : ∀ a b c : G, ((((a ◇ (a ◇ c)) ◇ a) ◇ ((b ◇ a) ◇ b)) ◇ ((a ◇ (a ◇ c)) ◇ a)) ◇ ((a ◇ (a ◇ c)) ◇ a) = (a ◇ (a ◇ c)) ◇ a := by
+    intro a b c
+    exact (congrArg (fun t => ((t ◇ ((b ◇ a) ◇ b)) ◇ ((a ◇ (a ◇ c)) ◇ a)) ◇ ((a ◇ (a ◇ c)) ◇ a)) ((hlem1 a b a c).symm)).trans ((hlem10 a ((b ◇ a) ◇ b) c a))
+  have hlem12 : ∀ a b : G, ((b ◇ (b ◇ b)) ◇ b) ◇ ((a ◇ (b ◇ b)) ◇ a) = (a ◇ (b ◇ b)) ◇ a := by
+    intro a b
+    exact (congrArg (fun t => t ◇ ((a ◇ (b ◇ b)) ◇ a)) ((hlem11 b b b).symm)).trans ((hlem6 (b ◇ b) ((b ◇ (b ◇ b)) ◇ b) a b b))
+  have hlem13 : ∀ a b : G, (((a ◇ (b ◇ b)) ◇ a) ◇ ((b ◇ (b ◇ b)) ◇ b)) ◇ (a ◇ (b ◇ b)) = a ◇ (b ◇ b) := by
+    intro a b
+    exact (congrArg (fun t => (((a ◇ (b ◇ b)) ◇ a) ◇ t) ◇ (a ◇ (b ◇ b))) ((hlem11 b b b).symm)).trans ((hlem7 (b ◇ b) ((b ◇ (b ◇ b)) ◇ b) a b b))
+  have hlem14 : ∀ a : G, ((a ◇ (a ◇ a)) ◇ a) ◇ (a ◇ (a ◇ a)) = a ◇ (a ◇ a) := by
+    intro a
+    exact (congrArg (fun t => t ◇ (a ◇ (a ◇ a))) ((hlem12 a a).symm)).trans ((hlem13 a a))
+  have hlem15 : ∀ a b c : G, ((a ◇ (b ◇ c)) ◇ (((a ◇ (b ◇ c)) ◇ a) ◇ (b ◇ (b ◇ b)))) ◇ a = a := by
+    intro a b c
+    exact (congrArg (fun t => ((a ◇ (b ◇ c)) ◇ (((a ◇ (b ◇ c)) ◇ a) ◇ t)) ◇ a) ((hlem14 b).symm)).trans ((hlem3 b a (b ◇ (b ◇ b)) c))
+  have hlem16 : ∀ a b c : G, (((a ◇ (b ◇ c)) ◇ a) ◇ (b ◇ (b ◇ b))) ◇ (a ◇ (b ◇ c)) = a ◇ (b ◇ c) := by
+    intro a b c
+    exact (congrArg (fun t => (((a ◇ (b ◇ c)) ◇ a) ◇ t) ◇ (a ◇ (b ◇ c))) ((hlem14 b).symm)).trans ((hlem4 b (b ◇ (b ◇ b)) a c))
+  have hlem17 : ∀ a : G, (a ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a)) = a ◇ (a ◇ a) := by
+    intro a
+    exact (congrArg (fun t => t ◇ (a ◇ (a ◇ a))) ((hlem14 a).symm)).trans ((hlem16 a a a))
+  have hlem18 : ∀ a : G, (a ◇ (a ◇ a)) ◇ a = a := by
+    intro a
+    exact (congrArg (fun t => t ◇ a) ((hlem17 a).symm)).trans ((congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t) ◇ a) ((hlem14 a).symm)).trans ((hlem15 a a a)))
+  have hlem19 : ∀ a : G, a ◇ a = a := by
+    intro a
+    exact (congrArg (fun t => t ◇ a) ((hlem18 a).symm)).trans (((h a a a).symm))
+  have hlem20 : ∀ a b : G, (a ◇ b) ◇ a = a := by
+    intro a b
+    exact (congrArg (fun t => t ◇ a) ((hlem19 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ t) ◇ a) ((hlem18 (a ◇ b)).symm)).trans ((hlem0 a (a ◇ b) b (a ◇ b))))
+  have hlem21 : ∀ a b : G, a ◇ b = b := by
+    intro a b
+    exact (congrArg (fun t => t ◇ b) ((hlem20 a b).symm)).trans ((congrArg (fun t => ((a ◇ t) ◇ a) ◇ b) ((hlem19 b).symm)).trans (((h b a b).symm)))
+  intro x y z w u
+  exact ((hlem21 u x).symm).trans (((hlem21 w (u ◇ x)).symm).trans (((hlem21 (y ◇ z) (w ◇ (u ◇ x))).symm)))
+"""),
+    ("v0 = (v1 ◇ (v0 ◇ (v0 ◇ (v2 ◇ v0))))",
+     "(v0 ◇ v0) = (((v1 ◇ v1) ◇ v0) ◇ v0)"): ("true", "e469_e4090", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, (a ◇ ((b ◇ (c ◇ b)) ◇ b)) = (b ◇ (c ◇ b)) := by
+    intro a b c
+    exact (((congrArg (fun t => (a ◇ ((b ◇ (c ◇ b)) ◇ t))) ((h b (b ◇ (c ◇ b)) c).symm))).symm).trans ((h (b ◇ (c ◇ b)) a b).symm)
+  have hlem1 : ∀ a b c : G, (a ◇ b) = ((b ◇ (b ◇ (c ◇ b))) ◇ b) := by
+    intro a b c
+    exact (((congrArg (fun t => (a ◇ t)) ((h b ((b ◇ (b ◇ (c ◇ b))) ◇ b) c).symm)).symm)).trans ((((congrArg (fun t => (a ◇ (((b ◇ (b ◇ (c ◇ b))) ◇ t) ◇ (b ◇ (b ◇ (c ◇ b)))))) ((h b a c).symm)).symm)).trans (((hlem0 a (b ◇ (b ◇ (c ◇ b))) a)).trans (congrArg (fun t => ((b ◇ (b ◇ (c ◇ b))) ◇ t)) ((h b a c).symm))))
+  have hlem2 : ∀ a b c : G, (a ◇ c) = (b ◇ c) := by
+    intro a b c
+    exact ((hlem1 a c c)).trans (((hlem1 b c c)).symm)
+  intro x y
+  exact hlem2 x ((y ◇ y) ◇ x) x
+"""),
+    ("v0 = ((v1 ◇ v0) ◇ ((v0 ◇ v2) ◇ v2))",
+     "v0 = ((v1 ◇ (v2 ◇ (v1 ◇ v2))) ◇ v2)"): ("true", "e1689_e2391", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem1 : ∀ a b c : G, (a ◇ ((((a ◇ b) ◇ b) ◇ c) ◇ c)) = ((a ◇ b) ◇ b) := by
+    intro a b c
+    exact ((congrArg (fun t => (t ◇ ((((a ◇ b) ◇ b) ◇ c) ◇ c))) (h a a b)).trans ((h ((a ◇ b) ◇ b) (a ◇ a) c).symm))
+  have hlem2 : ∀ a b c d : G, ((a ◇ (b ◇ c)) ◇ (c ◇ ((c ◇ d) ◇ d))) = (b ◇ c) := by
+    intro a b c d
+    exact ((congrArg (fun t => ((a ◇ (b ◇ c)) ◇ (t ◇ ((c ◇ d) ◇ d)))) (h c b d)).trans ((h (b ◇ c) a ((c ◇ d) ◇ d)).symm))
+  have hlem3 : ∀ a b c : G, (a ◇ (b ◇ ((b ◇ c) ◇ c))) = ((a ◇ b) ◇ b) := by
+    intro a b c
+    exact ((congrArg (fun t => (a ◇ (t ◇ ((b ◇ c) ◇ c)))) (h b (a ◇ b) c)).trans (hlem1 a b ((b ◇ c) ◇ c)))
+  have hlem4 : ∀ a b c d : G, ((a ◇ b) ◇ (b ◇ (c ◇ ((c ◇ d) ◇ d)))) = b := by
+    intro a b c d
+    exact ((congrArg (fun t => ((a ◇ b) ◇ t)) (hlem3 b c d)).trans ((h b a c).symm))
+  have hlem5 : ∀ a b c : G, (((a ◇ (b ◇ c)) ◇ c) ◇ c) = (b ◇ c) := by
+    intro a b c
+    exact (((hlem3 (a ◇ (b ◇ c)) c a).symm).trans (hlem2 a b c a))
+  have hlem6 : ∀ a b : G, (a ◇ ((a ◇ b) ◇ b)) = a := by
+    intro a b
+    exact ((((congrArg (fun t => (t ◇ ((a ◇ b) ◇ b))) (h a a b)).trans (congrArg (fun t => (((a ◇ t) ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ b))) (h a a b))).trans (hlem5 a (a ◇ a) ((a ◇ b) ◇ b))).trans ((h a a b).symm))
+  have hlem7 : ∀ a b : G, (a ◇ b) = ((a ◇ b) ◇ b) := by
+    intro a b
+    exact ((congrArg (fun t => (a ◇ t)) ((hlem6 b a).symm)).trans (hlem3 a b a))
+  have hlem8 : ∀ a b : G, (a ◇ (a ◇ b)) = a := by
+    intro a b
+    exact ((congrArg (fun t => (a ◇ t)) (hlem7 a b)).trans (hlem6 a b))
+  have hlem9 : ∀ a b : G, ((a ◇ b) ◇ b) = b := by
+    intro a b
+    exact ((congrArg (fun t => ((a ◇ b) ◇ t)) ((hlem8 b ((b ◇ a) ◇ a)).symm)).trans (hlem4 a b b a))
+  have hlem10 : ∀ a b : G, (a ◇ b) = b := by
+    intro a b
+    exact (((hlem5 a a b).symm).trans (hlem9 (a ◇ (a ◇ b)) b))
+  have hlem11 : ∀ a b : G, (a ◇ b) = a := by
+    intro a b
+    exact ((congrArg (fun t => (a ◇ t)) ((hlem9 a b).symm)).trans (hlem6 a b))
+  have hlem12 : ∀ a b : G, a = b := by
+    intro a b
+    exact (((hlem10 b a).symm).trans (hlem11 b a))
+  intro x y z
+  exact hlem12 x ((y ◇ (z ◇ (y ◇ z))) ◇ z)
+"""),
+    ("v0 = (v1 ◇ (v0 ◇ (((v2 ◇ v1) ◇ v1) ◇ v1)))",
+     "v0 = (((v1 ◇ v2) ◇ (v0 ◇ v1)) ◇ (v0 ◇ v2))"): ("true", "e8502_e27144", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, a = ((((c ◇ a) ◇ a) ◇ a) ◇ ((b ◇ (((c ◇ a) ◇ a) ◇ a)) ◇ (((c ◇ a) ◇ a) ◇ a))) := by
+    intro a b c
+    exact (h a (((c ◇ a) ◇ a) ◇ a) b).trans ((congrArg (fun t => (((c ◇ a) ◇ a) ◇ a) ◇ t) (h ((b ◇ (((c ◇ a) ◇ a) ◇ a)) ◇ (((c ◇ a) ◇ a) ◇ a)) a c)).symm)
+  have hlem1 : ∀ a b : G, (((b ◇ a) ◇ a) ◇ a) = ((((b ◇ a) ◇ a) ◇ a) ◇ a) := by
+    intro a b
+    exact (h (((b ◇ a) ◇ a) ◇ a) (((b ◇ a) ◇ a) ◇ a) a).trans (congrArg (fun t => (((b ◇ a) ◇ a) ◇ a) ◇ t) ((hlem0 a (a ◇ (((b ◇ a) ◇ a) ◇ a)) b).symm))
+  have hlem2 : ∀ a b c : G, ((c ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) = (((c ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) := by
+    intro a b c
+    exact (h ((c ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) a b).trans ((congrArg (fun t => a ◇ t) (hlem1 (((b ◇ a) ◇ a) ◇ a) c)).trans ((h (((c ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) a b).symm))
+  have hlem3 : ∀ a b c : G, (c ◇ (((b ◇ a) ◇ a) ◇ a)) = ((c ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) := by
+    intro a b c
+    exact (h (c ◇ (((b ◇ a) ◇ a) ◇ a)) a b).trans ((congrArg (fun t => a ◇ t) (hlem2 a b c)).trans ((h ((c ◇ (((b ◇ a) ◇ a) ◇ a)) ◇ (((b ◇ a) ◇ a) ◇ a)) a b).symm))
+  have hlem4 : ∀ a b c : G, (c ◇ (((b ◇ a) ◇ a) ◇ a)) = c := by
+    intro a b c
+    exact (h (c ◇ (((b ◇ a) ◇ a) ◇ a)) a b).trans ((congrArg (fun t => a ◇ t) ((hlem3 a b c).symm)).trans ((h c a b).symm))
+  have hlem5 : ∀ a b c : G, c = (a ◇ c) := by
+    intro a b c
+    exact (h c a b).trans (congrArg (fun t => a ◇ t) (hlem4 a b c))
+  have hlem6 : ∀ a b : G, a = b := by
+    intro a b
+    exact ((hlem4 b b a).symm).trans ((congrArg (fun t => a ◇ t) ((congrArg (fun t => t ◇ b) (congrArg (fun t => t ◇ b) ((hlem5 b b b).symm))).trans ((congrArg (fun t => t ◇ b) ((hlem5 b b b).symm)).trans ((hlem5 b b b).symm)))).trans ((hlem5 a b b).symm))
+  intro x y z
+  exact hlem6 x (((y ◇ z) ◇ (x ◇ y)) ◇ (x ◇ z))
+"""),
+    ("v0 = (v0 ◇ (v1 ◇ ((v2 ◇ v1) ◇ (v3 ◇ v1))))",
+     "v0 = ((v0 ◇ (((v1 ◇ v0) ◇ v2) ◇ v1)) ◇ v3)"): ("true", "e6605_e32838", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a p q r : G, (a ◇ (p ◇ ((q ◇ p) ◇ (r ◇ p)))) = a := by
+    intro a p q r
+    exact (h a p q r).symm
+  have hlem1 : ∀ a p q r s : G, (a ◇ ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ s)) = a := by
+    intro a p q r s
+    exact (congrArg (fun t => (a ◇ ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ t))) ((((congrArg (fun t => ((s ◇ (p ◇ ((q ◇ p) ◇ (r ◇ p)))) ◇ t)) (hlem0 (p ◇ ((q ◇ p) ◇ (r ◇ p))) p q r)).trans ((hlem0 (s ◇ (p ◇ ((q ◇ p) ◇ (r ◇ p)))) p q r).trans (hlem0 s p q r)))).symm)).trans (hlem0 a (p ◇ ((q ◇ p) ◇ (r ◇ p))) s (p ◇ ((q ◇ p) ◇ (r ◇ p))))
+  have hlem2 : ∀ a p q r y s : G, (a ◇ (((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y) ◇ s)) = a := by
+    intro a p q r y s
+    exact (congrArg (fun t => (a ◇ (((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y) ◇ t))) ((((congrArg (fun t => ((s ◇ ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y)) ◇ t)) (hlem1 ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y) p q r y)).trans ((hlem1 (s ◇ ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y)) p q r y).trans (hlem1 s p q r y)))).symm)).trans (hlem0 a ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y) s ((p ◇ ((q ◇ p) ◇ (r ◇ p))) ◇ y))
+  have hlem3 : ∀ a y : G, (a ◇ y) = a := by
+    intro a y
+    exact (congrArg (fun t => (a ◇ t)) ((hlem2 y a a a y (a ◇ y)).symm)).trans (hlem0 a y (a ◇ ((a ◇ a) ◇ (a ◇ a))) a)
+  intro x y z w
+  exact ((hlem3 (x ◇ (((y ◇ x) ◇ z) ◇ y)) w).trans (hlem3 x (((y ◇ x) ◇ z) ◇ y))).symm
+"""),
+    ("v0 = ((v1 ◇ v2) ◇ ((v0 ◇ (v0 ◇ v1)) ◇ v2))",
+     "v0 = ((v0 ◇ (v0 ◇ v1)) ◇ (v2 ◇ (v2 ◇ v3)))"): ("true", "e20115_e21404", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem1 : ∀ a b c : G, ((a ◇ ((b ◇ (b ◇ c)) ◇ (c ◇ a))) ◇ b) = c := by
+    intro a b c
+    exact ((congrArg (fun t => ((a ◇ ((b ◇ (b ◇ c)) ◇ (c ◇ a))) ◇ t)) (h b c (c ◇ a))).trans ((h c a ((b ◇ (b ◇ c)) ◇ (c ◇ a))).symm))
+  have hlem2 : ∀ a b : G, (((a ◇ a) ◇ b) ◇ (a ◇ b)) = (a ◇ (a ◇ a)) := by
+    intro a b
+    exact ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (t ◇ b))) (h a a (a ◇ a))).trans ((h (a ◇ (a ◇ a)) (a ◇ a) b).symm))
+  have hlem3 : ∀ a : G, ((((a ◇ a) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ (a ◇ a)) = a := by
+    intro a
+    exact ((congrArg (fun t => ((((a ◇ a) ◇ a) ◇ t) ◇ (a ◇ a))) ((hlem2 a ((a ◇ a) ◇ a)).symm)).trans (hlem1 ((a ◇ a) ◇ a) (a ◇ a) a))
+  have hlem4 : ∀ a b c : G, (((a ◇ b) ◇ c) ◇ ((((a ◇ a) ◇ b) ◇ (a ◇ (a ◇ a))) ◇ c)) = ((a ◇ a) ◇ b) := by
+    intro a b c
+    exact ((congrArg (fun t => (((a ◇ b) ◇ c) ◇ ((((a ◇ a) ◇ b) ◇ t) ◇ c))) ((hlem2 a b).symm)).trans ((h ((a ◇ a) ◇ b) (a ◇ b) c).symm))
+  have hlem5 : ∀ a : G, (((a ◇ a) ◇ (a ◇ a)) ◇ a) = ((a ◇ a) ◇ a) := by
+    intro a
+    exact ((congrArg (fun t => (((a ◇ a) ◇ (a ◇ a)) ◇ t)) ((hlem3 a).symm)).trans (hlem4 a a (a ◇ a)))
+  have hlem6 : ∀ a b : G, (((a ◇ (a ◇ a)) ◇ b) ◇ ((a ◇ (a ◇ a)) ◇ b)) = ((a ◇ a) ◇ (a ◇ a)) := by
+    intro a b
+    exact ((congrArg (fun t => (((a ◇ (a ◇ a)) ◇ b) ◇ (t ◇ b))) ((hlem2 a (a ◇ a)).symm)).trans (hlem4 a (a ◇ a) b))
+  have hlem7 : ∀ a b c : G, ((((a ◇ a) ◇ (a ◇ a)) ◇ b) ◇ (((a ◇ (a ◇ a)) ◇ c) ◇ b)) = (((a ◇ (a ◇ a)) ◇ c) ◇ ((a ◇ a) ◇ (a ◇ a))) := by
+    intro a b c
+    exact (((congrArg (fun t => ((t ◇ b) ◇ (((a ◇ (a ◇ a)) ◇ c) ◇ b))) ((hlem6 a c).symm)).trans (hlem2 ((a ◇ (a ◇ a)) ◇ c) b)).trans (congrArg (fun t => (((a ◇ (a ◇ a)) ◇ c) ◇ t)) (hlem6 a c)))
+  have hlem8 : ∀ a b c : G, ((((a ◇ a) ◇ (a ◇ a)) ◇ b) ◇ (c ◇ b)) = (c ◇ ((a ◇ a) ◇ (a ◇ a))) := by
+    intro a b c
+    exact (((congrArg (fun t => ((((a ◇ a) ◇ (a ◇ a)) ◇ b) ◇ (t ◇ b))) (h c a (a ◇ a))).trans (hlem7 a b ((c ◇ (c ◇ a)) ◇ (a ◇ a)))).trans (congrArg (fun t => (t ◇ ((a ◇ a) ◇ (a ◇ a)))) ((h c a (a ◇ a)).symm)))
+  have hlem9 : ∀ a b : G, ((a ◇ (a ◇ ((b ◇ b) ◇ (b ◇ b)))) ◇ ((b ◇ b) ◇ (b ◇ b))) = a := by
+    intro a b
+    exact (((h a ((b ◇ b) ◇ (b ◇ b)) a).trans (hlem8 b a (a ◇ (a ◇ ((b ◇ b) ◇ (b ◇ b)))))).symm)
+  have hlem10 : ∀ a b : G, ((a ◇ (a ◇ a)) ◇ (b ◇ (a ◇ (a ◇ a)))) = (b ◇ ((a ◇ a) ◇ (a ◇ a))) := by
+    intro a b
+    exact ((congrArg (fun t => (t ◇ (b ◇ (a ◇ (a ◇ a))))) ((hlem2 a (a ◇ a)).symm)).trans (hlem8 a (a ◇ (a ◇ a)) b))
+  have hlem11 : ∀ a : G, (((a ◇ a) ◇ (a ◇ a)) ◇ ((a ◇ a) ◇ (a ◇ a))) = ((a ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a))) := by
+    intro a
+    exact (((congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem2 a (a ◇ a)).symm)).trans (hlem10 a ((a ◇ a) ◇ (a ◇ a)))).symm)
+  have hlem12 : ∀ a b : G, (((a ◇ a) ◇ (a ◇ a)) ◇ ((b ◇ b) ◇ (b ◇ b))) = ((a ◇ a) ◇ ((b ◇ b) ◇ (b ◇ b))) := by
+    intro a b
+    exact ((((hlem8 b a (a ◇ a)).symm).trans ((congrArg (fun t => ((((b ◇ b) ◇ (b ◇ b)) ◇ a) ◇ t)) ((hlem5 a).symm)).trans (hlem8 b a ((a ◇ a) ◇ (a ◇ a))))).symm)
+  have hlem13 : ∀ a : G, (((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ (a ◇ a)) = (((a ◇ a) ◇ (a ◇ a)) ◇ (a ◇ a)) := by
+    intro a
+    exact ((congrArg (fun t => (t ◇ (a ◇ a))) ((hlem12 a a).symm)).trans (hlem5 (a ◇ a)))
+  have hlem14 : ∀ a : G, (((a ◇ a) ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (a ◇ a))) = (a ◇ a) := by
+    intro a
+    exact ((congrArg (fun t => (((a ◇ a) ◇ (a ◇ a)) ◇ t)) ((hlem13 a).symm)).trans ((h (a ◇ a) (a ◇ a) (a ◇ a)).symm))
+  have hlem15 : ∀ a b : G, (((a ◇ a) ◇ b) ◇ ((a ◇ a) ◇ b)) = ((a ◇ a) ◇ (a ◇ a)) := by
+    intro a b
+    exact ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (t ◇ b))) ((hlem14 a).symm)).trans ((h ((a ◇ a) ◇ (a ◇ a)) (a ◇ a) b).symm))
+  have hlem16 : ∀ a : G, ((a ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a))) = ((a ◇ a) ◇ (a ◇ a)) := by
+    intro a
+    exact (((hlem11 a).symm).trans (hlem15 a (a ◇ a)))
+  have hlem17 : ∀ a : G, (((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ a) = a := by
+    intro a
+    exact ((congrArg (fun t => (((a ◇ a) ◇ t) ◇ a)) ((hlem16 a).symm)).trans (hlem1 (a ◇ a) a a))
+  have hlem18 : ∀ a : G, ((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) = ((a ◇ a) ◇ (a ◇ a)) := by
+    intro a
+    exact (((hlem12 a a).symm).trans (hlem15 a (a ◇ a)))
+  have hlem19 : ∀ a : G, ((a ◇ a) ◇ a) = a := by
+    intro a
+    exact (((hlem5 a).symm).trans ((congrArg (fun t => (t ◇ a)) ((hlem18 a).symm)).trans (hlem17 a)))
+  have hlem20 : ∀ a b : G, (a ◇ ((b ◇ (b ◇ (a ◇ a))) ◇ a)) = b := by
+    intro a b
+    exact ((congrArg (fun t => (t ◇ ((b ◇ (b ◇ (a ◇ a))) ◇ a))) ((hlem19 a).symm)).trans ((h b (a ◇ a) a).symm))
+  have hlem21 : ∀ a b : G, ((a ◇ b) ◇ (a ◇ b)) = (a ◇ a) := by
+    intro a b
+    exact (((congrArg (fun t => ((a ◇ b) ◇ (t ◇ b))) (hlem19 a)).symm).trans ((congrArg (fun t => ((a ◇ b) ◇ (((a ◇ a) ◇ t) ◇ b))) ((hlem19 a).symm)).trans ((h (a ◇ a) a b).symm)))
+  have hlem22 : ∀ a b : G, ((a ◇ a) ◇ (a ◇ b)) = (a ◇ b) := by
+    intro a b
+    exact ((congrArg (fun t => (t ◇ (a ◇ b))) ((hlem21 a b).symm)).trans (hlem19 (a ◇ b)))
+  have hlem23 : ∀ a b c : G, ((a ◇ a) ◇ ((a ◇ b) ◇ c)) = ((a ◇ b) ◇ c) := by
+    intro a b c
+    exact ((congrArg (fun t => (t ◇ ((a ◇ b) ◇ c))) ((hlem21 a b).symm)).trans (hlem22 (a ◇ b) c))
+  have hlem24 : ∀ a b c : G, ((a ◇ a) ◇ ((b ◇ (b ◇ (a ◇ c))) ◇ (a ◇ c))) = b := by
+    intro a b c
+    exact ((congrArg (fun t => (t ◇ ((b ◇ (b ◇ (a ◇ c))) ◇ (a ◇ c)))) ((hlem21 a c).symm)).trans ((h b (a ◇ c) (a ◇ c)).symm))
+  have hlem25 : ∀ a b : G, ((a ◇ a) ◇ b) = b := by
+    intro a b
+    exact (((congrArg (fun t => (t ◇ b)) (hlem21 a a)).symm).trans ((congrArg (fun t => (((a ◇ a) ◇ (a ◇ a)) ◇ t)) ((hlem9 b a).symm)).trans (hlem24 (a ◇ a) b (a ◇ a))))
+  have hlem26 : ∀ a b : G, ((a ◇ (a ◇ b)) ◇ b) = a := by
+    intro a b
+    exact (((h a b b).trans (hlem25 b ((a ◇ (a ◇ b)) ◇ b))).symm)
+  have hlem27 : ∀ a b : G, ((a ◇ b) ◇ ((b ◇ (b ◇ (a ◇ a))) ◇ a)) = a := by
+    intro a b
+    exact ((congrArg (fun t => ((a ◇ t) ◇ ((b ◇ (b ◇ (a ◇ a))) ◇ a))) ((hlem20 a b).symm)).trans (hlem26 a ((b ◇ (b ◇ (a ◇ a))) ◇ a)))
+  have hlem28 : ∀ a : G, ((a ◇ (a ◇ (a ◇ a))) ◇ a) = a := by
+    intro a
+    exact (((hlem23 a (a ◇ (a ◇ a)) a).symm).trans (hlem27 a a))
+  have hlem29 : ∀ a : G, (a ◇ a) = a := by
+    intro a
+    exact ((congrArg (fun t => (a ◇ t)) ((hlem28 a).symm)).trans (hlem20 a a))
+  have hlem30 : ∀ a b : G, (a ◇ b) = b := by
+    intro a b
+    exact ((congrArg (fun t => (t ◇ b)) ((hlem29 a).symm)).trans (hlem25 a b))
+  have hlem31 : ∀ a b : G, a = b := by
+    intro a b
+    exact (((hlem1 a b a).symm).trans (hlem30 (a ◇ ((b ◇ (b ◇ a)) ◇ (a ◇ a))) b))
+  intro x y z w
+  exact hlem31 x ((x ◇ (x ◇ y)) ◇ (z ◇ (z ◇ w)))
+"""),
+    ("v0 = (v0 ◇ ((v1 ◇ (v2 ◇ (v0 ◇ v0))) ◇ v2))",
+     "v0 = (((v0 ◇ v1) ◇ v1) ◇ (v2 ◇ (v0 ◇ v3)))"): ("true", "e12716_e23224", """import JudgeProblem
+
+def submission : Goal := by
+  intro G _ h
+  have hlem0 : ∀ a b c : G, (a ◇ (b ◇ (c ◇ ((a ◇ a) ◇ (b ◇ b))))) = a := by
+    intro a b c
+    exact ((h a b (c ◇ ((a ◇ a) ◇ (b ◇ b)))).trans (congrArg (fun t => (a ◇ (t ◇ (c ◇ ((a ◇ a) ◇ (b ◇ b)))))) ((h b c (a ◇ a)).symm))).symm
+  have hlem1 : ∀ a b : G, (a ◇ b) = a := by
+    intro a b
+    exact (((hlem0 a b (a ◇ (((a ◇ a) ◇ (b ◇ b)) ◇ (b ◇ b)))).symm).trans (congrArg (fun t => (a ◇ t)) ((h b a ((a ◇ a) ◇ (b ◇ b))).symm))).symm
+  intro x y z w
+  exact (((hlem1 ((x ◇ y) ◇ y) (z ◇ (x ◇ w))).trans (hlem1 (x ◇ y) y)).trans (hlem1 x y)).symm
+"""),
     ("v0 = (v1 ◇ (((v2 ◇ v1) ◇ v0) ◇ v1))",
      "(v0 ◇ v1) = (v1 ◇ (v2 ◇ v3))"): ("true", "e1367_e341", """import JudgeProblem
 

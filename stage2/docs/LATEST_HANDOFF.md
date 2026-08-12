@@ -1,5 +1,22 @@
 # Latest Handoff
 
+> **Next session is planned in `stage2/docs/NEXT_SESSION_BRIEF.md`** — removing
+> skips, trimming long-running queries, and closing with a full real Marathon
+> with LLM calls. Its headline finding: **we audit at `fast` but deploy at
+> `standard` (Marathon) and `deep` (Solo), and tier changes outcomes in both
+> directions** — `normal_0491` solves at `fast` and skips at `standard`. Start
+> there.
+
+## 2026-08-12: the corpus is complete (official 1669/1669, HF 800/800)
+
+The last nine rows fell to **ordered completion (Knuth–Bendix with proof
+recording)**, hand-run per row — not to any engine in the solver. All nine were
+judge-accepted and ship as `DISTILLED_CERTS` entries. Two claims in `CLAUDE.md`
+that had made the family look structurally hopeless were disproved, including a
+"no self-critical-pairs" argument that was both invalid and self-refuting. Full
+detail: `stage2/results/2026-08-12-final-nine-completion.md`.
+
+
 Updated: 2026-08-11 (the lemma ladder + gap-closing pass: official 1658 → **1666/1669 (99.82%)**, **FALSE 850/850 complete**, `normal` and `hard1` complete, HF 792 → **795/800**, combined **2461/2469**, **+12/−0** by row id, 11/11 new certs judge-accepted, packaged 480,115 B).
 
 ## 2026-08-11: the lemma ladder, and three searches that were being starved (newest — read first)

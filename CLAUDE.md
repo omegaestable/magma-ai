@@ -46,21 +46,21 @@ Three organizer answers on the forum, all checked against the vendored snapshot
    Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
    row resists every finite order.
 
-## Current measured state (2026-08-11)
+## Current measured state (2026-08-12)
 
 | Metric | Value |
 | --- | --- |
-| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1666 / 1669 (99.82%)** |
-| Official TRUE | **816 / 819** |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669 (100%)** |
+| Official TRUE | **819 / 819 — complete** |
 | Official FALSE | **850 / 850 — complete** |
 | `normal` / `hard1` | **1000 / 1000** and **69 / 69** — both complete |
-| Remaining unsolved at `fast` | **3**, all TRUE (was 11) |
+| Remaining unsolved | **0 — corpus complete** (official 1669/1669, HF 800/800) |
 | Oracle failures / crashes / label mismatches | **0 / 0 / 0** |
-| HF mirror sets | **795 / 800** (FALSE 400/400 complete, 0 oracle failures) — combined offline **2461 / 2469** |
-| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, 24/24 distilled-library certs, **11/11 new certs 2026-08-11** (6 `egg_ladder`, 3 FALSE controls, 2 newly distilled) |
+| HF mirror sets | **800 / 800 — complete** — combined offline **2469 / 2469** |
+| Real-judge evidence, individually verified | 34/34 block certs, 10/10 collapse certs, 19/19 constraint witnesses, 3/3 `List.getD` witnesses, 24/24 distilled-library certs, 11/11 certs 2026-08-11, **9/9 completion-derived certs 2026-08-12 (the final nine)** |
 | Real-runner evidence, new routes | **Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected, 0 LLM calls** (2026-08-07 routes; `egg_ladder` has judge but not yet real-runner evidence) |
-| Offline gate | **201 passed, 2 skipped, ~16 s** (`-n auto`) |
-| Packaged size | **355,879 bytes of 500,000 — 144,121 bytes (28.8%) headroom.** No longer close to binding; see rail 1. |
+| Offline gate | **210 passed, 2 skipped, ~16 s** (`-n auto`) |
+| Packaged size | **382,824 bytes of 500,000 — 117,176 bytes (23.4%) headroom.** |
 | Solver source | **9,043 lines** (was 10,388 before the 2026-08-11 simplification pass) |
 
 **2026-08-11 session** (`stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`):
@@ -77,11 +77,14 @@ isolated audits: **+9 gained, 0 lost**, 0 oracle failures, 0 crashes.
   problem's average Marathon budget.
 - **FALSE is complete at 850/850**, and `normal` and `hard1` are both complete.
 
-**All three remaining rows are TRUE**: `hard2_0073`, `hard3_0214`, `hard3_0314`.
-Each has a viable, non-refutable pivot that equality saturation cannot prove at
-any budget up to `deep` — `hard2_0073` was measured failing at `deep` with 1336 s,
-the full candidate set, and an explanation over 20,000 steps. See the refuted
-levers below before attempting these.
+**2026-08-12 session** (`stage2/results/2026-08-12-final-nine-completion.md`):
+the last nine rows closed — official `1666 → 1669`, HF `795 → 800`. All nine
+were derived by **ordered completion (Knuth-Bendix) with proof recording**, run
+by hand per row, then judge-accepted and shipped as distilled certificates.
+Equality saturation could not reach any of them at any budget; completion found
+`hard2_0073`'s collapse in 0.0 s. The "no self-critical-pairs" claim that made
+this family look structurally hopeless was **wrong** — see the open-frontier
+section.
 
 **2026-08-07 session** (`stage2/results/2026-08-07-distilled-library-and-egg-probe.md`):
 +11 official rows from a 16-agent discovery pass over the 31 real-judge misses
@@ -588,6 +591,7 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
+| **Next session plan (skips, latency, closing real Marathon)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
 | Latest session detail, ranked next levers | `stage2/docs/LATEST_HANDOFF.md` |
 | Operational truth, effort tiers, open rows | `CURRENT_STATE.md` |
 | Route inventory | `stage2/docs/solver-route-ledger.md`, `stage2/docs/motif-cards/` |
@@ -600,21 +604,38 @@ solver primitive cannot hide itself in the oracle.
 
 ## Known open frontier
 
-**3 official skips** (measured 2026-08-11, isolated audit), all TRUE:
-`hard2_0073`, `hard3_0214`, `hard3_0314`. FALSE is complete.
+**None. The corpus is complete: official 1669/1669, HF 800/800 (2026-08-12).**
 
-For each: a viable pivot is identified and `lemma_survives_models` confirms it is
-not refutable, and **neither the pivot nor any rung is provable by equality
-saturation at any budget tried up to `deep`.** `hard2_0073` is the one measured
-exhaustively — 1336 s at `deep`, every curated pivot, every goal generalisation,
-the full rung scan, and an explanation over 20,000 steps when its projections do
-merge. eq1 for this family also has **no critical pairs with itself** (the pattern
-has 4 operations; every proper subterm has at most 3), so any proof must go
-through expanded terms — which is exactly the search ETP's Vampire proofs run and
-an e-graph seeded from the goal does not.
+The nine rows that stood here — `hard2_0073`, `hard3_0214`, `hard3_0314`,
+`evaluation_hard_0116`/`0196`, `evaluation_order5_0014`/`0040`/`0042`/`0164` —
+all now ship as judge-accepted distilled certificates. They were closed by
+**ordered completion (Knuth–Bendix) with proof recording**, hand-run per row,
+not by any engine in the solver. See
+`stage2/results/2026-08-12-final-nine-completion.md`.
 
-Six HF rows remain open with the same shape (`evaluation_hard_0116`/`0196`,
-`evaluation_order5_0014`/`0040`/`0042`/`0164`).
+**Two claims that stood in this file were wrong, and both cost real time:**
+
+1. ~~"eq1 for this family has **no critical pairs with itself** (the pattern has
+   4 operations; every proper subterm has at most 3)"~~ — **false, and the size
+   argument behind it is invalid.** A critical pair does not need the subterm to
+   be *larger* than the rule's pattern; it needs the subterm to **unify** with
+   it, and unification may instantiate the subterm's own variables. Orienting
+   `hard2_0073`'s eq1 as `((Y ◇ (X ◇ Z)) ◇ X) ◇ Y → X` and overlapping it with
+   itself at the proper subterm `X ◇ Z` (non-variable, so a legal overlap
+   position) gives the mgu `X ↦ (Y' ◇ (X' ◇ Z')) ◇ X'`, `Z ↦ Y'` — and that
+   single overlap unlocks the whole row. The claim was also **self-refuting**:
+   with no self-critical-pair the one-rule system would be terminating and
+   trivially confluent, so `x = y` could not follow — contradicting the TRUE
+   label the ETP matrix already gave. Same class of error as rail 3b: a
+   structural impossibility inferred from one insufficient argument.
+2. ~~"neither the pivot nor any rung is provable by equality saturation at any
+   budget"~~ — true as stated, but it was read as "unreachable". It only meant
+   *this* search cannot get there. Completion found `hard2_0073`'s collapse in
+   **0.0 s / 23 critical pairs / 10 rules**, against 1336 s of `deep`-effort
+   saturation that failed. Completion is strictly stronger here because it
+   **derives new rules by superposition and then rewrites with them**, whereas
+   an e-graph only propagates congruence over terms it has already built. When
+   a search plateaus, ask what class of inference it structurally cannot make.
 
 Ranked next levers, updated 2026-08-11 after the ladder. Two of the four levers
 that stood here are now **closed or refuted**, so read the refutations too —
