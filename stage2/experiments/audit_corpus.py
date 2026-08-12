@@ -75,8 +75,15 @@ def build_battery(eq1: dict) -> list[list[list[int]]]:
 
 
 def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
-              effort: str = "fast") -> dict:
+              effort: str = "fast", row_budget: float = 0.0) -> dict:
     S.set_effort(effort)
+    # Deployment always bounds a row: Solo sets a hard deadline of
+    # `SOLO_DETERMINISTIC_SHARE * budget` and Marathon bounds its deterministic
+    # pass. The audit historically set none, so at `standard`/`deep` a single
+    # unsolved row could run for hours on scaled engine budgets that no real
+    # runner would ever grant it. `--row-budget` makes the audit model what the
+    # judge actually gives us; 0 keeps the old unbounded behaviour.
+    S.set_hard_deadline(time.monotonic() + row_budget if row_budget > 0 else None)
     # Pool workers process many rows each; the solver's module-level term caches
     # are unbounded and never share keys across problems, so without this a long
     # sweep (or a big spotcheck batch on few workers) grows to double-digit GB.
@@ -198,6 +205,10 @@ def main() -> int:
                     default="fast",
                     help="engine effort tier; Marathon/Solo pick this from "
                          "their real budget at runtime")
+    ap.add_argument("--row-budget", type=float, default=0.0,
+                    help="per-row hard deadline in seconds, mirroring the "
+                         "bound Solo/Marathon impose (0 = unbounded, the "
+                         "historical audit behaviour)")
     ap.add_argument("--workers", type=int,
                     default=max(1, min(16, (os.cpu_count() or 2) - 2)))
     ap.add_argument("--out", type=Path, default=None)
@@ -224,7 +235,8 @@ def main() -> int:
 
         started = time.monotonic()
         worker = partial(audit_row, subsumption=args.subsumption,
-                         false_budget=args.false_budget, effort=args.effort)
+                         false_budget=args.false_budget, effort=args.effort,
+                         row_budget=args.row_budget)
         if args.workers == 1:
             rows = []
             for i, problem in enumerate(problems, 1):
