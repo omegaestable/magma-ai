@@ -10,8 +10,10 @@ Run the gate:
 .\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 ```
 
-`-n auto` (pytest-xdist) matters: the gate re-solves ~170 real problems, which is
-~160 s serially and ~47 s across cores. A slow gate is a gate people skip.
+`-n auto` (pytest-xdist) matters: the gate re-solves ~170 real problems, which was
+~160 s serially and ~47 s across cores when measured on 2026-07-29. The current
+gate is **252 passed, 2 skipped in ~24 s** (`-n auto`, 2026-08-12 — the figure
+`CLAUDE.md` carries). A slow gate is a gate people skip.
 
 `stage2/solver/package_solver.ps1` runs it automatically and refuses to
 package on failure (`-SkipTests` only for a deliberate spike).
@@ -37,10 +39,13 @@ so there is nothing for a finite model to refute. Measured 2026-07-29: 10 of the
 had no offline verification of any kind.
 
 They are pinned against the real Lean judge instead. All 34 were run through
-`judge.verify.verify_answer` and **all 34 returned `accepted`** (4.3-7.3 s each);
-the exact certificate text is stored in
+`judge.verify.verify_answer` and **all 34 returned `accepted`** (4.3-7.3 s each,
+2026-07-29); the exact certificate text is stored in
 `stage2/fixtures/judge_verified_certs.jsonl`, and `test_judge_verified.py`
-asserts the builders still emit it byte-for-byte. Regenerate with:
+asserts the builders still emit it byte-for-byte. The fixture has grown well past
+that first batch — it holds **99 entries** as of 2026-08-13, every one
+judge-accepted before it was pinned, and since 2026-08-12 the test checks all 99
+rather than skipping the ones whose route label drifted. Regenerate with:
 
 ```powershell
 .\.venv\Scripts\python.exe stage2/experiments/judge_rows.py `
@@ -79,19 +84,30 @@ So the shapes now split by order, and what bounds them is size and time:
   above through an inlined `List.getD` lookup.
 - `solver.table_is_renderable()`, inside `table_is_counterexample`, is the
   single gate every FALSE witness crosses. It measures the rendered certificate
-  against the judge's 10,000-byte FALSE cap rather than guessing from order.
+  against the judge's FALSE cap — **20,000 bytes**, `judge.max_false_cert_bytes`
+  in `vendor/stage2-official/pipeline/config.json` — rather than guessing from
+  order. This said 10,000 until 2026-08-13, which is `judge/verify.py`'s
+  no-config fallback and not what the runner passes; see `CLAUDE.md`.
 - `solver.witness_decide_is_affordable()` bounds the other limit. `decideFin!`
   is exhaustive, so an equation in `k` variables costs `n ** k` applications;
-  order alone says nothing. Order 25 against a 3-variable goal is 15,625 and
-  measured 30.2 s of the judge's 120 s. Orders ≤ 10 are exempt — the cost model
-  is for new territory and must never veto the proven envelope.
+  order alone says nothing. Order 25 against a 3-variable goal is 15,625
+  applications and measured 30.2 s on 2026-07-31, against a local judge then
+  configured with a 120 s Lean timeout. Deployment gives each judge call
+  **300 s** (`judge.lean_timeout_seconds`), so the budget derived from that
+  measurement was re-cut on 2026-08-13: `MAX_WITNESS_DECIDE_APPLICATIONS`
+  20,000 → 50,000, mirrored here in `oracles.py`. Orders ≤ 10 are exempt — the
+  cost model is for new territory and must never veto the proven envelope.
 - `oracles.check_false_certificate` re-verifies both shapes, still rejects a
   multi-digit `finOpTable` table, and independently re-checks the byte cap and
   the `decide` cost.
 
-`MAX_WITNESS_ORDER = 25`. A FALSE row needing a *complete* table above that is
-still out of reach, but the reach is now set by measurement, not by a parser
-quirk.
+`MAX_WITNESS_ORDER = 25`. At the judge's real caps (corrected 2026-08-13) neither
+of the two limits above is what stops it: against the 19,500-byte FALSE budget the
+`List.getD` rendering binds around order 82, and the decide gate at 50,000
+applications allows order 36 for a 3-variable goal. So 25 is *our* number again —
+but it is also the edge of the judge-**accepted** envelope (13, 17 and 25 were
+verified; nothing above). Raise it with real-judge evidence, not with arithmetic:
+every local check here reads the parsed table and is blind to rendering.
 
 ## Banned tactics
 

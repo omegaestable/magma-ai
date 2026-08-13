@@ -7,7 +7,13 @@
 line-length = 100
 target-version = "py311"
 
-exclude = [
+# `extend-exclude`, not `exclude`: plain `exclude` *replaces* ruff's built-in
+# default set (`.git`, `__pycache__`, `.mypy_cache`, build dirs, ...) instead of
+# adding to it. It did, and ruff walked into `.git/` — where a pasted playground
+# error log had been saved as `.git/logs/errorsaug.py` — and reported 443
+# `invalid-syntax` errors from that one file, turning the CI `Lint` step red and
+# defeating this file's stated goal in the header. Found 2026-08-13.
+extend-exclude = [
     ".venv",
     "stage1",              # frozen archive; do not churn it
     "vendor",              # vendored official harness, upstream-owned

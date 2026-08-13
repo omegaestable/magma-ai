@@ -1,6 +1,7 @@
 # Non-Destructive Cleanup Manifest
 
-Updated: 2026-07-29
+Updated: 2026-08-13 (added the ordered-completion pipeline to "Keep In Place" and
+a 2026-08-13 removal; the disk inventory below is still the 2026-07-29 one)
 
 This manifest records clutter and evidence debt without deleting anything. Use it before any future cleanup commit so raw artifacts are not lost accidentally.
 
@@ -24,6 +25,15 @@ searches are slow.
 
 - `.agents/` — empty directory, referenced by nothing.
 - `Untitled-1.md` — a bare URL already present in `README.md`'s external links.
+
+### Removed 2026-08-13
+
+- `.git/logs/errorsaug.py` — a pasted error log saved with a `.py` extension
+  inside `.git/`. It was not a source file and nothing referenced it, but
+  `ruff.toml` used `exclude` (which *replaces* ruff's defaults) instead of
+  `extend-exclude`, so ruff walked into `.git/` and reported 443 invalid-syntax
+  errors from it, keeping CI Lint red. Backed up outside the repo before
+  deletion; the `ruff.toml` key was fixed in the same pass.
 
 ### Recommended, NOT executed
 
@@ -68,6 +78,7 @@ Do **not** touch `vendor/stage2-official/.lake`: rebuilding Mathlib costs hours.
 | `stage2/results/2026-05-15-theory-diagnosis.md` | Teorth proof-page and finite-model diagnosis. |
 | `stage2/experiments/*.py` | Active tooling unless a future audit marks a script obsolete. |
 | `stage2/docs/solver-route-ledger.md` and `stage2/docs/motif-cards/` | Current route review artifacts. |
+| `tmp_stage2_smoke/final-nine-2026-08-12/` | **Scratch by location, not by value** — the original working copy of the ordered-completion (Knuth-Bendix) pipeline that closed the last nine official/HF rows and `sample_200`'s last three, each in under 0.2 s and with no tuning. A cleaned, row-agnostic copy now lives in the repo at `stage2/experiments/completion/` (2026-08-13), so this directory is no longer the only copy — but keep it until that one is **committed**, because `tmp*/` is gitignored and the new directory was still untracked when this line was written. It also holds the per-row derivations and `judge_results.json` behind `stage2/results/2026-08-12-final-nine-completion.md`. The "keep the most recent batch, drop the rest" recipe above would delete all of it. |
 
 ## Archive Candidates
 

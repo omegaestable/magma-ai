@@ -126,6 +126,12 @@ Use when the task is Lean proof code, judge statuses, proof dependency policy, o
 
 Primary files:
 
+- `vendor/stage2-official/pipeline/config.json` — **read this before
+  `judge/verify.py`.** Its `judge` block is what the runner passes to the judge
+  (Lean timeout 300 s, code 100,000 bytes, FALSE certificate 20,000 bytes);
+  `verify.py`'s `50_000` / `10_000` / `120` are the no-config fallback. Mistaking
+  the second for the first cost two weeks of halved caps — `CLAUDE.md`, rail 3b,
+  third instance.
 - `vendor/stage2-official/judge/`
 - `vendor/stage2-official/docs/solo_mode.md`
 - `vendor/stage2-official/docs/marathon_mode.md`

@@ -1,424 +1,174 @@
 # Current State
 
-This is the short-lived operational truth for the Stage 2 lab. Update it when the active solver, harness snapshot, validation evidence, or upstream rules change.
+Short operational snapshot for the Stage 2 lab. **`CLAUDE.md` is authoritative** —
+headline numbers, the four commands and the rails live there, and if this file
+disagrees with it, this file is the one that is wrong. What lives here instead:
+the operational detail that does not belong in the entry point (effort tiers,
+deployed budgets, artifact inventory) and a dated index into `stage2/results/`,
+which is the evidence.
 
-**Headline numbers and commands now live in `CLAUDE.md`.** This file keeps the
-dated session history and the operational detail behind them.
+Last updated: **2026-08-13** — the deployed judge limits were corrected. They are
+*configuration*, not properties of the judge, and the solver had been carrying
+half the real values for two weeks.
 
-Last updated: 2026-08-07 (distilled certificate library + early egg probe: official 1647 → 1658/1669, `hard1` complete, both FALSE holdouts closed, 24/24 new certs judge-accepted, packaged 443,416 bytes).
+---
 
-## Read This First (2026-08-11, the lemma ladder)
+## Status at a glance
 
-Full detail: `stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`.
+| | |
+| --- | --- |
+| Official sets, `fast` tier | **1669 / 1669** (TRUE 819/819, FALSE 850/850) |
+| HF mirror sets | **800 / 800** |
+| `sample_200` (ETP sample, disjoint from `normal`) | **200 / 200** |
+| Distinct local rows | **2669 / 2669** — see the double-count note |
+| Oracle failures / crashes / label mismatches | 0 / 0 / 0 |
+| Open mathematical frontier | **none, anywhere local** |
+| Packaged artifact | **445,640 of 500,000 bytes** (54,360 free, 10.9%), built 2026-08-13 |
 
-**Measured (isolated official audit, `fast` tier): 1666/1669 (99.82%)**, TRUE
-816/819, **FALSE 850/850 complete**, `normal` 1000/1000 and `hard1` 69/69 both
-complete, 0 oracle failures, 0 crashes, 0 label mismatches. Diffed by row id
-against 2026-08-07: **+9 / −0**. **HF mirrors 795/800** (FALSE 400/400 complete,
-0 oracle failures) — combined offline **2461/2469**. Offline gate **201 passed,
-2 skipped, 16.5 s**. Real judge: **11/11 accepted, 0 rejected** (6 `egg_ladder`,
-3 FALSE controls, 2 newly distilled). Packaged **480,115 bytes of 500,000** and
-verified standalone from a copy (import, an id-less payload, the same row with
-ids), leaving the submission directory containing only `solver.py`.
+Measured by three isolated `fast`-tier audits on 2026-08-12; reports
+`stage2/results/audit-2026-08-12-postfix-fast.json` (code change only),
+`audit-2026-08-12-final.json` (code change + 34 distilled certs) and
+`audit-2026-08-12-postfix-fast-hf.json`. Narrative:
+`stage2/results/2026-08-12-tier-inversion-and-latency.md`.
 
-**Package size is no longer a constraint (2026-08-11, later the same day):**
-**355,879 bytes, 144,121 of headroom (28.8%)**, up from 4.0%. Two levers, neither
-of which deleted a route: a simplification pass took the source from 10,388 to
-9,043 lines (−51 KB), and `package_solver.ps1` now strips comments and docstrings
-from the artifact only via `minify_submission.py` (−74 KB), which proves the
-artifact parses to the same tree as the source before writing it. The whole gate
-was re-run against the stripped artifact itself: 201 passed, 2 skipped.
-`DISTILLED_CERTS` is still the biggest block at 72.8 KB, so a distilled row costs
-2–12 KB — there is simply room for a lot more of them now.
+**Do not add those three lines together.** 1669 + 800 + 200 = **2669 distinct
+rows**. The "2689" that circulated was that sum plus `sample_20`, whose 20 rows
+are a strict subset of `normal` and so are already counted in the official 1669.
+The HF mirrors do *not* overlap the official sets (intersection 0, by id and by
+canonical content). Quote the three numbers separately.
 
-**All three remaining official rows are TRUE**: `hard2_0073`, `hard3_0214`,
-`hard3_0314` (plus five HF). Every one is *known* true — the vendored ETP matrix
-confirms it — and the blocker is measured to be the proof search, not the
-candidate set: `etp_chain.py --mode ladder` supplies laws the matrix guarantees
-follow from eq1, and equality saturation cannot derive even the size-6 ones
-(13 candidates, 60–120 s each; `hard2_0073` also fails at `deep` in 1336 s).
+Per-set, from `audit-2026-08-12-final.json` (`fast`, 16 workers; `seconds` is
+that set's wall clock, and the four official sets sum to the 330 s headline):
 
-Entry state was 11 open official rows at `fast` tier. A per-row probe over all
-19 open rows (official + HF) split that list into four different failure modes,
-and only one of them was the "hard proof search" it had been read as:
+| Set | Solved | TRUE | FALSE | Skip | Crash | Oracle fail | Seconds |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `normal` | 1000/1000 | 500 | 500 | 0 | 0 | 0 | 106.4 |
+| `hard1` | 69/69 | 24 | 45 | 0 | 0 | 0 | 28.7 |
+| `hard2` | 200/200 | 100 | 100 | 0 | 0 | 0 | 95.6 |
+| `hard3` | 400/400 | 195 | 205 | 0 | 0 | 0 | 99.4 |
+| **official** | **1669/1669** | **819** | **850** | **0** | **0** | **0** | **330.1** |
+| `sample_200` | 200/200 | 100 | 100 | 0 | 0 | 0 | 71.5 |
+| `sample_20` | 20/20 | 10 | 10 | 0 | 0 | 0 | 30.8 |
 
-- **7 rows: single-rule saturation terminates short of the pivot.** More clock
-  cannot help. Fixed by a new engine, `true:egg_ladder` — multi-rule equality
-  saturation over eq1 *plus derived laws*, each bound with `have`. On
-  `hard3_0266`: right projection is unreachable in 60 s single-rule, idempotence
-  is derivable in under 2 s, and with idempotence in scope right projection
-  follows in **0.01 s / 267 bytes**.
-- **2 rows: the pivot was proved, but the explanation could not be shipped**
-  (`normal_0491`'s collapse: 4510 steps, 400 KB rendered against a 46 KB cap).
-  Those chains are incompressible — a full BFS over the replayed states finds no
-  shortcut, and a context-factoring renderer buys only 2.4–2.9x — because a flat
-  chain over one hypothesis cannot *name* an intermediate law and so re-derives
-  the same fact at every instance (1548 steps, 38 distinct eq1 instances). The
-  ladder makes the length unnecessary: `normal_0491` ships at **4755 bytes**.
-- **1 row was not a proof problem at all.** `hard2_0092` has a witness the
-  solver already owned (`false:dual:false:witness:S5B`). Two independent guards
-  hid it: `constraint_countermodel` refused any row with >4 variables (it has 5;
-  the search finds an order-5 witness in 0.33 s), and `find_counterexample` ran
-  its whole portfolio *and* the dual pass on one shared 2 s deadline with the
-  dual last, which on a 5-variable row (where each table test costs `n**5`)
-  leaves the dual ~0.4 s for work it needs 0.1 s to do. It fit on an idle
-  machine and never fit under the audit's 16-way parallelism. Both fixed; the
-  row now solves in **1.75 s**.
-- **1 row (`hard2_0123`) was already fine** at `standard` effort, which is what
-  Solo and Marathon actually run.
+HF mirrors are 200/200 on each of `hf_evaluation_normal`, `hf_evaluation_hard`,
+`hf_evaluation_extra_hard`, `hf_evaluation_order5` — 800/800, 0 oracle failures.
+Wall clocks for that run carry the load caveat in `CLAUDE.md`; treat them as
+lower bounds on the speedup, not measurements.
 
-Everything the ladder emits is the existing `lemma_chain` certificate shape, so
-`oracles.check_true_lemma_chain_certificate` verifies every rung independently
-against the `ProofKernel` — no new oracle surface. The single-rule engine is
-untouched on purpose: 249 audited rows ride on it.
+> **A post-2026-08-13 audit was running while this file was written and its
+> result is not included above.** Every coverage number here predates today's
+> constant changes. Nothing today narrows a search — the changes raise caps and
+> timeouts — so coverage is not *expected* to move, but that is a prediction and
+> stays one until the sweep lands. Do not restate it as measured.
 
-Three cost bugs were found while building this and are worth remembering: a
-deadline polled once per outer loop level is not a deadline (saturation
-overshot a 2 s attempt by minutes while *building* its application list);
-greedy proof bridging is O(states²) × rules and needs a hard state cap, not just
-a clock; and a portfolio sharing one deadline gives its last stage whatever the
-earlier ones leave, which is not a budget.
+### Evidence base, in one paragraph
 
-## Read This First (2026-08-07, deployment candidate)
+The audit numbers are **offline** evidence (independent proof kernel +
+finite-model oracles) and therefore an upper bound on judge acceptance. Against
+that: **99 certificates byte-pinned in `stage2/fixtures/judge_verified_certs.jsonl`
+and all 99 re-checked by the gate**; real-runner Marathon on `hard3.jsonl`
+**400/400 accepted, 0 rejected, 0 `not_attempted`, 0 LLM calls** and on 200
+fresh ETP rows (seed `20260812`, benchmark ids excluded) **200/200**, for
+**600/600 real-judge rows with 0 rejections** on 2026-08-12. The 2026-08-01/03
+campaign adds 2863/2894 real-judge rows, 0 rejected. **Solo still has no
+real-runner evidence for the tier ladder** — it runs `deep`, so three passes,
+and nothing has exercised that end to end.
 
-Full detail: `stage2/results/2026-08-07-distilled-library-and-egg-probe.md`;
-compressed in `stage2/docs/LATEST_HANDOFF.md`; numbers in `CLAUDE.md`.
+---
 
-- **Official `fast` audit (isolated): 1658/1669 (99.3%)**, TRUE 810, FALSE 848,
-  `hard1` 69/69 complete, 0 oracle failures / crashes / label mismatches.
-- **Packaged and standalone-verified: `stage2/submissions/solver.py`,
-  443,416 bytes** of the 500,000 cap. Gate: 205 passed, 2 skipped.
-- **24/24 new certificates accepted by the real Lean judge** before any entered
-  the solver; all 20 solver-emitted copies byte-pinned in the fixture.
-- **Both FALSE holdouts closed**: `hard2_0093` by an order-6 witness from ETP's
-  FinitePoly database, `hard2_0027` by the project's first **infinite**
-  countermodel (`Nat`, parity op, `omega` under the allowlist).
-- **Latent catastrophic bug fixed**: `is_reflexive_problem` treated a payload
-  with no equation ids as reflexive (`None == None`) and would have emitted
-  `exact h` for every row. Not reachable through the official pipeline, now
-  guarded and tested (rail 5g).
-- **HF mirror audit: 792/800**; combined offline **2450/2469**.
-- **Real-runner validation of the new routes: complete and clean.** A
-  stratified 38-row manifest through real Marathon (real proxy, real key, real
-  Lean judge) scored **38/38 accepted, 0 rejected, 0 not attempted**; a 12-row
-  Solo slice scored **12/12, 0 failed, 0 LLM calls**. Route attribution was
-  done by certificate bytes: all 18 distilled TRUE rows, the infinite
-  countermodel, and the `S6B` witness were served by the new paths, the two
-  held-out `egg_probe` rows were re-derived by the probe (~71 s at Solo depth
-  vs 3.4 s for a lookup), and all 16 controls kept their pre-existing routes.
-- **Still owed** (optional, not blocking): spotcheck batches and the
-  `hard2_0125` deep-effort retest.
+## What changed on 2026-08-13
 
-## Previous entry (2026-08-01/03)
+### The judge limits were wrong, in the solver and in the docs
 
-## Read This First (2026-08-01/03, two real-judge Marathon bugs — both fixed and confirmed, full campaign complete)
+`vendor/stage2-official/pipeline/config.json` is what
+`vendor/stage2-official/pipeline/proxy.py` (lines 1004-1012) passes into the
+judge, and it says:
 
-First session to run the packaged solver through the **real** official Solo
-and Marathon harness at scale (real Lean judge, real proxy, real
-`openai/gpt-oss-120b`) instead of the offline oracle. Full detail:
-`stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`;
-compressed version in `stage2/docs/LATEST_HANDOFF.md`.
+    lean_timeout_seconds  300        max_code_length       100000
+    max_false_cert_bytes  20000      max_solver_bytes      500000
+    solver.timeout_seconds 3600      llm.max_output_tokens  65536
 
-- **Real Solo: clean.** `sample_20` 20/20, `hard1` full 69/69, 0 LLM calls
-  needed, 0 judge rejections.
-- **Real Marathon: was not.** `normal.jsonl` 287/1000 (offline baseline
-  989/1000); `hard1.jsonl` 31/69 against rows Solo had just cleared 69/69. 0
-  rejected in either — pure coverage loss.
-- **Root cause:** `_mem_reclaims_left` (`stage2/solver/solver.py` ~4752) is a
-  module-level global that only decrements and was never reset per-problem in
-  `run_marathon()`'s loop. 3 memory-guard trips anywhere in a manifest
-  permanently fail `_engine_gate()` closed for every remaining problem —
-  invisible (no logging), and structurally undetectable by the offline audit
-  (never arms the guard) or by Solo (fresh subprocess per problem resets it
-  for free).
-- **Fix shipped, offline-gated, and real-judge confirmed** (`pytest`: 202
-  passed, 2 skipped; repackaged 364,728 bytes). Post-fix real Marathon:
-  `hard1.jsonl` **69/69 accepted, 0 rejected** (full recovery, matches Solo);
-  `normal.jsonl` **988/1000 accepted, 0 rejected**, 12 `not_attempted` (was
-  287/1000) — a real ~7.3-hour single Marathon process now essentially
-  matches the 989/1000 offline ceiling. Route diversity fully restored
-  (`derived_cp_closure`, `equational_closure`, `egg_closure`/`egg_collapse`,
-  30+ FALSE witness families) versus the pre-fix collapse into `singleton`
-  alone. **`hard2.jsonl` also confirmed: 196/200 accepted, 0 rejected.**
-- **`hard3.jsonl` also confirmed: 396/400 accepted, 0 rejected**, 4
-  `not_attempted` — but getting there surfaced a **second bug**: the first
-  full-rerun attempt crashed silently at 283/400, no traceback anywhere.
-  Root cause: `run_marathon()`'s deterministic loop called `solve_problem()`
-  with zero exception handling, so one bad row could kill the whole
-  multi-hour process. First fix wrapped only `solve_problem()` — looked
-  confirmed (clean `hard3.jsonl` rerun) but wasn't: `evaluation_extra_hard`
-  crashed the same way at 75/200 with zero `solve:crash` entries, proving the
-  exception was elsewhere in the loop body. **Widened** to wrap the entire
-  per-problem iteration (cache clear, memory-guard reset, solve, append,
-  bookkeeping); reruns of both crash sites then completed clean.
-- **All four official sets confirmed via the real judge: 1649/1669 (98.8%), 0
-  rejected across every row.** Essentially matches the offline ceiling for
-  the first time via real Marathon, not just the offline oracle.
-- **All five HF mirror sets confirmed, 0 rejected**: `hf_hard` 200/200,
-  `evaluation_normal` 198/200, `evaluation_hard` 197/200,
-  `evaluation_extra_hard` 200/200, `evaluation_order5` 195/200. Total
-  990/1000 (99.0%).
-- **All nine official + HF sets: 2639/2669 (98.9%), 0 rejected anywhere.**
-- **200-row random ETP sample, both tracks, also confirmed, 0 rejected**:
-  Marathon 199/200, Solo 25/25.
-- **Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
-  anywhere.** Every planned real-run item is done; no fixed next real-run
-  item is queued. See the results doc's "Next session" section for
-  non-mandatory follow-ups (promotion housekeeping, a larger/differently-seeded
-  ETP sample, minor infra hardening).
+The `50_000` / `10_000` / `120` in `vendor/stage2-official/judge/verify.py` are
+only the **fallback** used when the verifier is invoked directly with no config.
+On 2026-07-29 the solver's caps were halved to match that fallback, on evidence
+from a 2026-07-23 measurement taken through `judge_rows.py` — which called
+`verify_answer()` with no config, and so measured the fallback against itself.
 
-## Read This First (2026-07-29, v4 coverage push)
+Settled by experiment on 2026-08-13, one certificate judged twice with only the
+configured cap varying:
 
-Triggered by 16 playground `TRUE INCORRECT` rows. Detail:
-`stage2/results/2026-07-29-v4-coverage-push.md`.
+| Certificate bytes | 50,000 cap | 100,000 cap |
+| ---: | --- | --- |
+| 48,003 | accepted | accepted |
+| 60,015 | `malformed` / `CODE_TOO_LONG` | **accepted** |
+| 90,023 | `malformed` / `CODE_TOO_LONG` | **accepted** |
 
-**Official `1616 → 1650/1669` (98.9%), TRUE `788 → 806`, FALSE `828 → 844`;
-0 rows lost, 0 oracle failures, 0 crashes. HF `782 → 788`.** 19 official rows
-open at `fast` tier: 14 TRUE, 5 FALSE. Two more FALSE rows
-(`hard1_0062`, `hard2_0123`) are real, judge-accepted, but need `standard`
-effort's scaled budget — see `stage2/results/2026-07-29-v4b-wide-domain-and-node-cap.md`.
+This is the **third** instance of the rail-3b error class: a hard limit inferred
+from one insufficient experiment. See also the retired order-10 witness ceiling
+and the `maxRecDepth` trigger.
 
-- **Three new engines.** `false:constraint_fin*` (Mace4-style propagation search
-  for the quasigroup-forcing `x = F(x, ȳ)` family the whole FALSE portfolio was
-  blind to) — 17/22 unsolved FALSE rows, **17/17 judge-accepted**.
-  `true:egg_collapse` (equality saturation aimed at `x = y`) — 10 rows,
-  **10/10 judge-accepted**. `true:egg_bootstrap` (same move over the lemma
-  library) — 5 rows.
-- **Why the collapse route exists:** ETP pivot mining over every unsolved official
-  row found **14 of 31 unsolved TRUE rows have `eq1 ⇒ (x = y)`** — eq1 forces a
-  one-element magma, so the goal is irrelevant. The critical-pair closure derives
-  none; egg derives 10.
-- **RETIRED 2026-07-31 — the "FALSE witness order ≤ 10" rail was ours, not the
-  judge's.** `finOpTable`'s `extractDigits` parser does keep one value per digit
-  character, so any cell ≥ 10 corrupts *that* shape. The error was concluding
-  from one experiment (`fun i j => 7 * i + 7 * j`, rejected on `HAdd.hAdd` /
-  `HMul.hMul`) that no other constructor exists. Notation was the problem, not
-  construction: an inlined `List.getD` lookup built from `Nat.add` / `Nat.mul` /
-  `Fin.mk` uses only allowlisted prefixes, and the real judge accepts it at
-  order 13 (5.8 s), 17 (11.2 s) and 25 (30.2 s). `hard2_0051`, documented as
-  unreachable, is now solved by `false:linear:z13:7,7`. `MAX_WITNESS_ORDER = 25`,
-  bounded by the 10,000-byte FALSE cap and by `witness_decide_is_affordable()`
-  (`decide` costs `n ** variables`, not `n`).
-- **`models_seen > 0` is not a TRUE signal** — it read 1050–7698 on the six FALSE
-  rows the grind fallback misfired on. Use `constraint_search_exhausted()`.
-- **Order-difficulty is not monotonic**: order 7 exhausted 120 s where order 8
-  took 0.03 s on the same row. Search 8/9 first.
-- **LLM lane validated but not required**: 4/21 open TRUE rows, 0 kernel rejects,
-  34k tokens — and `egg_bootstrap` finds all four deterministically.
+### Constants realigned (all with the offline gate green)
 
-## Read This First (2026-07-29, QA pass)
+| Constant | Was | Now |
+| --- | ---: | ---: |
+| `JUDGE_MAX_CODE_LENGTH` (`MAX_LEAN_CODE_BYTES`) | 50,000 (49,500) | **100,000 (99,500)** |
+| `JUDGE_MAX_FALSE_CERT_BYTES` (`MAX_FALSE_CERT_BYTES`) | 10,000 (9,500) | **20,000 (19,500)** |
+| `EGG_MAX_PROOF_BYTES` | 46,000 | **96,000** |
+| `MAX_WITNESS_DECIDE_APPLICATIONS` | 20,000 | **50,000** (recalibrated to the real 300 s Lean timeout) |
+| `LLM_HTTP_TIMEOUT_SECONDS` | 75.0 | **300.0** |
+| `SOLO_FALLBACK_RESERVE_SECONDS` | 90.0 | **310.0** (one 300 s judge call + margin) |
+| `SOLO_LLM_ROUND_MIN_SECONDS` | 150.0 | **620.0** (one LLM call + one judge call + margin) |
 
-A full QA/assessment pass. The documented `1617/1669` baseline **reproduced
-exactly** on a clean run (TRUE 790, FALSE 827, 0 oracle failures, 0 crashes), so
-the evidence base is sound. Five real defects were found and fixed; detail in
-`stage2/results/2026-07-29-qa-pass-soundness-and-refactor.md`.
+The 75 s HTTP timeout **aborted 225 of 446 logged real LLM calls**, and an abort
+still spends the tokens while losing the row. `LLM_CONFIG["model"]` now honours
+the organizers' `JUDGE_MARATHON_MODEL` env var instead of hardcoding
+`openai/gpt-oss-120b`, which had made a documented knob unreachable (the
+published spec also lists `google/gemma-4-31b-it`).
+`constraint_countermodel_wide_domain` now skips an order whose `decide` cost the
+gate will veto **before** searching it — it was burning up to 1,760 s/row at
+`deep` on work guaranteed to be discarded.
 
-- **`grind` was still inside a deterministic route.**
-  `right_projection_from_2788_block()` discharged
-  `X0 ◇ (X0 ◇ X0) = X0` with `by grind` plus
-  `set_option maxHeartbeats 5000000`, in
-  `true:right_projection_collapse:left_pair_tail`. Replaced with a derivation
-  from eq19/eq22/eq34 already present in the same certificate (write
-  `P := X0 ◇ (X0 ◇ X0)`; eq19+eq34 give `∀t, t ◇ P = X0`; at `t := P` that is
-  `P ◇ P = X0`; eq22 P P rewritten by it gives `(P ◇ X0) ◇ P = P`; the universal
-  fact at `t := P ◇ X0` gives `= X0`, so `P = X0`). **Real judge: accepted,
-  37.0 s → 4.8 s.** `check_no_banned_tactics` now enforces this for every
-  emitted certificate, plus a static scan of the solver source, so it cannot
-  come back. `sanitize_lean_code` only ever policed *LLM* output — that
-  asymmetry is what hid it.
-- **The finite-model oracle was vacuous on 28% of rows, via dead code.**
-  `model_battery` pre-seeded itself with the trivial magma, so its
-  `if not battery` escalation could never fire; every equation holds in `Fin 1`.
-  Measured 536/1889 official rows (`normal` 431/1000, `hard2` 64/200). Now keyed
-  off `nontrivial_model_count()`, with exhaustive `Fin 3` then a budgeted
-  order-4/5 hill-climb (`search_models`, finds a genuine order-4 central
-  groupoid in ~0.1 s). The audit records `nontrivial_models` per row, so a
-  vacuous check is visible instead of silent.
-- **Important limit, worth internalising:** for laws that force a one-element
-  magma — which is exactly what every `*_singleton` / `*_collapse` route asserts
-  — **no** non-trivial finite model exists at any order, so model-checking them
-  is inherently powerless. Those rows can only be verified by proof-checking.
-  Do not read a green `model_checked` on such a row as evidence.
-- **All 34 kernel-unverifiable certificates are now judge-verified and pinned.**
-  `classify_true_certificate` returns `other` for the hand-written `*_block` and
-  nested-`have` proofs (34 official rows / 18 routes); 10 of them had *no*
-  offline verification at all (unsupported shape ∩ vacuous battery). All 34 were
-  run through `judge.verify.verify_answer`: **34/34 `accepted`**, 4.3–7.3 s each.
-  Text is pinned byte-for-byte in
-  `stage2/fixtures/judge_verified_certs.jsonl` and guarded by
-  `stage2/tests/test_judge_verified.py`.
-- **Solver size caps were twice the judge's.** `MAX_LEAN_CODE_BYTES` was 100_000
-  against the judge's `MAX_CODE_LENGTH = 50_000`; `MAX_FALSE_CERT_BYTES` 20_000
-  against 10_000; `UNIVERSAL_IDENTITY_MAX_CODE` 60000. Now derived from
-  `JUDGE_MAX_CODE_LENGTH` / `JUDGE_MAX_FALSE_CERT_BYTES`. No benchmark row was
-  over the line, so this closed a latent hole rather than recovering rows.
-- **`narrow_grind` was the one engine with no `_engine_gate()` before it**, so it
-  ran even after a memory trip or a passed hard deadline — the OOM/ERROR class
-  eliminated everywhere else. Fixed by the dispatcher refactor below.
-- **`solve_problem` went 510 → 104 lines.** It was ~380 lines of copy-pasted
-  `x = fn(eq1, eq2); if x is not None: return {...}`, which is how both the
-  missing gate and an unreachable duplicate `sandwich_left_projection_route`
-  call survived. Routes now live in a `TRUE_ROUTES` table; order was verified
-  mechanically identical to the old invocation sequence.
-- **The gate went 146 s → 47 s** (`pytest-xdist`, `-n auto`) and 196 → 237
-  tests. A slow gate is a gate people `-SkipTests`. CI now runs it
-  (`.github/workflows/gate.yml`); nothing enforced it outside
-  `package_solver.ps1` before.
-- **`CLAUDE.md` is the new single entry point.** The mandated cold-start read was
-  142,842 chars ≈ 36k tokens across 13 files that contradicted each other —
-  `AGENTS.md`, the first file agents read, advertised `1201/1669` and a 138,939-byte
-  package as current (real: `1617/1669`, ~333 KB).
-- **The local Lean judge works on Windows** via `elan`, despite the docs saying
-  WSL/Linux only. New wrapper: `stage2/experiments/judge_rows.py`. Caveat:
-  `lake env` has a 30 s timeout and fails under heavy CPU load, so never race it
-  against a full audit.
+### Tooling and CI
 
-## Read This First (2026-07-23, session 2)
+- `stage2/tests/oracles.py` — the same two cap constants corrected, so the
+  offline gate no longer polices a limit the judge does not impose.
+- `stage2/experiments/judge_rows.py` — now sets `LEAN_TIMEOUT_SECONDS` /
+  `MAX_CODE_LENGTH` / `MAX_FALSE_CERT_BYTES` to the production values, so local
+  judging matches deployment instead of the fallback.
+- `stage2/solver/minify_submission.py` — line transforms are now **string-aware**.
+  They were rewriting the *contents* of multi-line string literals (collapsing
+  blank runs, stripping trailing whitespace), which hard-fails the parse-tree
+  check. `DISTILLED_CERTS` stores every certificate as triple-quoted Lean, so one
+  cert with a trailing space would have bricked the packager. `check()` now names
+  the first differing top-level statement.
+- `stage2/solver/package_solver.ps1` — builds to a temp file and swaps in only
+  after the size check passes. It used to wipe `stage2/submissions/` *before*
+  running the minifier (a failure left no artifact at all, and none in git either
+  since it is gitignored) and left an oversized artifact in place while claiming
+  to refuse to package.
+- `ruff.toml` — `exclude` → `extend-exclude`. Plain `exclude` **replaces** ruff's
+  defaults, so ruff walked into `.git/` and reported 443 invalid-syntax errors
+  from a pasted error log saved as `.git/logs/errorsaug.py` (removed; backed up
+  outside the repo).
+- `.github/workflows/gate.yml` — rewritten; it was red on two steps.
+  - Now **python 3.11**, matching the evaluation sandbox's `python:3.11-slim`.
+    It was 3.12, so CI had never run the solver on the interpreter that grades it.
+  - It now **builds** the submission and checks the 500,000-byte cap on the
+    **artifact**. The old step asserted the cap against `stage2/solver/solver.py`
+    — the *source*, 529,700 bytes at HEAD and legitimately over the cap because it
+    carries comments and docstrings — so CI was red on every push while the real
+    deliverable had ~11% headroom. The artifact is gitignored, so CI must build it
+    to check it.
+  - New step: asserts the solver's judge-limit constants still match
+    `vendor/stage2-official/pipeline/config.json`, so this drift cannot recur
+    silently.
 
-A real playground Solo run returned eight `TRUE INCORRECT` rows at 400–630 s
-each, all submitting the `fallback:unsolved_grind` certificate; seven were
-labelled FALSE, where that verdict can never be accepted. Detail:
-`stage2/results/2026-07-23-s9a-witness-gate-and-fallback-evidence.md`.
+---
 
-- **`LARGE_WITNESS_SHAPE_KEYS` is deleted.** It pinned the 9-element named
-  witness `S9A` to the exact `(eq1, eq2)` pair it was discovered on. All seven
-  FALSE rows share `eq1_id = 168` (central groupoid) with different goals, so
-  the gate hid the only witness the solver had for them — and `S9A` refutes
-  all eight. Ungating cost **0.021 ms/problem**. **Never gate a sound witness
-  on a full equation-pair shape**: it is a hardcoded benchmark id (Operational
-  Note 2), and it fails *closed* on a route that should fail open.
-- **HF `754/800 → 783/800`** (+30 / −1 diffed by row id, all 30
-  `false:witness:S9A`); **official sets unchanged row-for-row** at
-  `1617/1669`, TRUE `789`; **0 oracle failures** across 2,469 audited rows.
-  `hf_evaluation_extra_hard`: `170/200 → 200/200`, `185.3 s → 24.7 s`.
-- **`Fin 9` `decideFin!` certificates are real-judge validated** — 5/5
-  `accepted` via `judge.verify.verify_answer`, 14–16 s warm (judge cap 120 s),
-  462 bytes (cap 10 KB). This shape had no prior judge evidence.
-- **A failed FALSE search is not evidence of TRUE unless it looked.**
-  `hypothesis_models_seen()` counts models of `eq1` actually inspected; on an
-  `Eq168` row it is `2`, because orders ≤ 3 and every canned family contain
-  **zero** models of that law. `run_solo` now emits
-  `fallback:skip_no_model_evidence` and submits nothing rather than guessing
-  `true` when the count is `0`.
-- **Closed**: `evaluation_extra_hard_0190`, previously logged as an open FALSE
-  miss with "no witness ≤ 4 exists" (correct — it lives at order 9).
-  **Still open**: `evaluation_hard_0116` (TRUE, `models_seen = 3691`).
-- **Noise amendment**: `evaluation_hard_0178` flipped solved/skip/solved across
-  three runs of identical code. Budget-marginal TRUE routes are not run-to-run
-  stable; diff row ids, never TRUE totals alone.
+## Effort tiers, and the ladder
 
-## Read This First (2026-07-22, session 4)
-
-A real playground Solo run surfaced 13 `TRUE INCORRECT` + 1 `ERROR`. All 14
-were reproduced and root-caused; see
-`stage2/results/2026-07-22-playground-failure-fixes.md`. Non-negotiables now
-built into the solver:
-
-- **ERROR class eliminated**: Solo parses `budget.timeout_seconds`, sets a
-  global hard deadline every engine deadline clamps to, banks an insurance
-  judge status before the LLM loop, and always submits a final fallback
-  (now a grind cert — no wrong-answer penalty exists). A **memory guard**
-  (default cap 1600 MB, `MAGMA_MEMORY_CAP_MB`) models the 2048 MB sandbox:
-  deep-tier closures measured 5–17 GB RSS locally, which means the
-  playground was OOM-killing them. The guard is armed only in the
-  Solo/Marathon entry points.
-- **`true:narrow_grind` is demoted** behind the kernel-verified engines: the
-  official judge rejected its cert on a shape the local judge accepts. Treat
-  "local Lean accepted a grind proof" as non-evidence for the cloud judge.
-- **New TRUE power**: `enumerated_lemma_library()` (~600 small laws) and
-  `lemma_chain_bootstrap_route` (multi-hop: free CP-rule helpers + iterative
-  harvest + pivot-or-direct-goal). Certificates are multi-`have` chain
-  proofs; the offline kernel verifies them (`lemma_chain` shape, multi-
-  hypothesis `ProofKernel`). 8 of the 14 playground misses now emit
-  judge-accepted certs at the `fast` tier.
-- **FALSE misses 0093/0123/0190 have no order ≤ 4 witness** (DFS-exhausted);
-  larger orders still open.
-
-## Read This First (2026-07-22, session 3)
-
-0. **Three new TRUE routes shipped** — `true:universal_identity`,
-   `true:projection_bootstrap`, `true:lemma_bootstrap` — taking official TRUE
-   rows `659 → 706`. All rest on one fact worth internalising: **proof-search
-   cost scales with goal size, so a small law that implies the goal can be
-   reachable when the goal is not.** The LLM lane can now propose such a lemma
-   too (`{"verdict":"true","lemma":"..."}`); the solver proves it and the
-   kernel checks it, so nothing the model says is trusted. Detail:
-   `stage2/results/2026-07-22-universal-identity-route-and-cache-bound.md`.
-1. There is an **offline correctness gate**: `pytest stage2/tests` (208
-   tests, ~160 s as of 2026-07-29; the `273` written here counted a larger
-   golden fixture before route-family grouping shrank it 213 -> 136 entries).
-   It proof-checks certificates with an independent kernel and
-   model-checks every TRUE verdict, with no Lean required.
-   `package_solver.ps1` refuses to package if it fails. See
-   `stage2/tests/README.md`.
-1b. **Spot-check harness** (new 2026-07-22): `stage2/experiments/spotcheck.py`
-   runs randomized balanced batches (default 5 TRUE + 5 FALSE per source) across
-   the 8 distinct benchmark sets **and** an `etp` source drawn from the
-   Equational Theories Project matrix (`data/exports/`, ~22M validated labelled
-   pairs the solver has never been trained on). Any mistake it catches — wrong
-   verdict, unsound certificate, or crash — is auto-pinned to the git-tracked
-   `stage2/fixtures/spotcheck_failures.jsonl` and replayed forever by
-   `test_spotcheck_regressions.py` in the gate above. Skips are safe (coverage,
-   not accuracy). First run: **1,189 distinct rows, 100% accuracy, 0 mistakes**
-   (2026-07-22 session 3), plus a heavy Fin4 sweep of the one model-check-only
-   surface. Run it every session; a coverage ledger steers each batch toward
-   untested rows (`--pure-random` to disable). Design: `stage2/docs/spotcheck.md`;
-   evidence: `stage2/results/2026-07-22-spotcheck-baseline-and-soundness-sweep.md`.
-2. **The old baselines in this file were stale by ~280 rows.** Measured
-   `1487/1669` on the official sets (was documented `1201/1669`), with **zero
-   oracle failures across 2,689 problems**. Numbers below are updated.
-3. **HF evaluation sets are now first-class evidence.** They caught 29 routes
-   that look dead on the official sets but are live there; never make a
-   deletion or refactor decision without running them.
-4. **Do not bulk-delete "unused" routes.** Subsumption by a general engine is
-   not a deletion licence: several subsumed routes are cheap high-volume fast
-   paths whose removal would push rows onto the expensive CP engine.
-5. **The `PROMPT` used to forbid counterexample tables** while the parser
-   verified them, so the LLM answered "true" on 47/50 genuinely-FALSE rows
-   (0% FALSE accuracy). Fixed. If you touch `PROMPT`, keep it consistent with
-   `candidate_from_llm_text_with_reason`, which accepts and re-verifies
-   `verdict:false` tables.
-6. **Never run LLM calls and certificate verification in the same
-   `ThreadPoolExecutor`** — verification is CPU-bound and the GIL serialises
-   it. `llm_balanced_eval.py` is the reference two-phase shape (threads for
-   network, processes for verification): ~10x faster.
-7. Full detail: `stage2/results/2026-07-21-correctness-harness-and-budget-scaling.md`.
-
-## Stage
-
-- Active competition: SAIR Equational Theories Stage 2.
-- Deadline: August 31, 2026, 23:59 AoE.
-- Submission artifact: one `solver.py` file, <= 500 KB.
-- Preferred track focus: Marathon first, with shared logic for Solo.
-- Proof standard: official Lean 4 judge acceptance.
-
-## Current Artifacts
-
-- Official harness snapshot: `vendor/stage2-official/` at upstream commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
-- Active solver scaffold: `stage2/solver/solver.py`.
-- Packaged submission: `stage2/submissions/solver.py`, last packaged at `333007` bytes on 2026-07-23 session 2 (gate: 196 passed, 2 skipped; still well under 500 KB).
-- Self-verifying LLM dev loop: `stage2/experiments/dev_true_loop.py` (+ `analyze_true_loop.py`). Runs real problems through gpt-oss via OpenRouter with a repair loop and verifies every candidate with the local Lean judge. Dev-only; see `stage2/results/2026-07-20-llm-true-loop-and-prompt-v3.md`.
-- Latest compressed handoff: `stage2/docs/LATEST_HANDOFF.md`.
-- Solver route ledger: `stage2/docs/solver-route-ledger.md`.
-- Route motif cards: `stage2/docs/motif-cards/`.
-- Non-destructive cleanup manifest: `stage2/docs/cleanup-manifest.md`.
-- Latest public refresh summary: `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`.
-- Playground preflight checklist: `stage2/docs/playground-preflight.md`.
-- Theory workflow, notes, and tools: `theory/TEORTH_WORKFLOW.md`, `theory/TEORTH_NOTES.md`, `theory/tools/README.md`.
-- Shared theory/provenance data: `data/exports/` and `data/teorth_cache/`.
-- Stage 1 archive: `stage1/`; do not treat it as the active workflow.
-
-## Effort Scaling (new 2026-07-21)
-
-The engines were tuned as if wall-clock were scarce and used roughly **1%** of
-the available budget: `marathon_per_problem_budget` was hard-capped at `4.0 s`
-and the critical-pair closure at `8.0 s`, while Marathon's reference
-configuration affords ~`1800 s` per problem.
-
-`EFFORT_TIERS` + `set_effort()` now scale time *and* search caps together
-(a budget sweep showed both bind; widening one alone leaves rows unclaimed).
-Solo and Marathon pick a tier from their real budget via
-`effort_for_seconds()`; `fast` reproduces the previous behaviour exactly.
+`EFFORT_TIERS` + `set_effort()` scale time *and* search caps together (a budget
+sweep showed both bind; widening one alone leaves rows unclaimed).
 
 | Tier | CP time | frontier | fills | pool | depth |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -426,166 +176,253 @@ Solo and Marathon pick a tier from their real budget via
 | `standard` | 60 s | 11959 | 3960 | 22 | 4 |
 | `deep` | 176 s | 29900 | 7920 | 26 | 5 |
 
-The Marathon deterministic pass is capped at `MARATHON_DETERMINISTIC_SHARE`
-(0.6) of the run so the hungrier engines cannot starve the LLM lane.
+`effort_for_seconds()` picks the tier from the wall clock actually available per
+problem: **≥ 240 s → `deep`, ≥ 45 s → `standard`, else `fast`**. `fast` is the
+audit default.
 
-## Current Solver Capability
+**Since 2026-08-12, `solve_problem` walks the ladder rather than jumping to the
+tier** (`effort_ladder_to`, `EFFORT_LADDER = ("fast", "standard", "deep")`;
+`solve_problem_pass` is the single pass). Scaling every engine together meant
+that on a row whose answer lives in a *late* engine the early engines ate the
+whole per-row clock — **more budget made the solver strictly worse**. Measured:
+at `deep` with a 360 s row budget, `normal_0491` and `hard2_0162` were SKIP and
+solve in 97.6 s / 173.9 s after the fix; `sample_20` is 20/20 at `fast` in 32 s
+but 15/20 at `deep` under a 45 s row bound. At `fast` the ladder is exactly one
+pass, so the audit default is unchanged. Full rationale: `CLAUDE.md` rail 12.
 
-The active solver is deterministic-first and skips unresolved rows rather than submitting speculative certificates.
+**Measure at the tier you ship, with the bound deployment imposes.**
+`audit_corpus.py --row-budget` exists because the audit sets no per-row deadline
+while Solo and Marathon always do. Real Marathon at the default compression ratio
+is `standard` with ~180 s per row on average (`--effort standard --row-budget 540`
+models the borrow ceiling); real Solo is `deep` with 1980 s.
 
-1. Handles official Marathon and Solo I/O.
-2. Emits TRUE certificates for reflexive problems, singleton/collapse implications, exact substitutions, projection-boundary laws, bridge/constancy chains, bounded rewrite chains, absorption closure, deep absorption, equational closure, **derived critical-pair closure**, and **LLM hybrid seeded closure**.
-3. Has no active broad `true:grind` fallback after playground error-rate failures; old grind ledgers are historical discovery evidence only.
-4. Escalates unresolved Solo/Marathon rows through the official LLM proxy when the runner provides an LLM path and a positive token budget; repo validation no longer uses `--budget-tokens 0` Marathon runs. The `PROMPT` is chain-primary (2026-07-20 rewrite): it leads with the guided-chain DSL, states the row is almost-certainly TRUE so the model stops guessing FALSE tables, forbids `simp`/`aesop`/`grind`, and warns ◇ is non-associative/non-commutative. Solo runs up to `LLM_MAX_ROUNDS=6` repair rounds and feeds parse-level rejects back via `{solver.feedback}`.
-5. Keeps the Marathon TRUE LLM boundary narrow: solver-owned `rewrite_chain` / `guided_chain` outputs only, with raw TRUE Lean disabled for that lane. The guided-chain per-edge prover was strengthened (`LLM_GUIDED_CHAIN_MAX_DEPTH=8`, budget `1.0 s`) so the solver bridges the model's coarser waypoints.
-6. Allows raw TRUE `code` in Solo/debug parsing when it is a complete Lean file (helper decls above `submission` allowed; legacy `proof`/`proof_body` unsupported). `sanitize_lean_code` no longer requires the literal `intro G _ h` shape — the local judge is the correctness gate, so the pre-filter only checks banned tokens, the import allowlist, size, and that `submission` is declared.
-7. Searches FALSE finite witnesses via named compact tables, structured families, affine/linear families, quadratic families, dualized witnesses, and bounded `Fin 2..3` enumeration.
-7b. Falls back to `local_model_counterexample`, a randomized repair search over
-   Cayley tables (`Fin 4..6`), run **after** the TRUE routes so solved rows pay
-   nothing. Gated by `table_is_counterexample`, so it cannot emit an unsound
-   witness. Worth `+7` rows on the official sets.
-8. Current named witness set includes the recent `S4D`, `S4E`, and `S5D` additions.
-9. Emits FALSE certificates with `decideFin!` in one of two shapes: `finOpTable` at orders ≤ 10 (`Fin 7+` adds `set_option maxRecDepth 20000`), and an inlined `List.getD` lookup above that, where the digit parser cannot round-trip. Both judge-verified 2026-07-31.
-9b. Searches linear models over `Z_n` for `n` in 11..25 (`large_linear_family_tables`), the first route to claim a witness above the retired order-10 ceiling.
-10. Caches repeated term metadata and path/context helper work in the solver hot paths.
+Marathon's deterministic pass is capped at `MARATHON_DETERMINISTIC_SHARE` (0.6)
+of the run, and since 2026-08-12 each **row** is bounded too:
+`marathon_row_budget` recomputes the fair share from what is left,
+`MARATHON_ROW_BORROW = 3.0` lets a hard row take three rows' worth, and
+`MARATHON_ROW_MIN_SECONDS = 1.0` is reserved for every row still queued
+(borrowing alone starves the tail geometrically — a test caught that). The global
+deadline is restored in a `finally` afterwards; a stale expired bound turns every
+LLM candidate into `lemma_not_derivable_from_hypothesis`.
 
-## Best Evidence
+---
 
-Current measured baseline (2026-07-23 **session 2**, `fast` effort tier,
-offline oracles; regenerate with `stage2/experiments/audit_corpus.py --all`):
+## Deployed budgets and the evaluation sandbox
 
-| Set | Solved | 2026-07-23 s1 (egg) | 2026-07-22 s4 |
-| --- | ---: | ---: | ---: |
-| `normal` | `989/1000` | `989/1000` | `984/1000` |
-| `hard1` | `64/69` | `64/69` | `64/69` |
-| `hard2` | `177/200` | `177/200` | `172/200` |
-| `hard3` | `387/400` | `387/400` | `381/400` |
-| **Total** | **`1617/1669`** | `1617/1669` | `1601/1669` |
+Organizers' current spec, mirrored here because several solver constants are
+derived from it.
 
-Official TRUE count: **`789`**, unchanged from session 1 and **identical row
-for row** (the session-2 fix targets FALSE witnesses, and the `Eq168` family
-lives in the HF sets).
+- **Sandbox per submission**: `python:3.11-slim`, 2 vCPU, 2048 MB RAM, 64 PIDs,
+  `/tmp` 64 MB tmpfs, read-only filesystem, network disabled, all capabilities
+  dropped, env allowlist `PATH`/`HOME`/`LANG`/`PYTHONDONTWRITEBYTECODE`. No
+  third-party packages.
+- **Submission**: a single `solver.py`, max **500,000 bytes**.
+- **Budgets**: solver wall clock **3600 s per problem**; Lean judge **300 s per
+  call**; Lean code **100,000 bytes per call**; FALSE certificate **20,000 bytes
+  per call**; LLM output **65,536 tokens per call**.
+- **Tracks**: Solo (one problem per subprocess, stdin/stdout) and Marathon (N
+  problems per subprocess, manifest JSONL in, append-only JSONL out, **one global
+  budget**; SIGTERM at budget and the output JSONL is frozen at that moment).
+- **LLM**: `openai/gpt-oss-120b` and `google/gemma-4-31b-it`, OpenRouter pinned to
+  DeepInfra, fallback disabled, temperature 0.0, seed 0.
+- **Judge statuses**: `accepted` | `unparsed` | `malformed` | `incomplete_proof` |
+  `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`, `Classical.choice`.
+- Per-problem headline budgets, as clarified 2026-07-31: **Solo 60 min, Marathon
+  5 min on average**; `compression_ratio` was withdrawn as misleading. The
+  vendored `rules/evaluation.md` is **stale** on the global-budget formula —
+  `scripts/run_marathon.py` (600 s reference) is what the organizers confirmed.
 
-HF evaluation sets: **`783/800`** (was `754/800`), TRUE `383`. The `+30 / −1`
-is diffed by row id: all 30 gains are `false:witness:S9A` on
-`hf_evaluation_extra_hard` (`170/200 → 200/200`, `185.3 s → 24.7 s`); the one
-loss is wall-clock noise on a budget-marginal `projection_bootstrap` row, not
-a code effect.
+---
 
-Zero oracle failures. Evidence:
-`stage2/results/2026-07-23-s9a-witness-gate-and-fallback-evidence.md`,
-`audit-2026-07-23-s9a.json`, `audit-hf-2026-07-23-s9a.json`.
+## Current solver capability
 
-`false:witness:S9A` (`Fin 9`, `decideFin!`) is the first cert of that size with
-**real Lean judge evidence**: 5/5 `accepted` via `judge.verify.verify_answer`,
-14–16 s warm against the judge's `LEAN_TIMEOUT_SECONDS = 120`, 462 bytes
-against `MAX_FALSE_CERT_BYTES = 10_000`.
+`CLAUDE.md`'s "How the solver is organised" owns the route order and the engine
+list; the route inventory is `stage2/docs/solver-route-ledger.md` and
+`stage2/docs/motif-cards/`. Only the operational rails that live nowhere else:
 
-**Compare TRUE counts, not solved counts.** The FALSE search is wall-clock
-bounded, so solved totals carry a run-to-run noise band of roughly ±7 on the
-official sets at this tier — the 2026-07-21 session quoted `1487` from one run
-while its own stored `audit-2026-07-21.json` says `1480`. The TRUE column is
-stable and is the number to quote for a route change.
+1. Deterministic-first. Unresolved rows are **skipped**, not guessed at — there is
+   no active broad `true:grind` fallback (the cloud judge scored it 34 accepted /
+   433 incorrect). Old grind ledgers are historical discovery evidence only.
+2. **FALSE certificate shapes**: `decideFin!` over a `finOpTable` at orders ≤ 10,
+   and an inlined `List.getD` lookup above that, where the digit parser cannot
+   round-trip (`extractDigits` keeps one value per digit character). Both
+   judge-verified 2026-07-31 up to order 25. `MAX_WITNESS_ORDER = 25`, bounded by
+   the FALSE byte cap and by `witness_decide_is_affordable()`.
+   `set_option maxRecDepth 20000` is emitted by **`n ** variables`**, not by
+   order — `DECIDE_MAX_REC_DEPTH_APPLICATIONS = 4_096` (rail 3b-iii).
+   `constraint_countermodel_wide_domain` searches narrow-range wide-carrier tables
+   up to order 60.
+3. **Infinite countermodels are legal** and one ships (`hard2_0027`: carrier
+   `Nat`, parity op, `omega` under the allowlist). Only worth it on a row with no
+   finite countermodel.
+4. **LLM lane boundary.** Marathon accepts solver-owned `rewrite_chain` /
+   `guided_chain` outputs only; raw TRUE Lean is disabled for that lane. Solo runs
+   up to `LLM_MAX_ROUNDS = 6` repair rounds and feeds parse-level rejects back via
+   `{solver.feedback}`; `LLM_GUIDED_CHAIN_MAX_DEPTH = 8`. Nothing the model says
+   is trusted — the solver proves it and the kernel checks it.
+5. **Raw TRUE payloads**: complete Lean source in `code` only, helper declarations
+   allowed above `submission`. `proof` / `proof_body` are retired shapes.
+6. `_engine_gate()` before every engine enforces the global hard deadline and the
+   memory guard (2048 MB sandbox vs. deep-tier closures measured at 5-17 GB RSS).
+   A loop that polls neither has no memory guard either — rail 5f-v.
+7. `DISTILLED_CERTS` (65 entries) is keyed by **canonical equation text**, never
+   by row id, so one entry covers the official row, its HF `*`-notation mirror and
+   any future ETP sample of the same implication. Nothing enters it that the real
+   judge has not accepted; `distill_certs.py` judges before it emits.
 
-Frontier by ground-truth label (before the model finder): TRUE `706/819`
-(113 missed, was 160), FALSE `828/850`. The frontier remains TRUE-heavy.
+---
 
-The 2026-07-22 gain (**+47 official TRUE**) comes from three new routes —
-`true:universal_identity`, `true:projection_bootstrap`, `true:lemma_bootstrap`
-— all exploiting one fact: **proof-search cost scales with goal size, so a
-small law that implies the goal can be reachable when the goal is not.** See
-`stage2/results/2026-07-22-universal-identity-route-and-cache-bound.md`.
+## What is still open
 
-This is **offline** evidence (proof kernel + finite-model oracles), an upper
-bound on judge acceptance. A cloud judge sweep is still required before
-promotion. The superseded pre-2026-07-21 archived Marathon baseline was
-`1201/1669` with `34` accepted `true:grind` rows.
+No open mathematical frontier. What remains is evidence and hardening, ranked:
 
-Answer-kind totals for that baseline:
+1. **Re-audit after the 2026-08-13 constant changes** (running as this was
+   written) and refresh the table above from it.
+2. **Solo has no real-runner evidence for the tier ladder.** It picks `deep` from
+   a 3600 s budget, so it runs three passes where Marathon runs two, and nothing
+   has exercised that path end to end. Highest-value real-run item.
+3. **Step-count budgets instead of wall clock.** Four cost bugs now (rails 5f-iii,
+   5f-iv, 5f-v) have all been "a wall-clock bound in the wrong place", and
+   wall-clock budgets are also why route selection is nondeterministic and every
+   timing number carries a noise band.
+4. **Productise ordered completion as a route.** It closed the final nine and
+   `sample_200`'s last three with no modification and no tuning, and it is
+   strictly stronger than the e-graph on this problem class — but it lives outside
+   the submission, so the shipped solver cannot use it on a fresh corpus. A new
+   ETP row of that family currently costs about five seconds *by hand*. The
+   pipeline moved into the repo on 2026-08-13 as
+   `stage2/experiments/completion/` (it was gitignored scratch in
+   `tmp_stage2_smoke/final-nine-2026-08-12/` until then); its `README.md` holds
+   the judge evidence, the **GO** assessment for the port, and the one
+   reproducible defect blocking five of the nine rows in the driver as shipped.
+5. **Two known un-deadlined sites**, both measured, neither currently costing
+   rows: `derived_rule_steps` grows unboundedly (3,371 MB at 90 s, 5,194 MB at
+   360 s at `deep` — wants a cap, not a poll), and single-rule egg *extraction*
+   (`egg.explain`, `_egg_bridge_steps`) takes no deadline at all while its
+   multi-rule twin does. Same asymmetry that produced rail 5f-v.
+6. **Bytes.** ~54.6 KB left of the cap. The remaining slow tail (`hard2_0098`
+   75 s, `hard3_0131` 74 s, `hard3_0204` 72 s, `hard2_0079` 68 s) is poor value
+   per byte, and `hard3_0204` is **deliberately kept live** as the audit's only
+   exercise of `true:egg_ladder`. Rank distillation candidates by
+   **seconds-saved per byte**, never by seconds.
 
-- `false:finite`: `811` accepted.
-- `true:certificate`: `356` accepted.
-- `true:grind`: `34` accepted, `433` incorrect. This is now historical discovery evidence, not deployable promotion evidence.
-- Remaining public misses by labels: `429` TRUE and `39` FALSE.
+---
 
-Latest local regression evidence after the final optimization/refactor patch:
+## Current artifacts
 
-- Packaged size: see `CLAUDE.md`. (`277918` bytes was the 2026-07-22 session-2 pass.) Still far below the 500 KB limit; size has never been the binding constraint.
-- Active TRUE boundary rails were cleaned up on 2026-05-25: helper-bearing full-file `code` payloads are accepted, and legacy `proof` / `proof_body` payloads are rejected as unsupported.
-- 2026-05-25 cleanup smoke: official Solo no-key `sample_20 = 15/20` and official Solo no-key `sample_200 = 169/200`.
-- Official harnesses passed on 2026-05-25: Solo harness had no failing buckets; Marathon harness passed `25/25` with Lean available.
-- Bounded proxy transport smoke passed on 2026-05-25: Solo `1/1` with `llm_calls=1`; Marathon `1/1` with `89/4096` tokens used.
-- Cleanup removed repo-side generated `__pycache__` directories; `.venv/` and scratch evidence were left in place.
-- Earlier closure-route dedupe via `_closure_route_impl` preserved `normal_100 = 74/100` historical Marathon behavior.
-- Route profile on `normal_100`: `74` deterministic candidates, `26` skips, `49.925s`.
-- Selected 27-row fallback reproduction: three `evaluation_extra_hard_false_*` rows now accepted by `false:witness:S4C`; the other 24 reproduce Solo fallback `TRUE` plus judge `incorrect`.
-- Exact grind ledgers reconcile to `34 accepted / 433 incorrect`.
-- Accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route.
-- Compact witness fixture: `8/8` accepted.
-- Positive-token LLM parity on two unresolved TRUE rows reached the official proxy paths: Solo `llm_calls=2`, Marathon `llm_calls=1`, Marathon `tokens_used=7208`; promotion still blocked by judge rejection / rejected LLM output.
-- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions. The remaining proposals were rejected before judge submission by solver-owned validation.
-- 2026-05-30 official `normal_100` positive-token Marathon guardrail with Lean on PATH: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions.
-- 2026-05-30 official `hard1` positive-token mixed-lane Marathon after enabling checked FALSE table proposals and fixing zero-second budget handling: `39/69` accepted, `30` not attempted, `30` LLM calls, `240164` tokens used, and no incorrect submissions.
-- Wide public hard-set local readiness now has a dedicated playground-equivalent helper: `stage2/experiments/run_playground_public_sweeps.py` packages the single-file solver, applies the published `3600 s` / `65536 token` per-problem budget model, requires nonzero LLM usage, and writes combined gap-analysis summaries.
-- Python syntax/editor diagnostics and packaged submission syntax checks pass.
+- Official harness snapshot: `vendor/stage2-official/` at upstream commit
+  `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
+- Active solver source: `stage2/solver/solver.py` (~9.1k lines, single file by
+  contract). Over the 500 KB cap **by design** — it carries comments and
+  docstrings that the packager strips.
+- Packaged submission: `stage2/submissions/solver.py`, gitignored build output.
+  Build with `stage2/solver/package_solver.ps1` (re-runs the gate and refuses to
+  package on failure).
+- Judge-accepted certificate fixture: `stage2/fixtures/judge_verified_certs.jsonl`
+  (99 entries, all re-checked by the gate).
+- Spot-check failure fixture: `stage2/fixtures/spotcheck_failures.jsonl`
+  (auto-pinned, replayed forever by `test_spotcheck_regressions.py`).
+- Real-judge wrapper: `stage2/experiments/judge_rows.py` (works on Windows via
+  `elan`; ~3-8 s per row warm).
+- Distillation tool: `stage2/experiments/distill_certs.py`.
+- Corpus audit: `stage2/experiments/audit_corpus.py`; golden regeneration:
+  `stage2/experiments/make_golden.py`; accuracy loop:
+  `stage2/experiments/spotcheck.py`.
+- Dev-only LLM loops: `dev_true_loop.py` / `analyze_true_loop.py` /
+  `llm_balanced_eval.py`; ETP mining: `etp_chain.py`, `etp_pivots.py`; dev model
+  finder: `mace_finder.py` (the solver's twin — when it outperforms the solver on
+  a row, the gap is a bug, not a tuning difference).
+- Docs: `stage2/docs/NEXT_SESSION_BRIEF.md`, `stage2/docs/LATEST_HANDOFF.md`,
+  `stage2/docs/solver-route-ledger.md`, `stage2/docs/motif-cards/`,
+  `stage2/docs/spotcheck.md`, `stage2/docs/playground-preflight.md`,
+  `stage2/tests/README.md`, `stage2/docs/cleanup-manifest.md`.
+- Theory and provenance: `theory/TEORTH_WORKFLOW.md`, `theory/TEORTH_NOTES.md`,
+  `theory/tools/README.md`, `data/exports/` (~22M validated labelled ETP pairs),
+  `data/teorth_cache/`.
+- Stage 1 archive: `stage1/`. Finished; do not treat it as the active workflow.
 
-Full public validation of the optimized package after the grind rollback is pending. Historical non-grind accepted count from the previous public refresh is `1167/1669`; use positive-token LLM evidence, not grind, to recover TRUE frontier coverage.
+---
 
-## Durable Session Outputs
+## Operational notes
 
-- `stage2/results/2026-05-18-zero-token-public-refresh-after-witness.md`
-- `stage2/experiments/run_positive_token_sweeps.py`
-- `stage2/experiments/analyze_marathon_run.py`
-- `stage2/experiments/extract_grind_ledger.py`
-- `stage2/experiments/run_playground_parity_llm.py`
-- `stage2/experiments/run_playground_public_sweeps.py`
-- `stage2/docs/solver-route-ledger.md`
-- `stage2/docs/motif-cards/`
-- `stage2/docs/cleanup-manifest.md`
-- `theory/TEORTH_NOTES.md`
-- `stage2/docs/LATEST_HANDOFF.md`
-- `stage2/results/2026-05-20-optimization-readiness.md`
-- `stage2/results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
-- `stage2/results/2026-05-25-cleanup-and-smoke.md`
-- `stage2/results/2026-05-30-positive-token-mixed-lane-resume.md`
+1. **`stage2/submissions/__pycache__/` must not exist when a real run starts.**
+   Importing the packaged solver *in place* leaves one, and the official runner
+   rejects the submission instantly. It has cost a run before; verify the packaged
+   artifact by copying it elsewhere first. (One is present in the working tree as
+   of this writing.)
+2. `vendor/stage2-official/judge/verify.py`'s `50_000` / `10_000` / `120` are
+   **fallbacks**, not the deployed caps. Read
+   `vendor/stage2-official/pipeline/config.json`. CI now pins this.
+3. The vendored `rules/evaluation.md` global-budget formula is **stale**; the CLI
+   (`scripts/run_marathon.py`) is what the organizers confirmed.
+4. The vendored official README still shows a tactic-body `proof` example. Treat
+   it as upstream doc drift unless an explicit harness sync changes the contract.
+5. Judge answer JSON contains **exactly** `verdict` and `code`. Route labels go to
+   stderr (rail 8).
+6. No benchmark ids in solver policy (rail 9). Pasted row lists are diagnostics
+   and regression fixtures only.
+7. **Never run two `audit_corpus.py` sweeps concurrently** (rail 5e), and never
+   race `lake env` against a full audit — it has a 30 s timeout and fails under
+   load.
+8. Marathon validation with `--budget-tokens 0` is banned as guardrail or
+   promotion evidence (rail 7).
+9. For runner-equivalent certificate debugging use the official runner or
+   `verify_answer(_to_judge_problem(problem), raw_answer)`. Direct
+   `verify_answer(problem, ...)` omits runner proof policy — and supply the
+   production judge limits, or you are measuring the fallback.
+10. Local `OPENAI_API_KEY` / `OPENROUTER_API_KEY` errors are transport/setup
+    issues, not submitted-solver protocol failures. Repo entrypoints load process
+    env first, the ignored root `.env` second, legacy Windows User env last — a
+    stale process-env key silently shadows a freshly rotated `.env` key.
+11. The vendored Solo harness has local OpenRouter provider-normalization drift;
+    call it out before treating local positive-token proxy output as
+    upstream-clean.
+12. A Solo fallback `TRUE INCORRECT` row and a Marathon `not_attempted` row can be
+    the same unresolved deterministic gap under two runner policies.
+13. Treat `tmp_stage2_smoke/` as scratch. Promote only concise dated summaries
+    into `stage2/results/`.
+14. Printing `◇` crashes on Windows cp1252 — set `PYTHONIOENCODING=utf-8` for
+    ad-hoc scripts. `du`/`find` at the repo root will hang (7.4 GB / 154k files,
+    mostly `vendor/stage2-official/.lake`); scope every search.
 
-## Operational Notes
+---
 
-1. Treat `tmp_stage2_smoke/` as scratch. Promote only concise dated summaries under `stage2/results/`.
-2. Do not hardcode public benchmark ids into solver policy. Pasted row lists and grind ledgers are diagnostic fixtures only; promote generalized proof or witness families.
-3. The vendored Solo harness has local OpenRouter provider-normalization drift; call it out before treating local positive-token proxy output as upstream-clean.
-4. For runner-equivalent certificate debugging, use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`. Direct `verify_answer(problem, ...)` omits runner proof policy.
-5. Judge answer JSON must contain exactly `verdict` and `code`; route labels belong in stderr, summaries, or ledgers.
-6. Local `OPENAI_API_KEY` or `OPENROUTER_API_KEY` errors are transport/setup issues, not submitted-solver protocol failures. Repo-owned probe/parity entrypoints load process env first, the ignored root `.env` second, and legacy Windows User env fallback last.
-7. Marathon validation with `--budget-tokens 0` is banned for active guardrails and promotion. LLM readiness requires positive-token proxy calls, nonzero Marathon token usage, and classified failures.
-8. Solo fallback `TRUE INCORRECT` rows and Marathon `not_attempted` rows can be the same unresolved deterministic gap under different runner policies.
-9. Treat `proof` and `proof_body` as retired local TRUE boundary shapes. The only raw TRUE payload rail is complete Lean source in `code`, with helper declarations allowed above `submission`.
-10. The vendored official README still contains a stale tactic-body `proof` example. Treat that as upstream doc drift unless an explicit harness sync changes the canonical contract.
+## Session index
 
-## Immediate Next Work
+Newest first. Each line points at the evidence; the detail is in the linked doc,
+not here.
 
-0. **SHIPPED 2026-07-22 session 4**: Solo hard-deadline + memory guard +
-   insurance judge call (ERROR class eliminated); `narrow_grind` demotion;
-   enumerated lemma library + multi-hop `lemma_chain` route (+67 official
-   TRUE, +22 HF TRUE, zero losses). See
-   `stage2/results/2026-07-22-playground-failure-fixes.md`.
-1. Open playground rows: TRUE `normal_0582` (trivializer — ETP says
-   Eq1923 ⇒ x = y; chain still can't harvest a first helper), `hard2_0178`,
-   `evaluation_normal_0040`; FALSE `hard2_0093`/`hard2_0123`/
-   `evaluation_extra_hard_0190` (no witness ≤ 4 exists — try ETP
-   explicit-ancestor countermodel tables, which need fetching upstream).
-2. Rerun the playground simulation to confirm the field results match the
-   local evidence (expected: the 8 fixed rows accept; 0 ERRORs).
-3. Fix remaining fallback rows by adding reusable TRUE proof templates,
-   finite witness families, or judged LLM certificate quality; do not
-   special-case ids.
-4. Use positive-token official/proxy Marathon guardrails only; do not run
-   `--budget-tokens 0` sweeps as active validation.
-5. Keep HF mirror sweeps separate from public evidence.
+| Date | What it was | Evidence |
+| --- | --- | --- |
+| 2026-08-13 | Judge limits were configuration, not judge properties: caps doubled, LLM/Solo timeouts recalibrated, minifier made string-aware, packager made atomic, CI rebuilt on py3.11 and now checks the **artifact** | this file; `CLAUDE.md` |
+| 2026-08-12 (s2) | Tier inversion fixed (more budget was losing rows); Marathon per-row deadline; single-rule egg deadline (6 s budget ran 40 s at 11 GB, defeating an armed memory guard); 34 certs distilled; `sample_200`'s last 3 closed; official wall 980 s → 330 s; real Marathon 400/400 + 200/200 untuned | `2026-08-12-tier-inversion-and-latency.md` |
+| 2026-08-12 | The final nine closed by **ordered completion (Knuth-Bendix)** with proof recording, not by any engine in the solver; a standing impossibility claim in `CLAUDE.md` was provably wrong | `2026-08-12-final-nine-completion.md` |
+| 2026-08-11 (late) | Simplification −51 KB (37 bespoke matchers → one `law_matcher` + a table row each, byte-identical Lean over all 5,090 real equations) and submission stripping −74 KB | `2026-08-11-solver-simplification.md` |
+| 2026-08-11 | `true:egg_ladder` — the only engine that reasons with more than one law at a time; FALSE completed at 850/850; two starved-search fixes (rails 5f-ii, 5f-iii, 5f-iv) | `2026-08-11-lemma-ladder-and-starved-search-fixes.md` |
+| 2026-08-07 | `DISTILLED_CERTS` + `egg_probe_route` + the first infinite countermodel; the latent `is_reflexive_problem` bug (rail 5g) | `2026-08-07-distilled-library-and-egg-probe.md` |
+| 2026-08-01/03 | First real-judge campaign at scale. Two Marathon-only bugs (module-level reclaim counter never reset per row; an unguarded per-row loop body) — both fixed and confirmed. 2863/2894 real-judge rows, 0 rejected | `2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md` |
+| 2026-07-31 | Rules review; the "FALSE witness order ≤ 10" ceiling retired as **ours, not the judge's** — `List.getD` certs accepted at orders 13/17/25 | `2026-07-31-rules-review-and-witness-ceiling.md` |
+| 2026-07-29 (v4/v4b) | Three engines: `constraint_fin*`, `egg_collapse`, `egg_bootstrap`. The node-cap bug (rail 5f) | `2026-07-29-v4-coverage-push.md`, `2026-07-29-v4b-wide-domain-and-node-cap.md` |
+| 2026-07-29 (QA) | `grind` removed from a deterministic route (37 s → 4.8 s); the finite-model oracle was vacuous on 28% of rows; 34 certs judge-pinned; `solve_problem` 510 → 104 lines; `CLAUDE.md` became the entry point | `2026-07-29-qa-pass-soundness-and-refactor.md` |
+| 2026-07-23 (s2) | `LARGE_WITNESS_SHAPE_KEYS` deleted — a sound witness gated on an equation-pair shape cost 30 rows to save 0.021 ms (rail 4). `Fin 9` certs judge-validated. `models_seen > 0` shown not to be TRUE evidence (rail 5) | `2026-07-23-s9a-witness-gate-and-fallback-evidence.md` |
+| 2026-07-23 | The egg mechanism (`true:egg_closure`); spotcheck batches | `2026-07-23-spotcheck-batches-and-egg-frontier-study.md` |
+| 2026-07-22 (s4) | ERROR class eliminated: Solo hard deadline, memory guard, insurance judge call; `narrow_grind` demoted; the lemma library and multi-hop `lemma_chain` | `2026-07-22-playground-failure-fixes.md` |
+| 2026-07-22 (s3) | `universal_identity` / `projection_bootstrap` / `lemma_bootstrap` — all from one idea: **proof-search cost scales with goal size, so a small law that implies the goal can be reachable when the goal is not** | `2026-07-22-universal-identity-route-and-cache-bound.md` |
+| 2026-07-22 | Spotcheck harness baseline: 1,189 distinct rows, 100% accuracy | `2026-07-22-spotcheck-baseline-and-soundness-sweep.md` |
+| 2026-07-22 | hard1/hard2/eval_normal + real Marathon session | `2026-07-22-hard1-hard2-evalnormal-marathon-session.md` |
+| 2026-07-21 | The offline correctness gate and effort scaling; the de-bloat plan disproven by evidence (rail 1) | `2026-07-21-correctness-harness-and-budget-scaling.md` |
+| 2026-07-20 | LLM TRUE loop and prompt v3; seeded closure + derived critical pairs | `2026-07-20-llm-true-loop-and-prompt-v3.md` |
+| ≤ 2026-06 | Archive. Every coverage number in those docs is superseded; the method notes are not | `stage2/results/2026-05-*.md`, `2026-06-14-*.md` |
 
-## Non-Goals
+---
 
-1. Do not edit archived Stage 1 cheatsheets as active solver work.
-2. Do not promote any certificate template without official judge acceptance.
-3. Do not rely on Teorth theorem imports unless the official judge allowlist explicitly permits them.
-4. Do not treat local secrets, network access, or repo-local imports as available to submitted solver code.
+## Non-goals
+
+1. Do not edit archived Stage 1 material as active solver work.
+2. Do not promote any certificate template without **official** judge acceptance.
+   Local Lean acceptance of a tactic proof is not cloud evidence (rail 3).
+3. Do not rely on Teorth theorem imports unless the judge allowlist permits them.
+4. Do not treat secrets, network access, or repo-local imports as available to
+   submitted solver code.
+5. Do not delete solver routes to "de-bloat" (rail 1). De-bloat means junk files
+   and stale docs, never coverage.

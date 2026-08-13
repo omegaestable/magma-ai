@@ -19,6 +19,16 @@ Use upstream docs as the source of truth:
 - `vendor/stage2-official/examples/marathon/TUTORIAL.md`
 - `vendor/stage2-official/pipeline/config.json`
 
+**`pipeline/config.json` is the authority on every budget and judge cap**, and
+`pipeline/proxy.py` passes its `judge` block straight into the judge: Lean
+timeout **300 s**, Lean code **100,000 bytes**, FALSE certificate **20,000
+bytes**, solver wall clock **3600 s** per problem, LLM output **65,536 tokens**.
+The `50_000` / `10_000` / `120` in `vendor/stage2-official/judge/verify.py` are
+the fallback for invoking the verifier with no config — reading them as the
+judge's limits cost this repo two weeks of halved caps (`CLAUDE.md`, rail 3b,
+third instance). Anything that judges locally must pass the production values;
+`stage2/experiments/judge_rows.py` now sets them for you.
+
 ## Setup Gate
 
 Native Windows gate:
@@ -64,7 +74,18 @@ Check:
 4. It uses no repo-local imports.
 5. It does not read local secrets.
 
-The current packaged smoke size is `138939` bytes as of 2026-05-30. Re-check this after every package step instead of carrying old size notes forward.
+The packager enforces 1-3 itself: since 2026-08-13 it minifies to a temp file and
+swaps it into `stage2/submissions/` only after the 500,000-byte check passes,
+then asserts the directory holds nothing but `solver.py`. A failed build
+therefore leaves the previous artifact intact rather than an empty directory.
+
+Do not carry package sizes forward in this file; the current figure lives in
+`CLAUDE.md` (**445,640 bytes** on 2026-08-13). The `138939` bytes this line used
+to quote was a 2026-05-30 measurement and was stale by ~300 KB.
+
+The cap that matters is on the **artifact**, not on `stage2/solver/solver.py` —
+the source carries comments and docstrings and is legitimately over 500 KB. CI
+builds the artifact and asserts the cap on it.
 
 ## Playground Preflight Gate
 
@@ -113,7 +134,15 @@ intentionally testing LLM readiness.
 
 For runner-equivalent certificate debugging, prefer the official runner. If a direct Python check is needed inside the harness code, convert the public problem row with `_to_judge_problem(problem)` before calling `verify_answer(_to_judge_problem(problem), raw_answer)`. A plain `verify_answer(problem, ...)` omits the pipeline default proof policy and can report dependency-policy failures that the runner does not report.
 
-Recent FALSE-certificate lesson: larger `Fin 7+` tables may need `set_option maxRecDepth 20000` before `decideFin!`. This is a certificate-generation detail, not a harness patch.
+Recent FALSE-certificate lesson: a table needs `set_option maxRecDepth 20000`
+before `decideFin!` when the goal is expensive to decide, and the axis is
+`n ** variables`, not order. `decideFin!` is exhaustive, so a `Fin 6` table
+against a 5-variable goal is 7,776 applications and was **`LEAN_REJECTED`**
+without the option and `accepted` with it (real judge, 2026-08-11); the same
+table against a 4-variable goal (1,296) is accepted either way. The renderer
+triggers on `n >= 7` **or** `decide_applications > DECIDE_MAX_REC_DEPTH_APPLICATIONS`
+(4,096). An order-only rule of thumb misses the `Fin 6` case entirely. This is a
+certificate-generation detail, not a harness patch.
 
 ## Marathon Loop
 

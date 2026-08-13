@@ -1,6 +1,6 @@
 # Playground Preflight
 
-Updated: 2026-05-30
+Updated: 2026-05-30; budget and packaging notes amended 2026-08-13.
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -23,7 +23,7 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Packaged size: see `CLAUDE.md` for the current figure (`138939` bytes was the 2026-05-30 pass and is long stale). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB.
+Packaged size: see `CLAUDE.md` for the current figure (`445,640` bytes on 2026-08-13; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
 
 Current TRUE boundary rails:
 
@@ -140,6 +140,16 @@ the published evaluation-setup reference budgets (`3600` seconds and `65536`
 tokens per problem, scaled by compression ratio), requires nonzero LLM usage,
 and writes combined gap-analysis summaries under `tmp_stage2_smoke/`.
 
+**Read that budget as an upper bound, not as deployment.** The organizers
+withdrew `compression_ratio` as misleading on 2026-07-31 and stated the real
+budgets: Solo **60 min per problem**, Marathon **5 min per problem on average**.
+This helper computes `ratio × N × 3600 s`, so its default gives 1,800 s per
+problem — six times the Marathon share, and `scripts/run_marathon.py` itself has
+always used a 600 s reference. A sweep run this way exercises the LLM lane
+generously; it does not model the clock the deployed solver gets. See `CLAUDE.md`
+("Official rules, as clarified 2026-07-31") and rail 12 on measuring at the tier
+you ship.
+
 ```powershell
 .\.venv\Scripts\python.exe stage2\experiments\run_playground_public_sweeps.py
 ```
@@ -155,9 +165,10 @@ The runner defaults Marathon to at least `131072` tokens so the official
 allowed for debugging, but they should fail the parity gate if they prevent real
 LLM use.
 
-The wide public sweep helper defaults to the published `0.5` compression ratio.
-Override `--compression-ratio` only when intentionally simulating a different
-official budget share.
+The wide public sweep helper defaults to `--compression-ratio 0.5`, which was the
+published figure before the metric was withdrawn. The flag still exists; override
+it only when intentionally simulating a different budget share, and say which
+model you are simulating in the summary.
 
 For a fast transport-only smoke that avoids long hard-problem proof attempts,
 use the temporary one-call proxy smoke:

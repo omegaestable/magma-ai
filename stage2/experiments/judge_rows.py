@@ -43,6 +43,20 @@ sys.path.insert(0, str(REPO_ROOT / "vendor" / "stage2-official"))
 # The judge renders Lean source containing ◇; a cp1252 console kills the run.
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
+# Judge the way the deployment judges. `verify_answer` falls back to
+# `judge/verify.py`'s module constants (50,000 / 10,000 / 120 s) when no config
+# is passed, but the runner always passes `pipeline/config.json`'s `judge` block
+# instead — 100,000 / 20,000 / 300 s. Leaving the fallback in place made this
+# harness *stricter* than production, which is not the safe direction it sounds
+# like: on 2026-07-23 it rejected a 59,820-byte certificate as `malformed`, and
+# that reading was written down as a property of the judge and used to halve the
+# solver's own caps. Confirmed by experiment 2026-08-13 — one certificate,
+# judged twice, only the cap varying: `CODE_TOO_LONG` at 50,000, `accepted` at
+# 100,000. Ground truth has to be configured like the ground.
+os.environ.setdefault("LEAN_TIMEOUT_SECONDS", "300")
+os.environ.setdefault("MAX_CODE_LENGTH", "100000")
+os.environ.setdefault("MAX_FALSE_CERT_BYTES", "20000")
+
 import oracles  # noqa: E402
 import solver as S  # noqa: E402
 

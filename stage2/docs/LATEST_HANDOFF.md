@@ -1,5 +1,58 @@
 # Latest Handoff
 
+## 2026-08-13: the judge's limits were configuration, and we had mirrored the wrong ones
+
+Documentation and tooling session; no coverage measurement was taken, so every
+coverage number below this section still dates from 2026-08-12. Full detail:
+`CLAUDE.md` (2026-08-13 section, rail 3b third instance) and `CURRENT_STATE.md`.
+
+- **The deployed judge limits are 100,000 bytes of Lean, 20,000 bytes for a
+  FALSE certificate and a 300 s Lean timeout** — the `judge` block of
+  `vendor/stage2-official/pipeline/config.json`, which `pipeline/proxy.py`
+  passes straight into the judge. The `50_000` / `10_000` / `120` in
+  `vendor/stage2-official/judge/verify.py` are only the fallback for invoking
+  the verifier with no config.
+- **The solver had been enforcing half of each since 2026-07-29.** The evidence
+  for that halving was a 2026-07-23 measurement taken through `judge_rows.py`,
+  which called `verify_answer()` with no config — it measured the fallback
+  against itself. Settled by experiment: one certificate judged twice, only the
+  configured cap varying — 48,003 B accepted under both, **60,015 B and
+  90,023 B `malformed`/`CODE_TOO_LONG` at 50,000 and `accepted` at 100,000**.
+- **What moved with the caps**: `MAX_LEAN_CODE_BYTES` 49,500 → 99,500,
+  `MAX_FALSE_CERT_BYTES` 9,500 → 19,500, `EGG_MAX_PROOF_BYTES` 46 KB → 96 KB,
+  `MAX_WITNESS_DECIDE_APPLICATIONS` 20,000 → 50,000 (re-derived against the real
+  300 s timeout), and the Solo/LLM timing constants (`LLM_HTTP_TIMEOUT_SECONDS`
+  75 → 300 s — 225 of 446 logged real calls had been aborting at 75 s, which
+  spends the tokens and loses the row; `SOLO_FALLBACK_RESERVE_SECONDS` 90 → 310;
+  `SOLO_LLM_ROUND_MIN_SECONDS` 150 → 620). `LLM_CONFIG["model"]` now honours the
+  organizers' `JUDGE_MARATHON_MODEL` env var instead of hardcoding
+  `openai/gpt-oss-120b`.
+- **CI was red on two steps and had never run the solver on the interpreter that
+  grades it.** Python 3.12 → **3.11** (`python:3.11-slim` is the sandbox), and
+  the 500 KB assertion moved off `stage2/solver/solver.py` — the *source*, which
+  is legitimately over the cap because it carries comments and docstrings — onto
+  the built artifact, which CI now produces with `minify_submission.py`. Lint was
+  red for an unrelated reason: `ruff.toml` used `exclude` (which replaces ruff's
+  defaults) instead of `extend-exclude`, so ruff walked into `.git/`. A new step
+  pins the solver's judge-limit mirrors to `config.json`.
+- **Two packaging bugs found while checking the above.** `minify_submission.py`'s
+  line transforms were rewriting the *contents* of multi-line string literals,
+  which would have bricked the packager on any `DISTILLED_CERTS` entry with a
+  trailing space; and `package_solver.ps1` emptied `stage2/submissions/` before
+  running the minifier, so a failure left no artifact at all (the directory is
+  gitignored, so there was no copy to fall back on) while an oversized build was
+  left in place. It now builds to a temp file and swaps in only after the size
+  check passes. Packaged artifact: **445,640 of 500,000 bytes** (54,360 free).
+- **The "2689/2689" corpus headline double-counted 20 rows.** The distinct total
+  is **2669**: official 1669/1669, HF mirrors 800/800, `sample_200` 200/200,
+  which is why the three lines must never be summed to a fourth number.
+
+**Not done:** nothing has been re-measured against the corrected caps. Rows that
+previously lost to a byte cap are the cheapest re-try available, and the Solo
+evidence item below now tests changed code.
+
+---
+
 ## 2026-08-12 session 2: the tier inversion, the egg deadline, and the last three rows
 
 Full detail: `stage2/results/2026-08-12-tier-inversion-and-latency.md`.
@@ -7,8 +60,9 @@ This session executed `stage2/docs/NEXT_SESSION_BRIEF.md` — remove skips, trim
 long-running queries, close with a real Marathon. All three done.
 
 **Coverage is now complete everywhere local: official 1669/1669, HF 800/800,
-`sample_200` 200/200 — 2689/2689.** Diffed by row id across three isolated
-audits: **0 lost, +3 gained, 0 oracle failures, 0 crashes.**
+`sample_200` 200/200 — 2669 distinct rows.** Diffed by row id across three
+isolated audits: **0 lost, +3 gained, 0 oracle failures, 0 crashes.** (This line
+read "2689/2689" until 2026-08-13; the sets overlap, so they do not sum.)
 
 - **The tier inversion was real and live** (now rail 12). `EFFORT_TIERS` scales
   every engine together, so on a row whose answer lives in a late engine the
@@ -99,7 +153,8 @@ session's result.
   `distill_certs.py`.
 - **The bytes lever is dead on its own terms, and that is informative.**
   `normal_0491`'s collapse explanation is 4510 steps / 400 KB against a 46 KB
-  cap. Shortening cuts it to 1548 and then a full BFS over the replayed states
+  cap (96 KB since 2026-08-13 — still an order of magnitude short, so the
+  conclusion stands). Shortening cuts it to 1548 and then a full BFS over the replayed states
   finds **no** shortcut; a context-factoring renderer (prototyped, measured)
   buys 2.4–2.9x. But those 1548 steps use only **38 distinct eq1 instances** at
   positions up to depth 16 — the chain is long because a flat `.trans` proof over
@@ -490,6 +545,10 @@ correct and the repo cheap to improve. Full detail:
 - **Size caps were 2x the judge's** (`MAX_LEAN_CODE_BYTES` 100_000 vs the judge's
   50_000; FALSE 20_000 vs 10_000). Now derived from `JUDGE_MAX_*` constants. No
   row was affected — latent hole closed, not rows recovered.
+  **Wrong, and reversed on 2026-08-13:** the judge's deployed caps are 100,000
+  and 20,000 (`pipeline/config.json`), so this halving *created* the hole it
+  thought it was closing. The original 100_000 / 20_000 constants were right.
+  See the 2026-08-13 section at the top of this file.
 - **`solve_problem`: 510 → 104 lines**, routes in a `TRUE_ROUTES` table, order
   verified mechanically against `git show HEAD`. The old copy-paste shape is what
   hid two defects: `narrow_grind` ran with **no `_engine_gate()`** (so it fired
@@ -523,8 +582,10 @@ FALSE, so that verdict could never be accepted. Full detail:
   `hf_evaluation_extra_hard` goes `170/200 → 200/200` and `185.3 s → 24.7 s`.
 - **`Fin 9` `decideFin!` certs are judge-validated.** This shape had no prior
   real-judge evidence, so 5 were run through `judge.verify.verify_answer`:
-  **5/5 `accepted`**, 14–16 s warm against the judge's 120 s Lean timeout,
-  462-byte certs against the 10 KB FALSE cap. Kernel reduction transfers;
+  **5/5 `accepted`**, 14–16 s warm against a local judge then configured with a
+  120 s Lean timeout (deployment gives 300 s), 462-byte certs against what was
+  then believed to be a 10 KB FALSE cap (it is 20 KB — 2026-08-13). Kernel
+  reduction transfers;
   see [[grind-local-accept-is-not-cloud-evidence]].
 - **"No counterexample found" now has to mean something.**
   `hypothesis_models_seen()` counts models of `eq1` the FALSE search actually
@@ -573,9 +634,11 @@ missing. Full detail:
   a balanced `.trans` tree of `congrArg`-wrapped `h`-instances: plain
   `exact_expr`, checked by the existing `ProofKernel`, **no new oracle surface**.
 - **Validated four ways:** offline kernel 21–23/67 frontier rows; **real local
-  Lean judge 8/9** on a 700 B–48 KB size ladder (the 1 failure was oversized —
-  the real judge caps code at 50 KB, not the solver's 100 KB; route now caps
-  certs at 49.5 KB); **0/25** ETP-FALSE negative controls through the full
+  Lean judge 8/9** on a 700 B–48 KB size ladder (the 1 failure was oversized
+  against a *locally unconfigured* judge, whose fallback cap is 50 KB; the
+  deployed cap is 100 KB, and the route's own cap went back to 99.5 KB on
+  2026-08-13 — this line is the origin of that two-week error); **0/25**
+  ETP-FALSE negative controls through the full
   extract+render path; and **real end-to-end rounds** (`real_rounds.py`,
   solve→`verify_answer` through Lean): **69/69 emitted certs accepted, 0
   rejected, 0 wrong verdicts** across a broad mixed round (50) and the egg
@@ -598,7 +661,8 @@ missing. Full detail:
 - **Next levers (ranked):** (1) egg is budget-bound at `fast` — a `standard`
   Solo sweep should land the remaining ~8 prototype-provable rows; (2) shrink
   extraction further (some proofs still hit the 46 KB cap and are dropped —
-  smaller certs = more shippable rows); (3) re-run the LLM lemma lane, whose
+  smaller certs = more shippable rows; that cap is 96 KB since 2026-08-13, and
+  lever (2) was refuted on other grounds — rail 5d-ii); (3) re-run the LLM lemma lane, whose
   ceiling egg now raises (model names a law, egg derives it).
 
 ## 2026-07-22 session 4
@@ -1008,6 +1072,10 @@ Updated 2026-07-23 (after shipping `true:egg_closure`). Ranked by evidence:
    and get dropped (`hard3_0208`, `evaluation_order5_0022` were 126 KB / 186 KB
    pre-shortening). Better cycle-cutting / common-subproof sharing = more
    shippable rows at the same saturation power.
+   *(2026-08-13: `EGG_MAX_PROOF_BYTES` is now 96 KB, since the judge's real code
+   cap is 100 KB. Re-measure which proofs are actually dropped before spending a
+   session here — and note rail 5d-ii, which refuted extraction shrinking as a
+   lever on `normal_0491` for a different reason.)*
 3. **Step-count budgets** instead of wall-clock, so route selection is
    deterministic and the golden gate can go back to strict equality (this is
    also what would let `egg_closure` back into the golden fixture).

@@ -141,7 +141,7 @@ Promotion rule: Teorth can justify why a route is worth building, but only runne
 4. Emit a `finOpTable`/`decideFin!` certificate and run the official Solo runner on focused fixtures.
 5. Add compact reusable witnesses to `WITNESS_TABLES` only after accepted evidence. Keep brute-force bound increases separate from named witness capacity.
 
-Large finite tables can need higher Lean recursion depth. The current solver emits `set_option maxRecDepth 20000` for `Fin 7+` certificates.
+Expensive `decide` goals need higher Lean recursion depth, and the axis is the decide cost `n ** variables`, not the order. The solver emits `set_option maxRecDepth 20000` when the order is 7 or more **or** when the goal costs more than 4,096 `decideFin!` applications; a `Fin 6` table against a 5-variable goal (7,776) is judge-rejected without it and accepted with it (2026-08-11). Above order 10 the `finOpTable` digit parser cannot express the table at all — those certificates render as an inlined `List.getD` lookup instead, judge-accepted to order 25.
 
 ## TRUE Motif Promotion
 

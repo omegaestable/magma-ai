@@ -1,212 +1,148 @@
 # Restart Checklist
 
-Use this file when returning to the repo after time away or when a new agent starts from scratch.
+For a cold start: a new agent, or you after time away. Deadline **2026-08-31
+23:59 AoE**.
 
-## 1. Orient
+Five minutes of reading, then the four commands. If anything here disagrees with
+`CLAUDE.md`, **`CLAUDE.md` wins and this file gets fixed**.
 
-Read these first:
+## 1. Read `CLAUDE.md`. That is the whole orientation step.
 
-1. `README.md`
-2. `CURRENT_STATE.md`
-3. `AGENTS.md`
-4. `.github/copilot-instructions.md`
-5. `RESTART_CHECKLIST.md`
-6. `EVAL_WORKFLOW.md`
-7. `BENCHMARK_MANIFEST.md`
-8. `stage2/README.md`
-9. `stage2/docs/playground-preflight.md`
-10. `theory/README.md`
-11. `theory/TEORTH_WORKFLOW.md`
-12. `theory/tools/README.md`
-13. `stage2/docs/LATEST_HANDOFF.md`
+It is the authoritative entry point: what the deliverable is, the measured state
+with dates, and the rails that cost real points to relearn. Read it end to end
+before touching anything. Everything else is on-demand:
 
-If present, also glance at the latest generated evidence before touching the solver:
+| Only if the task needs it | Read |
+| --- | --- |
+| What to do next | `stage2/docs/NEXT_SESSION_BRIEF.md` |
+| What last session did, in detail | `stage2/docs/LATEST_HANDOFF.md` |
+| Operational truth, effort tiers | `CURRENT_STATE.md` |
+| Which route solves what | `stage2/docs/solver-route-ledger.md`, `stage2/docs/motif-cards/` |
+| How the offline gate is built | `stage2/tests/README.md` |
+| Spot-check design | `stage2/docs/spotcheck.md` |
+| Running the official harness | `EVAL_WORKFLOW.md`, `vendor/stage2-official/` |
+| Before an upload | `stage2/docs/playground-preflight.md` |
+| Mining teorth for theory | `theory/TEORTH_WORKFLOW.md` |
+| Per-session evidence | `stage2/results/` (dated, keep, do not rewrite) |
 
-- `stage2/results/2026-05-12-public-finite-countermodels-summary.md`
-- `stage2/results/2026-05-12-competition-preflight.md`
+`stage1/` is a finished archive. Do not start work there.
 
-## 2. Confirm Current Artifacts
-
-1. Active solver scaffold: `stage2/solver/solver.py`
-2. Packaged output target: `stage2/submissions/solver.py`
-3. Official harness: `vendor/stage2-official/`
-4. Shared Teorth data: `data/exports/` and `data/teorth_cache/`
-5. Stage 1 archive: `stage1/`
-6. Theory workflow: `theory/TEORTH_WORKFLOW.md` and `theory/tools/README.md`
-7. Playground preflight: `stage2/docs/playground-preflight.md`
-
-## 3. Confirm Python Environment
-
-From PowerShell:
+## 2. Check the environment
 
 ```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -V          # expect 3.11 — the sandbox is python:3.11-slim
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
-## 4. Confirm Official Lean Environment
-
-Native Windows setup, from PowerShell:
+Only if you need the Lean judge (i.e. you are touching a certificate builder):
 
 ```powershell
-winget install --id Lean.Elan -e --accept-source-agreements --accept-package-agreements
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-elan toolchain install leanprover/lean4:v4.30.0-rc2
-elan default leanprover/lean4:v4.30.0-rc2
-```
-
-Build the pinned Lean project:
-
-```powershell
+elan toolchain install leanprover/lean4:v4.30.0-rc2   # pinned in vendor/stage2-official/lean-toolchain
 Push-Location vendor/stage2-official
-lake update
 lake exe cache get
 lake build JudgeMagma.Magma JudgeDecide.DecideBang JudgeFinOp.MemoFinOp JudgeSupport.Inspect
 Pop-Location
 ```
 
-Then run the official gates:
+The 7.06 GB `.lake` build cache already in the tree is this, prebuilt. Keep it.
+
+## 3. The four commands, and when to run each
 
 ```powershell
-$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-Push-Location vendor/stage2-official
-c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_harness.py
-c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
-Pop-Location
-```
+# 1. Offline correctness gate (~24 s on -n auto). BEFORE and AFTER any solver change.
+.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
-The vendored harness has documented local Windows compatibility patches in `vendor/stage2-official/UPSTREAM.md`. Re-check that file before syncing upstream.
+# 2. Full corpus audit. Once per session, never two at once (see gotchas).
+#    Add --hf for the HF mirrors. Add --row-budget when measuring a tier you
+#    actually deploy: Solo and Marathon always bound a row, the audit does not.
+.\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
 
-WSL 2, Linux, or macOS setup remains useful for comparison:
+# 3. The standing accuracy loop. Every session; fix whatever it pins.
+.\.venv\Scripts\python.exe stage2/experiments/spotcheck.py
 
-```bash
-cd /mnt/c/Users/nacho/Documents/GitHub/magma-ai/vendor/stage2-official
-bash scripts/setup.sh
-source .env.judge
-python3 scripts/run_harness.py
-python3 scripts/run_marathon_harness.py
-```
-
-If setup fails, fix the official harness environment before changing solver logic.
-
-## 5. Package The Local Solver
-
-```powershell
+# 4. Package (re-runs the gate and refuses to package on failure).
 .\stage2\solver\package_solver.ps1
 ```
 
-Expected output: `stage2/submissions/solver.py` with size below 500 KB.
-
-Before official Solo runs, confirm the generated submission directory contains only `solver.py`:
+Touched a certificate builder? Add a fifth — the real Lean judge is the only
+thing that is not an upper bound:
 
 ```powershell
+.\.venv\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
+```
+
+Judge limits, read from `vendor/stage2-official/pipeline/config.json` and
+confirmed by experiment 2026-08-13: **300 s** per Lean call, **100,000 bytes**
+per certificate, **20,000 bytes** for a FALSE certificate, 3600 s of solver wall
+clock per problem. The smaller numbers in `judge/verify.py` are the no-config
+fallback, not the deployed limits; `judge_rows.py` now sets the production values
+so local judging matches deployment.
+
+## 4. Gotchas that actually bite
+
+- **UTF-8.** Certificates carry `◇`, and printing it dies with
+  `UnicodeEncodeError` on a Windows cp1252 console. Set `$env:PYTHONUTF8='1'`
+  (or `PYTHONIOENCODING=utf-8`) in any ad-hoc script; the repo entrypoints
+  already do.
+- **Scope every search.** The working tree is ~7.4 GB / 154k files, 7.06 GB of it
+  `vendor/stage2-official/.lake`. `du`/`find` at the repo root will hang. Use
+  `Grep`/`Glob` (they respect `.gitignore`) or point `find` at a subdirectory.
+- **The local Lean judge works on Windows** via `elan`, despite the vendored docs
+  saying WSL/Linux only. Caveat: `lake env` times out (30 s) under heavy CPU
+  load, so never judge while an audit is running.
+- **Never run two `audit_corpus.py` sweeps concurrently.** Every engine below
+  `equational_closure` is wall-clock-budgeted, so competing 16-worker pools starve
+  each other and invent losses — 16 spurious ones in a measured case, 0 real.
+  Check what else is on the machine before quoting any wall clock; killing a sweep
+  does not necessarily kill its worker pool.
+- **Diff by row id, not by total.** Solved counts carry a ±7 run-to-run noise
+  band, so a total tells you nothing about a route change.
+- **No `--budget-tokens 0` Marathon runs** as validation or promotion evidence.
+- **Never write an extrapolated number as a measurement.** A headline of
+  "last audit + 3 verified rows" once made a clean run look like a regression.
+
+## 5. Before submitting
+
+```powershell
+.\stage2\solver\package_solver.ps1
 Get-ChildItem -Force stage2/submissions
 ```
 
-Current packaged size should be checked after every package step; the active solver no longer exposes the historical grind route and remains far below the 500 KB limit.
+1. The packager runs the gate first and refuses to package on failure. It builds
+   to a temp file and swaps in only after the 500,000-byte check passes, so a
+   failure leaves the previous artifact intact.
+2. `stage2/submissions/` must contain **`solver.py` and nothing else** — the
+   official Solo runner rejects the directory before executing the solver. Delete
+   any `__pycache__`, `.gitkeep` or stray file. (The directory is gitignored, so
+   git will not warn you.)
+3. Size under 500,000 bytes. Last packaged: **445,640 bytes, 10.9% headroom**
+   (2026-08-13). Never shrink it by deleting routes — rail 1.
+4. Single file, no repo-local imports, no network, no secrets. The sandbox is
+   `python:3.11-slim`, 2 vCPU, 2048 MB RAM, read-only filesystem, network
+   disabled.
+5. CI (`.github/workflows/gate.yml`) mirrors this: ruff, the pytest gate, a real
+   build of the artifact with the cap asserted on the *artifact* (not the source,
+   which legitimately exceeds it), and a check that the solver's judge-limit
+   constants still match `vendor/stage2-official/pipeline/config.json`.
 
-Before positive-token parity or proxy smokes, configure the ignored repo-root
-`.env` and verify the non-secret key shape:
+## 6. Traps
 
-```powershell
-.\stage2\experiments\set_openrouter_repo_env.ps1
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
-```
-
-For playground/upload readiness, run the positive-token checklist in `stage2/docs/playground-preflight.md`. The repo-owned probe/parity helpers load the upstream key from process env or the ignored root `.env` by default, but the submitted solver must rely only on the official proxy protocol.
-
-## 6. First Smoke Runs
-
-After official setup, run official demos first, then the local scaffold.
-
-Solo demo:
-
-```bash
-cd vendor/stage2-official
-source .env.judge
-python3 -m pipeline.runner --submission examples/solo/demos/baseline --problems examples/problems/sample_20.json
-```
-
-Marathon harness:
-
-```powershell
-Push-Location vendor/stage2-official
-c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
-Pop-Location
-```
-
-Preferred local wide-set LLM readiness gate:
-
-```powershell
-.\.venv\Scripts\python.exe stage2\experiments\run_playground_public_sweeps.py
-```
-
-Preferred local small-fixture parity gate:
-
-```powershell
-.\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py
-```
-
-Use the direct Solo and zero-token Marathon commands below as diagnostics, not
-as the default local playground-readiness gate.
-
-Current fast local smoke probes:
-
-Start with the offline gate and the corpus audit — they are faster and catch more
-than the harness smokes below. See `CLAUDE.md` for the four standing commands.
-
-```powershell
-$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-$env:PYTHONUTF8='1'   # certificates carry ◇; cp1252 consoles crash without this
-.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
-.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
-.\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
-.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
-Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json
-Pop-Location
-```
-
-The `run_marathon.py ... --budget-tokens 0` line that used to sit here was
-removed (2026-07-29): zero-token Marathon runs are **banned** as validation or
-promotion evidence, and the checklist should not hand anyone the forbidden
-command. For a Marathon guardrail use a positive token budget via
-`stage2/experiments/run_positive_token_sweeps.py`.
-
-Latest smoke-only outcomes: `sample_20 = 15/20` and `sample_200 = 169/200` in the 2026-05-25 no-key Solo smokes, and Marathon `normal_100 = 74/100` accepted with zero tokens in `60.6s`. Latest May 21 selected-row reproduction: three `evaluation_extra_hard_false_*` rows now accept via `false:witness:S4C`; remaining listed fallback rows are unresolved gaps, not ids to hardcode.
-
-If the local machine has an upstream LLM key configured, blank `OPENAI_API_KEY`
-and `OPENROUTER_API_KEY` for fast deterministic Solo smokes. Otherwise
-unresolved rows can spend real proxy calls and make `sample_20`/`sample_200`
-look like slow LLM tests instead of quick integration checks.
-
-Public benchmark refresh and team-memory regeneration:
-
-```powershell
-$env:PYTHONUTF8='1'
-$env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\normal.jsonl --output ..\..\stage2\results\YYYY-MM-DD-normal.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard1.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard1.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard2.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard2.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\hard3.jsonl --output ..\..\stage2\results\YYYY-MM-DD-hard3.json
-Pop-Location
-.\.venv\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
-.\.venv\Scripts\python.exe stage2\experiments\competition_preflight.py
-```
-
-## 7. Common Traps
-
-1. Treating archived Stage 1 prompt results as Stage 2 proof evidence.
-2. Submitting Lean code before checking it with the official judge.
-3. Forgetting that official solver subprocesses do not inherit local secrets.
-4. Relying on local repo imports from a single-file submission.
-5. Editing `vendor/stage2-official/` without documenting upstream drift.
-6. Leaving `.gitkeep`, `__pycache__`, or other extras in `stage2/submissions/`; the official Solo runner rejects the directory before executing the solver.
-7. Forgetting that route labels cannot be added to the judge answer JSON; the judge accepts exactly `verdict` and `code`, so route labels must live in stderr/log-derived summaries.
-8. Debugging certificates with direct `verify_answer(problem, ...)` and forgetting the pipeline proof policy; use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
-9. Treating `tmp_stage2_smoke/` or live Teorth scrape output as durable evidence before promoting it to `stage2/results/`.
-10. Treating local `OPENAI_API_KEY or OPENROUTER_API_KEY not set` as a solver protocol failure when the request reached the proxy LLM path.
-11. Overfitting to pasted public/evaluation row ids instead of extracting reusable proof templates, witness families, or regression fixtures.
+1. Treating archived Stage 1 results as Stage 2 proof evidence.
+2. Shipping Lean the real judge has not accepted. Local acceptance of a tactic
+   proof is not cloud evidence; certificates must be kernel-checkable.
+3. Inferring a hard limit from one failed experiment. Three rails have been
+   written this way and all three were wrong — the order-10 witness cap, the
+   `maxRecDepth` trigger, and the halved judge limits. Vary the spelling once
+   before writing the rail down.
+4. Putting anything but `verdict` and `code` in the judge answer JSON. Route
+   labels go to stderr.
+5. Hardcoding benchmark row ids into solver policy. Generalise into a proof or
+   witness family; distillation is keyed by canonical *equation text*, never by
+   row id.
+6. Forgetting that solver subprocesses do not inherit local secrets, and that the
+   submitted solver may use only the official proxy protocol.
+7. Editing `vendor/stage2-official/` without recording the drift in
+   `vendor/stage2-official/UPSTREAM.md`.
+8. Treating `tmp_stage2_smoke/` output as durable evidence before promoting it to
+   `stage2/results/`.

@@ -435,11 +435,15 @@ def shorten_steps(start: Term, steps: list[Step],
 
 _BINDER_CANDIDATES = ("t", "q", "p", "s", "r", "m", "n", "k")
 
-# The production judge rejects code over MAX_CODE_LENGTH = 50_000 UTF-8
-# bytes as malformed (vendor/stage2-official/judge/verify.py) — NOT the
-# solver's 100_000 constant. Measured on the 2026-07-23 Lean-judge ladder:
-# a 59,820-byte cert bounced, a 48,526-byte cert passed. Budget in BYTES,
-# leaving room for the certificate wrapper.
+# The production judge rejects code over 100_000 UTF-8 bytes as malformed —
+# `judge.max_code_length` in vendor/stage2-official/pipeline/config.json, which
+# pipeline/proxy.py passes into the judge. This comment used to name 50_000 and
+# cite the 2026-07-23 ladder ("a 59,820-byte cert bounced"); that ladder ran
+# through judge_rows.py, which called verify_answer() with no config and so
+# measured judge/verify.py's no-config *fallback* against itself. Re-tested
+# 2026-08-13 with only the cap varying: the same 60,015-byte certificate is
+# CODE_TOO_LONG at 50_000 and accepted at 100_000. Budget in BYTES, leaving
+# room for the certificate wrapper.
 MAX_PROOF_BYTES = 49_000
 
 

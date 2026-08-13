@@ -34,6 +34,28 @@ def _comment_spans(source: str) -> dict[int, list[tuple[int, int]]]:
     return spans
 
 
+def _string_interior_lines(source: str) -> set[int]:
+    """Lines whose content belongs to a multi-line string literal.
+
+    Both line transforms in `minify` edit string *content* when a literal spans
+    lines: collapsing a run of blank lines rewrites the text, and `rstrip`
+    deletes significant trailing spaces. `DISTILLED_CERTS` stores every
+    judge-accepted certificate as triple-quoted Lean and is the highest-churn
+    data in the solver, so a certificate carrying a trailing space or a
+    three-blank-line gap would fail `check()` and abort the packaging run.
+
+    The first line is excluded: it holds the assignment and the opening quotes,
+    so a comment can never follow the literal there but code can precede it.
+    """
+    lines: set[int] = set()
+    tokens = tokenize.generate_tokens(io.StringIO(source).readline)
+    for token in tokens:
+        if token.type != tokenize.STRING or token.end[0] == token.start[0]:
+            continue
+        lines.update(range(token.start[0] + 1, token.end[0] + 1))
+    return lines
+
+
 def _docstring_lines(tree: ast.AST) -> set[int]:
     """Lines holding a docstring that can go without emptying its block."""
     lines: set[int] = set()
@@ -53,10 +75,17 @@ def _docstring_lines(tree: ast.AST) -> set[int]:
 def minify(source: str) -> str:
     comments = _comment_spans(source)
     drop = _docstring_lines(ast.parse(source))
+    literal = _string_interior_lines(source)
     out: list[str] = []
     blank_run = 0
     for number, line in enumerate(source.splitlines(), start=1):
         if number in drop:
+            continue
+        if number in literal:
+            # Inside a multi-line literal: emit verbatim. No comment can start
+            # here, blank lines are content, and trailing spaces are content.
+            blank_run = 0
+            out.append(line)
             continue
         for start, end in reversed(comments.get(number, [])):
             line = line[:start] + line[end:]
@@ -86,10 +115,21 @@ def _without_docstrings(tree: ast.AST) -> ast.AST:
 
 def check(source: str, minified: str) -> None:
     """Fail unless the two files parse to the same tree modulo docstrings."""
-    want = ast.dump(_without_docstrings(ast.parse(source)))
-    got = ast.dump(_without_docstrings(ast.parse(minified)))
-    if want != got:
-        raise SystemExit("minified submission does not match the source parse tree")
+    want_tree = _without_docstrings(ast.parse(source))
+    got_tree = _without_docstrings(ast.parse(minified))
+    if ast.dump(want_tree) == ast.dump(got_tree):
+        return
+    # Name the first statement that differs. A bare "does not match" costs a
+    # debugging session on a deadline day, and this runs inside the packager,
+    # where the operator sees only the exception text.
+    for index, (a, b) in enumerate(zip(want_tree.body, got_tree.body)):
+        if ast.dump(a) != ast.dump(b):
+            raise SystemExit(
+                "minified submission does not match the source parse tree; first "
+                f"difference at top-level statement {index + 1}, source line {a.lineno}")
+    raise SystemExit(
+        "minified submission does not match the source parse tree; top-level "
+        f"statement count differs ({len(want_tree.body)} vs {len(got_tree.body)})")
 
 
 def main(argv: list[str]) -> int:

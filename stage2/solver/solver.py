@@ -133,14 +133,31 @@ Output exactly ONE JSON object (first char {, last char }). No markdown, no
 <think>, no prose.
 """
 
-JUDGE_MAX_CODE_LENGTH = 50_000
-JUDGE_MAX_FALSE_CERT_BYTES = 10_000
+# Source of truth: `vendor/stage2-official/pipeline/config.json` (`judge`
+# block), which `pipeline/proxy.py` passes straight into `_call_judge`. The
+# organizers' published evaluation spec states the same two numbers.
+#
+# These were 100_000 / 20_000 until 2026-07-29, when they were *halved* on the
+# strength of `judge/verify.py`'s module-level `MAX_CODE_LENGTH = 50_000`. Those
+# module constants are only the fallback for invoking the verifier directly with
+# no config — the deployed pipeline always passes its own. The measurement that
+# appeared to confirm the halving (a 59,820-byte cert "rejected malformed",
+# 2026-07-23) was taken through `judge_rows.py`, which called `verify_answer`
+# without a config and therefore measured the 50_000 fallback against itself.
+#
+# Settled by experiment 2026-08-13 rather than by argument, per rail 3b: one
+# certificate, judged twice, only the configured cap varying —
+#   48,003 B -> accepted  under both caps
+#   60,015 B -> malformed/CODE_TOO_LONG at 50_000, ACCEPTED at 100_000
+#   90,023 B -> malformed/CODE_TOO_LONG at 50_000, ACCEPTED at 100_000
+# The cap is configuration, not a property of the judge, and production
+# configures 100_000. Two days of TRUE-proof budget and the whole 46-96 KB egg
+# band were being discarded for nothing.
+JUDGE_MAX_CODE_LENGTH = 100_000
+JUDGE_MAX_FALSE_CERT_BYTES = 20_000
 
 # Our own caps sit just under the judge's, so a cert that passes locally cannot
-# be rejected on size. Previously 100_000 / 20_000 — both *twice* the judge's
-# limit, which silently accepted certificates the judge would refuse (found
-# 2026-07-29; no benchmark row was over the line, so this closes a latent hole
-# rather than recovering lost rows).
+# be rejected on size.
 MAX_LEAN_CODE_BYTES = JUDGE_MAX_CODE_LENGTH - 500
 MAX_FALSE_CERT_BYTES = JUDGE_MAX_FALSE_CERT_BYTES - 500
 VALID_VERDICTS = {"true", "false"}
@@ -217,9 +234,21 @@ LLM_SEEDED_CLOSURE_WAYPOINT_BUDGET = 1.5
 LLM_SEEDED_CLOSURE_MAX_WAYPOINTS = 5
 LLM_SEEDED_CLOSURE_TOTAL_BUDGET = 14.0
 LLM_MAX_ROUNDS = 6
-SOLO_FALLBACK_RESERVE_SECONDS = 90.0
+# Both of these are sized from the *deployed* per-call limits, which are 300 s
+# for the judge (`judge.lean_timeout_seconds`) and 300 s for an LLM call (the
+# Solo proxy's `http_timeout_seconds` default). They were 90 / 150, sized when
+# the judge was believed to be 120 s and this solver's own LLM timeout was 75 s.
+#
+# Getting them wrong is not a rounding error, because the proxy clamps the Lean
+# timeout to the wall clock remaining and refuses any call issued with <= 1 s
+# left. At 90 s the final fallback judge call got 90 s of Lean instead of the
+# 300 s we are entitled to; at 150 s a last LLM round could start with 150 s
+# left, spend up to 300 s in the model, and return past the deadline — tokens
+# spent, candidate never judged. 310 = one judge call plus margin; 620 = one LLM
+# call plus one judge call plus margin.
+SOLO_FALLBACK_RESERVE_SECONDS = 310.0
 SOLO_DETERMINISTIC_SHARE = 0.55
-SOLO_LLM_ROUND_MIN_SECONDS = 150.0
+SOLO_LLM_ROUND_MIN_SECONDS = 620.0
 MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
@@ -241,7 +270,18 @@ MARATHON_ROW_BORROW = 3.0
 MARATHON_ROW_MIN_SECONDS = 1.0
 LLM_MAX_TABLE_N = 8
 LLM_MAX_OUTPUT_TOKENS = 16384
-LLM_HTTP_TIMEOUT_SECONDS = 75.0
+# 75.0 until 2026-08-13, which aborted *half* of all real calls this repo has
+# ever made: over the 446 logged real gpt-oss-120b calls in `stage2/results/`
+# (same model, same pin, `temperature=0.0`), 225 took longer than 75 s, and in
+# the one run at a raised output cap the *median* call was 87.3 s with p90
+# 149.9 s. An abort is worse than a slow call: the solver drops the socket, but
+# the proxy is still inside `forward_upstream` (600 s), finishes the generation
+# and settles the real usage -- so the tokens are spent, the row is lost for
+# good (`index` has already advanced), and nothing is logged. The official
+# defaults this overrides are 600 s (marathon_llm.py) and 300 s (Solo proxy);
+# 300 matches Solo. Safe at any size because `marathon_llm_attempt` clamps it to
+# `deadline - started - 5.0`, so it can never outrun the run deadline.
+LLM_HTTP_TIMEOUT_SECONDS = 300.0
 
 EFFORT_TIERS = {
     #        time x   frontier x  fills x   pool +   depth +
@@ -350,7 +390,15 @@ def _eff_depth(base: int) -> int:
     return base + EFFORT_TIERS[_EFFORT][4]
 
 LLM_CONFIG = {
-    "model": "openai/gpt-oss-120b",
+    # The organizers select the model; we only supply the default. The official
+    # helper's precedence is `cfg.get("model") or os.environ["JUDGE_MARATHON_MODEL"]`
+    # (vendor pipeline/marathon_llm.py), so a hardcoded value here is always
+    # truthy and makes their documented knob unreachable. The published spec
+    # lists a second model (`google/gemma-4-31b-it`) alongside gpt-oss-120b; if
+    # a Marathon run selects it, a hardcoded name means we request a model the
+    # organizers did not pick — and a rejected request is still billed at the
+    # full token reservation by the proxy. No-op when the var is unset.
+    "model": os.environ.get("JUDGE_MARATHON_MODEL", "openai/gpt-oss-120b"),
     "provider": "deepinfra/bf16",
     "max_output_tokens": LLM_MAX_OUTPUT_TOKENS,
     "temperature": 0.0,
@@ -898,7 +946,7 @@ def table_is_renderable(table: list[list[int]]) -> bool:
     orders 13, 17 and 25 (2026-07-31).
 
     What remains is a size question. The rendered certificate must fit under
-    `MAX_FALSE_CERT_BYTES`; a cert over the judge's 10,000-byte FALSE cap is
+    `MAX_FALSE_CERT_BYTES`; a cert over the judge's 20,000-byte FALSE cap is
     rejected outright, which is strictly worse than skipping the row. Measured
     exactly here rather than estimated, since the renderer is right there.
 
@@ -931,9 +979,13 @@ def witness_decide_is_affordable(
     5-variable goal is 371,293.
 
     Anchor (real judge, 2026-07-31): `hard2_0051` at order 25, goal in 3
-    variables, 15,625 applications, `accepted` in 30.2 s against
-    `LEAN_TIMEOUT_SECONDS = 120`. The cap below extrapolates to ~40 s, leaving
-    ~3x for slower judge hardware, since overshooting spends the row.
+    variables, 15,625 applications, `accepted` in 30.2 s. The deployed Lean
+    timeout is **300 s** (`pipeline/config.json`, `judge.lean_timeout_seconds`),
+    not the 120 s this cap was originally sized against — that 120 is
+    `judge/verify.py`'s no-config fallback, the same mis-reading that halved the
+    byte caps above. Holding the original ~3x margin for slower judge hardware
+    gives a 100 s working budget, so the anchor extrapolates to ~51,700
+    applications; 50,000 is that, rounded down.
 
     Orders through 10 are exempt. That envelope is behind every FALSE row the
     judge has accepted to date, so a cost model introduced for the *new*
@@ -2351,7 +2403,7 @@ def right_projection_from_2788_block(source_name: str) -> str:
         "    have h33 : (P ◇ X0) ◇ P = X0 := eq33 X0 X0\n"
         "    exact (congrArg (fun t => t ◇ P) h22).symm.trans h33\n"
         # Derived rather than discharged by `grind` (2026-07-29). The old body
-        # was `by grind`, which cost 37.0 s of the judge's 120 s Lean timeout,
+        # was `by grind`, which cost 37.0 s of Lean time,
         # needed `set_option maxHeartbeats 5000000`, and rested on a tactic this
         # project has field evidence against (the cloud judge rejected a
         # `narrow_grind` cert the local judge accepted). The derivation below
@@ -3167,8 +3219,9 @@ def projection_true_route(eq1: dict[str, Any], eq2: dict[str, Any]) -> tuple[str
 
 
 UNIVERSAL_IDENTITY_MAX_PATTERN_VARS = 6
-# Was 60000 — above the judge's own 50_000 cap, so an oversized cert would have
-# been emitted and then rejected. Bounded by the shared cap instead (2026-07-29).
+# Was 60000, a bare literal that tracked nothing. Bounded by the shared cap
+# instead (2026-07-29), which is what keeps it correct now that the cap has
+# moved to the deployed 100_000 (2026-08-13).
 UNIVERSAL_IDENTITY_MAX_CODE = MAX_LEAN_CODE_BYTES
 
 
@@ -4890,12 +4943,15 @@ EGG_MAX_ENODES = 60_000
 # constraint (rail 5f). Without it one round on `normal_0823` reached
 # 11,346 MB of RSS building candidates for 900 applications.
 EGG_MAX_APPS = 200_000
-# The production judge rejects code over JUDGE_MAX_CODE_LENGTH = 50_000 UTF-8
-# bytes as malformed (vendor judge/verify.py). Measured 2026-07-23:
-# 59,820-byte cert bounced, 48,526-byte cert accepted. Since 2026-07-29
-# MAX_LEAN_CODE_BYTES enforces the same bound module-wide, so this route's cap
-# is no longer the only one that is correct.
-EGG_MAX_PROOF_BYTES = 46_000
+# Headroom for the certificate scaffolding around the extracted proof term.
+# Was 46_000, chosen when the code cap was believed to be 50_000; the 2026-07-23
+# "59,820 bounced" measurement behind that number was an artefact of the local
+# verifier's fallback cap (see JUDGE_MAX_CODE_LENGTH). At the real 100_000 cap
+# the corresponding figure is 96_000 — and this band matters: the largest cert
+# the corpus ships is 45,288 bytes (`evaluation_order5_0076`, `true:egg_collapse`),
+# i.e. 98% of the old limit, so the generative engines were pressed right
+# against a ceiling that was half real.
+EGG_MAX_PROOF_BYTES = 96_000
 EGG_MAX_CERT_BYTES = MAX_LEAN_CODE_BYTES
 
 _EGG_BINDER_CANDIDATES = ("t", "q", "p", "s", "r", "m", "n", "k")
@@ -6812,14 +6868,20 @@ def constraint_search_exhausted() -> bool:
 # `finOpTable` cert must stay single-digit; it just is not the only shape
 # available.
 #
-# 25 is where two real limits meet, not a round number:
+# 25 *used* to be where two real limits met. Against the deployed caps it is
+# neither of them any more, and both moved on 2026-08-13 when the mirrored judge
+# limits were corrected (see `JUDGE_MAX_CODE_LENGTH`):
 #   * bytes — the `List.getD` rendering of an order-25 table is 1,972 bytes of
-#     the judge's 10,000-byte FALSE cap, and only passes ~45 in the worst case;
-#   * Lean time — order 25 against a 3-variable goal was `accepted` in 30.2 s
-#     of the judge's 120 s. Time binds first, and it binds on
-#     `n ** variables`, not on order, so `witness_decide_is_affordable` is the
-#     check that actually protects the timeout. This constant is the outer
-#     bound on top of it.
+#     the judge's *20,000*-byte FALSE cap; measured, that rendering does not
+#     cross 19,500 bytes until around order 82;
+#   * Lean time — order 25 against a 3-variable goal was `accepted` in 30.2 s,
+#     against a deployed 300 s timeout rather than the 120 s fallback this note
+#     used to cite. Time still binds on `n ** variables` rather than on order,
+#     so `witness_decide_is_affordable` is the check that actually protects the
+#     timeout; at 50,000 applications it allows order 36 for a 3-variable goal.
+# So 25 is our number again rather than a derived one, and it is also the edge
+# of the envelope the real judge has actually accepted. Raise it only on
+# real-judge evidence (rail 3c), not on the arithmetic above.
 MAX_WITNESS_ORDER = 25
 
 # The pre-2026-07-31 ceiling, kept as the boundary of the *proven* envelope:
@@ -6828,9 +6890,11 @@ MAX_WITNESS_ORDER = 25
 LEGACY_MAX_WITNESS_ORDER = 10
 
 # Exhaustive-`decide` applications a witness may cost the judge. Anchored on the
-# order-25 / 3-variable measurement above (15,625 applications -> 30.2 s), with
-# margin for slower judge hardware. See `witness_decide_is_affordable`.
-MAX_WITNESS_DECIDE_APPLICATIONS = 20_000
+# order-25 / 3-variable measurement above (15,625 applications -> 30.2 s) against
+# the deployed 300 s Lean timeout, holding ~3x margin for slower judge hardware.
+# Was 20_000, sized against a 120 s timeout that is only the local verifier's
+# fallback. See `witness_decide_is_affordable`.
+MAX_WITNESS_DECIDE_APPLICATIONS = 50_000
 
 CONSTRAINT_ORDERS = (8, 9, 6, 4, 10)
 CONSTRAINT_TIME_BUDGET = 3.0
@@ -7109,10 +7173,15 @@ def constraint_countermodel(
 WIDE_DOMAIN_ORDERS = (13, 16, 20, 25, 30, 40, 50, 60)
 WIDE_DOMAIN_VALUE_CAP = 10
 WIDE_DOMAIN_PER_ORDER_BUDGET = 20.0
-# Certs must clear the judge's 10 KB FALSE cap. JSON table size is roughly
-# n*(2n+1) bytes (brackets, commas, n single-digit entries per row) plus ~250
-# bytes of boilerplate; order 60 lands near 7.4 KB, order 65 crosses 8.6 KB —
-# leaving headroom is safer than chasing the exact byte count.
+# What bounds this tuple is the *decide* cost, not bytes. Measured 2026-08-13
+# at `WIDE_DOMAIN_VALUE_CAP`: order 60 renders to 7,548 B and order 95 to
+# 18,398 B, so against the real 19,500-byte FALSE cap the byte-bounded ceiling
+# is ~97 — bytes have never been binding here, and the earlier comment claiming
+# they were was reasoning from the halved 10 KB cap. The live constraint is
+# `witness_decide_is_affordable`: at 50,000 applications a 3-variable goal
+# reaches order 36 and a 2-variable goal order 223. Orders above that are
+# skipped before the search runs (see the loop below), so the high entries here
+# cost nothing and stay available to the 2-variable goals that can use them.
 
 
 def _eq1_has_bare_variable_side(eq1: dict[str, Any]) -> bool:
@@ -7137,7 +7206,21 @@ def constraint_countermodel_wide_domain(
         return None  # n^k instance blow-up dominates fast at these orders
     if _eq1_has_bare_variable_side(eq1):
         return None
+    # Skip an order the decide cost model will veto *before* searching it, not
+    # after. `table_is_counterexample` below ends in `witness_decide_is_affordable`,
+    # so on a 3-variable goal orders 40/50/60 (64,000 / 125,000 / 216,000
+    # applications) can only ever produce a table that is then thrown away —
+    # `_cp_search` was spending its full per-order budget to build one. At
+    # `WIDE_DOMAIN_PER_ORDER_BUDGET = 20 s` scaled by the effort tier that is up
+    # to 1,760 s of guaranteed-discarded work per row at `deep`, on the
+    # last-resort path, which under Marathon's per-row budget is taken directly
+    # out of other rows. Exhaustion-neutral: this function never sets
+    # `_CONSTRAINT_EXHAUSTED`, so skipping cannot license a speculative TRUE
+    # (rail 5f-ii).
+    widest = max(len(eq1["variables"]), len(eq2["variables"]), 1)
     for n in orders:
+        if n ** widest > MAX_WITNESS_DECIDE_APPLICATIONS:
+            continue
         deadline = local_deadline(_eff_time(time_budget))
         if deadline is not None and time.monotonic() >= deadline:
             return None
@@ -8063,7 +8146,7 @@ def submission : Goal := by
   exact hlem x (((y ◇ z) ◇ (x ◇ w)) ◇ (z ◇ u))
 """),
     ("v0 = (v1 ◇ ((v2 ◇ (v1 ◇ v1)) ◇ v0))",
-     "v0 = ((v1 ◇ v2) ◇ ((v0 ◇ v2) ◇ v0))"): ("false_code", "e1167_e1763", """import JudgeProblem
+     "v0 = ((v1 ◇ v2) ◇ ((v0 ◇ v2) ◇ v0))"): ("false", "e1167_e1763", """import JudgeProblem
 
 def submission.op (a b : Nat) : Nat :=
   if b % 2 = a % 2 then b + 1 else b - 1
@@ -10061,6 +10144,18 @@ def run_marathon() -> int:
         # zero accepts, nothing logged. `finally` because the `break` above and
         # the per-row `except` both leave the loop with a stale deadline live.
         set_hard_deadline(deadline - 20.0)
+        # Rail 10, one function further on. `_mem_reclaims_left` only ever
+        # decrements, and the deterministic loop resets it per row — but the LLM
+        # lane below never did, so it inherited whatever the *last* deterministic
+        # row left behind, which can be zero. Every candidate the lane builds
+        # goes through `local_deadline` -> `deadline_expired`, which
+        # short-circuits on `memory_exceeded()`; with no reclaims left every
+        # engine bails on entry and the lane logs
+        # `guided_chain_unproved_or_bad_endpoints` for every row. Tokens spent,
+        # zero accepts, and the log names the wrong cause — verbatim the shape
+        # that scored 287/1000 in the 08-01 campaign, and equally invisible to
+        # `audit_corpus.py`, which never arms the guard.
+        reset_memory_reclaims()
 
     llm_calls = 0
     call_llm, tokens_used, budget_remaining = load_marathon_llm()
@@ -10092,6 +10187,11 @@ def run_marathon() -> int:
             while index < len(unresolved) and llm_calls < MARATHON_LLM_MAX_CALLS and not stop_llm:
                 if time.monotonic() + 20.0 >= deadline:
                     break
+                # Per batch, for the same reason the deterministic loop resets
+                # per row: this is the lane's unit of work, and a guard trip in
+                # one batch must not disable every engine for all the batches
+                # after it.
+                reset_memory_reclaims()
                 used = tokens_used() if tokens_used is not None else None
                 if budget_tokens > 0 and used is not None and used >= budget_tokens:
                     log_stderr(
@@ -10223,9 +10323,27 @@ def is_marathon_mode() -> bool:
 
 
 def main() -> int:
-    if is_marathon_mode():
-        return run_marathon()
-    return run_solo()
+    """Rail 11's lesson applied one level further up.
+
+    `run_solo` wraps `solve_problem` and `run_marathon` wraps its whole per-row
+    body, so a bad *row* can no longer kill a run. Nothing wrapped the entry
+    points themselves, and the I/O boundary is outside both: `load_json_line`
+    on stdin in Solo, `iter_manifest` in Marathon. A failure there exited 1 with
+    an empty stdout — no judge call, no answer, nothing for the harness to
+    record but an ERROR.
+
+    Wrapped wide rather than around the call that looks riskiest, which is rail
+    11's other half: the first, narrow version of that fix missed the real site
+    twice. Returning 0 keeps a harness-visible answer path; the stderr line is
+    the diagnostic.
+    """
+    try:
+        if is_marathon_mode():
+            return run_marathon()
+        return run_solo()
+    except Exception as exc:  # noqa: BLE001 - never exit without an answer
+        log_stderr({"route": "main:crash", "error": f"{type(exc).__name__}: {exc}"})
+        return 0
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ The current `solver/solver.py` is still deliberately conservative, but it now ha
 3. exact substitution, projection-boundary laws, short bridge/constancy chains, bounded subterm rewrite chains, and bounded absorption-closure TRUE implications
 4. deterministic FALSE implications from named witnesses, structured tables, expanded linear/affine families, bounded quadratic families, dualized witnesses, and bounded finite search
 
-Countermodels are emitted as Lean certificates using `finOpTable` and `decideFin!`; larger `Fin 7+` tables set `maxRecDepth 20000`. Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. Active Marathon validation in this repo must use positive token budgets; do not run `--budget-tokens 0` as a guardrail. The broad `true:grind` fallback has been removed from active solver policy after playground error-rate failures.
+Countermodels are emitted as Lean certificates using `finOpTable` (order ≤ 10) or an inlined `List.getD` lookup (above it) plus `decideFin!`; `maxRecDepth 20000` is set when the decide cost `n ** variables` exceeds 4,096, not merely when the order does — a `Fin 6` table against a 5-variable goal needs it (rail 3b-iii in `CLAUDE.md`). Unresolved problems are skipped unless the official Solo/Marathon proxy supplies a positive-token LLM path. Active Marathon validation in this repo must use positive token budgets; do not run `--budget-tokens 0` as a guardrail. The broad `true:grind` fallback has been removed from active solver policy after playground error-rate failures.
 
 Current TRUE boundary rails are narrower than some historical prompt snippets: Marathon TRUE LLM submissions must be solver-owned `rewrite_chain` or `guided_chain` outputs. Raw TRUE Lean is disabled for Marathon and remains only a Solo/debug rail as `{"verdict":"true","code":"<complete Lean file>"}`. The Lean file may declare helper theorems, defs, lemmas, namespaces, or notation above `submission`. Legacy body-only `proof` / `proof_body` payloads are intentionally unsupported locally, even though an older vendored README prompt snippet still shows them.
 
@@ -49,7 +49,7 @@ Latest local candidate evidence after the final optimization patch:
 
 - `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke
 - `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke
-- packaged solver size: see `CLAUDE.md` (was `138939` bytes at the 2026-05-30 pass; the package has roughly doubled since as engines were added, and is still far under the 500 KB limit)
+- packaged solver size: see `CLAUDE.md` for the current figure (`445,640` bytes on 2026-08-13, 10.9% under the 500,000-byte cap; this line's `138939` was the 2026-05-30 pass, before most of the engines and the distilled-certificate library)
 - May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` historical Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
 - composite-affine focused fixture: `14/14` accepted
 - accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
@@ -74,7 +74,7 @@ Current best route learnings:
 - `true:grind` found `34` public wins but `433` incorrect attempts and failed playground error discipline; it is historical evidence only, not an active route.
 - Compact finite witnesses still pay rent, but broad brute-force bound increases are not the next best use of time.
 - `true:absorption_closure` and `true:equational_closure` produced accepted hard TRUE certificates; next TRUE work should be proof-producing local congruence/e-graph extraction.
-- `Fin 7` false certificates may need `set_option maxRecDepth 20000` before `decideFin!`.
+- False certificates may need `set_option maxRecDepth 20000` before `decideFin!` — keyed on the decide cost `n ** variables`, not on the order alone.
 - runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
 - canonical full public gap counts remain the 2026-05-12 numbers until `normal|hard1|hard2|hard3` are refreshed together.
 
@@ -84,7 +84,7 @@ Package it with:
 .\stage2\solver\package_solver.ps1
 ```
 
-The packaging script clears `stage2/submissions/` before copying `solver.py`, because the official Solo runner requires the submission directory to contain no extra files.
+The packaging script minifies to a temp file, checks the 500,000-byte cap, and only then swaps the result into `stage2/submissions/`; it removes a stale `__pycache__` and then asserts the directory holds nothing but `solver.py`, because the official Solo runner refuses to run otherwise. It used to wipe the directory *before* building, so a failed build left no artifact at all — and the directory is gitignored, so there was no copy to fall back on (fixed 2026-08-13).
 
 Before upload or playground testing, run `docs/playground-preflight.md`. It captures the single-file contract, the code-only raw TRUE boundary rails, official proxy LLM behavior, the local no-key caveat, failure classification, the small positive-token parity runner, and the wide public playground-equivalent sweep helper.
 

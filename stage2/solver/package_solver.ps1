@@ -36,23 +36,58 @@ if (-not $SkipTests) {
 $outDir = Split-Path $OutPath -Parent
 if ($outDir) {
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-    Get-ChildItem -Force -Path $outDir | Remove-Item -Force -Recurse
 }
 
-# Write the submission with LF line endings and no comments or docstrings.
-# Both are pure byte savings the judge does not need: LF instead of the CRLF
-# working tree is worth ~2% of the cap, and comments plus docstrings are ~17%.
+# Build to a temp file, validate, then swap into place. The previous order
+# emptied the output directory first and only then ran the minifier, so any
+# failure downstream left `stage2/submissions/` with no artifact at all — and
+# since `.gitignore` excludes it, there was no copy in git to fall back on.
+# The size check had the mirror-image bug: it threw "refusing to package" only
+# *after* the oversized file was already sitting at $OutPath, exactly where the
+# upload steps in EVAL_WORKFLOW.md tell an operator to pick it up.
+#
+# Writing the submission with LF line endings and no comments or docstrings is
+# pure byte savings the judge does not need: LF instead of the CRLF working tree
+# is worth ~2% of the cap, and comments plus docstrings are ~17%.
 # `minify_submission.py` proves the artifact parses to the same tree as the
 # source before writing it, so this cannot silently change behaviour.
 # UTF-8 without BOM: the file contains ◇ and a BOM would be junk to parse.
-& $python stage2/solver/minify_submission.py $sourcePath $OutPath
-if ($LASTEXITCODE -ne 0) {
-    throw "Minifying the submission failed; refusing to package."
-}
-$sizeBytes = (Get-Item $OutPath).Length
+$staging = Join-Path ([System.IO.Path]::GetTempPath()) ("solver-package-" + [guid]::NewGuid().ToString("N") + ".py")
+try {
+    & $python stage2/solver/minify_submission.py $sourcePath $staging
+    if ($LASTEXITCODE -ne 0) {
+        throw "Minifying the submission failed; refusing to package. $OutPath is unchanged."
+    }
+    $sizeBytes = (Get-Item $staging).Length
 
-if ($sizeBytes -gt $limitBytes) {
-    throw "Packaged solver is $sizeBytes bytes; limit is $limitBytes bytes."
+    if ($sizeBytes -gt $limitBytes) {
+        throw "Packaged solver is $sizeBytes bytes; limit is $limitBytes bytes. $OutPath is unchanged."
+    }
+
+    # Only now is the previous artifact replaced. Remove just the file we own,
+    # never the directory contents: $OutPath is caller-supplied, and a blind
+    # directory wipe keyed off it would happily delete the solver source.
+    if (Test-Path $OutPath) { Remove-Item -Force $OutPath }
+    Move-Item -Force $staging $OutPath
+
+    # The official Solo runner refuses to execute if the submission directory
+    # holds anything besides solver.py, and `__pycache__` appears there by
+    # accident easily -- any `py_compile`/`compileall` touching the artifact
+    # leaves one. The old blind directory wipe cleaned this as a side effect;
+    # now that the wipe is gone, remove it deliberately, then assert the
+    # invariant rather than trusting it.
+    $stalePycache = Join-Path $outDir "__pycache__"
+    if (Test-Path $stalePycache) { Remove-Item -Recurse -Force $stalePycache }
+
+    $expected = Split-Path $OutPath -Leaf
+    $strays = Get-ChildItem -Force -Path $outDir | Where-Object { $_.Name -ne $expected }
+    if ($strays) {
+        throw ("Submission directory $outDir contains entries besides ${expected}: " +
+               ($strays.Name -join ', ') + ". The official Solo runner rejects these.")
+    }
+}
+finally {
+    if (Test-Path $staging) { Remove-Item -Force $staging }
 }
 
 if ($sizeBytes -gt $WarnBytes) {

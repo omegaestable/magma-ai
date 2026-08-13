@@ -330,16 +330,26 @@ _TABLE_RE = re.compile(r'finOpTable "(\[\[.*?\]\])"')
 _LIST_TABLE_RE = re.compile(r"List\.getD \[([0-9,]+)\]")
 _FIN_RE = re.compile(r"Exists\.intro \(Fin (\d+)\)")
 
-# Restated from vendor/stage2-official/judge/verify.py rather than imported from
-# the solver: this harness shares no code with what it checks, so a wrong
-# constant in the solver cannot hide behind the same wrong constant here.
-JUDGE_MAX_FALSE_CERT_BYTES = 10_000
+# Restated from vendor/stage2-official/pipeline/config.json (the `judge` block
+# the runner actually passes to the verifier) rather than imported from the
+# solver: this harness shares no code with what it checks, so a wrong constant
+# in the solver cannot hide behind the same wrong constant here.
+#
+# Restating is only a safeguard if it restates the right source. This said
+# 10_000 until 2026-08-13, taken from `judge/verify.py`'s module default — which
+# is the fallback for invoking the verifier with no config, not the deployed
+# limit — so for two weeks the solver's wrong cap was mirrored here exactly, and
+# the independence bought nothing. Verified by experiment: a certificate judged
+# under each cap is `malformed/CODE_TOO_LONG` at the fallback and `accepted` at
+# the deployed value.
+JUDGE_MAX_FALSE_CERT_BYTES = 20_000
 # `decideFin!` is exhaustive, so an equation in k variables costs n**k magma
 # applications. Anchored on the real judge (2026-07-31): order 25 against a
-# 3-variable goal is 15,625 applications and was accepted in 30.2 s of the
-# judge's 120 s. Applies only above order 10, the envelope every accepted FALSE
-# row to date already sits inside.
-MAX_WITNESS_DECIDE_APPLICATIONS = 20_000
+# 3-variable goal is 15,625 applications and was accepted in 30.2 s, against a
+# deployed Lean timeout of 300 s (not the 120 s fallback). Holding ~3x margin
+# for slower judge hardware gives ~51,700; 50,000 is that rounded down. Applies
+# only above order 10, the envelope every accepted FALSE row to date sits inside.
+MAX_WITNESS_DECIDE_APPLICATIONS = 50_000
 
 _LEMMA_CHAIN_HEAD = "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n"
 
@@ -599,7 +609,7 @@ def check_no_banned_tactics(code: str, route: str = "") -> None:
 # `List.getD` (any order): the lookup is inlined into the submission, so no
 # parser is involved and cells may hold any value below `n`. Judge-accepted at
 # orders 13, 17 and 25 on 2026-07-31. What bounds this shape is the judge's
-# 10,000-byte FALSE cap and its 120 s Lean timeout, both checked below.
+# 20,000-byte FALSE cap and its 300 s Lean timeout, both checked below.
 def _judge_pinned_false_certs() -> frozenset[str]:
     """Byte-exact FALSE certificates the real Lean judge accepted.
 
@@ -662,7 +672,7 @@ def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any])
     if any(not (0 <= v < n) for row in table for v in row):
         raise OracleError("table entries out of range")
 
-    # The judge rejects an oversized certificate outright, and times out at 120 s
+    # The judge rejects an oversized certificate outright, and times out at 300 s
     # on one whose `decide` is too wide. Both cost the row, so both are errors
     # here rather than warnings.
     size = len(code.encode("utf-8"))

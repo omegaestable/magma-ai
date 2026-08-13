@@ -55,3 +55,14 @@ vendor/stage2-official/**/*.pyc
 # Lean/Lake artifacts if created outside the vendor tree
 .lake/
 lake-packages/
+
+# Tool state that is currently ignored only by accident, and so would reappear
+# on a fresh clone: `.pytest_cache/` is skipped only because pytest writes a
+# `.gitignore` inside it, and `.claude/settings.local.json` only because this
+# machine happens to carry a matching rule in its global git ignore.
+.pytest_cache/
+.claude/settings.local.json
+
+# `solve_row.py` writes one directory of derivation artifacts per row it is run
+# on, alongside itself. The tool is tracked; its output is not.
+stage2/experiments/completion/*/

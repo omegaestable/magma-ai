@@ -1,21 +1,55 @@
 # Next session brief — Solo evidence, step budgets, and productising completion
 
 Written 2026-08-12 at the end of session 2 (tier inversion / latency / real
-Marathon). Deadline: **2026-08-31 23:59 AoE**. Read `CLAUDE.md` first; this file
-is the plan, not the state.
+Marathon), amended 2026-08-13 after the judge-limit correction. Deadline:
+**2026-08-31 23:59 AoE**. Read `CLAUDE.md` first; this file is the plan, not the
+state.
+
+---
+
+## 0. Amendment, 2026-08-13 — read this before picking an item below
+
+The judge's real limits are **100,000 bytes of Lean, 20,000 bytes for a FALSE
+certificate, and a 300 s Lean timeout** (`judge` block of
+`vendor/stage2-official/pipeline/config.json`, which `pipeline/proxy.py` passes
+straight into the judge). The solver had been enforcing half of each since
+2026-07-29, from `judge/verify.py`'s no-config fallback. Settled by experiment,
+not argument: one certificate judged twice, 60,015 B and 90,023 B both
+`malformed`/`CODE_TOO_LONG` at 50,000 and **`accepted`** at 100,000.
+
+Consequences for this plan:
+
+- **Nothing below has been re-measured against the corrected caps.** Every
+  coverage number in section 1 was produced by a solver that discarded any
+  certificate over 49.5 KB and any FALSE certificate over 9.5 KB. Rows that
+  previously lost to a byte cap are the cheapest thing to re-try, and a
+  re-audit is owed before any of these numbers are quoted forward.
+- `MAX_WITNESS_DECIDE_APPLICATIONS` (20,000 → 50,000) and `EGG_MAX_PROOF_BYTES`
+  (46 KB → 96 KB) moved with the caps, so the witness and egg reach both changed.
+- Solo's LLM timing constants were recalibrated to a 300 s judge call
+  (`LLM_HTTP_TIMEOUT_SECONDS` 75 → 300 s, after 225 of 446 logged real calls
+  aborted at 75 s; `SOLO_FALLBACK_RESERVE_SECONDS` 90 → 310;
+  `SOLO_LLM_ROUND_MIN_SECONDS` 150 → 620). That lands on top of item 2.1, which
+  was already the highest-value item: **the Solo run now tests changed code.**
+
+Detail: `CLAUDE.md` (the 2026-08-13 section and rail 3b's third instance) and
+`CURRENT_STATE.md`.
 
 ---
 
 ## 1. Where things stand
 
+Coverage and timing below are the 2026-08-12 session-2 measurements, taken
+before the correction above.
+
 | | |
 | --- | --- |
-| Offline, `fast` tier | official **1669/1669**, HF **800/800**, `sample_200` **200/200** — **2689/2689** |
-| Row-id diff, three isolated audits this session | **0 lost, +3 gained**, 0 oracle failures, 0 crashes |
+| Offline, `fast` tier | official **1669/1669**, HF **800/800**, `sample_200` **200/200** — **2669 distinct rows** (the three sets overlap; do not sum them to 2689) |
+| Row-id diff, three isolated audits that session | **0 lost, +3 gained**, 0 oracle failures, 0 crashes |
 | Audit wall clock | official **980 s → 330 s**, HF **773 s → 344 s** |
 | Gate | **252 passed, 2 skipped** |
 | Judge-pinned certs | **99, all 99 re-checked by the gate** (was 69 checked / 31 skipped) |
-| Packaged | **445,233 B** of 500,000 (54,767 left, 11.0%) |
+| Packaged | **445,640 B** of 500,000 (54,360 left, 10.9%) — 2026-08-13 build; the 2026-08-12 build was 445,233 B |
 | Closing real Marathon | `hard3.jsonl` **400/400**, fresh ETP sample **200/200** — **600/600 accepted, 0 rejected, 0 `not_attempted`, 0 LLM calls** |
 | Spotcheck | 108 rows / 9 sources, **100% accuracy, 0 mistakes** |
 
@@ -58,16 +92,26 @@ noise band. Four separate cost bugs (rails 5f-iii, 5f-iv, 5f-v) have all been
 
 ### 2.3 Productise ordered completion as a solver route
 
-The completion pipeline in `tmp_stage2_smoke/final-nine-2026-08-12/` closed the
-final nine **and** this session's last three with **no modification and no
-tuning**, each in under 0.2 s. It is strictly stronger than the e-graph on this
-problem class — it derives new rules by superposition and rewrites with them,
-where an e-graph only propagates congruence over terms it already built.
+The completion pipeline closed the final nine **and** this session's last three
+with **no modification and no tuning**, each in under 0.2 s. It is strictly
+stronger than the e-graph on this problem class — it derives new rules by
+superposition and rewrites with them, where an e-graph only propagates
+congruence over terms it already built.
 
-Right now that capability lives outside the submission. If a fresh corpus
-appears, the solver cannot use it. Porting it in is the single biggest coverage
-insurance available, and 54,767 bytes of headroom is probably enough for a
-compact implementation.
+**Half of this item is done as of 2026-08-13**: the pipeline was moved out of
+`tmp_stage2_smoke/final-nine-2026-08-12/` (gitignored, one machine, an absolute
+path baked into `render.py`) into `stage2/experiments/completion/`, where it is
+row-agnostic and driven by
+`python stage2/experiments/completion/solve_row.py <row_id> [budget_s]`. Read its
+`README.md` before starting: it records four fresh judge-accepted certificates, a
+generality measurement (47 of 88 already-solved TRUE rows provable at a 4 s cap,
+0 unsound; 30 FALSE rows, 0 spurious joins), a **GO** verdict on porting with the
+byte arithmetic worked out, and one reproducible defect — a derived collapse
+`x = y` is thrown away unoriented, which is the dominant shape on this frontier.
+
+What is still open is the port itself: the capability lives outside the
+submission, so a fresh corpus cannot use it. That remains the single biggest
+coverage insurance available.
 
 ### 2.4 Two known un-deadlined sites (measured, not yet fixed)
 

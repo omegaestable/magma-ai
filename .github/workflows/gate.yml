@@ -13,6 +13,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# A second push to the same branch supersedes the first; the gate takes minutes
+# and nothing downstream reads an obsolete run.
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   offline-gate:
     runs-on: ubuntu-latest
@@ -20,9 +26,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 3.11 is what the submission actually runs on: the evaluation sandbox is
+      # `python:3.11-slim`. This said 3.12 until 2026-08-13, so nothing in CI
+      # had ever executed the solver on the interpreter that grades it.
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
       - name: Install dev dependencies
         run: |
@@ -38,13 +51,65 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: python -m pytest stage2/tests -q -n auto
 
-      - name: Packaged solver stays under the submission limit
+      # The 500 KB cap applies to the *submission*, which is the minified
+      # artifact — not `stage2/solver/solver.py`, which carries comments and
+      # docstrings and has been legitimately over 500 KB since 2026-08-12. This
+      # step asserted on the source until 2026-08-13 and was therefore red on
+      # every push while the actual deliverable had ~11% headroom. The artifact
+      # is gitignored (it is a build output), so CI has to build it to check it
+      # — which also means the packaging path itself is exercised on every push.
+      - name: Build the submission and check the 500 KB cap
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
+          python stage2/solver/minify_submission.py \
+            stage2/solver/solver.py /tmp/solver.py
           python - <<'PY'
           from pathlib import Path
-          src = Path("stage2/solver/solver.py")
-          size = len(src.read_bytes())
+          size = len(Path("/tmp/solver.py").read_bytes())
           limit = 500_000
-          print(f"{src}: {size} bytes of {limit}")
-          assert size <= limit, f"solver is {size} bytes, over the {limit} limit"
+          print(f"packaged submission: {size} bytes of {limit} "
+                f"({limit - size} free, {100 * (limit - size) / limit:.1f}%)")
+          assert size <= limit, f"submission is {size} bytes, over the {limit} limit"
+          PY
+
+      # The solver mirrors the judge's limits so it never emits a certificate
+      # that will be rejected on size. Those mirrors were wrong for two weeks
+      # (halved, from `judge/verify.py`'s no-config fallback instead of the
+      # `judge` block the runner actually passes) and nothing detected the
+      # drift. This pins the mirrors to the vendored source of truth.
+      - name: Solver limits match the vendored official config
+        run: |
+          python - <<'PY'
+          import ast, json, pathlib
+
+          config = json.loads(
+              pathlib.Path("vendor/stage2-official/pipeline/config.json").read_text())
+          judge = config["judge"]
+
+          # Read the constants without importing the solver: this check must not
+          # depend on the module it is checking.
+          tree = ast.parse(pathlib.Path("stage2/solver/solver.py").read_text(encoding="utf-8"))
+          found = {}
+          for node in tree.body:
+              if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant):
+                  for target in node.targets:
+                      if isinstance(target, ast.Name):
+                          found[target.id] = node.value.value
+
+          expected = {
+              "JUDGE_MAX_CODE_LENGTH": judge["max_code_length"],
+              "JUDGE_MAX_FALSE_CERT_BYTES": judge["max_false_cert_bytes"],
+          }
+          problems = []
+          for name, want in expected.items():
+              got = found.get(name)
+              if got != want:
+                  problems.append(f"solver.{name} = {got!r}, config.json says {want!r}")
+          if problems:
+              raise SystemExit(
+                  "solver judge limits drifted from vendor/stage2-official/"
+                  "pipeline/config.json:\n  " + "\n  ".join(problems))
+          print("solver judge limits match config.json:",
+                {k: found[k] for k in expected})
           PY

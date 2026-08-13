@@ -1251,9 +1251,11 @@ def test_orders_within_the_legacy_envelope_keep_their_shape(solver):
 def test_no_complete_table_route_exceeds_the_order_ceiling(solver):
     """Every *complete-table* engine's order constants must stay <= 25.
 
-    25 is where the judge's own limits meet, measured against the real judge:
-    the rendered table still fits the 10,000-byte FALSE cap, and a 3-variable
-    goal costs 30.2 s of its 120 s Lean timeout. `WIDE_DOMAIN_ORDERS` legally
+    25 is the edge of the envelope the real judge has actually accepted: an
+    order-25 table renders to 1,972 bytes of the 20,000-byte FALSE cap, and a
+    3-variable goal cost 30.2 s of the 300 s Lean timeout. Neither limit binds
+    at 25 any more (see MAX_WITNESS_ORDER), so it is now our bound, not a
+    derived one. `WIDE_DOMAIN_ORDERS` legally
     exceeds it because that engine caps cell *values*, not order — see
     `test_wide_domain_orders_are_value_capped_not_order_capped`.
     """
@@ -1447,3 +1449,82 @@ def test_reflexive_fast_path_requires_both_equation_ids(solver):
     if record is not None:
         assert record["route"] != "true:reflexive"
         assert "exact h\n" not in record["answer"]["code"]
+
+
+def test_distilled_certs_are_tactic_free_and_within_judge_caps(solver):
+    """Every distilled certificate, checked directly rather than via a row.
+
+    `test_solver_certificate_templates_are_tactic_free` scans the solver source
+    line by line and skips any line without a literal `\n`, on the stated
+    premise that emitted Lean is always a single-line string carrying explicit
+    newlines. `DISTILLED_CERTS` breaks that premise: it stores complete Lean
+    files as triple-quoted literals, so none of their physical lines contain a
+    literal `\n` and all of them are skipped. That is the largest block of
+    emitted Lean in the file — 65 entries — invisible to the static scan.
+
+    Verified by mutation: injecting a bare `grind` into a distilled certificate
+    body leaves the line-based scan reporting zero offenders.
+
+    The runtime path covers most of these incidentally, because pinned rows in
+    `test_judge_verified.py` happen to reach them, but nothing requires a new
+    entry to be reachable from a pinned row. This needs no row at all.
+    """
+    assert solver.DISTILLED_CERTS, "the distilled table is empty"
+    for key, (verdict, name, code) in solver.DISTILLED_CERTS.items():
+        label = f"{verdict}:distilled:{name}"
+
+        # A verdict outside VALID_VERDICTS reaches the wire only through a
+        # coercing else-branch. The same typo on a TRUE entry would ship
+        # verdict "false" alongside a TRUE proof.
+        assert verdict in solver.VALID_VERDICTS, (
+            f"{label}: verdict {verdict!r} is not one of {sorted(solver.VALID_VERDICTS)}; "
+            f"the dispatch coerces anything unrecognised to FALSE")
+
+        oracles.check_no_banned_tactics(code, label)
+
+        size = len(code.encode("utf-8"))
+        assert size <= solver.JUDGE_MAX_CODE_LENGTH, (
+            f"{label}: {size} bytes, over the judge's "
+            f"{solver.JUDGE_MAX_CODE_LENGTH}-byte cap")
+        if verdict == "false":
+            assert size <= solver.JUDGE_MAX_FALSE_CERT_BYTES, (
+                f"{label}: {size} bytes, over the judge's "
+                f"{solver.JUDGE_MAX_FALSE_CERT_BYTES}-byte FALSE cap")
+        assert isinstance(key, tuple) and len(key) == 2, (
+            f"{label}: key must be a (canonical eq1, canonical eq2) pair, not a row id "
+            f"(CLAUDE.md rail 9)")
+
+
+def test_solver_judge_caps_match_the_vendored_official_config():
+    """The solver's mirrored judge limits must equal what the runner passes.
+
+    These were halved on 2026-07-29 to match `judge/verify.py`'s module-level
+    constants, which are only the fallback for invoking the verifier with no
+    config. The deployed pipeline always passes `pipeline/config.json`'s `judge`
+    block instead, and nothing detected the drift for two weeks — so the solver
+    enforced half its real certificate budget and discarded every proof in the
+    46-96 KB band.
+
+    Read from the vendored JSON rather than from `judge/verify.py`, because the
+    Python module is exactly the wrong source: it is the fallback, not the
+    deployment.
+    """
+    config_path = (
+        Path(__file__).resolve().parents[2]
+        / "vendor" / "stage2-official" / "pipeline" / "config.json"
+    )
+    if not config_path.exists():  # pragma: no cover - vendored snapshot absent
+        pytest.skip("vendored official config not present")
+    judge = json.loads(config_path.read_text(encoding="utf-8"))["judge"]
+
+    import solver as solver_module
+
+    assert solver_module.JUDGE_MAX_CODE_LENGTH == judge["max_code_length"]
+    assert solver_module.JUDGE_MAX_FALSE_CERT_BYTES == judge["max_false_cert_bytes"]
+    # Our own caps must sit strictly under the judge's, so a certificate that
+    # passes locally can never be rejected on size.
+    assert solver_module.MAX_LEAN_CODE_BYTES < solver_module.JUDGE_MAX_CODE_LENGTH
+    assert solver_module.MAX_FALSE_CERT_BYTES < solver_module.JUDGE_MAX_FALSE_CERT_BYTES
+    # And the oracle restates the same numbers independently; if it restates a
+    # stale one, the gate rejects certificates the judge would accept.
+    assert oracles.JUDGE_MAX_FALSE_CERT_BYTES == judge["max_false_cert_bytes"]
