@@ -74,6 +74,15 @@ def load_rows() -> list[dict]:
     return out
 
 
+def load_rows_from_file(path: Path) -> list[dict]:
+    text = path.read_text(encoding="utf-8")
+    rows = ([json.loads(line) for line in text.splitlines() if line.strip()]
+            if path.suffix == ".jsonl" else json.loads(text))
+    for row in rows:
+        row["_set"] = path.stem
+    return rows
+
+
 def sample_balanced(rows: list[dict], per_class: int, seed: int,
                     unresolved_only: bool, workers: int) -> list[dict]:
     rng = random.Random(seed)
@@ -283,6 +292,15 @@ def main() -> int:
                     help="Solo-style: accept raw Lean from the model")
     ap.add_argument("--unresolved-only", action="store_true",
                     help="prefer rows the deterministic solver skips")
+    ap.add_argument("--file", type=Path, default=None,
+                    help="load problems from an arbitrary jsonl/json instead "
+                         "of the named official sets (e.g. a frontier of "
+                         "unsolved rows from audit_corpus.py)")
+    ap.add_argument("--all-in-file", action="store_true",
+                    help="use every row in --file directly, skipping the "
+                         "balanced-sample re-probe (rows are assumed "
+                         "already-unresolved, e.g. straight from an "
+                         "audit_corpus.py 'skip' list)")
     ap.add_argument("--effort", choices=("fast", "standard", "deep"),
                     default="fast",
                     help="engine effort while bridging LLM chains; Solo runs "
@@ -301,9 +319,14 @@ def main() -> int:
     S.set_effort(args.effort)
     cpu = max(1, min(16, (os.cpu_count() or 2) - 2))
     t_start = time.monotonic()
-    rows = load_rows()
-    sample = sample_balanced(rows, args.per_class, args.seed,
-                             args.unresolved_only, cpu)
+    if args.file and args.all_in_file:
+        sample = load_rows_from_file(args.file)
+        for row in sample:
+            row["_deterministic"] = None
+    else:
+        rows = load_rows_from_file(args.file) if args.file else load_rows()
+        sample = sample_balanced(rows, args.per_class, args.seed,
+                                 args.unresolved_only, cpu)
     det_solved = sum(1 for p in sample if p.get("_deterministic"))
     print(f"sampled {len(sample)} problems "
           f"({sum(1 for p in sample if p['answer'])} TRUE / "

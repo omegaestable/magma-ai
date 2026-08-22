@@ -1,5 +1,73 @@
 # Latest Handoff
 
+## 2026-08-21: ordered completion is a solver route, and the corpus got 24% faster
+
+Full detail: `stage2/results/2026-08-21-completion-engine-and-latency.md`. This
+session executed the top lever both 2026-08-20 measurement logs pointed at, and
+`CLAUDE.md` had carried a **GO** verdict on since 2026-08-13.
+
+**Coverage held and was proved held.** Row-id diff against
+`audit-2026-08-12-final.json` (+ its HF twin): **0 lost, 0 gained, 0 verdict
+flips** over 2,669 common rows; 0 crashes and 0 oracle failures over 2,689
+audited rows. Official 1669/1669, HF 800/800, `sample_200` 200/200.
+
+- **`true:completion` shipped** — ordered (unfailing) Knuth-Bendix completion
+  with proof recording, ported from `stage2/experiments/completion`. Two slots:
+  `completion_probe_route` (**unscaled 2 s**, right after `egg_probe_route`) and
+  `completion_route` (tier-scaled 8 s, after the egg family). The early slot pays
+  rather than costs because completion's *loss* is cheap: it saturates in ~0 s
+  rather than spending its budget, which is not true of any engine below it.
+- **It closes 43 of the 51 TRUE rows on the 20k-ETP-sample frontier, in 0.3 s for
+  all 43** — a frontier where ~450 s of deterministic search per row and a real
+  `gpt-oss-120b` lemma-lane pass had both scored 0/51. It serves **304 corpus
+  rows** and is **12/12 real-judge accepted** across both certificate shapes.
+- **The dev tool's flagged collapse gap was narrower than the real one.** It
+  looked for `x = y`; the general shape is any derived `t = v` with `v` not
+  occurring in `t`, which says every carrier element equals that one instance of
+  `t`. `x = y` alone closes 19 frontier rows; the general shape is what **12
+  more** were sitting on. Same fact — invisible if you search for the literal
+  two-variable equation.
+- **The goal is skolemised before joining**, worth 3 more rows and a correctness
+  fix regardless: KBO cannot orient two distinct variables, so a goal left with
+  variables silently blocks every unorientable equation from rewriting it.
+- **Latency: official 330 s → 250 s (−24%), HF 344 s → 164 s (−52%)**,
+  `sample_200` 71.5 → 22.3 s, `hf_evaluation_order5` 162.9 → 73.4 s. Two causes:
+  completion preempting slower engines on 304 rows, and —
+- **the single-rule egg extraction turning out to have no deadline at all**
+  (fifth instance of rail 5f-v). `_egg_bridge_steps` is O(states²) with neither a
+  deadline nor a state cap, while `_egg_bridge_steps_multi` has had both since it
+  was written *above a comment explaining exactly why*; `explain` took no
+  `deadline` while `explain_multi` did. Latent while every corpus was order-4.
+- **Order-5 improved for free**: 9 of a 25-row probe of the 2026-08-20 order-5
+  frontier now solve, and `order5_23416_48258` — the row that ran **3,538 s
+  against a 300 s budget** — now answers in **4.9 s**.
+- **Real-runner: 600/600 judge-accepted, 0 rejected, 0 `not_attempted`, 0 LLM
+  calls** — Marathon `hard3.jsonl` **400/400 in 612 s** (was 1,152 s, −47%) and a
+  fresh unseen 200-row ETP sample **200/200**, both on a positive 200,000-token
+  budget.
+- **A harness bug the ETP run exposed** (rail 3b-iv): it first scored 199/200,
+  and the one `malformed` was an 88,539-byte certificate hitting
+  `judge/verify.py`'s **50,000-byte fallback**. `judge_rows.py` was fixed to pass
+  the deployed 100,000 on 2026-08-13; `run_marathon_batch.py` and
+  `run_solo_batch.py` never were. Same certificate, cap varied: `malformed` at
+  50,000, **`accepted` at 100,000**. Both runners fixed; re-scored 200/200.
+- **Packaged 466,320 / 500,000 bytes** (33,680 free, 6.7%). The engine cost
+  20,680 B. Gate **257 passed, 2 skipped**; spotcheck **216 rows / 9 sources,
+  100% accuracy, 0 mistakes**.
+
+**Two dead ends measured and recorded so they are not re-run:** instantiating the
+*other* unorientable shape closes 0 rows (`subsumed()` discards each instance as
+an instance of the still-active parent), and a cap on `derived_rule_steps` cannot
+bind — measured max is **619 steps per call** over 2,737 calls, so the 5 GB
+`NEXT_SESSION_BRIEF` §2.4 attributes to it is really the caller's
+`chain_trans`-concatenated proof strings.
+
+**Still open:** 8 order-4 rows where completion genuinely saturates, 1 FALSE miss
+(`etp_1661_3524`) undiagnosed, and the byte-recovery half of the port (~26
+`DISTILLED_CERTS` entries may now be live-solvable) unverified.
+
+---
+
 ## 2026-08-13: the judge's limits were configuration, and we had mirrored the wrong ones
 
 Documentation and tooling session; no coverage measurement was taken, so every

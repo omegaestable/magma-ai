@@ -142,7 +142,7 @@ down.
 
 ## Architecture
 
-`stage2/solver/solver.py` — 10,308 lines (2026-08-13), single file by contract.
+`stage2/solver/solver.py` — 11,011 lines (2026-08-21), single file by contract.
 
 **Route ordering is load-bearing.** `solve_problem()` dispatches through a fixed
 cheap-to-expensive order, so rows that a syntactic route can claim never pay for
@@ -251,15 +251,19 @@ audit** at `fast` tier; see the caveat below before quoting any wall clock.
 
 | Metric | Value | Measured |
 | --- | --- | --- |
-| Official sets (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669** | 2026-08-12 |
-| Official TRUE / FALSE | **819 / 819** and **850 / 850** | 2026-08-12 |
-| HF mirror sets | **800 / 800** | 2026-08-12 |
-| `sample_200` (an ETP sample disjoint from `normal`) | **200 / 200** | 2026-08-12 |
-| Distinct rows solved | **2669** | 2026-08-12 |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0** | 2026-08-12 |
-| Offline gate | 252 passed, 2 skipped, ~24 s (`-n auto`) | 2026-08-12 |
-| Packaged artifact | **445,640 of 500,000 bytes** (54,360 free, 10.9%) | 2026-08-13 |
-| Solver source | 10,308 lines | 2026-08-13 |
+| Official sets (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669** | 2026-08-21 |
+| Official TRUE / FALSE | **819 / 819** and **850 / 850** | 2026-08-21 |
+| HF mirror sets | **800 / 800** | 2026-08-21 |
+| `sample_200` (an ETP sample disjoint from `normal`) | **200 / 200** | 2026-08-21 |
+| Distinct rows solved | **2669** | 2026-08-21 |
+| Oracle failures / crashes / label mismatches | **0 / 0 / 0** | 2026-08-21 |
+| Row-id diff vs the 2026-08-12 baseline | **0 lost, 0 gained, 0 verdict flips** | 2026-08-21 |
+| Audit wall clock (16 workers) | official **250 s**, HF **164 s** (were 330 / 344) | 2026-08-21 |
+| Unseen order-4 ETP, 20,000-row sample | **19,948 solved**; of its 52-row frontier `true:completion` closes 43 of the 51 TRUE rows | 2026-08-20/21 |
+| Real Marathon | `hard3.jsonl` **400/400** in 612 s (was 1152 s) + fresh unseen ETP-200 **200/200** — **600/600 accepted, 0 rejected** | 2026-08-21 |
+| Offline gate | 257 passed, 2 skipped (`-n auto`) | 2026-08-21 |
+| Packaged artifact | **466,320 of 500,000 bytes** (33,680 free, 6.7%) | 2026-08-21 |
+| Solver source | 11011 lines | 2026-08-21 |
 
 State the corpus as its constituent sets — official 1669/1669, HF mirrors
 800/800, `sample_200` 200/200, **2669 distinct rows**. An earlier headline in

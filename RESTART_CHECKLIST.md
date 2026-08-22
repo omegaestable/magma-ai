@@ -30,9 +30,28 @@ before touching anything. Everything else is on-demand:
 ## 2. Check the environment
 
 ```powershell
-.\.venv\Scripts\python.exe -V          # expect 3.11 — the sandbox is python:3.11-slim
+.\.venv\Scripts\python.exe -V
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
+
+**The local venv is Python 3.14, and the sandbox that grades the submission is
+`python:3.11-slim`.** This line used to say "expect 3.11", which had stopped
+being true, and leaving it there made a real risk look checked. The guard
+is CI (`.github/workflows/gate.yml` pins `python-version: "3.11"`), not the local
+interpreter. The risk it guards against is syntax newer than 3.11 — PEP 701
+f-strings (nested same-type quotes) are the easy one to write by accident on
+3.12+ and they are a hard `SyntaxError` on 3.11, which would fail the whole
+submission rather than one row.
+
+The offline gate carries the local half of that guard:
+`test_solver_uses_no_syntax_newer_than_the_interpreter_that_grades_it`, which
+scans `solver.py` for the PEP 701 relaxations and asserts on a known-bad probe
+that its own scanner still bites.
+
+**Do not "simplify" it to `ast.parse(..., feature_version=(3, 11))`.** That was
+tried on 2026-08-21 and it is **vacuous** — `feature_version` does not gate PEP
+701, so it parses `f"{d["k"]}"` without complaint and the test passes on code the
+sandbox cannot import. A guard that cannot fail is worse than no guard.
 
 Only if you need the Lean judge (i.e. you are touching a certificate builder):
 
@@ -116,8 +135,10 @@ Get-ChildItem -Force stage2/submissions
    official Solo runner rejects the directory before executing the solver. Delete
    any `__pycache__`, `.gitkeep` or stray file. (The directory is gitignored, so
    git will not warn you.)
-3. Size under 500,000 bytes. Last packaged: **445,640 bytes, 10.9% headroom**
-   (2026-08-13). Never shrink it by deleting routes — rail 1.
+3. Size under 500,000 bytes. Last packaged: **466,320 bytes, 6.7% headroom**
+   (2026-08-21). Never shrink it by deleting routes — rail 1. If headroom is ever
+   needed, the measured slack is in `DISTILLED_CERTS`, not in routes: see
+   `stage2/docs/NEXT_SESSION_BRIEF.md` §3.3.
 4. Single file, no repo-local imports, no network, no secrets. The sandbox is
    `python:3.11-slim`, 2 vCPU, 2048 MB RAM, read-only filesystem, network
    disabled.

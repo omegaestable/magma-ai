@@ -80,7 +80,7 @@ then asserts the directory holds nothing but `solver.py`. A failed build
 therefore leaves the previous artifact intact rather than an empty directory.
 
 Do not carry package sizes forward in this file; the current figure lives in
-`CLAUDE.md` (**445,640 bytes** on 2026-08-13). The `138939` bytes this line used
+`CLAUDE.md` (**466,320 bytes** on 2026-08-21). The `138939` bytes this line used
 to quote was a 2026-05-30 measurement and was stale by ~300 KB.
 
 The cap that matters is on the **artifact**, not on `stage2/solver/solver.py` —

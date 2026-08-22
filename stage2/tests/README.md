@@ -12,7 +12,7 @@ Run the gate:
 
 `-n auto` (pytest-xdist) matters: the gate re-solves ~170 real problems, which was
 ~160 s serially and ~47 s across cores when measured on 2026-07-29. The current
-gate is **252 passed, 2 skipped in ~24 s** (`-n auto`, 2026-08-12 — the figure
+gate is **257 passed, 2 skipped** (`-n auto`, 2026-08-21 — the figure
 `CLAUDE.md` carries). A slow gate is a gate people skip.
 
 `stage2/solver/package_solver.ps1` runs it automatically and refuses to

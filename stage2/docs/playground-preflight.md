@@ -23,7 +23,7 @@ It must satisfy the official submission contract:
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
 
-Packaged size: see `CLAUDE.md` for the current figure (`445,640` bytes on 2026-08-13; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
+Packaged size: see `CLAUDE.md` for the current figure (`466,320` bytes on 2026-08-21; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
 
 Current TRUE boundary rails:
 

@@ -7,9 +7,10 @@ the operational detail that does not belong in the entry point (effort tiers,
 deployed budgets, artifact inventory) and a dated index into `stage2/results/`,
 which is the evidence.
 
-Last updated: **2026-08-13** — the deployed judge limits were corrected. They are
-*configuration*, not properties of the judge, and the solver had been carrying
-half the real values for two weeks.
+Last updated: **2026-08-21** — ordered Knuth-Bendix completion shipped as the
+`true:completion` solver route. Coverage held (0 lost / 0 gained by row id) and
+the corpus audit got 24% faster; the first frontier *outside* the local corpus,
+found by the 2026-08-20 20,000-row ETP sample, went from 0/51 to 43/51.
 
 ---
 
@@ -22,14 +23,16 @@ half the real values for two weeks.
 | `sample_200` (ETP sample, disjoint from `normal`) | **200 / 200** |
 | Distinct local rows | **2669 / 2669** — see the double-count note |
 | Oracle failures / crashes / label mismatches | 0 / 0 / 0 |
-| Open mathematical frontier | **none, anywhere local** |
-| Packaged artifact | **445,640 of 500,000 bytes** (54,360 free, 10.9%), built 2026-08-13 |
+| Open mathematical frontier | **none locally**; outside the corpus, the 20,000-row ETP sample's 52-row frontier is down to **8 order-4 TRUE rows + 1 FALSE row** |
+| Audit wall clock | official **250 s** (was 330 s), HF **164 s** (was 344 s) |
+| Packaged artifact | **466,320 of 500,000 bytes** (33,680 free, 6.7%), built 2026-08-21 |
 
-Measured by three isolated `fast`-tier audits on 2026-08-12; reports
-`stage2/results/audit-2026-08-12-postfix-fast.json` (code change only),
-`audit-2026-08-12-final.json` (code change + 34 distilled certs) and
-`audit-2026-08-12-postfix-fast-hf.json`. Narrative:
-`stage2/results/2026-08-12-tier-inversion-and-latency.md`.
+Measured by a `fast`-tier audit on 2026-08-21 —
+`stage2/results/audit-2026-08-21-completion.json` and
+`...-completion-hf.json` — diffed by row id against the 2026-08-12 baseline
+(`audit-2026-08-12-final.json` + `audit-2026-08-12-postfix-fast-hf.json`):
+**0 lost, 0 gained, 0 verdict flips** over 2,669 common rows. Narrative:
+`stage2/results/2026-08-21-completion-engine-and-latency.md`.
 
 **Do not add those three lines together.** 1669 + 800 + 200 = **2669 distinct
 rows**. The "2689" that circulated was that sum plus `sample_20`, whose 20 rows
@@ -37,29 +40,37 @@ are a strict subset of `normal` and so are already counted in the official 1669.
 The HF mirrors do *not* overlap the official sets (intersection 0, by id and by
 canonical content). Quote the three numbers separately.
 
-Per-set, from `audit-2026-08-12-final.json` (`fast`, 16 workers; `seconds` is
-that set's wall clock, and the four official sets sum to the 330 s headline):
+Per-set, from `audit-2026-08-21-completion.json` (`fast`, 16 workers; `seconds`
+is that set's wall clock, and the four official sets sum to the 250 s headline).
+The 2026-08-12 figure is in the last column for comparison — read it as a
+good-faith comparison, not a lab measurement, since that run carried its own
+load caveat:
 
-| Set | Solved | TRUE | FALSE | Skip | Crash | Oracle fail | Seconds |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `normal` | 1000/1000 | 500 | 500 | 0 | 0 | 0 | 106.4 |
-| `hard1` | 69/69 | 24 | 45 | 0 | 0 | 0 | 28.7 |
-| `hard2` | 200/200 | 100 | 100 | 0 | 0 | 0 | 95.6 |
-| `hard3` | 400/400 | 195 | 205 | 0 | 0 | 0 | 99.4 |
-| **official** | **1669/1669** | **819** | **850** | **0** | **0** | **0** | **330.1** |
-| `sample_200` | 200/200 | 100 | 100 | 0 | 0 | 0 | 71.5 |
-| `sample_20` | 20/20 | 10 | 10 | 0 | 0 | 0 | 30.8 |
+| Set | Solved | TRUE | FALSE | Skip | Crash | Oracle fail | Seconds | (was) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `normal` | 1000/1000 | 500 | 500 | 0 | 0 | 0 | 98.1 | 106.4 |
+| `hard1` | 69/69 | 24 | 45 | 0 | 0 | 0 | 21.2 | 28.7 |
+| `hard2` | 200/200 | 100 | 100 | 0 | 0 | 0 | 65.7 | 95.6 |
+| `hard3` | 400/400 | 195 | 205 | 0 | 0 | 0 | 64.9 | 99.4 |
+| **official** | **1669/1669** | **819** | **850** | **0** | **0** | **0** | **249.9** | **330.1** |
+| `sample_200` | 200/200 | 100 | 100 | 0 | 0 | 0 | 22.3 | 71.5 |
+| `sample_20` | 20/20 | 10 | 10 | 0 | 0 | 0 | 26.3 | 30.8 |
+
+HF, same run: `hf_evaluation_normal` 39.8 s, `hf_evaluation_hard` 25.6 s,
+`hf_evaluation_extra_hard` 25.1 s, `hf_evaluation_order5` **73.4 s** (was 162.9),
+200/200 each — **163.9 s total, was 344 s**.
+
+`true:completion` serves **304** of these rows (166 `join`, 138 `collapse`).
 
 HF mirrors are 200/200 on each of `hf_evaluation_normal`, `hf_evaluation_hard`,
 `hf_evaluation_extra_hard`, `hf_evaluation_order5` — 800/800, 0 oracle failures.
 Wall clocks for that run carry the load caveat in `CLAUDE.md`; treat them as
 lower bounds on the speedup, not measurements.
 
-> **A post-2026-08-13 audit was running while this file was written and its
-> result is not included above.** Every coverage number here predates today's
-> constant changes. Nothing today narrows a search — the changes raise caps and
-> timeouts — so coverage is not *expected* to move, but that is a prediction and
-> stays one until the sweep lands. Do not restate it as measured.
+> The 2026-08-13 note that once stood here — "an audit is running and its result
+> is not included, so coverage is a prediction" — is **discharged**. Two full
+> audits have landed since (2026-08-13 limits, 2026-08-21 completion) and both
+> read row-for-row identical to the 2026-08-12 baseline.
 
 ### Evidence base, in one paragraph
 

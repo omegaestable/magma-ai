@@ -198,6 +198,10 @@ def main() -> int:
     ap.add_argument("--all", action="store_true", help="audit every public set")
     ap.add_argument("--hf", action="store_true",
                     help="audit the HF mirror evaluation sets instead")
+    ap.add_argument("--file", type=Path, default=None,
+                    help="audit an arbitrary jsonl/json problem file instead "
+                         "of a named --set (e.g. an ETP matrix sample from "
+                         "sample_etp_matrix.py)")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--subsumption", action="store_true")
     ap.add_argument("--false-budget", type=float, default=2.0)
@@ -215,7 +219,10 @@ def main() -> int:
     args = ap.parse_args()
 
     all_sets = {**SETS, **HF_SETS}
-    if args.hf:
+    if args.file:
+        set_names = [args.file.stem]
+        all_sets = {**all_sets, args.file.stem: args.file}
+    elif args.hf:
         set_names = sorted(HF_SETS)
     elif args.all:
         set_names = sorted(SETS)
@@ -247,8 +254,15 @@ def main() -> int:
         else:
             print(f"  {set_name}: {len(problems)} problems on "
                   f"{args.workers} workers...", flush=True)
+            rows = []
             with ProcessPoolExecutor(max_workers=args.workers) as pool:
-                rows = list(pool.map(worker, problems, chunksize=4))
+                for i, row in enumerate(
+                        pool.map(worker, problems, chunksize=4), 1):
+                    rows.append(row)
+                    if i % 100 == 0 or i == len(problems):
+                        print(f"  {set_name}: {i}/{len(problems)}"
+                              f" ({time.monotonic() - started:.0f}s)",
+                              flush=True)
         elapsed = time.monotonic() - started
 
         solved = [r for r in rows if r["status"] == "solved"]

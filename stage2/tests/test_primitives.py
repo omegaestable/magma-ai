@@ -687,6 +687,232 @@ def test_egg_saturation_polls_the_deadline_per_match(solver):
                 "many substitutions, so an outer poll does not bound this")
 
 
+def _pep701_offenders(text: str) -> list[tuple[int, str]]:
+    """Lines using f-string syntax that only parses on Python 3.12+.
+
+    A hand-rolled scanner because there is no better option available: this
+    machine has 3.12 and 3.14 but no 3.11, and `ast.parse(..., feature_version=
+    (3, 11))` does **not** reject PEP 701 — it was tried, it accepts
+    `f"{d["k"]}"` happily, and a test built on it is vacuous. That is the whole
+    reason this function exists rather than a one-line parse.
+
+    Detects the two relaxations that are easy to write by accident: reusing the
+    f-string's own quote character inside `{...}`, and a backslash inside
+    `{...}`. Both are hard SyntaxErrors on 3.11.
+    """
+    offenders: list[tuple[int, str]] = []
+    for number, line in enumerate(text.splitlines(), 1):
+        index = 0
+        while index < len(line):
+            char = line[index]
+            if char in "\"'":
+                prefix = line[max(0, index - 2):index].lower()
+                quote = char
+                index += 1
+                if "f" not in prefix.lstrip("rb"):
+                    while index < len(line) and line[index] != quote:
+                        index += 2 if line[index] == "\\" else 1
+                    index += 1
+                    continue
+                depth = 0
+                while index < len(line):
+                    here = line[index]
+                    if here == "{":
+                        depth += 1 if line[index:index + 2] != "{{" else 0
+                        index += 1 if line[index:index + 2] != "{{" else 2
+                        continue
+                    if here == "}" and depth:
+                        depth -= 1
+                    elif depth and here == quote:
+                        offenders.append((number, "quote reuse inside f-string"))
+                        break
+                    elif depth and here == "\\":
+                        offenders.append((number, "backslash inside f-string expression"))
+                        break
+                    elif not depth and here == quote:
+                        break
+                    index += 1
+                index += 1
+                continue
+            if char == "#":
+                break
+            index += 1
+    return offenders
+
+
+def test_solver_uses_no_syntax_newer_than_the_interpreter_that_grades_it():
+    """The sandbox is `python:3.11-slim`; this machine's venv is 3.14.
+
+    Syntax newer than 3.11 is not a bad row, it is a dead submission — the whole
+    file fails to import and every problem is lost. PEP 701 f-strings are the
+    easy one to write by accident on 3.12+, and nothing else in this gate would
+    notice, because the gate itself runs on the newer interpreter locally.
+
+    CI pins 3.11 and would catch it, but only after a push. This is the local
+    half. It is a heuristic, deliberately: see `_pep701_offenders` for why the
+    obvious `feature_version=(3, 11)` approach is worthless here.
+    """
+    import pathlib
+
+    # Pin non-vacuity in the test itself. The first attempt at this test used
+    # `ast.parse(..., feature_version=(3, 11))`, which accepts PEP 701 without
+    # complaint, so it passed on code that would not have run in the sandbox.
+    # A guard that cannot fail is worse than no guard: it makes the risk look
+    # checked. These two lines make sure the scanner still bites.
+    quote = chr(34)
+    bad = "x = f" + quote + "outer {d[" + quote + "k" + quote + "]} end" + quote
+    good = "x = f" + quote + "outer {d['k']} end" + quote
+    assert _pep701_offenders(bad), "the PEP 701 scanner stopped detecting anything"
+    assert not _pep701_offenders(good), "false positive on 3.11-legal code"
+
+    # Only the shipped file matters — it is the one the sandbox imports.
+    source = pathlib.Path(__file__).resolve().parents[1] / "solver" / "solver.py"
+    offenders = _pep701_offenders(source.read_text(encoding="utf-8"))
+    assert not offenders, (
+        f"solver.py uses Python 3.12+ f-string syntax at {offenders[:5]} — the "
+        "grading sandbox is python:3.11-slim, so this fails the entire "
+        "submission, not one row")
+
+
+def test_completion_collapse_certificate_handles_the_variable_on_either_side(solver):
+    """`_kb_collapse_witness` has two branches and the corpus only exercises one.
+
+    A derived `t = v` with `v` not occurring in `t` forces the magma trivial.
+    Which *side* the bare variable lands on depends on how KBO happened to orient
+    the equation, and on every row measured to date (32 collapses across the
+    20k-ETP-sample frontier) it is the right-hand side. The left-hand branch is
+    therefore live code with zero coverage, which is exactly the shape that ships
+    broken: it emits `.symm` in the opposite place, and nothing would have caught
+    it being wrong.
+
+    Built by mirroring a real collapse rather than hand-writing one, so the
+    equation and its recorded proof stay genuine: reversing a rewrite chain and
+    negating each step's direction is the same inverse the engine itself takes in
+    `goal_join`.
+    """
+    eq1 = solver.parse_equation("x = y ◇ (((z ◇ x) ◇ x) ◇ y)")
+    eq2 = solver.parse_equation("x = y ◇ ((z ◇ w) ◇ w)")
+
+    comp = solver._KBCompletion([(eq1["lhs"], eq1["rhs"])],
+                                deadline=solver.local_deadline(10.0))
+    comp.seed()
+    collapse = None
+    while collapse is None:
+        equation = comp.step()
+        assert equation is not None, "no collapse derived; the fixture row changed"
+        witness = solver._kb_collapse_witness(equation)
+        if witness is not None:
+            collapse = (equation, witness)
+            break
+        comp.interreduce(equation)
+        comp.superpose(equation)
+
+    equation, (_side, var, var_on_rhs) = collapse
+    assert var_on_rhs, "fixture no longer produces the right-hand-side branch"
+
+    forward = solver._kb_collapse_certificate(
+        comp, equation, var, True, eq1, eq2)
+    assert forward is not None
+    oracles.check_true_lemma_chain_certificate(forward, eq1, eq2)
+
+    # Mirror it: swap the sides and invert the chain. Same fact, same proof,
+    # opposite branch.
+    mirrored = solver._KBEquation(
+        comp.next_id, equation.rhs, equation.lhs,
+        [(path, eid, subst, -direction)
+         for (path, eid, subst, direction) in reversed(equation.chain or [])])
+    comp.eqs[mirrored.eid] = mirrored
+    comp.next_id += 1
+
+    witness = solver._kb_collapse_witness(mirrored)
+    assert witness is not None, "mirroring lost the collapse"
+    assert witness[2] is False, "mirroring did not reach the left-hand branch"
+
+    backward = solver._kb_collapse_certificate(
+        comp, mirrored, witness[1], False, eq1, eq2)
+    assert backward is not None, "left-hand branch produced no certificate"
+    oracles.check_true_lemma_chain_certificate(backward, eq1, eq2)
+
+# The single-rule / multi-rule engines are twins by construction, and every
+# bounding fix so far has landed on exactly one of the pair.
+_ENGINE_TWINS = (
+    ("_EggProver.explain", "_EggProverMulti.explain_multi"),
+    ("_egg_bridge_steps", "_egg_bridge_steps_multi"),
+    ("_egg_shorten_steps", "_egg_shorten_steps_multi"),
+    ("_egg_render_steps", "_egg_render_steps_multi"),
+)
+
+
+def test_engine_twins_take_the_same_bounding_parameters(solver):
+    """A twin that takes a `deadline` its pair does not is a bug, not a style.
+
+    This is the cheapest possible guard against a mistake this repo has now made
+    five times (rail 5f-v). Every instance had the same signature: two functions
+    doing the same job over one rule and over many, one of them bounded and the
+    other not.
+
+    - 2026-08-11: `_egg_run_saturation` got a per-match poll, `egg_saturate_prove`
+      did not. Cost: `normal_0823` ran 40 s on a 6 s budget at 11 GB RSS.
+    - 2026-08-21: `_egg_bridge_steps_multi` had a `deadline` *and* a state cap,
+      above a comment explaining that O(states^2) over a 1500-step chain is ~22M
+      pattern matches; `_egg_bridge_steps` had neither. `explain_multi` polled a
+      deadline; `explain` took no such parameter. Cost: 9 of the 205 order-5
+      skip rows overran a 300 s row budget, one by 11.8x.
+
+    Both times the fix was written down in the *other* twin's own comment before
+    the bug was found. Checking the signatures costs milliseconds.
+    """
+    import ast
+    import inspect
+
+    tree = ast.parse(inspect.getsource(solver))
+    found: dict[str, ast.FunctionDef] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            for child in node.body:
+                if isinstance(child, ast.FunctionDef):
+                    found[f"{node.name}.{child.name}"] = child
+        elif isinstance(node, ast.FunctionDef):
+            found.setdefault(node.name, node)
+
+    def params(fn: ast.FunctionDef) -> set[str]:
+        args = fn.args
+        return {a.arg for a in args.args + args.kwonlyargs + args.posonlyargs}
+
+    def body_names(fn: ast.FunctionDef) -> set[str]:
+        return {node.id for node in ast.walk(fn) if isinstance(node, ast.Name)}
+
+    def bounds(fn: ast.FunctionDef) -> set[str]:
+        """Which bounds this function *actually enforces*, however it gets them.
+
+        Taking the parameter is one way; reading the module constant directly is
+        another, and equally bounded — `_egg_render_steps` enforces
+        `EGG_MAX_PROOF_BYTES` inline while its twin takes it as `max_bytes`.
+        That is a style difference, not a missing bound, so it must not fail.
+        What must fail is a twin that enforces *nothing*.
+        """
+        names = params(fn) | body_names(fn)
+        out = set()
+        if {"deadline", "deadline_expired", "local_deadline"} & names:
+            out.add("time")
+        if any(n == "max_bytes" or ("MAX" in n and ("BYTE" in n or "STATE" in n))
+               for n in names):
+            out.add("size")
+        return out
+
+    offenders = []
+    for one, many in _ENGINE_TWINS:
+        if one not in found or many not in found:
+            continue  # a rename is a deliberate act; the poll test covers the rest
+        missing = bounds(found[many]) - bounds(found[one])
+        if missing:
+            offenders.append(
+                f"{many} enforces a {sorted(missing)} bound and its twin "
+                f"{one} enforces none")
+    assert not offenders, (
+        "engine twins must be bounded the same way (rail 5f-v): "
+        + "; ".join(offenders))
+
 # ---------------------------------------------------------------------------
 # LLM candidate parsing: the boundary where model output becomes a submission.
 # ---------------------------------------------------------------------------

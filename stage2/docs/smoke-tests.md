@@ -84,15 +84,20 @@ What each proves:
   use it before an upload. `-WarnBytes 450000` is a "within 10% of the cap"
   alarm, not a de-bloat target (rail 1).
 
-Artifact size, most recent CI measurement: **445,640 of 500,000 bytes (54,360
-free, 10.9%)**, built by CI on 2026-08-13 after the judge-limit corrections. The
-copy on disk at `stage2/submissions/solver.py` measured **445,640 bytes**
-(mtime 2026-08-13 08:02, i.e. packaged from the working tree after its last source
-edit at 08:00) — 219 bytes more than the CI figure, because the two builds are of
-different source states, not because anything drifted. Headroom is ~10.9% either
-way. This is exactly why the artifact is a gitignored build output: **re-package
-and read the number the packager prints; never quote a stored figure.** This file
-carried a stale `138939` for months.
+Artifact size, most recent measurement: **466,320 of 500,000 bytes (33,680
+free, 6.7%)**, packaged 2026-08-21 after the `true:completion` engine landed
+(+20,680 bytes over the 2026-08-13 build's 445,640). That is past the packager's
+`-WarnBytes 450000` alarm, which is the alarm doing its job — not a signal to
+de-bloat (rail 1). The headroom to spend, if it is ever needed, is measured and
+listed: 48 of the 65 `DISTILLED_CERTS` entries (120,229 bytes) are now
+live-solvable by the completion engine, per
+`stage2/results/2026-08-21-distilled-live-solvable.txt` — but every one of them
+is judge-pinned, so read `NEXT_SESSION_BRIEF` §3.3 before deleting any.
+
+This is exactly why the artifact is a gitignored build output: **re-package and
+read the number the packager prints; never quote a stored figure.** This file
+carried a stale `138939` for months, and then a 2026-08-13 figure with a
+"10.9% headroom" clause that survived one number being updated under it.
 
 The minifier is the reason the artifact fits at all (comments and docstrings are
 ~17% of the source, LF instead of CRLF another ~2%), and it proves the artifact

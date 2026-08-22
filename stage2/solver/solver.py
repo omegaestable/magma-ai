@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import heapq
 import json
 import importlib
 import os
@@ -11,7 +12,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import lru_cache
-from itertools import product
+from itertools import count, product
 from typing import Any, Callable, NamedTuple
 
 
@@ -5162,7 +5163,13 @@ class _EggProver:
         raise _EggProvenanceError("terms not connected in proof forest")
 
     def explain(self, s: Term, t: Term, *, depth: int = 0,
-                budget: list[int] | None = None) -> list[tuple]:
+                budget: list[int] | None = None,
+                deadline: float | None = None) -> list[tuple]:
+        # `deadline` mirrors `explain_multi`, which has had one since the
+        # multi-rule engine was written. This twin did not, which is rail 5f-v
+        # again: extraction walks a proof tree whose size is bounded only by the
+        # step budget, and on order-5 terms that is a very different number than
+        # on order-4 ones.
         if depth > 300:
             raise _EggProvenanceError("explanation recursion too deep")
         if budget is None:
@@ -5175,6 +5182,8 @@ class _EggProver:
             budget[0] -= 1
             if budget[0] < 0:
                 raise _EggProvenanceError("explanation too long")
+            if deadline_expired(deadline):
+                raise _EggProvenanceError("explanation ran out of time")
             if reason and reason[0] == "rule":
                 _, subst_items = reason
                 # edge (x, y): x = eq1.lhs[σ], y = eq1.rhs[σ]; walking
@@ -5184,9 +5193,11 @@ class _EggProver:
             elif reason and reason[0] == "congr":
                 if a[0] != "op" or b[0] != "op":
                     raise _EggProvenanceError("congr edge on non-op terms")
-                for sub in self.explain(a[1], b[1], depth=depth + 1, budget=budget):
+                for sub in self.explain(a[1], b[1], depth=depth + 1,
+                                        budget=budget, deadline=deadline):
                     steps.append((("L",) + sub[0], sub[1], sub[2]))
-                for sub in self.explain(a[2], b[2], depth=depth + 1, budget=budget):
+                for sub in self.explain(a[2], b[2], depth=depth + 1,
+                                        budget=budget, deadline=deadline):
                     steps.append((("R",) + sub[0], sub[1], sub[2]))
                 cur = b
             else:
@@ -5246,19 +5257,39 @@ def _egg_one_step_between(s: Term, t: Term, lhs_p: Term, rhs_p: Term):
     return None
 
 
-def _egg_bridge_steps(start: Term, steps: list, lhs_p: Term, rhs_p: Term):
+# The multi-rule twin's cap is 400. This one is the same number for the same
+# reason; it is not derived from anything about the single-rule case.
+EGG_BRIDGE_MAX_STATES = 400
+
+
+def _egg_bridge_steps(start: Term, steps: list, lhs_p: Term, rhs_p: Term,
+                      *, deadline: float | None = None):
     """Greedy shortcutting: jump to the farthest later state reachable in one
     eq1 rewrite. Every emitted step is a checked instance; the renderer
-    replays everything again anyway."""
+    replays everything again anyway.
+
+    Bounded on both axes for exactly the reason `_egg_bridge_steps_multi` is —
+    O(states^2) pair tests, each trying the rule both ways — and it had neither
+    bound until 2026-08-21, which is the same one-twin-fixed asymmetry as rail
+    5f-v. It stayed invisible while every corpus was order-4: the 2026-08-20
+    order-5 sample is the first thing to feed it long chains over big terms, and
+    9 of its 205 skip rows overran a 300 s row budget, one of them by 11.8x.
+    Bridging is an optimisation, never a correctness requirement, so both bounds
+    fail it closed and the unbridged chain is still rendered.
+    """
     states: list[Term] = [start]
     cur = start
     for pos, subst, symm in steps:
         to_t = _egg_substitute(lhs_p if symm else rhs_p, subst)
         cur = _egg_replace_at(cur, pos, to_t)
         states.append(cur)
+    if len(states) > EGG_BRIDGE_MAX_STATES:
+        return None
     out: list = []
     i = 0
     while i < len(states) - 1:
+        if deadline_expired(deadline):
+            return None
         jumped = False
         for j in range(len(states) - 1, i, -1):
             if j == i + 1:
@@ -5519,7 +5550,7 @@ def egg_saturate_prove(eq1: dict[str, Any], eq2: dict[str, Any], *,
     if egg.class_of(L) != egg.class_of(R):
         return None
     try:
-        steps = egg.explain(L, R)
+        steps = egg.explain(L, R, deadline=deadline)
     except (_EggProvenanceError, RecursionError):
         return None
     shortened = _egg_shorten_steps(L, steps, lhs_p, rhs_p)
@@ -5529,7 +5560,7 @@ def egg_saturate_prove(eq1: dict[str, Any], eq2: dict[str, Any], *,
     # new cycle cuts and new shortcuts
     for _ in range(4):
         before = len(shortened)
-        bridged = _egg_bridge_steps(L, shortened, lhs_p, rhs_p)
+        bridged = _egg_bridge_steps(L, shortened, lhs_p, rhs_p, deadline=deadline)
         if bridged is None:
             break
         cut = _egg_shorten_steps(L, bridged, lhs_p, rhs_p)
@@ -6629,6 +6660,627 @@ def egg_ladder_route(
             return f"true:egg_ladder:{name}:h{len(blocks)}", code
     return None
 
+
+
+# =====================================================================
+# Ordered (unfailing) Knuth-Bendix completion with proof recording
+# =====================================================================
+# Ported into the solver 2026-08-21 from `stage2/experiments/completion`, the
+# dev tool that closed the final nine official/HF rows and the last three
+# `sample_200` holdouts in the 2026-08-12 session — by hand, one row at a time,
+# after equality saturation had failed on them at every budget. It is strictly
+# stronger than the e-graph on this problem class because it *derives new rules
+# by superposition and then rewrites with them*, where an e-graph only
+# propagates congruence over terms it has already built.
+#
+# What made this the top lever: the 20,000-row random sample of the full order-4
+# ETP matrix (2026-08-20) left a 52-row frontier — 51 of it TRUE, essentially all
+# of it one law family — on which ~450 s of deterministic search per row AND a
+# real `gpt-oss-120b` lemma-lane pass both scored 0/51. Completion closes 31 of
+# those 51, every one of them in under 0.4 s.
+#
+# Three things this port has that the dev tool did not. Each is a coverage
+# difference, not a tidy-up:
+#
+#   * **A derived collapse is used, not discarded.** The dev tool's README
+#     flagged `x = y` being thrown away unoriented as its top next lever. The
+#     real shape is wider: any derived `t = v` with `v` not occurring in `t`
+#     says every element of the carrier equals that one instance of `t`, so the
+#     magma is trivial and *any* goal follows. Measured on that frontier, `x = y`
+#     alone closes 19 rows and the general shape is what 12 more were sitting on
+#     (`z ◇ y' = y`, `y' ◇ x = y`, ...). Both are the same fact; only the second
+#     is invisible if you look for the literal two-variable equation.
+#   * **The goal is skolemised before joining.** KBO cannot orient two distinct
+#     variables, so leaving the goal's variables *as* variables silently blocks
+#     every unorientable equation from ever rewriting it. Ordered rewriting is
+#     total on ground terms — that is the entire point of unfailing completion —
+#     and the goal's variables are exactly Lean's `intro`d locals, i.e. already
+#     constants. Costs nothing: it is the `ground=True` flag on the ordering.
+#   * **The deadline is polled per unit of work** (rails 5f-iv, 5f-v) and the
+#     caches are the repo's own per-row ones (rail 10). The dev tool polls once
+#     per outer iteration, which is exactly the shape that ran 40 s on a 6 s
+#     budget at 11 GB RSS in the egg engine.
+
+COMPLETION_MAX_SIZE = 44
+COMPLETION_MAX_ACTIVE = 400
+COMPLETION_MAX_PASSIVE = 40000
+COMPLETION_NORMALIZE_LIMIT = 120
+COMPLETION_POLL_EVERY = 192
+COMPLETION_MAX_LEMMAS = 48
+# Unscaled, and placed with `egg_probe`: on the 20k-sample frontier every row
+# completion can close lands in <= 0.4 s, and on a row it cannot it usually
+# *saturates* (25 of 30 random FALSE rows in ~0 s) rather than spending the
+# budget. That asymmetry is what makes an early slot pay rather than cost.
+COMPLETION_PROBE_BUDGET = 2.0
+# Tier-scaled last-resort slot, for rows whose passive queue is still productive
+# when the probe's unscaled clock runs out.
+COMPLETION_BUDGET = 8.0
+
+# `h` is the hypothesis and `t` the congrArg placeholder; neither can be a binder.
+_KB_LETTERS = "abcdefgijklmnopqrsuvw"
+_KB_POS_INDEX: dict[tuple[int, ...], int] = {}
+for _kb_depth in range(4):
+    for _kb_combo in product((0, 1), repeat=_kb_depth):
+        _KB_POS_INDEX[_kb_combo] = len(_KB_POS_INDEX)
+
+
+@lru_cache(maxsize=None)
+def _kb_shape_mask(term: Term) -> int:
+    """Bitmask of `term`'s op-positions, a cheap prefilter before `match_term`."""
+    mask = 0
+    for path in subterm_paths_tuple(term):
+        index = _KB_POS_INDEX.get(path)
+        if index is not None and term_at_path(term, path)[0] == "op":
+            mask |= 1 << index
+    return mask
+
+
+@lru_cache(maxsize=None)
+def _kb_var_counts(term: Term) -> tuple[tuple[str, int], ...]:
+    counts: dict[str, int] = {}
+    stack = [term]
+    while stack:
+        node = stack.pop()
+        if node[0] == "var":
+            counts[node[1]] = counts.get(node[1], 0) + 1
+        else:
+            stack.append(node[1])
+            stack.append(node[2])
+    return tuple(counts.items())
+
+
+def _kbo_gt(source: Term, target: Term, ground: bool = False) -> bool:
+    """Knuth-Bendix order with every symbol weight 1: a reduction ordering.
+
+    `ground` means both terms are variable-free in the completion's sense — the
+    skolemised goal — where the variable condition is vacuous and the order is
+    total. Passing it is what lets an unorientable equation rewrite the goal.
+    """
+    if not ground:
+        have = dict(_kb_var_counts(source))
+        for var, need in _kb_var_counts(target):
+            if have.get(var, 0) < need:
+                return False
+    return _kb_order_gt(source, target, ground)
+
+
+def _kb_order_gt(source: Term, target: Term, ground: bool) -> bool:
+    source_size, target_size = term_size(source), term_size(target)
+    if source_size != target_size:
+        return source_size > target_size
+    if source[0] == "var" or target[0] == "var":
+        return (ground and source[0] == "var" and target[0] == "var"
+                and source[1] > target[1])
+    if source[1] != target[1]:
+        return _kb_order_gt(source[1], target[1], ground)
+    return _kb_order_gt(source[2], target[2], ground)
+
+
+def _kb_canon_eq(lhs: Term, rhs: Term) -> tuple[Term, Term]:
+    """Renaming- and orientation-invariant key for a derived equation."""
+    names: dict[str, str] = {}
+    forward = (canonical_term_shape(lhs, names), canonical_term_shape(rhs, names))
+    names = {}
+    backward = (canonical_term_shape(rhs, names), canonical_term_shape(lhs, names))
+    return min(forward, backward)
+
+
+def _kb_relabel(term: Term, varmap: dict[str, str]) -> Term:
+    if term[0] == "var":
+        return ("var", varmap.get(term[1], term[1]))
+    return ("op", _kb_relabel(term[1], varmap), _kb_relabel(term[2], varmap))
+
+
+def _kb_fill(term: Term, subst: dict[str, Term], fallback: Term) -> Term:
+    """`instantiate_term`, but a binder the substitution never bound is free."""
+    if term[0] == "var":
+        return subst.get(term[1], fallback)
+    return ("op", _kb_fill(term[1], subst, fallback), _kb_fill(term[2], subst, fallback))
+
+
+class _KBEquation:
+    """A derived equation plus the rewrite chain that proves it from eq1.
+
+    `chain` is a list of `(path, equation id, substitution, direction)` steps
+    taking `lhs` to `rhs`; `None` marks the axiom itself. `ori` holds the
+    orientations usable as rewrite rules — an equation with a variable on each
+    side that the other lacks gets none, which is exactly the case
+    `_kb_collapse_witness` reads instead of discarding.
+    """
+
+    __slots__ = ("eid", "lhs", "rhs", "chain", "weight", "ori")
+
+    def __init__(self, eid: int, lhs: Term, rhs: Term, chain: list[Any] | None) -> None:
+        self.eid = eid
+        self.lhs = lhs
+        self.rhs = rhs
+        self.chain = chain
+        self.weight = term_size(lhs) + term_size(rhs)
+        left, right = term_vars(lhs), term_vars(rhs)
+        self.ori: list[tuple[Term, Term, int]] = []
+        if right <= left:
+            self.ori.append((lhs, rhs, 1))
+        if left <= right and lhs != rhs:
+            self.ori.append((rhs, lhs, -1))
+
+
+def _kb_collapse_witness(eq: _KBEquation) -> tuple[Term, str, bool] | None:
+    """`(other side, variable, variable is on the rhs)` if `eq` forces triviality.
+
+    A derived `t = v` where `v` does not occur in `t` universally quantifies `v`
+    over a term that does not mention it, so every element of the carrier equals
+    that one instance of `t` and the magma is a single point. `x = y` is the
+    two-bare-variable special case.
+
+    Tried and measured *not* to work, 2026-08-21, so nobody spends a session on
+    it again: pushing variable-for-variable instances of the other unorientable
+    shape (`z ◇ x = w ◇ x`, "the left argument does not matter") closes 0 of the
+    8 rows this leaves on the 20k frontier. The instances are sound and their
+    recorded chains survive substitution, but `subsumed()` throws every one of
+    them away — precisely *because* each is an instance of the parent equation,
+    which is still active. Making it work means weakening subsumption, which is
+    what keeps the search small; that is a different trade, not a fix.
+    """
+    lhs, rhs = eq.lhs, eq.rhs
+    if rhs[0] == "var" and rhs[1] not in term_vars(lhs):
+        return lhs, str(rhs[1]), True
+    if lhs[0] == "var" and lhs[1] not in term_vars(rhs):
+        return rhs, str(lhs[1]), False
+    return None
+
+
+class _KBCompletion:
+    """Ordered completion over a single axiom, recording a proof per equation."""
+
+    def __init__(
+        self,
+        axioms: list[tuple[Term, Term]],
+        *,
+        deadline: float | None,
+        max_size: int = COMPLETION_MAX_SIZE,
+        max_active: int = COMPLETION_MAX_ACTIVE,
+        max_passive: int = COMPLETION_MAX_PASSIVE,
+    ) -> None:
+        self.eqs: dict[int, _KBEquation] = {}
+        self.active: list[_KBEquation] = []
+        self.axiom_ids: list[int] = []
+        self.passive: list[Any] = []
+        self.seen: set[Any] = set()
+        self.next_id = 0
+        self.counter = count()
+        self.deadline = deadline
+        self.max_size = max_size
+        self.max_active = max_active
+        self.max_passive = max_passive
+        self._work = 0
+        self.expired = False
+        for lhs, rhs in axioms:
+            eq = _KBEquation(self.next_id, lhs, rhs, None)
+            self.next_id += 1
+            self.eqs[eq.eid] = eq
+            self.axiom_ids.append(eq.eid)
+            self.active.append(eq)
+            self.seen.add(_kb_canon_eq(lhs, rhs))
+
+    # ---- the deadline, polled per unit of work (rails 5f-iv, 5f-v) --------
+    def out_of_time(self, units: int = 1) -> bool:
+        if self.expired:
+            return True
+        self._work += units
+        if self._work >= COMPLETION_POLL_EVERY:
+            self._work = 0
+            # `deadline_expired` also consults the memory guard, so a loop that
+            # never calls it has no memory guard either — that was rail 5f-v.
+            if deadline_expired(self.deadline):
+                self.expired = True
+        return self.expired
+
+    # ---- rewriting -------------------------------------------------------
+    def rewrite_once(self, term: Term, ground: bool) -> tuple[Term, Any] | None:
+        for path in subterm_paths_tuple(term):
+            sub = term_at_path(term, path)
+            if sub[0] != "op":
+                continue
+            if self.out_of_time():
+                return None
+            sub_mask = _kb_shape_mask(sub)
+            sub_size = term_size(sub)
+            for eq in self.active:
+                for (lhs, rhs, direction) in eq.ori:
+                    if term_size(lhs) > sub_size or (_kb_shape_mask(lhs) & ~sub_mask):
+                        continue
+                    subst: dict[str, Term] = {}
+                    if not match_term(lhs, sub, subst):
+                        continue
+                    image = instantiate_term(rhs, subst)
+                    if image == sub or not _kbo_gt(sub, image, ground):
+                        continue
+                    return (replace_subterm(term, path, image),
+                            (path, eq.eid, subst, direction))
+        return None
+
+    def normalize(self, term: Term, ground: bool = False) -> tuple[Term, list[Any]]:
+        steps: list[Any] = []
+        for _ in range(COMPLETION_NORMALIZE_LIMIT):
+            found = self.rewrite_once(term, ground)
+            if found is None:
+                break
+            term, step = found
+            steps.append(step)
+        return term, steps
+
+    # ---- the passive queue ----------------------------------------------
+    def push(self, lhs: Term, rhs: Term, chain: list[Any]) -> None:
+        weight = term_size(lhs) + term_size(rhs)
+        if weight > self.max_size or len(self.passive) >= self.max_passive:
+            return
+        heapq.heappush(self.passive, (weight, next(self.counter), lhs, rhs, chain))
+
+    def subsumed(self, lhs: Term, rhs: Term) -> bool:
+        lhs_size, rhs_size = term_size(lhs), term_size(rhs)
+        lhs_mask, rhs_mask = _kb_shape_mask(lhs), _kb_shape_mask(rhs)
+        for eq in self.active:
+            for left, right in ((eq.lhs, eq.rhs), (eq.rhs, eq.lhs)):
+                if term_size(left) > lhs_size or term_size(right) > rhs_size:
+                    continue
+                if (_kb_shape_mask(left) & ~lhs_mask) or (_kb_shape_mask(right) & ~rhs_mask):
+                    continue
+                subst: dict[str, Term] = {}
+                if match_term(left, lhs, subst) and match_term(right, rhs, subst):
+                    return True
+        return False
+
+    # ---- superposition ---------------------------------------------------
+    def crit_pairs(self, first: _KBEquation, second: _KBEquation) -> list[Any]:
+        out: list[Any] = []
+        for (lhs1, rhs1, dir1) in first.ori:
+            for (lhs2_raw, rhs2_raw, dir2) in second.ori:
+                tag = f"#{next(self.counter)}"
+                lhs2 = _kb_rename(lhs2_raw, tag)
+                rhs2 = _kb_rename(rhs2_raw, tag)
+                for path in _kb_nonvar_paths(lhs1):
+                    if self.out_of_time():
+                        return out
+                    unified = _kb_unify(term_at_path(lhs1, path), lhs2, {})
+                    if unified is None:
+                        continue
+                    lhs1_inst = _kb_resolve(lhs1, unified)
+                    rhs1_inst = _kb_resolve(rhs1, unified)
+                    if _kbo_gt(rhs1_inst, lhs1_inst):
+                        continue
+                    lhs2_inst = _kb_resolve(lhs2, unified)
+                    rhs2_inst = _kb_resolve(rhs2, unified)
+                    if _kbo_gt(rhs2_inst, lhs2_inst):
+                        continue
+                    new_lhs = _kb_resolve(replace_subterm(lhs1, path, rhs2), unified)
+                    if new_lhs == rhs1_inst:
+                        continue
+                    subst2 = {var: _kb_resolve(("var", var + tag), unified)
+                              for var in (term_vars(lhs2_raw) | term_vars(rhs2_raw))}
+                    subst1 = {var: _kb_resolve(("var", var), unified)
+                              for var in (term_vars(first.lhs) | term_vars(first.rhs))}
+                    out.append((new_lhs, rhs1_inst,
+                                [(path, second.eid, subst2, -dir2),
+                                 ((), first.eid, subst1, dir1)]))
+        return out
+
+    def seed(self) -> None:
+        for first in list(self.active):
+            for second in list(self.active):
+                for (lhs, rhs, chain) in self.crit_pairs(first, second):
+                    self.push(lhs, rhs, chain)
+
+    def superpose(self, eq: _KBEquation) -> None:
+        for other in list(self.active):
+            for (lhs, rhs, chain) in self.crit_pairs(eq, other):
+                self.push(lhs, rhs, chain)
+            if other.eid != eq.eid:
+                for (lhs, rhs, chain) in self.crit_pairs(other, eq):
+                    self.push(lhs, rhs, chain)
+
+    # ---- the main loop ---------------------------------------------------
+    def step(self) -> _KBEquation | None:
+        while self.passive:
+            if self.out_of_time():
+                return None
+            _weight, _serial, lhs, rhs, chain = heapq.heappop(self.passive)
+            new_lhs, left_steps = self.normalize(lhs)
+            new_rhs, right_steps = self.normalize(rhs)
+            if new_lhs == new_rhs:
+                continue
+            full = ([(p, i, s, -d) for (p, i, s, d) in reversed(left_steps)]
+                    + chain + right_steps)
+            key = _kb_canon_eq(new_lhs, new_rhs)
+            if key in self.seen or self.subsumed(new_lhs, new_rhs):
+                continue
+            self.seen.add(key)
+            eq = _KBEquation(self.next_id, new_lhs, new_rhs, full)
+            self.next_id += 1
+            self.eqs[eq.eid] = eq
+            self.active.append(eq)
+            if len(self.active) > self.max_active:
+                self.expired = True
+            return eq
+        return None
+
+    def interreduce(self, eq: _KBEquation) -> None:
+        """Re-push every active equation `eq` can rewrite, keeping its proof."""
+        keep: list[_KBEquation] = []
+        repush: list[tuple[Term, Term, list[Any]]] = []
+        for old in self.active:
+            if old is eq or old.chain is None:
+                keep.append(old)
+                continue
+            reduced = self._reduce_with(old.lhs, eq)
+            if reduced is not None:
+                new_side, step = reduced
+                repush.append((new_side, old.rhs,
+                               [(step[0], step[1], step[2], -step[3])] + old.chain))
+                continue
+            reduced = self._reduce_with(old.rhs, eq)
+            if reduced is None:
+                keep.append(old)
+                continue
+            new_side, step = reduced
+            repush.append((old.lhs, new_side, old.chain + [step]))
+        if repush:
+            self.active = keep
+            for (lhs, rhs, chain) in repush:
+                self.seen.discard(_kb_canon_eq(lhs, rhs))
+                self.push(lhs, rhs, chain)
+
+    def _reduce_with(self, term: Term, eq: _KBEquation) -> tuple[Term, Any] | None:
+        for path in subterm_paths_tuple(term):
+            sub = term_at_path(term, path)
+            if sub[0] != "op":
+                continue
+            if self.out_of_time():
+                return None
+            for (lhs, rhs, direction) in eq.ori:
+                if (term_size(lhs) > term_size(sub)
+                        or (_kb_shape_mask(lhs) & ~_kb_shape_mask(sub))):
+                    continue
+                subst: dict[str, Term] = {}
+                if not match_term(lhs, sub, subst):
+                    continue
+                image = instantiate_term(rhs, subst)
+                if image == sub or not _kbo_gt(sub, image):
+                    continue
+                return replace_subterm(term, path, image), (path, eq.eid, subst, direction)
+        return None
+
+    def goal_join(self, lhs: Term, rhs: Term) -> list[Any] | None:
+        """Join the *skolemised* goal: its variables are ground, so ordered
+        rewriting is total on it and unorientable equations can apply."""
+        left, left_steps = self.normalize(lhs, ground=True)
+        right, right_steps = self.normalize(rhs, ground=True)
+        if left != right:
+            return None
+        return left_steps + [(p, i, s, -d) for (p, i, s, d) in reversed(right_steps)]
+
+
+class _KBRenderer:
+    """Turn a completion proof DAG into the solver's `lemma_chain` shape."""
+
+    def __init__(self, comp: _KBCompletion, eq1_vars: list[str]) -> None:
+        self.comp = comp
+        self.eq1_vars = list(eq1_vars)
+        self.name: dict[int, str] = {}
+        self.binders: dict[int, list[str]] = {}
+        self.varmap: dict[int, dict[str, str]] = {}
+
+    def deps(self, chain: list[Any], acc: set[int]) -> set[int]:
+        for (_path, eid, _subst, _direction) in chain:
+            if eid in self.comp.axiom_ids or eid in acc:
+                continue
+            acc.add(eid)
+            self.deps(self.comp.eqs[eid].chain or [], acc)
+        return acc
+
+    def chain_vars(self, lhs: Term, rhs: Term, chain: list[Any] | None) -> set[str]:
+        out = term_vars(lhs) | term_vars(rhs)
+        for (_path, _eid, subst, _direction) in chain or []:
+            for value in subst.values():
+                out |= term_vars(value)
+        return out
+
+    def assign(self, eid: int) -> dict[str, str] | None:
+        eq = self.comp.eqs[eid]
+        names = sorted(self.chain_vars(eq.lhs, eq.rhs, eq.chain))
+        if not names or len(names) > len(_KB_LETTERS):
+            return None
+        mapping = {var: _KB_LETTERS[index] for index, var in enumerate(names)}
+        self.varmap[eid] = mapping
+        self.binders[eid] = names
+        return mapping
+
+    def step_expr(self, cur: Term, step: Any, varmap: dict[str, str],
+                  fallback: Term) -> str:
+        path, eid, subst, direction = step
+        if eid in self.comp.axiom_ids:
+            hypothesis, order = "h", self.eq1_vars
+        else:
+            hypothesis, order = self.name[eid], self.binders[eid]
+        args = [term_to_lean(_kb_relabel(subst.get(var, fallback), varmap))
+                for var in order]
+        expr = f"({hypothesis} {' '.join(args)})" if args else f"({hypothesis})"
+        if direction < 0:
+            expr = f"({expr}.symm)"
+        if path:
+            context = context_to_lean(_kb_relabel(cur, varmap), path)
+            expr = f"(congrArg (fun t => {context}) {expr})"
+        return expr
+
+    def chain_expr(self, start: Term, chain: list[Any],
+                   varmap: dict[str, str]) -> tuple[str | None, Term | None]:
+        fallback = (("var", min(varmap, key=lambda var: varmap[var]))
+                    if varmap else ("var", "a"))
+        exprs: list[str] = []
+        cur = start
+        for step in chain:
+            exprs.append(self.step_expr(cur, step, varmap, fallback))
+            path, eid, subst, direction = step
+            eq = self.comp.eqs[eid]
+            target = eq.rhs if direction > 0 else eq.lhs
+            cur = replace_subterm(cur, path, _kb_fill(target, subst, fallback))
+        if not exprs:
+            return None, None
+        out = exprs[-1]
+        for expr in reversed(exprs[:-1]):
+            out = f"{expr}.trans ({out})"
+        return out, cur
+
+    def helper_blocks(self, chain: list[Any]) -> list[Any] | None:
+        """One `have` block per derived equation the chain depends on.
+
+        Ids increase with derivation and a chain only ever cites equations
+        derived before it, so sorting by id is a valid topological order.
+        """
+        ids = sorted(self.deps(chain, set()))
+        if len(ids) > COMPLETION_MAX_LEMMAS:
+            return None
+        for index, eid in enumerate(ids):
+            # `hlem<n>` is not cosmetic: the offline chain oracle pins this name
+            # shape, and it shares no code with the solver on purpose, so the
+            # engine conforms to it rather than the reverse.
+            self.name[eid] = f"hlem{index}"
+            if self.assign(eid) is None:
+                return None
+        blocks: list[Any] = []
+        for eid in ids:
+            eq = self.comp.eqs[eid]
+            varmap = self.varmap[eid]
+            expr, end = self.chain_expr(eq.lhs, eq.chain or [], varmap)
+            if expr is None or end != eq.rhs:
+                return None
+            blocks.append((self.name[eid], {
+                "lhs": _kb_relabel(eq.lhs, varmap),
+                "rhs": _kb_relabel(eq.rhs, varmap),
+                "variables": [varmap[var] for var in self.binders[eid]],
+            }, expr))
+        return blocks
+
+
+def _kb_join_certificate(comp: _KBCompletion, chain: list[Any],
+                         eq1: dict[str, Any], eq2: dict[str, Any]) -> str | None:
+    renderer = _KBRenderer(comp, eq1["variables"])
+    blocks = renderer.helper_blocks(chain)
+    if blocks is None:
+        return None
+    goal_map = {var: var for var in eq2["variables"]}
+    expr, end = renderer.chain_expr(eq2["lhs"], chain, goal_map)
+    if expr is None or end != eq2["rhs"]:
+        return None
+    return _lemma_chain_goal_certificate(blocks, eq2["variables"], expr)
+
+
+def _kb_collapse_certificate(comp: _KBCompletion, eq: _KBEquation, var: str,
+                             var_on_rhs: bool, eq1: dict[str, Any],
+                             eq2: dict[str, Any]) -> str | None:
+    """`t = v` with `v` fresh gives `forall a b : G, a = b`, closing any goal.
+
+    `t` cannot mention `v`, so instantiating every binder with `a` and then with
+    `b` produces two proofs about the *same* term `t[a]`, and `a = t[a] = b`.
+    """
+    renderer = _KBRenderer(comp, eq1["variables"])
+    identity = {name: ("var", name)
+                for name in renderer.chain_vars(eq.lhs, eq.rhs, eq.chain)}
+    blocks = renderer.helper_blocks([((), eq.eid, identity, 1)])
+    if blocks is None or eq.eid not in renderer.binders:
+        return None
+    name = renderer.name[eq.eid]
+    binders = renderer.binders[eq.eid]
+    call_a = f"({name} {' '.join('a' for _ in binders)})"
+    call_b = f"({name} {' '.join('b' if each == var else 'a' for each in binders)})"
+    if var_on_rhs:
+        first, second = f"{call_a}.symm", call_b
+    else:
+        first, second = call_a, f"{call_b}.symm"
+    trivial = f"hlem{len(blocks)}"
+    blocks.append((trivial, {
+        "lhs": ("var", "a"), "rhs": ("var", "b"), "variables": ["a", "b"],
+    }, f"({first}).trans ({second})"))
+    goal = f"{trivial} {term_to_lean(eq2['lhs'])} {term_to_lean(eq2['rhs'])}"
+    return _lemma_chain_goal_certificate(blocks, eq2["variables"], goal)
+
+
+def completion_prove(eq1: dict[str, Any], eq2: dict[str, Any],
+                     *, time_budget: float) -> tuple[str, str] | None:
+    """Complete from eq1 alone; return `(route, certificate)` or None.
+
+    Two ways to win, taken in whichever order they become available: the goal's
+    two sides join under the current rewrite system, or a derived equation forces
+    the magma to be trivial. Saturation (an empty passive queue) is a *cheap*
+    loss — that asymmetry is what lets this sit early without taxing every row.
+    """
+    deadline = local_deadline(time_budget)
+    comp = _KBCompletion([(eq1["lhs"], eq1["rhs"])], deadline=deadline)
+    comp.seed()
+    joined = comp.goal_join(eq2["lhs"], eq2["rhs"])
+    if joined is not None:
+        code = _kb_join_certificate(comp, joined, eq1, eq2)
+        if code is not None and len(code.encode("utf-8")) <= MAX_LEAN_CODE_BYTES:
+            return "true:completion:join", code
+    while not comp.out_of_time():
+        eq = comp.step()
+        if eq is None:
+            return None
+        witness = _kb_collapse_witness(eq)
+        if witness is not None:
+            _side, var, var_on_rhs = witness
+            code = _kb_collapse_certificate(comp, eq, var, var_on_rhs, eq1, eq2)
+            if code is not None and len(code.encode("utf-8")) <= MAX_LEAN_CODE_BYTES:
+                return "true:completion:collapse", code
+        joined = comp.goal_join(eq2["lhs"], eq2["rhs"])
+        if joined is not None:
+            code = _kb_join_certificate(comp, joined, eq1, eq2)
+            if code is not None and len(code.encode("utf-8")) <= MAX_LEAN_CODE_BYTES:
+                return "true:completion:join", code
+        comp.interreduce(eq)
+        comp.superpose(eq)
+    return None
+
+
+# Both completion caches are keyed on terms and unbounded, so they join the
+# per-row clear alongside every other term cache (rail 10: a module-level cache
+# that is never reset is a process-lifetime cache in Marathon, not a per-row
+# one). Appended here rather than listed in `_TERM_CACHE_FUNCS` itself because
+# that tuple is built long before these functions exist.
+_TERM_CACHE_FUNCS = _TERM_CACHE_FUNCS + (_kb_shape_mask, _kb_var_counts)
+
+
+def completion_probe_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    """Unscaled early probe, beside `egg_probe`. See COMPLETION_PROBE_BUDGET."""
+    return completion_prove(eq1, eq2, time_budget=COMPLETION_PROBE_BUDGET)
+
+
+def completion_route(
+    eq1: dict[str, Any], eq2: dict[str, Any]
+) -> tuple[str, str] | None:
+    """Tier-scaled last-resort completion, after the whole egg family."""
+    return completion_prove(eq1, eq2, time_budget=_eff_time(COMPLETION_BUDGET))
 
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
@@ -8999,6 +9651,11 @@ def solve_problem_pass(
         # dominant deep-tier miss mode of the 2026-08 real-judge campaign).
         # Free gates make it near-zero cost when the pivot is impossible.
         egg_probe_route,
+        # Ordered completion, unscaled probe. Sits this early because its win
+        # is fast (every row it closed on the 20k ETP sample landed in under
+        # 0.4 s) and its loss is *cheap* — it saturates rather than spending
+        # the clock, unlike every search engine below it.
+        completion_probe_route,
     ]
     if closure_first:
         engines.append(equational_closure_route)
@@ -9029,6 +9686,10 @@ def solve_problem_pass(
         # with that law in scope. Certificates are the existing `lemma_chain`
         # shape, so the offline kernel checks every rung independently.
         egg_ladder_route,
+        # Ordered completion again, now tier-scaled. Reached only by a row the
+        # probe could not finish, where the passive queue was still productive
+        # when its unscaled clock ran out.
+        completion_route,
         # Demoted 2026-07-22: the playground judge rejected a narrow_grind cert
         # the local judge accepts (evaluation_normal_0048), and the proof kernel
         # cannot check the grind shape at all. Kernel-verifiable engines above

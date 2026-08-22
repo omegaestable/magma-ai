@@ -63,6 +63,7 @@ GENERAL_CLOSURE_FAMILIES = {
     "true:egg_bootstrap",
     "true:egg_priority_bootstrap",
     "true:egg_ladder",
+    "true:completion",
 }
 
 

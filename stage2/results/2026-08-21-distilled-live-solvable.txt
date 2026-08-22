@@ -1,0 +1,53 @@
+DISTILLED_CERTS: 65 entries, 150019 bytes
+LIVE-SOLVABLE by completion @2s (kernel-verified): 48 entries, 120229 stored bytes
+   e1703_e1488                stored= 12593B live=  1104B 0.00s true:completion:join
+   e1683_e3531                stored= 11909B live=  1309B 0.00s true:completion:collapse
+   e2297_e3089                stored=  9117B live=   982B 0.00s true:completion:collapse
+   e2521_e3232                stored=  6183B live=  1388B 0.00s true:completion:join
+   e1688_e3100                stored=  4755B live=  1349B 0.00s true:completion:join
+   e2860_e3458                stored=  4335B live=  4350B 0.14s true:completion:join
+   e2521_e1879                stored=  3887B live=  1419B 0.00s true:completion:join
+   e691_e2812                 stored=  3515B live=  2146B 0.00s true:completion:collapse
+   e691_e2038                 stored=  3513B live=  2144B 0.00s true:completion:collapse
+   e2135_e2128                stored=  3109B live=  3173B 0.25s true:completion:join
+   e2055_e2656                stored=  2980B live=  3054B 0.05s true:completion:join
+   e2788_e3030                stored=  2758B live=   967B 0.00s true:completion:collapse
+   e886_e4057                 stored=  2758B live=  1017B 0.00s true:completion:collapse
+   e3561_e4195                stored=  2717B live=  2649B 0.02s true:completion:join
+   e2323_e3180                stored=  2437B live=   902B 0.00s true:completion:collapse
+   e1689_e2391                stored=  2409B live=  2298B 0.01s true:completion:collapse
+   e1923_e3309                stored=  2339B live=  2214B 0.01s true:completion:join
+   e8502_e27144               stored=  2284B live=  4199B 0.02s true:completion:collapse
+   e2575_e2227                stored=  2266B live=  2079B 0.02s true:completion:join
+   e39227_e22253              stored=  2133B live=   981B 0.00s true:completion:collapse
+   e2042_e2692                stored=  2130B live=  2722B 0.05s true:completion:join
+   e1367_e3599                stored=  2088B live=  1064B 0.00s true:completion:collapse
+   e1367_e341                 stored=  2082B live=  1058B 0.00s true:completion:collapse
+   e3349_e4682                stored=  1894B live=  2146B 0.03s true:completion:join
+   e30562_e21559              stored=  1850B live=  1069B 0.00s true:completion:collapse
+   e1695_e680                 stored=  1812B live=  1803B 0.01s true:completion:join
+   e2920_e1248                stored=  1682B live=  1750B 0.00s true:completion:collapse
+   e13115_e9520               stored=  1643B live=   854B 0.00s true:completion:collapse
+   e6605_e32838               stored=  1566B live=   864B 0.00s true:completion:join
+   e636_e1070                 stored=  1546B live=   704B 0.00s true:completion:join
+   e8993_e29328               stored=  1392B live=   573B 0.00s true:completion:collapse
+   e32253_e23916              stored=  1330B live=   887B 0.00s true:completion:collapse
+   e2398_e2456                stored=  1301B live=   881B 0.00s true:completion:join
+   e30719_e27190              stored=  1228B live=  1786B 0.01s true:completion:collapse
+   e2713_e2803                stored=  1194B live=  1501B 0.00s true:completion:collapse
+   e35120_e7607               stored=  1105B live=  1032B 0.00s true:completion:join
+   e1147_e641                 stored=  1095B live=  1039B 0.00s true:completion:collapse
+   e1506_e359                 stored=   864B live=  2363B 0.05s true:completion:join
+   e12716_e23224              stored=   679B live=   681B 0.00s true:completion:join
+   e521_e1515                 stored=   628B live=  1059B 0.00s true:completion:collapse
+   e1874_e3524                stored=   596B live=   821B 0.00s true:completion:join
+   e573_e719                  stored=   508B live=   669B 0.00s true:completion:collapse
+   e1057_e1454                stored=   455B live=   536B 0.00s true:completion:join
+   e16886_e22457              stored=   386B live=   535B 0.00s true:completion:collapse
+   e13167_e19841              stored=   350B live=   523B 0.00s true:completion:collapse
+   e21241_e21453              stored=   300B live=   497B 0.00s true:completion:collapse
+   e8773_e28912               stored=   296B live=   485B 0.00s true:completion:collapse
+   e2380_e4422                stored=   232B live=   467B 0.00s true:completion:collapse
+
+not solvable: 17 (29790 bytes); reasons: Counter({'FALSE entry': 12, 'not solved ': 5})
+oracle failures: []
