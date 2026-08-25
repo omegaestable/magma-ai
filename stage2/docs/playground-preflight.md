@@ -1,6 +1,7 @@
 # Playground Preflight
 
-Updated: 2026-05-30; budget and packaging notes amended 2026-08-13.
+Updated: 2026-05-30; budget and packaging notes amended 2026-08-13; submission
+note and upstream-sync items added 2026-08-24.
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -22,6 +23,14 @@ It must satisfy the official submission contract:
 6. LLM escalation goes only through the official Solo or Marathon proxy.
 7. Unsolved Solo runs make a final schema-valid judge call before exiting, so the playground can distinguish a clean miss from a solver crash. Do not emit verdict-less terminal markers such as `{"call":"done"}`; the playground can reject them as malformed verdict payloads.
 8. The broad `grind` TRUE fallback is not an active solver route. Historical grind ledgers remain discovery evidence only.
+9. **Submit `stage2/solver/SUBMISSION_NOTE.md` alongside `solver.py`** (rules
+   of 2026-08-21: a solver carrying generated data payloads — `DISTILLED_CERTS`
+   is one — must ship a plain-text methodology note).
+10. No emitted certificate may contain a judge-banned token — since 2026-08-21
+    the list includes the parser-extension family (`notation`, `infix`,
+    `prefix`, `postfix`, ...) and matches **raw text, comments included**.
+    `judge_answer_payload()` and the offline oracle both enforce the exact
+    judge list, so a green gate + audit covers this.
 
 Packaged size: see `CLAUDE.md` for the current figure (`466,320` bytes on 2026-08-21; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
 
@@ -165,10 +174,12 @@ The runner defaults Marathon to at least `131072` tokens so the official
 allowed for debugging, but they should fail the parity gate if they prevent real
 LLM use.
 
-The wide public sweep helper defaults to `--compression-ratio 0.5`, which was the
-published figure before the metric was withdrawn. The flag still exists; override
-it only when intentionally simulating a different budget share, and say which
-model you are simulating in the summary.
+The wide public sweep helper still accepts `--compression-ratio` for its own
+budget arithmetic, but the vendored `scripts/run_marathon.py` **no longer takes
+the flag** (upstream `4db175c4`, 2026-08-21 — the budget is a flat `N × 300 s`
+/ `N × 32768` tokens, numerically identical to the old 0.5 ratio). Repo
+wrappers now translate a non-default ratio into explicit `--budget-seconds`;
+if a helper ever argparse-errors on the flag, it predates that fix.
 
 For a fast transport-only smoke that avoids long hard-problem proof attempts,
 use the temporary one-call proxy smoke:

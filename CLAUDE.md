@@ -46,6 +46,38 @@ Three organizer answers on the forum, all checked against the vendored snapshot
    Lifting the finite ceiling to 25 (rail 3b) was the cheaper reach. Revisit if a
    row resists every finite order.
 
+**Rules update 2026-08-24 — the snapshot is now `4db175c4` (synced this day)
+and the TBDs are gone.** Upstream moved 16 commits on 2026-08-20/21; the diff
+was read in full and the vendor tree re-synced (all 10 local Windows patches
+preserved — see `vendor/stage2-official/UPSTREAM.md`). What is now official:
+
+- **Scoring is final**: four equal-weight categories — Normal, Hard, Extra
+  Hard, **Order 5** — `accepted` = 1 point, anything else 0. Order-5
+  generalization is a quarter of the score.
+- **No-reuse guarantee**: no evaluation problem is reused from Stage 1 or any
+  publicly available selected problem set. The local corpus is training
+  signal; unseen-row generalization is what scores.
+- **Marathon budget restated flat**: `N × 300 s` wall, `N × 32768` tokens
+  (numerically identical to the old ratio-0.5 formula). The
+  `--compression-ratio` CLI flag is gone; local wrappers were fixed.
+- **Judge hardening**: the banned-token scan gained `run_cmd`, `run_elab`,
+  `@[init`, `skipKernelTC` and the parser-extension family (`notation`,
+  `notation3`, `infix`, `infixl`, `infixr`, `prefix`, `postfix`) — scanned
+  over raw certificate text, comments included. The dependency report is
+  computed on both `submission` and a nonce-named theorem and unioned. The
+  solver mirrors the full list at `judge_answer_payload()` (the one choke
+  point every certificate exits through), in `sanitize_lean_code`, and in the
+  offline oracle (`oracles.find_judge_banned_token`), so every audit scans
+  every emitted cert against the real policy.
+- **Toolchain bumped**: Lean v4.30.0-rc2 → **v4.32.2**, Mathlib tag v4.32.2.
+  The local judge was rebuilt and re-validated the same day (TRUE, order-13
+  `List.getD` FALSE, and infinite-Nat FALSE certs all accepted).
+- **Submission note**: a solver carrying generated data must ship a plain-text
+  methodology note — `stage2/solver/SUBMISSION_NOTE.md`, submit it alongside
+  `solver.py`.
+- `pipeline/config.json` is **unchanged** — every judge limit below still
+  holds, and the CI pin remains valid.
+
 **The deployed numbers, re-read from the vendored snapshot 2026-08-13.** The
 runner's limits live in `vendor/stage2-official/pipeline/config.json` and are
 passed into the judge by `pipeline/proxy.py` (~L1004-1012); the constants in
@@ -66,31 +98,53 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (audit 2026-08-21; limits 2026-08-13)
+## Current measured state (audit 2026-08-24; judge parity 2026-08-24 on Lean 4.32.2)
 
-Every coverage and timing number below is from a **fresh audit run on 2026-08-21**
-after ordered completion shipped as a solver route, diffed by row id against
-`audit-2026-08-12-final.json`. The packaged-size row is a 2026-08-21 build.
+Every coverage number below is from a **fresh audit run on 2026-08-24** after
+the upstream re-sync and the completion goal bridge shipped, diffed by row id
+against `audit-2026-08-21-completion.json`. The packaged-size row is the
+2026-08-24 build. The 2026-08-21 numbers this table previously carried are in
+git history and in `stage2/results/2026-08-21-completion-engine-and-latency.md`.
 
 | Metric | Value |
 | --- | --- |
 | Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669 (100%)** |
 | Official TRUE / FALSE | **819 / 819** and **850 / 850** — both complete |
 | HF mirror sets | **800 / 800 — complete** |
-| `sample_200` (a 200-row **ETP** sample, disjoint from `normal`) | **200 / 200** — was 197/200; the last three local skips were closed 2026-08-12 s2 |
-| Remaining unsolved, anywhere local | **0** — and the first frontier *outside* the local corpus is now largely closed too: of the 52-row failure frontier the 2026-08-20 20,000-row ETP sample found, `true:completion` closes **43 of the 51 TRUE rows in 0.3 s total**. — combined offline **2669 / 2669 distinct rows**. The "2689/2689" that stood here was `1669 + 800 + 200 + 20`, adding `sample_20` on top of the sets it is drawn from: **`sample_20` is a strict subset of `normal`** (all 20 rows, verified by `(eq1_id, eq2_id)` 2026-08-13), so its rows are already inside the official 1669. Official ∩ HF `evaluation_*` is **0**, by id and by canonical content — the mirrors do *not* overlap the official sets, which is a separate thing worth not confusing. State it as official 1669/1669 + HF 800/800 + `sample_200` 200/200 = **2669 distinct** |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0** over 2,689 audited rows; row-id diff vs the 2026-08-12 baseline is **0 lost, 0 gained, 0 verdict flips** over 2,669 common rows |
-| Audit wall clock, official (16 workers) | **330 s → 250 s (−24%)** on 2026-08-21, on top of the earlier 980 s → 330 s. Per-set: `normal` 106.4 → 98.1, `hard1` 28.7 → 21.2, `hard2` 95.6 → 65.7, `hard3` 99.4 → 64.9. `sample_200` **71.5 → 22.3 s (−69%)** |
-| Audit wall clock, HF | **344 s → 163.9 s (−52%)**; `hf_evaluation_order5` **162.9 → 73.4 s (−55%)**, on top of the earlier 611.5 → 162.9 |
-| Worst-case per-row latency, off the packaged artifact | `normal_0823` **252.7 s → 0.07 ms**, `hard1_0025` **217.3 s → 0.31 ms** |
-| Real-judge evidence, individually verified | 99 certificates byte-pinned and **all 99 re-checked by the gate**. Plus **12/12 accepted 2026-08-21** for the new `true:completion` builder, a deliberate spread over both its certificate shapes (rail 3c) |
-| Real-runner evidence, 2026-08-21 | **Marathon `hard3.jsonl` 400/400 accepted, 0 rejected, 0 `not_attempted`, 0 tokens of a 200,000-token budget — in 612 s, down from 1152 s on 2026-08-12 (−47%).** Re-run on the artifact carrying `true:completion` |
-| Real-runner evidence, older routes | Marathon 38/38 accepted, Solo 12/12 solved, 0 rejected (2026-08-07). **Solo has no evidence for the new tier ladder yet** — it runs `deep`, so three passes, and nothing has exercised that end to end |
-| Real-runner generalization | **Marathon on 200 fresh ETP rows (seed `20260821`, benchmark ids excluded, 0 overlap with any prior sample): 200/200 accepted, 0 rejected, 0 `not_attempted`, 0 tokens** (2026-08-21). With `hard3` the same day that is **600/600 real-judge rows, 0 rejected, 0 LLM calls**, on the artifact carrying `true:completion`. The run first read 199/200 — see rail 3b-iv; the failure was the local harness scoring against the 50,000-byte fallback |
-| Spotcheck (standing loop) | **216 rows / 9 sources, 100% accuracy, 100% coverage, 0 mistakes** (seed `20260821`) |
-| Offline gate | **257 passed, 2 skipped, ~15 s** (`-n auto`) |
-| Packaged size | **466,320 bytes of 500,000 — 33,680 bytes (6.7%) headroom** (2026-08-21 build). The completion engine cost 20,680 B. CI builds the artifact and asserts the cap on **it**, not on the source |
-| Solver source | ~9644 lines plus a 65-entry `DISTILLED_CERTS` block (~1367 lines) |
+| `sample_200` (a 200-row **ETP** sample, disjoint from `normal`) | **200 / 200** |
+| Remaining unsolved, anywhere local | **0** — combined offline **2669 / 2669 distinct rows** (official 1669 + HF 800 + `sample_200` 200; never sum `sample_20` on top, it is a strict subset of `normal`) |
+| Unseen order-4 frontier (20,000-row ETP sample of 2026-08-20) | was 52 rows; `true:completion` closed 43 on 2026-08-21 and the **goal bridge closed 6 of the remaining 8 TRUE rows on 2026-08-24** — now **2 TRUE + 1 FALSE open in 20,000 (99.985%)** |
+| Order-5 generated sample (4,000 rows, no ground truth — kernel-verified proofs + FALSE oracle only) | **3,920 / 4,000 solved (98.0%)**, 0 crashes, 0 oracle failures — was 94.9% on 2026-08-20; `completion` serves 374 rows. **Order 5 is now ¼ of the official score** |
+| Oracle failures / crashes / label mismatches | **0 / 0 / 0**; row-id diff vs the 2026-08-21 baseline is **0 lost, 0 gained, 0 verdict flips** over 2,669 common rows |
+| **Judge parity on the new toolchain (Lean 4.32.2 / Mathlib v4.32.2)** | **102/102 accepted** in the 2026-08-24 re-judge sweep — every pinned certificate family plus the envelope rows (`hard2_0092` maxRecDepth boundary, `hard2_0027` infinite Nat + omega, `hard2_0051` order-13 `List.getD`, completion join/collapse). The fixture is rebuilt from that sweep: **102 entries, all dated 2026-08-24** |
+| Real-judge evidence, new certificate shape | **`true:completion:bridge` 10/10 accepted** on v4.32.2 (6 order-4 frontier rows, 2 order-5 rows, 2 formerly distilled-only families; 730–11,061 B) — `stage2/results/2026-08-24-bridge-certs-judged.jsonl` |
+| Real Solo (first tier-ladder evidence ever) | **25/25 `hard2` rows solved, 0 failed, 0 LLM calls**, ~5–8 s/row, on the 2026-08-24 artifact through the official `pipeline.runner` (2026-08-24) |
+| Real Marathon | **1,000 fresh unseen ETP rows (seed `20260824`): 1,000/1,000 accepted, 0 rejected, 0 `not_attempted`, 0 tokens — solver used 1,186.5 s of a 300,000 s budget (~1.2 s/row)** (2026-08-24, final artifact, v4.32.2 judge). **Plus 200 order-5 rows the same day: 193/200 accepted, 0 rejected, 7 `not_attempted` (all from the known order-5 tail)** — two batches after a console-close kill, see the results doc. Prior: `hard3` 400/400 + ETP-200 200/200, 0 rejected (2026-08-21) |
+| Spotcheck (standing loop) | **90 rows / 9 sources, 100% accuracy, 100% coverage, 0 mistakes** (2026-08-24) |
+| Offline gate | **260 passed, 2 skipped, ~14 s** (`-n auto`) — three tests gained from the fixture rebuild |
+| Packaged size | **472,522 bytes of 500,000 — 27,478 bytes (5.5%) headroom** (2026-08-24 final build; the goal bridge + banned-token gate cost ~6.2 KB). CI builds the artifact and asserts the cap on **it**, not on the source |
+| Solver source | ~11,217 lines / 579,027 B (over the cap **by design** — comments are stripped at packaging) |
+
+**2026-08-24 session** (`stage2/results/2026-08-24-final-session-upstream-sync-and-goal-bridge.md`)
+**— the final working session: upstream re-sync, judge parity on Lean 4.32.2,
+and the completion goal bridge.** Coverage held and was proved held (0 lost /
+0 gained / 0 flips over 2,669 common rows vs the 2026-08-21 baseline). The
+headline items, each detailed in the rules-update block above and the results
+doc: the vendored harness was 16 commits stale (rail 14 — new); scoring is
+final with **Order 5 a quarter of the score** and a no-reuse guarantee;
+the judge's expanded banned-token scan is mirrored at `judge_answer_payload()`
++ `sanitize_lean_code` + the offline oracle; **`true:completion:bridge`**
+shipped (bounded bidirectional search over every direction of the saturated
+rule set — unfailing completion's move into the goal) plus ground-unoriented
+goal rewriting, closing **6/8 order-4 frontier rows, 111/205 order-5 misses,
+and 2/5 distilled-only families**, all kernel-verified, 10/10 real-judge
+accepted; the whole certificate corpus was re-judged on the new toolchain
+(**102/102**); Solo got its first tier-ladder real-runner evidence
+(**25/25**); Marathon LLM lane now requests the deployed
+`reasoning_effort=low` and surfaces `truncated`; `SUBMISSION_NOTE.md` and
+`LICENSE` exist; `etp_1661_3524` got a decisive negative-evidence pass
+(order ≤ 4 *proven* clean, FinitePoly + polynomial families exhausted, an
+XOR-additive infinite family proven structurally unable to separate the pair).
 
 **2026-08-21 session** (`stage2/results/2026-08-21-completion-engine-and-latency.md`)
 **— ordered completion shipped as a solver route, and the corpus got 24% faster
@@ -347,8 +401,8 @@ Regenerate everything with the four commands below.
 ## The four commands
 
 ```powershell
-# 1. Correctness gate (~24 s on -n auto, measured 2026-08-12; it was 47 s when
-#    the state table above last read 47). Run before AND after any solver change.
+# 1. Correctness gate (~14 s on -n auto, 260 tests, measured 2026-08-24).
+#    Run before AND after any solver change.
 .\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
 # 2. Full corpus audit (official sets; add --hf for the HF mirrors).
@@ -794,6 +848,17 @@ on the artifact, then pins the solver's judge-limit constants to
     `_HARD_DEADLINE`, so a stale expired bound turns every LLM candidate into
     `lemma_not_derivable_from_hypothesis` — tokens spent, zero accepts, nothing
     logged.
+14. **The vendored snapshot is a cache, not the truth — diff it against
+    upstream HEAD at session start.** Found 2026-08-24: upstream had moved 16
+    commits (2026-08-20/21) with the final scoring rules, a hardened judge
+    (new banned tokens that reject a certificate on a *word in a comment*), and
+    a Lean toolchain bump — all invisible locally while every measurement kept
+    passing against the stale judge. The check costs one `gh api compare` call;
+    missing it for four days nearly meant validating the final submission
+    against the wrong judge. Corollary: after any sync, re-run the judge-parity
+    smoke (a TRUE cert, a table FALSE cert, the infinite-Nat cert) before
+    trusting new local judge evidence, and re-apply/verify the local Windows
+    patches documented in `UPSTREAM.md`.
 
 ## Environment gotchas that will bite you
 
@@ -808,6 +873,18 @@ on the artifact, then pins the solver's judge-limit constants to
   WSL/Linux only. This is the strongest verification available locally — see
   below. Caveat: `lake env` times out (30 s) under heavy CPU load, so never run
   it concurrently with a full audit.
+- **On Windows, `lean` is an elan shim that resolves the toolchain from the
+  working directory** — an invocation from outside `vendor/stage2-official/`
+  gets elan's *default* toolchain, not the vendored pin. This was latent for
+  months (the default happened to equal the pin) and surfaced on the 2026-08-24
+  toolchain bump as `incompatible header` olean errors; fixed by passing
+  `cwd=art_dir` in the judge's Lean invocations (UPSTREAM.md patch #9). Also:
+  a *detached* process (`Start-Process`) does not inherit the shell's elan
+  PATH — every judge-touching runner must prepend `~\.elan\bin` itself, which
+  is why `run_solo_batch.py` and friends do. And a Marathon launched from an
+  agent session **dies with that session's console** (exit `0x40010004`):
+  `answers.jsonl` is append-only, so recover with `--score-only` and run the
+  unanswered rows as a second manifest — never re-solve what is on disk.
 
 ## Verifying against the real Lean judge
 
@@ -965,31 +1042,37 @@ solver primitive cannot hide itself in the oracle.
 `sample_20`'s 20 rows on top of `normal`, which already contains all of them
 (corrected 2026-08-13).
 
-**Outside the local corpus there is now a measured frontier, and it is small.**
+**Outside the local corpus the frontier is now tiny (updated 2026-08-24).**
 The 2026-08-20 session sampled **20,000 rows of the full order-4 ETP matrix**
-(the ~22M-pair graph the corpus is drawn from) and found **52 misses**, 51 of
-them TRUE and essentially all one law family. `true:completion` closes **43 of
-those 51**, all of them in 0.3 s combined. What is left:
+and found 52 misses; `true:completion` closed 43 on 2026-08-21 and the **goal
+bridge closed 6 of the remaining 8** on 2026-08-24 (judge-accepted). What is
+left, everywhere we have looked:
 
-- **8 order-4 rows** (`etp_62_58`, `etp_1366_3436`, `etp_666_1014`,
-  `etp_3569_4653`, `etp_1101_2457`, `etp_666_698`, `etp_1881_4126`,
-  `etp_1163_198`). Completion **saturates** on all 8 — genuinely, not from a size
-  cap: `max_size` 44 → 90 and `max_active` 800 → 4000 change nothing, same
-  equation count. 5 of them hold a discarded unorientable equation of the *other*
-  shape (`z ◇ x = w ◇ x`, "the left argument does not matter"); instantiating
-  those is the obvious next idea and **it is already measured at 0 rows** — see
-  the dead end recorded in `_kb_collapse_witness`'s docstring.
-- **1 FALSE row**, `etp_1661_3524` (eq1 `x = (x ◇ y) ◇ ((y ◇ z) ◇ y)`). The only
-  FALSE miss in 20,000 rows, so read "the countermodel search is airtight" as
-  "airtight to 1-in-20,000", not literally 0. **Not yet diagnosed** — a first
-  attempt at a wide `constraint_countermodel` sweep (orders 2..12, 30-60 s each)
-  did not finish inside a 10-minute probe, which is itself a small finding: bound
-  the probe before running it.
-- **Order-5 is a different, more diffuse frontier.** The 4,000-row generated
-  order-5 sample left 205 misses with no dominant law family (the most-repeated
-  eq1 appears 3 times). `true:completion` closes **9 of a 25-row probe** of it.
-  That is real progress on a corpus nothing was tuned for, and the remainder is
-  not one shape.
+- **2 order-4 TRUE rows**: `etp_1366_3436` (eq2 `x ◇ y = z ◇ (w ◇ (y ◇ y))`)
+  and `etp_3569_4653` (eq2 `(x ◇ y) ◇ x = (z ◇ w) ◇ u`). Both saturate with
+  the bridge exhausting the *reachable* theory in < 1 s even at 10× the node
+  cap — their goals (fresh-variable-heavy RHS) need facts self-superposition
+  never derives. Not budget-bound; a different seeding idea is required
+  (e.g. instantiating eq1 at goal subterms, egg_ladder-style).
+- **1 FALSE row**, `etp_1661_3524` (eq1 `x = (x ◇ y) ◇ ((y ◇ z) ◇ y)`).
+  Negative evidence as of 2026-08-24: **order ≤ 4 exhausted (proven, 8.7 s)**;
+  orders 5–12 all deadline-bound at the deployed 45 s/order (61k–617k nodes,
+  branching-bound, not node-bound); no witness among teorth's 241 FinitePoly
+  magmas of order 5–16 nor among **all** ~120k quadratic polynomial magmas
+  over Z₅–Z₉; teorth itself refutes the pair only by composition; an
+  XOR-additive infinite family (`a ◇ b = a ⊕ g b`) provably cannot separate
+  the pair. eq1 forces every right-multiplication to be a bijection with
+  `P_{(y◇z)◇y} = P_y⁻¹` for all z. If finite, the witness is order ≥ 5 and
+  wants a long targeted run or a permutation-structure-aware search; else it
+  wants a bespoke infinite construction (the `hard2_0027` playbook).
+- **Order-5**: the 4,000-row generated sample is at **3,920/4,000 (98.0%)**
+  end-to-end — 80 skips left, diffuse, no dominant family. The bridge took
+  111 of the former 205.
+- **3 distilled-only TRUE families** no live engine re-derives
+  (`e2923_e1623`, `e1517_e735`, `e3067_e3082`) — the clearest named signal of
+  which proof technique the general engines still miss. (Was 5; the bridge
+  took `e469_e4090` and the collapse fix took `e20115_e21404`, both now
+  judge-accepted live.)
 
 **The dev tool still lives at `stage2/experiments/completion/`** and is still
 worth keeping: it prints the derivation, which the solver route does not, so it
@@ -1105,21 +1188,26 @@ Also refuted in the second pass, so nobody spends a session on them again:
    the FALSE side: at the true 19,500-byte budget a `List.getD` table binds near
    order 82 rather than 25, but per rail 3c that needs real-judge evidence before
    `MAX_WITNESS_ORDER` moves.
-4. **The 8 order-4 rows completion saturates on** (listed in the open-frontier
-   section). They are not a budget problem — the system genuinely saturates and
-   raising `max_size`/`max_active` changes nothing — and the obvious idea
-   (instantiate the other unorientable shape) is already measured at 0 rows.
-   What is *not* tried: keeping such an equation and weakening `subsumed()` for
-   it specifically, or completing from eq1 **plus** the skolemised goal
-   disequality (real unfailing completion refutes `s ≠ t` rather than testing
-   joinability, which is a strictly stronger procedure than what shipped).
-5. **`etp_1661_3524`, the single FALSE miss in 20,000 rows.** Undiagnosed. Bound
-   the probe before running it — the first attempt (orders 2..12 at 30-60 s each)
-   did not finish in ten minutes.
-6. **Bytes.** The artifact is at 466,320 of 500,000 (6.7% headroom) and
-   `DISTILLED_CERTS` is still the dominant cost at 65 entries. The completion
-   port was expected to make ~26 of those entries live-solvable — that was the
-   README's byte arithmetic for the port, and it is **not yet verified or acted
-   on**. Measure which distilled entries `completion_prove` now solves directly
-   before deleting any; a distilled cert is judge-pinned bytes and the live route
-   is judge-verified only on samples, so this is a real trade, not free cleanup.
+4. ~~The 8 order-4 rows completion saturates on~~ — **6 of 8 closed 2026-08-24**
+   by exactly the lever this item named: the goal-disequality direction of
+   unfailing completion, shipped as ground-unoriented goal rewriting plus the
+   post-saturation `goal_bridge` (both sidestep `subsumed()` entirely — the
+   measured-dead instance-pushing idea stays dead). All six judge-accepted on
+   v4.32.2. The 2 survivors (`etp_1366_3436`, `etp_3569_4653`) exhaust the
+   reachable theory — the untried idea for them is seeding completion with
+   goal-subterm instances, egg_ladder-style.
+5. **`etp_1661_3524`, the single FALSE miss in 20,000 rows** — now heavily
+   diagnosed (see the open-frontier section): order ≤ 4 proven clean,
+   FinitePoly and all small quadratic polynomial families exhausted, an
+   XOR-additive infinite family provably insufficient. Remaining moves: a
+   multi-hour order-5..9 constraint run (a deep-sweep item), a
+   permutation-structure-aware search (eq1 forces right-multiplications to
+   pair into inverses), or a bespoke infinite construction.
+6. **Bytes.** The artifact is at 472,504 of 500,000 (5.5% headroom).
+   `DISTILLED_CERTS` is still the dominant cost at 65 entries, and **50 of the
+   65 are now live-solvable** (48 measured 2026-08-21 + 2 more via the bridge,
+   both judge-accepted). The ~120 KB recovery remains available but was
+   **deliberately not taken**: judge-pinned bytes beat a very good bet when no
+   new engine needs the room, and this was the last engine session. If a
+   future change needs bytes, the scoped procedure in
+   `NEXT_SESSION_BRIEF` §3.3 still applies.

@@ -403,7 +403,14 @@ LLM_CONFIG = {
     "provider": "deepinfra/bf16",
     "max_output_tokens": LLM_MAX_OUTPUT_TOKENS,
     "temperature": 0.0,
-    "reasoning_effort": "medium",
+    # The official evaluation spec pins gpt-oss-120b at reasoning_effort=low
+    # (rules/evaluation.md, final config 2026-08-21). The Marathon proxy
+    # forwards whatever the solver requests, so this value is what DeepInfra
+    # actually runs — and reasoning tokens bill against the same N x 32768
+    # budget the answer needs. The proxy's own comments record high-effort
+    # runaway generation on this exact model (840 s of trickled tokens past a
+    # 300 s budget), so requesting above the deployed level is pure downside.
+    "reasoning_effort": os.environ.get("JUDGE_MARATHON_REASONING_EFFORT", "low"),
     "use_seed": True,
     "seed": 0,
     "http_timeout_seconds": LLM_HTTP_TIMEOUT_SECONDS,
@@ -424,6 +431,37 @@ BANNED_LEAN_RE = re.compile(
     r"|\bEquation(?!LHS\b|RHS\b)\d+\b",
     re.IGNORECASE,
 )
+
+# Exact mirror of the judge's pre-Lean banned-token scan
+# (judge/verify.py BANNED_PROOF_TOKENS, upstream 4db175c4, 2026-08-21
+# hardening: parser-extension commands, run_cmd/run_elab, `@[init`,
+# skipKernelTC). The judge scans raw certificate text — comments and string
+# content included — so anything matching here is rejected before Lean runs,
+# regardless of whether it is ever elaborated. Matching replicates the
+# judge's `_find_banned_token`: `#`/`@`-prefixed or trailing-space tokens as
+# literal substrings, identifier tokens case-sensitive on word boundaries.
+JUDGE_BANNED_TOKENS = (
+    "sorry", "admit", "sorryAx", "mkSorry",
+    "dbg_trace", "dbgTrace",
+    "run_tac", "run_cmd", "run_elab", "initialize", "builtin_initialize",
+    "@[init",
+    "#eval", "#exit", "#reduce", "#synth", "#check_eval",
+    "elab", "elab_rules", "macro", "macro_rules", "syntax",
+    "notation", "notation3", "infix", "infixl", "infixr", "prefix", "postfix",
+    "unsafe", "implemented_by", "extern",
+    "skipKernelTC",
+    "unsafeCast", "unsafeIO", "unsafePerformIO",
+)
+
+
+def find_judge_banned_token(code):
+    for token in JUDGE_BANNED_TOKENS:
+        if token.startswith(("#", "@")) or token.endswith(" "):
+            if re.search(re.escape(token), code):
+                return token
+        elif re.search(rf"\b{re.escape(token)}\b", code):
+            return token
+    return None
 
 WITNESS_TABLES = (
     ("LP", [[0, 0], [1, 1]]),
@@ -650,6 +688,12 @@ def judge_answer_payload(answer: dict[str, Any]) -> dict[str, str] | None:
     if code_bytes > MAX_LEAN_CODE_BYTES:
         return None
     if verdict == "false" and code_bytes > MAX_FALSE_CERT_BYTES:
+        return None
+    # Every certificate — deterministic, distilled, or LLM — leaves through
+    # this function, so this is where the judge's pre-Lean token scan is
+    # mirrored: the judge rejects a banned token anywhere in the raw text
+    # before Lean runs, and shipping such a row scores worse than skipping it.
+    if find_judge_banned_token(code) is not None:
         return None
     return {"verdict": verdict, "code": code}
 
@@ -4335,6 +4379,11 @@ def derived_rule_steps(
             break
         sub = term_at_path(term, path)
         for rule in rules:
+            # per-rule poll mirrors filled_absorption_steps (rail 5f-v: twins
+            # must carry the same bounds); the caps alone leave the inner work
+            # unbounded in time if the pools are ever widened
+            if deadline_expired(deadline):
+                return steps
             subst: dict[str, Term] = {}
             if not match_term(rule.lhs, sub, subst):
                 continue
@@ -4348,6 +4397,8 @@ def derived_rule_steps(
                 count += 1
                 if count > max_fills:
                     break
+                if count % 64 == 0 and deadline_expired(deadline):
+                    return steps
                 full = dict(subst)
                 for v, val in zip(needed, fills):
                     full[v] = val
@@ -6707,6 +6758,14 @@ COMPLETION_MAX_PASSIVE = 40000
 COMPLETION_NORMALIZE_LIMIT = 120
 COMPLETION_POLL_EVERY = 192
 COMPLETION_MAX_LEMMAS = 48
+# The post-saturation goal bridge (unfailing completion's move into the goal
+# disequality). Runs only on rows completion would otherwise *lose* after
+# saturating, so its cost never touches a row another engine serves. The node
+# cap is a memory guard on the BFS dictionaries — the deadline is the real
+# stopping criterion (rail 5f); the slack bounds how far above the normal
+# forms an intermediate term may grow.
+COMPLETION_BRIDGE_MAX_NODES = 6000
+COMPLETION_BRIDGE_SLACK = 8
 # Unscaled, and placed with `egg_probe`: on the 20k-sample frontier every row
 # completion can close lands in <= 0.4 s, and on a row it cannot it usually
 # *saturates* (25 of 30 random FALSE rows in ~0 s) rather than spending the
@@ -6917,6 +6976,50 @@ class _KBCompletion:
                         continue
                     return (replace_subterm(term, path, image),
                             (path, eq.eid, subst, direction))
+            if ground:
+                found = self._rewrite_ground_unoriented(term, path, sub,
+                                                        sub_mask, sub_size)
+                if found is not None:
+                    return found
+        return None
+
+    def _rewrite_ground_unoriented(
+        self, term: Term, path: Any, sub: Term, sub_mask: int, sub_size: int,
+    ) -> tuple[Term, Any] | None:
+        """Ground-only: rewrite with a direction the variable condition excluded.
+
+        An equation like `z ◇ x = w ◇ x` gets no `ori` entry in that direction
+        (the target side holds a variable the pattern side lacks), so ordinary
+        rewriting can never use it — and the 2026-08-21 measurement showed that
+        pushing its instances through `push()`/`subsumed()` closes nothing,
+        because each instance is subsumed by the still-active parent. On the
+        *skolemised goal* the variable condition is vacuous: an unbound
+        target-side variable is universally quantified, so it may be
+        instantiated at any ground term. It is bound explicitly in the recorded
+        substitution (to the smallest constant in the matched subterm), which
+        keeps the renderer's replay byte-exact — `chain_expr` re-instantiates
+        from the substitution it is handed. Ground KBO is total, so the
+        `_kbo_gt` gate still guarantees termination.
+        """
+        fill = ("var", min(term_vars(sub)))
+        for eq in self.active:
+            present = {direction for (_l, _r, direction) in eq.ori}
+            for (pat, target, direction) in ((eq.lhs, eq.rhs, 1),
+                                             (eq.rhs, eq.lhs, -1)):
+                if direction in present:
+                    continue
+                if term_size(pat) > sub_size or (_kb_shape_mask(pat) & ~sub_mask):
+                    continue
+                subst: dict[str, Term] = {}
+                if not match_term(pat, sub, subst):
+                    continue
+                for var in sorted(term_vars(target) - set(subst)):
+                    subst[var] = fill
+                image = instantiate_term(target, subst)
+                if image == sub or not _kbo_gt(sub, image, True):
+                    continue
+                return (replace_subterm(term, path, image),
+                        (path, eq.eid, subst, direction))
         return None
 
     def normalize(self, term: Term, ground: bool = False) -> tuple[Term, list[Any]]:
@@ -7078,6 +7181,86 @@ class _KBCompletion:
             return None
         return left_steps + [(p, i, s, -d) for (p, i, s, d) in reversed(right_steps)]
 
+    def _goal_neighbors(self, term: Term, max_size: int):
+        """Every one-step rewrite of `term` by any active equation, either
+        direction, order ignored — unfailing completion's move into the goal.
+        Unbound target-side variables are filled with the smallest constant of
+        the matched subterm, exactly as `_rewrite_ground_unoriented` does, so
+        the recorded substitution replays byte-exactly in the renderer."""
+        for path in subterm_paths_tuple(term):
+            sub = term_at_path(term, path)
+            if sub[0] != "op":
+                continue
+            sub_mask = _kb_shape_mask(sub)
+            sub_size = term_size(sub)
+            fill = ("var", min(term_vars(sub)))
+            for eq in self.active:
+                for (pat, target, direction) in ((eq.lhs, eq.rhs, 1),
+                                                 (eq.rhs, eq.lhs, -1)):
+                    if term_size(pat) > sub_size or (_kb_shape_mask(pat) & ~sub_mask):
+                        continue
+                    subst: dict[str, Term] = {}
+                    if not match_term(pat, sub, subst):
+                        continue
+                    for var in sorted(term_vars(target) - set(subst)):
+                        subst[var] = fill
+                    image = instantiate_term(target, subst)
+                    if image == sub:
+                        continue
+                    out = replace_subterm(term, path, image)
+                    if term_size(out) > max_size:
+                        continue
+                    yield out, (path, eq.eid, subst, direction)
+
+    def goal_bridge(self, lhs: Term, rhs: Term,
+                    max_nodes: int = COMPLETION_BRIDGE_MAX_NODES) -> list[Any] | None:
+        """Bounded bidirectional search between the goal's two normal forms,
+        using *every* direction of every active equation.
+
+        Ordered rewriting (`goal_join`) only ever moves down the ground KBO, so
+        two sides whose meeting point is *up* the order can never join — this
+        is what real unfailing completion buys by superposing into the goal
+        disequality, and it is what the 8 saturating 20k-frontier rows were
+        stuck on. Run only after saturation (the active set is final and
+        small), size-capped, node-capped, and deadline-polled; the node cap is
+        a memory guard on the BFS dictionaries, the deadline stays the real
+        stopping criterion (rail 5f)."""
+        left, left_steps = self.normalize(lhs, ground=True)
+        right, right_steps = self.normalize(rhs, ground=True)
+        if left == right:
+            return (left_steps
+                    + [(p, i, s, -d) for (p, i, s, d) in reversed(right_steps)])
+        max_size = max(term_size(left), term_size(right)) + COMPLETION_BRIDGE_SLACK
+        # seen: term -> (side, steps-from-that-side's-normal-form)
+        seen: dict[Term, tuple[int, list[Any]]] = {left: (0, []), right: (1, [])}
+        frontier: list[tuple[int, int, Term]] = [
+            (term_size(left), 0, left), (term_size(right), 1, right)]
+        heapq.heapify(frontier)
+        tick = count()
+        expanded = 0
+        while frontier and expanded < max_nodes:
+            if self.out_of_time():
+                return None
+            _weight, _tie, current = heapq.heappop(frontier)
+            side, steps = seen[current]
+            expanded += 1
+            for nxt, step in self._goal_neighbors(current, max_size):
+                if self.out_of_time():
+                    return None
+                found = seen.get(nxt)
+                if found is not None:
+                    if found[0] == side:
+                        continue
+                    fwd, bwd = ((steps + [step], found[1]) if side == 0
+                                else (found[1], steps + [step]))
+                    bridge = fwd + [(p, i, s, -d) for (p, i, s, d) in reversed(bwd)]
+                    return (left_steps + bridge
+                            + [(p, i, s, -d)
+                               for (p, i, s, d) in reversed(right_steps)])
+                seen[nxt] = (side, steps + [step])
+                heapq.heappush(frontier, (term_size(nxt), next(tick), nxt))
+        return None
+
 
 class _KBRenderer:
     """Turn a completion proof DAG into the solver's `lemma_chain` shape."""
@@ -7225,7 +7408,8 @@ def _kb_collapse_certificate(comp: _KBCompletion, eq: _KBEquation, var: str,
 
 
 def completion_prove(eq1: dict[str, Any], eq2: dict[str, Any],
-                     *, time_budget: float) -> tuple[str, str] | None:
+                     *, time_budget: float,
+                     bridge: bool = True) -> tuple[str, str] | None:
     """Complete from eq1 alone; return `(route, certificate)` or None.
 
     Two ways to win, taken in whichever order they become available: the goal's
@@ -7244,6 +7428,21 @@ def completion_prove(eq1: dict[str, Any], eq2: dict[str, Any],
     while not comp.out_of_time():
         eq = comp.step()
         if eq is None:
+            # Saturated short of the goal. Ordered rewriting only ever moves
+            # down the ground KBO, so a goal whose meeting point is *up* the
+            # order is unreachable by `goal_join` at any budget — the bridge
+            # searches both directions of the final rule set instead. It is
+            # skipped in the unscaled probe slot: measured 2026-08-24, it can
+            # turn the probe's ~0 s saturation loss into a full-budget loss on
+            # ~1 row in 8, which is exactly the asymmetry the early slot's
+            # placement depends on. The tier-scaled slot runs it; a row only
+            # the bridge can close is a row nothing earlier claimed anyway.
+            if bridge:
+                bridged = comp.goal_bridge(eq2["lhs"], eq2["rhs"])
+                if bridged is not None:
+                    code = _kb_join_certificate(comp, bridged, eq1, eq2)
+                    if code is not None and len(code.encode("utf-8")) <= MAX_LEAN_CODE_BYTES:
+                        return "true:completion:bridge", code
             return None
         witness = _kb_collapse_witness(eq)
         if witness is not None:
@@ -7273,7 +7472,8 @@ def completion_probe_route(
     eq1: dict[str, Any], eq2: dict[str, Any]
 ) -> tuple[str, str] | None:
     """Unscaled early probe, beside `egg_probe`. See COMPLETION_PROBE_BUDGET."""
-    return completion_prove(eq1, eq2, time_budget=COMPLETION_PROBE_BUDGET)
+    return completion_prove(eq1, eq2, time_budget=COMPLETION_PROBE_BUDGET,
+                            bridge=False)
 
 
 def completion_route(
@@ -9821,6 +10021,8 @@ def sanitize_lean_code(code: str, *, verdict: str) -> bool:
         return False
     if BANNED_LEAN_RE.search(code):
         return False
+    if find_judge_banned_token(code) is not None:
+        return False
     has_submission = bool(re.search(r"\b(?:def|theorem)\s+submission\b", code))
     if not has_submission:
         return False
@@ -10359,13 +10561,13 @@ def log_progress(record: dict[str, Any]) -> None:
 
 def log_route_count_chunks(route_counts: dict[str, int], *, max_chars: int = 850) -> None:
     chunk: dict[str, int] = {}
-    for route, count in sorted(route_counts.items()):
+    for route, route_count in sorted(route_counts.items()):
         trial = dict(chunk)
-        trial[route] = count
+        trial[route] = route_count
         record = {"route": "route_counts", "routes": trial}
         if chunk and len(json.dumps(record, separators=(",", ":"))) > max_chars:
             log_stderr({"route": "route_counts", "routes": chunk})
-            chunk = {route: count}
+            chunk = {route: route_count}
         else:
             chunk = trial
     if chunk:
@@ -10399,7 +10601,7 @@ def marathon_llm_attempt(
         return result
 
     result["elapsed_seconds"] = round(time.monotonic() - started, 3)
-    for key in ("tokens_used_call", "tokens_used_total", "budget_remaining"):
+    for key in ("tokens_used_call", "tokens_used_total", "budget_remaining", "truncated"):
         if key in response:
             result[key] = response.get(key)
     if "error" in response:
@@ -10938,6 +11140,10 @@ def run_marathon() -> int:
                                 "elapsed_seconds": result.get("elapsed_seconds"),
                                 "tokens_used_call": result.get("tokens_used_call"),
                                 "budget_remaining": result.get("budget_remaining"),
+                                # distinguishes a token-exhausted call (raw
+                                # reasoning trace, finish_reason=length) from a
+                                # genuinely malformed answer in the triage log
+                                "truncated": result.get("truncated", False),
                                 "response_chars": result.get("response_chars"),
                                 "response_preview": result.get("response_preview"),
                             }

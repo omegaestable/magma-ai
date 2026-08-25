@@ -575,6 +575,39 @@ _BANNED_TACTIC_RE = re.compile(r"\b(?:simp|simpa|simp_all|aesop|grind|sorry|admi
 # is otherwise lost anyway.
 GRIND_ALLOWED_ROUTES = frozenset({"true:narrow_grind", "fallback:unsolved_grind"})
 
+# Exact mirror of the judge's own banned-token scan
+# (vendor/stage2-official/judge/verify.py BANNED_PROOF_TOKENS, upstream
+# 4db175c4, synced 2026-08-24). The 2026-08-21 upstream hardening added the
+# parser-extension commands (notation/infix/...), run_cmd/run_elab, `@[init`
+# and skipKernelTC; a certificate containing any of these — even in a comment
+# — is rejected before Lean runs. Matching rules replicated from
+# `_find_banned_token`: tokens starting with `#` or `@`, or ending with a
+# space, match as a literal substring; identifier tokens match with word
+# boundaries, case-sensitive.
+_JUDGE_BANNED_TOKENS = (
+    "sorry", "admit", "sorryAx", "mkSorry",
+    "dbg_trace", "dbgTrace",
+    "run_tac", "run_cmd", "run_elab", "initialize", "builtin_initialize",
+    "@[init",
+    "#eval", "#exit", "#reduce", "#synth", "#check_eval",
+    "elab", "elab_rules", "macro", "macro_rules", "syntax",
+    "notation", "notation3", "infix", "infixl", "infixr", "prefix", "postfix",
+    "unsafe", "implemented_by", "extern",
+    "skipKernelTC",
+    "unsafeCast", "unsafeIO", "unsafePerformIO",
+)
+
+
+def find_judge_banned_token(code: str) -> str | None:
+    """Return the first token the real judge's pre-Lean scan would reject."""
+    for token in _JUDGE_BANNED_TOKENS:
+        if token.startswith(("#", "@")) or token.endswith(" "):
+            if re.search(re.escape(token), code):
+                return token
+        elif re.search(rf"\b{re.escape(token)}\b", code):
+            return token
+    return None
+
 
 def check_no_banned_tactics(code: str, route: str = "") -> None:
     """Raise if a solver-emitted certificate leans on a forbidden tactic.
@@ -583,6 +616,11 @@ def check_no_banned_tactics(code: str, route: str = "") -> None:
     invisible to every offline gate here. Keeping them out means the offline
     evidence actually covers what ships.
     """
+    judge_token = find_judge_banned_token(code)
+    if judge_token is not None:
+        raise OracleError(
+            f"certificate for route {route!r} contains {judge_token!r}, which "
+            f"the judge's banned-token scan rejects before Lean ever runs")
     if route in GRIND_ALLOWED_ROUTES:
         return
     found = sorted({m.group() for m in _BANNED_TACTIC_RE.finditer(code)})

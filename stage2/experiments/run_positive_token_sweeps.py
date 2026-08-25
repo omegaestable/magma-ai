@@ -286,11 +286,15 @@ def command_for(
         str(SOLVER_DIR),
         "--manifest",
         str(spec.manifest),
-        "--compression-ratio",
-        str(compression_ratio),
         "--output-dir",
         str(run_dir),
     ]
+    # upstream 4db175c4 removed --compression-ratio (flat N*300s default,
+    # numerically identical to the old 0.5 ratio); a non-default ratio is
+    # applied here as an explicit wall-clock budget instead.
+    if budget_seconds is None and compression_ratio != 0.5:
+        n = sum(1 for line in spec.manifest.open(encoding="utf-8") if line.strip())
+        budget_seconds = compression_ratio * n * 600.0
     command.extend(["--budget-tokens", str(budget_tokens)])
     if budget_seconds is not None:
         command.extend(["--budget-seconds", str(budget_seconds)])

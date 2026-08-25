@@ -373,9 +373,10 @@ def run_marathon(args: argparse.Namespace, env: dict[str, str]) -> int:
         str(args.fixture),
         "--output-dir",
         str(output_dir),
-        "--compression-ratio",
-        str(args.compression_ratio),
     ]
+    # upstream 4db175c4 removed --compression-ratio from run_marathon.py; the
+    # ratio is now applied locally when deriving explicit budgets instead
+    # (run_marathon.py's flat default N*300s/N*32768 equals ratio 0.5).
     if args.marathon_budget_tokens is not None:
         command.extend(["--budget-tokens", str(args.marathon_budget_tokens)])
     if args.marathon_budget_seconds is not None:
@@ -499,6 +500,11 @@ def main() -> int:
         derived_tokens = int(args.compression_ratio * len(rows) * REF_PER_PROBLEM_TOKENS)
         args.marathon_budget_tokens = max(DEFAULT_MIN_MARATHON_TOKENS, derived_tokens)
         print(f"marathon_budget_tokens={args.marathon_budget_tokens} defaulted=true")
+    if not args.skip_marathon and args.marathon_budget_seconds is None:
+        # run_marathon.py no longer takes --compression-ratio, so a non-default
+        # ratio must be turned into an explicit wall-clock budget here.
+        args.marathon_budget_seconds = args.compression_ratio * len(rows) * 600.0
+        print(f"marathon_budget_seconds={args.marathon_budget_seconds} defaulted=true")
     if not args.skip_marathon and args.marathon_budget_tokens <= 0:
         failures.append("Marathon token budget must be positive for playground parity")
 

@@ -1,5 +1,48 @@
 # Latest Handoff
 
+## 2026-08-24: the final working session — upstream re-sync, Lean 4.32.2 parity, and the completion goal bridge
+
+Full detail: `stage2/results/2026-08-24-final-session-upstream-sync-and-goal-bridge.md`.
+Coverage held and was proved held: **0 lost, 0 gained, 0 verdict flips** over
+2,669 common rows vs the 2026-08-21 baseline; gate 260 passed.
+
+- **The vendored harness was 16 commits stale** (new rail 14). Upstream
+  finalized scoring on 2026-08-21 — four equal categories with **Order 5 worth
+  a quarter of the score**, a no-reuse guarantee for the private set — and
+  hardened the judge (banned-token scan now rejects `notation`/`infix`-family
+  words anywhere in the raw text) and bumped the toolchain to **Lean 4.32.2**.
+  Re-synced with all local patches preserved plus a new one: on Windows the
+  elan shim resolves the toolchain from the cwd, and two judge invocations
+  passed none — latent for months, exposed by the bump (`UPSTREAM.md` #9).
+- **Judge parity re-established**: the whole pinned fixture re-judged on
+  v4.32.2 — **102/102 accepted**, fixture rebuilt and re-dated.
+- **`true:completion:bridge` shipped** — ground-unoriented rewriting of the
+  skolemised goal plus a post-saturation bidirectional bridge over every
+  direction of the active rule set (unfailing completion's move into the goal
+  disequality). Closes **6 of the 8** order-4 frontier rows, **111 of 205**
+  order-5 sample misses (order-5 end-to-end now **3,920/4,000 = 98.0%**), and
+  2 of the 5 distilled-only families; **10/10 real-judge accepted**. Confined
+  to the tier-scaled slot — measured, the probe slot's cheap-loss asymmetry
+  survives untouched.
+- **Compliance hardening**: the judge's exact banned-token matcher now gates
+  `judge_answer_payload()` (every certificate's one exit) and the offline
+  oracle; Marathon LLM lane requests the deployed `reasoning_effort=low` and
+  surfaces `truncated`; `SUBMISSION_NOTE.md` (required by the new rules for
+  generated data) and `LICENSE` written.
+- **First-ever Solo tier-ladder evidence**: 25/25 `hard2` rows on the final
+  artifact, 0 failed, 0 LLM calls. Spotcheck 90/90. Packaged **472,504 B**
+  (5.5% headroom).
+- **`etp_1661_3524`** (the 1-in-20,000 FALSE miss): order ≤ 4 **proven**
+  clean; FinitePoly + all small quadratic polynomial families exhausted; an
+  XOR-additive infinite family proven structurally insufficient. Open, with
+  the search space now well mapped.
+
+**Still open**: 2 order-4 TRUE rows + 1 FALSE row + 80 diffuse order-5 skips
+on the unseen frontier; 3 named distilled-only TRUE families; deep sweeps and
+the upload itself (`CURRENT_STATE.md` "What is still open").
+
+---
+
 ## 2026-08-21: ordered completion is a solver route, and the corpus got 24% faster
 
 Full detail: `stage2/results/2026-08-21-completion-engine-and-latency.md`. This

@@ -17,6 +17,17 @@
 > saturating?" — the question that separated the 43 closable frontier rows from
 > the 8 that are not.
 >
+> **Twin asymmetry warning (2026-08-24, the reverse of rail 5f-v):** the solver
+> route is now *stronger* than this tool. It rewrites the skolemised goal with
+> unorientable equations (`_rewrite_ground_unoriented`) and, on saturation,
+> runs a bidirectional `goal_bridge` over every direction of the final rule
+> set — `true:completion:bridge`, which closed 6 of the 8 rows this README
+> calls "not closable" plus ~111 order-5 sample rows. This tool has neither
+> move. A row this tool reports as saturating-short-of-the-goal may therefore
+> still be closed by the shipped solver; diagnose with the tool, but always
+> confirm a MISS against `completion_prove` in `solver.py` before calling a
+> row open.
+>
 > Sections below are kept as the record of how the port was justified. Read them
 > as history, not as open work.
 

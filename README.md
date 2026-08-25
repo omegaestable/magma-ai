@@ -44,7 +44,16 @@ refuses to package on failure.
 
 Authoritative source: `vendor/stage2-official/pipeline/config.json` (the values
 the harness actually passes to the judge) and `vendor/stage2-official/rules/`.
-The snapshot vendored here is commit `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`.
+The snapshot vendored here is commit `4db175c41d917ce39fc82e48c7e440e2a3fa403d`
+(synced 2026-08-24 — the 2026-08-21 upstream rules rewrite that finalized
+scoring, hardened the judge's banned-token scan, and bumped the verification
+toolchain to **Lean 4.32.2 / Mathlib 4.32.2**).
+
+**Scoring (final)**: four equal-weight categories — Normal, Hard, Extra Hard,
+**Order 5** — `accepted` = 1 point, anything else 0. No evaluation problem is
+reused from Stage 1 or any publicly available selected problem set. A solver
+carrying generated data payloads ships a plain-text methodology note
+(`stage2/solver/SUBMISSION_NOTE.md` here) alongside `solver.py`.
 
 ### Sandbox, per submission
 
@@ -251,19 +260,22 @@ audit** at `fast` tier; see the caveat below before quoting any wall clock.
 
 | Metric | Value | Measured |
 | --- | --- | --- |
-| Official sets (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669** | 2026-08-21 |
-| Official TRUE / FALSE | **819 / 819** and **850 / 850** | 2026-08-21 |
-| HF mirror sets | **800 / 800** | 2026-08-21 |
-| `sample_200` (an ETP sample disjoint from `normal`) | **200 / 200** | 2026-08-21 |
-| Distinct rows solved | **2669** | 2026-08-21 |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0** | 2026-08-21 |
-| Row-id diff vs the 2026-08-12 baseline | **0 lost, 0 gained, 0 verdict flips** | 2026-08-21 |
-| Audit wall clock (16 workers) | official **250 s**, HF **164 s** (were 330 / 344) | 2026-08-21 |
-| Unseen order-4 ETP, 20,000-row sample | **19,948 solved**; of its 52-row frontier `true:completion` closes 43 of the 51 TRUE rows | 2026-08-20/21 |
-| Real Marathon | `hard3.jsonl` **400/400** in 612 s (was 1152 s) + fresh unseen ETP-200 **200/200** — **600/600 accepted, 0 rejected** | 2026-08-21 |
-| Offline gate | 257 passed, 2 skipped (`-n auto`) | 2026-08-21 |
-| Packaged artifact | **466,320 of 500,000 bytes** (33,680 free, 6.7%) | 2026-08-21 |
-| Solver source | 11011 lines | 2026-08-21 |
+| Official sets (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669** | 2026-08-24 |
+| Official TRUE / FALSE | **819 / 819** and **850 / 850** | 2026-08-24 |
+| HF mirror sets | **800 / 800** | 2026-08-24 |
+| `sample_200` (an ETP sample disjoint from `normal`) | **200 / 200** | 2026-08-24 |
+| Distinct rows solved | **2669** | 2026-08-24 |
+| Oracle failures / crashes / label mismatches | **0 / 0 / 0** | 2026-08-24 |
+| Row-id diff vs the 2026-08-21 baseline | **0 lost, 0 gained, 0 verdict flips** | 2026-08-24 |
+| Unseen order-4 ETP, 20,000-row sample | **19,997 of 20,000 covered** — the 52-row frontier fell to 9 (completion, 08-21) and then to **3** (the goal bridge, 08-24): 2 TRUE + 1 FALSE open | 2026-08-24 |
+| Order-5 generated 4,000-row sample, end-to-end | **3,920 / 4,000 (98.0%)** — Order 5 is ¼ of the final score | 2026-08-24 |
+| Judge parity on Lean 4.32.2 | fixture re-judge **102/102 accepted**; new `completion:bridge` shape **10/10 accepted** | 2026-08-24 |
+| Real Solo (first tier-ladder evidence) | **25/25 solved, 0 failed, 0 LLM calls** on the final artifact | 2026-08-24 |
+| Real Marathon, 1,000 fresh unseen ETP rows | **1,000/1,000 accepted, 0 rejected, 0 not attempted, 0 tokens** (~1.2 s/row of solver time) | 2026-08-24 |
+| Real Marathon, 200 order-5 rows | **193/200 accepted, 0 rejected**, 7 not attempted (the known order-5 tail) | 2026-08-24 |
+| Offline gate | 260 passed, 2 skipped (`-n auto`) | 2026-08-24 |
+| Packaged artifact | **472,522 of 500,000 bytes** (27,478 free, 5.5%) | 2026-08-24 |
+| Solver source | 11,217 lines | 2026-08-24 |
 
 State the corpus as its constituent sets — official 1669/1669, HF mirrors
 800/800, `sample_200` 200/200, **2669 distinct rows**. An earlier headline in
@@ -276,11 +288,12 @@ mirrors do not overlap the official sets at all (intersection 0). Corrected
 
 | Run | Result | Date |
 | --- | --- | --- |
-| Certificates byte-pinned in `stage2/fixtures/judge_verified_certs.jsonl`, all re-checked by the gate | 99 | 2026-08-12 |
-| Real Marathon on `hard3.jsonl` | 400/400 accepted, 0 rejected, 0 `not_attempted`, 0 LLM calls against a 200,000-token budget | 2026-08-12 |
-| Real Marathon on 200 fresh ETP rows (seed `20260812`, benchmark ids excluded) | 200/200 accepted, 0 rejected, 0 tokens | 2026-08-12 |
+| Certificates byte-pinned in `stage2/fixtures/judge_verified_certs.jsonl`, all re-checked by the gate | **102 — every one re-accepted by the Lean 4.32.2 judge** | 2026-08-24 |
+| New `true:completion:bridge` certificate shape | **10/10 accepted** (order-4 frontier, order-5, distilled-family pairs) | 2026-08-24 |
+| Real Solo, 25 `hard2` rows on the final artifact | **25/25 solved, 0 failed, 0 LLM calls** — first tier-ladder end-to-end evidence | 2026-08-24 |
+| Real Marathon on `hard3.jsonl` + 200 fresh ETP rows | 400/400 + 200/200 accepted, 0 rejected, 0 LLM calls | 2026-08-21 |
 | Earlier broad campaign across all 4 official + 5 HF sets + a 200-row ETP sample | 2863/2894 accepted, **0 rejected anywhere** | 2026-08-01/03 |
-| Standing spotcheck loop, 108 rows across 9 sources | 100% accuracy, 100% coverage, 0 mistakes | 2026-08-12 |
+| Standing spotcheck loop across 9 sources | 100% accuracy, 100% coverage, 0 mistakes (latest batch 90/90) | 2026-08-24 |
 
 **Timing caveat.** Part of the 2026-08-12 measurement ran against heavy
 unrelated CPU load on the same machine. The *coverage* numbers are unaffected —
@@ -289,9 +302,9 @@ speedup figures from that session are **lower bounds, not precise
 measurements**. Check what else is running on the box before quoting a wall
 clock.
 
-**Known gap.** Solo has no end-to-end real-runner evidence for the current tier
-ladder. It runs `deep`, which is three passes, and nothing has exercised that
-path end to end since the ladder landed (2026-08-12).
+**Known gap — closed 2026-08-24.** Solo's tier ladder now has end-to-end
+real-runner evidence (25/25 on `hard2`, above); the paragraph that stood here
+tracked its absence.
 
 ---
 
@@ -383,13 +396,11 @@ failed countermodel search is not evidence of TRUE.
 
 ## Open questions
 
-- **There is no `LICENSE` file in this repository.** Nothing here states the
-  terms under which the code may be used, and this section is not a licence.
-  Before publication, a licence needs to be chosen and added — noting that
-  `vendor/` and `stage1/` carry third-party material with their own terms.
-- Upstream **scoring rules** are still marked TBD in the vendored rules
-  snapshot.
-- Solo end-to-end evidence on the current tier ladder is outstanding (above).
+All three long-standing open questions closed on 2026-08-24: `LICENSE` exists
+(MIT, scoped to exclude vendored/third-party material), upstream scoring is
+final (four equal categories, no TBDs), and Solo tier-ladder evidence exists
+(25/25). What remains before the deadline is the upload itself and any deep
+sweeps — see `CURRENT_STATE.md` "What is still open".
 
 ---
 
