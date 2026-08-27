@@ -6950,6 +6950,20 @@ COMPLETION_MAX_LEMMAS = 48
 # derived the order-5 collapses on 2026-08-27.
 COMPLETION_ESCALATED_MAX_SIZE = 60
 COMPLETION_ESCALATED_MAX_ACTIVE = 2000
+# The escalation is a *ladder* on the pair-weight cap, not a single retry, and
+# it is bounded by its own ABSOLUTE clock rather than whatever the route slot
+# happens to have left. Measured 2026-08-27 on the 40 z3-classified order-5
+# collapse candidates (`stage2/results/order5-classification-2026-08-27.md`):
+# eleven strategies converge on the same <= 6 rows, every win lands in <= 2.6 s,
+# and 3x the budget buys nothing — but the escalated inference burns the FULL
+# budget on 26 of 40 known-FALSE rows (median = the whole budget), which is
+# exactly the cheap-loss asymmetry completion's placement depends on. So: try
+# the cheap caps first (pass 1, untouched), then ladder the cap under a clock
+# that cannot grow with the effort tier. 25 s is generous against a 2.6 s
+# measured ceiling on wins; it is the FALSE-side cost, not the TRUE-side
+# reach, that this number buys.
+COMPLETION_ESCALATION_LADDER = (60, 120, 240, 480)
+COMPLETION_ESCALATION_SECONDS = 25.0
 # The post-saturation goal bridge (unfailing completion's move into the goal
 # disequality). Runs only on rows completion would otherwise *lose* after
 # saturating, so its cost never touches a row another engine serves. The node
@@ -7067,6 +7081,23 @@ def _kb_fill(term: Term, subst: dict[str, Term], fallback: Term) -> Term:
     return ("op", _kb_fill(term[1], subst, fallback), _kb_fill(term[2], subst, fallback))
 
 
+def _kb_var_merges(names: list[str]) -> list[dict[str, str]]:
+    """Every set partition of `names`, as an idempotent variable -> rep map.
+
+    Bell(3) = 5 and Bell(4) = 15, so this is bounded by the arity of the
+    hypothesis, not by the search. Used only by `_seed_merge_instances`.
+    """
+    if not names:
+        return [{}]
+    first, rest = names[0], names[1:]
+    out: list[dict[str, str]] = []
+    for sub_map in _kb_var_merges(rest):
+        out.append(dict(sub_map, **{first: first}))
+        for rep in dict.fromkeys(sub_map.values()):
+            out.append(dict(sub_map, **{first: rep}))
+    return out
+
+
 class _KBEquation:
     """A derived equation plus the rewrite chain that proves it from eq1.
 
@@ -7075,9 +7106,24 @@ class _KBEquation:
     orientations usable as rewrite rules — an equation with a variable on each
     side that the other lacks gets none, which is exactly the case
     `_kb_collapse_witness` reads instead of discarding.
+
+    `sup_ori` is the *superposition* orientation set, which is not the same
+    thing. The variable condition behind `ori` is a **rewriting** requirement
+    (it is what makes `instantiate_term` total and KBO termination hold); a
+    critical pair `lhs1[p <- rhs2]s = rhs1 s` is an equational consequence for
+    any orientation of either parent, and `crit_pairs` already discards a
+    wrongly-oriented *instance* with its two `_kbo_gt(rhs_inst, lhs_inst)`
+    checks — which is precisely unfailing completion's side condition. With
+    `ori` alone an equation whose two sides have incomparable variable sets
+    (the derived `(z ◇ z) = (z' ◇ z')`, "all squares are equal") is completely
+    inert: it can neither rewrite nor superpose, only subsume. Measured
+    2026-08-27 over the first 10 order-5 collapse rows: 22 of 437 active
+    equations (5.0%) are inert, 40% on `order5_26105_33379` — which the engine
+    then reports as *saturated*. Letting those superpose takes the 40-row
+    collapse sample from 3/40 to 6/40 at both 20 s and 60 s.
     """
 
-    __slots__ = ("eid", "lhs", "rhs", "chain", "weight", "ori")
+    __slots__ = ("eid", "lhs", "rhs", "chain", "weight", "ori", "sup_ori")
 
     def __init__(self, eid: int, lhs: Term, rhs: Term, chain: list[Any] | None) -> None:
         self.eid = eid
@@ -7091,6 +7137,8 @@ class _KBEquation:
             self.ori.append((lhs, rhs, 1))
         if left <= right and lhs != rhs:
             self.ori.append((rhs, lhs, -1))
+        self.sup_ori: list[tuple[Term, Term, int]] = self.ori or (
+            [(lhs, rhs, 1), (rhs, lhs, -1)] if lhs != rhs else [])
 
 
 def _kb_collapse_witness(eq: _KBEquation) -> tuple[Term, str, bool] | None:
@@ -7129,6 +7177,10 @@ class _KBCompletion:
         max_size: int = COMPLETION_MAX_SIZE,
         max_active: int = COMPLETION_MAX_ACTIVE,
         max_passive: int = COMPLETION_MAX_PASSIVE,
+        unfailing: bool = False,
+        norm_push: bool = False,
+        seed_merges: bool = False,
+        evict_passive: bool = False,
     ) -> None:
         self.eqs: dict[int, _KBEquation] = {}
         self.active: list[_KBEquation] = []
@@ -7141,8 +7193,19 @@ class _KBCompletion:
         self.max_size = max_size
         self.max_active = max_active
         self.max_passive = max_passive
+        # The four escalation knobs. All default off, so pass 1 — and therefore
+        # `completion_probe_route` and every row completion already serves — is
+        # byte-identical to the pre-2026-08-27 engine.
+        self.unfailing = unfailing
+        self.norm_push = norm_push
+        self.evict_passive = evict_passive
         self._work = 0
         self.expired = False
+        # `active_full` is deliberately NOT `expired`: see `step`.
+        self.active_full = False
+        self.n_dropped_size = 0
+        self.n_dropped_full = 0
+        self.n_evicted = 0
         for lhs, rhs in axioms:
             eq = _KBEquation(self.next_id, lhs, rhs, None)
             self.next_id += 1
@@ -7150,6 +7213,42 @@ class _KBCompletion:
             self.axiom_ids.append(eq.eid)
             self.active.append(eq)
             self.seen.add(_kb_canon_eq(lhs, rhs))
+        if seed_merges:
+            self._seed_merge_instances()
+
+    def _seed_merge_instances(self) -> None:
+        """Add every variable-merging instance of each axiom as a derived equation.
+
+        An instance is logically redundant — it *is* the axiom, at a
+        substitution — but a search bounded by a pair-weight cap is not closed
+        under instantiation: merging `y` into `x` turns a weight-200 general
+        self-overlap into one that fits under the cap. Rendering is free,
+        because the recorded chain `[((), axiom, merge, 1)]` is exactly what
+        `_KBRenderer` emits as `have hlemN : ... := h <merged args>`.
+
+        Escalation-only (`seed_merges`), because the extra active equations are
+        paid for on every `subsumed`/`rewrite_once`/`interreduce` pass.
+        """
+        for axiom_id in list(self.axiom_ids):
+            base = self.eqs[axiom_id]
+            names = sorted(term_vars(base.lhs) | term_vars(base.rhs))
+            for merge in _kb_var_merges(names):
+                if all(var == rep for var, rep in merge.items()):
+                    continue
+                subst = {var: ("var", rep) for var, rep in merge.items()}
+                lhs = instantiate_term(base.lhs, subst)
+                rhs = instantiate_term(base.rhs, subst)
+                if lhs == rhs:
+                    continue
+                key = _kb_canon_eq(lhs, rhs)
+                if key in self.seen:
+                    continue
+                self.seen.add(key)
+                eq = _KBEquation(self.next_id, lhs, rhs,
+                                 [((), base.eid, dict(subst), 1)])
+                self.next_id += 1
+                self.eqs[eq.eid] = eq
+                self.active.append(eq)
 
     # ---- the deadline, polled per unit of work (rails 5f-iv, 5f-v) --------
     def out_of_time(self, units: int = 1) -> bool:
@@ -7245,14 +7344,56 @@ class _KBCompletion:
     # ---- the passive queue ----------------------------------------------
     def push(self, lhs: Term, rhs: Term, chain: list[Any]) -> None:
         weight = term_size(lhs) + term_size(rhs)
-        if weight > self.max_size or len(self.passive) >= self.max_passive:
+        if self.norm_push:
+            # Textbook completion normalises a critical pair and applies the
+            # weight limit to the NORMAL FORM; the shipped push caps the raw
+            # pair. These hypotheses are strongly erasing (`F(x,y,z) -> x`), so
+            # a weight-200 raw pair very often normalises to something tiny —
+            # measured 2026-08-27, this alone closes rows the raw cap discards
+            # and turns `order5_9327_53436`'s 18.6 s join into ~2 s. The chain
+            # is extended exactly as `step` does, so the recorded proof replays
+            # unchanged and the renderer needs no change.
+            new_lhs, left_steps = self.normalize(lhs)
+            new_rhs, right_steps = self.normalize(rhs)
+            if new_lhs == new_rhs:
+                return
+            chain = ([(p, i, s, -d) for (p, i, s, d) in reversed(left_steps)]
+                     + chain + right_steps)
+            lhs, rhs = new_lhs, new_rhs
+            weight = term_size(lhs) + term_size(rhs)
+        if weight > self.max_size:
+            self.n_dropped_size += 1
             return
+        if len(self.passive) >= self.max_passive:
+            # Rejecting the incoming pair degenerates the search into "the best
+            # of the first `max_passive` pairs ever generated", including pairs
+            # lighter than everything still queued — measured 2026-08-27 on
+            # `order5_17591_11190` at the shipped caps: 20,467 of 44,160
+            # generated pairs (46%) discarded for queue capacity alone, while
+            # `crit_pairs` was 83% of the clock. In the escalated pass the
+            # heaviest queued pair is evicted instead. The heap's last slot is
+            # a leaf (so removing it preserves the invariant) and a decent max
+            # proxy; memory stays bounded by `max_passive` either way.
+            if not self.evict_passive or weight >= self.passive[-1][0]:
+                self.n_dropped_full += 1
+                return
+            self.passive.pop()
+            self.n_evicted += 1
         heapq.heappush(self.passive, (weight, next(self.counter), lhs, rhs, chain))
 
     def subsumed(self, lhs: Term, rhs: Term) -> bool:
         lhs_size, rhs_size = term_size(lhs), term_size(rhs)
         lhs_mask, rhs_mask = _kb_shape_mask(lhs), _kb_shape_mask(rhs)
         for eq in self.active:
+            # Twin-signature poll (rail 5f-v): `rewrite_once` and `_reduce_with`
+            # both poll per subterm path and this loop polled nothing, while
+            # `max_active` — its only bound — is 5x larger in the escalated
+            # pass. `deadline_expired` also consults the memory guard, so an
+            # un-polled O(|active|) loop has no memory guard either. Returning
+            # False on expiry is the safe direction: it admits an equation
+            # rather than dropping one, and the caller stops immediately after.
+            if self.out_of_time():
+                return False
             for left, right in ((eq.lhs, eq.rhs), (eq.rhs, eq.lhs)):
                 if term_size(left) > lhs_size or term_size(right) > rhs_size:
                     continue
@@ -7266,8 +7407,14 @@ class _KBCompletion:
     # ---- superposition ---------------------------------------------------
     def crit_pairs(self, first: _KBEquation, second: _KBEquation) -> list[Any]:
         out: list[Any] = []
-        for (lhs1, rhs1, dir1) in first.ori:
-            for (lhs2_raw, rhs2_raw, dir2) in second.ori:
+        # Unfailing completion superposes with both directions of an equation
+        # the variable condition leaves unorientable; the two instance-level
+        # `_kbo_gt` checks below are exactly its side condition. See
+        # `_KBEquation.sup_ori`.
+        first_ori = first.sup_ori if self.unfailing else first.ori
+        second_ori = second.sup_ori if self.unfailing else second.ori
+        for (lhs1, rhs1, dir1) in first_ori:
+            for (lhs2_raw, rhs2_raw, dir2) in second_ori:
                 tag = f"#{next(self.counter)}"
                 lhs2 = _kb_rename(lhs2_raw, tag)
                 rhs2 = _kb_rename(rhs2_raw, tag)
@@ -7313,6 +7460,17 @@ class _KBCompletion:
 
     # ---- the main loop ---------------------------------------------------
     def step(self) -> _KBEquation | None:
+        if self.active_full:
+            # Report SATURATION, not expiry. `expired` is the flag
+            # `_completion_prove_once`'s `while not comp.out_of_time()` polls,
+            # so setting it here made a rule-count cap cancel the run and skip
+            # the post-saturation goal bridge entirely — rail 5f's exact shape
+            # (a node budget that fires before the deadline). The bridge is the
+            # only mechanism that closed the eq1 3569/2854/1366 family, and at
+            # `standard`/`deep` the route budget is 3.3x the fast-tier one, so
+            # 400 active rules is reachable there. The equation that crossed
+            # the cap is still returned by the call that derived it.
+            return None
         while self.passive:
             if self.out_of_time():
                 return None
@@ -7332,7 +7490,7 @@ class _KBCompletion:
             self.eqs[eq.eid] = eq
             self.active.append(eq)
             if len(self.active) > self.max_active:
-                self.expired = True
+                self.active_full = True
             return eq
         return None
 
@@ -7669,19 +7827,68 @@ def completion_prove(eq1: dict[str, Any], eq2: dict[str, Any],
     # honestly and a cheap-cap win is untouched, so no row already served pays.
     if deadline_expired(deadline):
         return None
-    return _completion_prove_once(
-        eq1, eq2, deadline=deadline, bridge=bridge,
-        max_size=COMPLETION_ESCALATED_MAX_SIZE,
-        max_active=COMPLETION_ESCALATED_MAX_ACTIVE)
+    # The escalated inference (unfailing superposition + normalise-at-push +
+    # variable-merge seeding) is strictly stronger and strictly more expensive:
+    # measured 2026-08-27 on 40 known-FALSE rows it burns the whole budget on
+    # 26 of them, where the cheap pass saturates in ~0 s. So it gets its OWN
+    # ABSOLUTE clock — `_eff_time` is deliberately not applied, because a tier
+    # multiplier here would hand a last-resort TRUE search the budget the wide
+    # countermodel tiers below it need. The ladder restarts the completion at
+    # each pair-weight cap; a restart after a saturation costs ~0 s (the rung
+    # that saturated did so because it ran out of pairs, not clock), and it
+    # stops the moment a rung is cut off by the clock instead.
+    escalation = local_deadline(COMPLETION_ESCALATION_SECONDS)
+    if deadline is not None:
+        escalation = deadline if escalation is None else min(escalation, deadline)
+    for max_size in COMPLETION_ESCALATION_LADDER:
+        if deadline_expired(escalation):
+            break
+        status: dict[str, Any] = {}
+        found = _completion_prove_once(
+            eq1, eq2, deadline=escalation, bridge=bridge,
+            max_size=max_size,
+            max_active=COMPLETION_ESCALATED_MAX_ACTIVE,
+            unfailing=True, norm_push=True, seed_merges=True,
+            evict_passive=True, status=status)
+        if found is not None:
+            return found
+        if not status.get("saturated"):
+            break
+        if not status.get("dropped_size"):
+            # Saturated with NOTHING discarded for size: the passive queue
+            # emptied under a cap nothing ever hit, so this is a real, complete
+            # saturation of the one-axiom system. A terminating ground-confluent
+            # rewrite system whose ground normal forms are not all identified is
+            # a (possibly infinite) model of eq1 with >= 2 elements — i.e. eq1
+            # does NOT force triviality and the remaining TRUE budget on this
+            # row is provably wasted. Recorded for the FALSE side, never turned
+            # into a verdict on its own; route label only (rail 8). Measured
+            # 2026-08-27: 1 of 40 rows z3 had triaged as a collapse candidate
+            # (`order5_22455_53402`) is one of these.
+            log_stderr({"route": "completion:saturated_nontrivial_model"})
+            break
+    return None
 
 
 def _completion_prove_once(eq1: dict[str, Any], eq2: dict[str, Any], *,
                            deadline: float | None, bridge: bool,
                            max_size: int = COMPLETION_MAX_SIZE,
                            max_active: int = COMPLETION_MAX_ACTIVE,
+                           unfailing: bool = False,
+                           norm_push: bool = False,
+                           seed_merges: bool = False,
+                           evict_passive: bool = False,
+                           status: dict[str, Any] | None = None,
                            ) -> tuple[str, str] | None:
+    """One completion run. `status`, when given, is filled with how it ended.
+
+    An explicit out-parameter, never a module global: a module-level flag is a
+    process-lifetime flag in Marathon, not a per-row one (rail 10).
+    """
     comp = _KBCompletion([(eq1["lhs"], eq1["rhs"])], deadline=deadline,
-                         max_size=max_size, max_active=max_active)
+                         max_size=max_size, max_active=max_active,
+                         unfailing=unfailing, norm_push=norm_push,
+                         seed_merges=seed_merges, evict_passive=evict_passive)
     comp.seed()
     joined = comp.goal_join(eq2["lhs"], eq2["rhs"])
     if joined is not None:
@@ -7691,6 +7898,13 @@ def _completion_prove_once(eq1: dict[str, Any], eq2: dict[str, Any], *,
     while not comp.out_of_time():
         eq = comp.step()
         if eq is None:
+            if status is not None:
+                # `active_full` is a cap, not a saturation: a wider pair-weight
+                # cap would only add rules, so the ladder must stop there.
+                status["saturated"] = not comp.expired and not comp.active_full
+                status["active_full"] = comp.active_full
+                status["dropped_size"] = comp.n_dropped_size
+                status["dropped_full"] = comp.n_dropped_full
             # Saturated short of the goal. Ordered rewriting only ever moves
             # down the ground KBO, so a goal whose meeting point is *up* the
             # order is unreachable by `goal_join` at any budget — the bridge
@@ -7720,6 +7934,11 @@ def _completion_prove_once(eq1: dict[str, Any], eq2: dict[str, Any], *,
                 return "true:completion:join", code
         comp.interreduce(eq)
         comp.superpose(eq)
+    if status is not None:
+        status["saturated"] = False
+        status["active_full"] = comp.active_full
+        status["dropped_size"] = comp.n_dropped_size
+        status["dropped_full"] = comp.n_dropped_full
     return None
 
 
