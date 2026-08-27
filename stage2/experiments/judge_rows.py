@@ -128,6 +128,10 @@ def judge_one(problem: dict, *, effort: str, false_budget: float) -> dict:
     code = answer["code"]
     row = {
         "id": rid,
+        "eq1_id": problem.get("eq1_id"),
+        "eq2_id": problem.get("eq2_id"),
+        "equation1": problem["equation1"],
+        "equation2": problem["equation2"],
         "route": str(record["route"]),
         "verdict": answer["verdict"],
         "code_bytes": len(code.encode("utf-8")),
@@ -153,6 +157,16 @@ def main() -> int:
     ap.add_argument("--ids", default="", help="comma-separated problem ids")
     ap.add_argument("--from-audit", type=Path, default=None,
                     help="audit_corpus.py JSON report to pull row ids from")
+    ap.add_argument("--problems", type=Path, nargs="*", default=[],
+                    help="extra problem jsonl/json files to resolve ids from "
+                         "(sweep batches, generated order-5/6 samples). The "
+                         "built-in catalog only knows the official and HF sets.")
+    ap.add_argument("--route", default="",
+                    help="with --from-audit, only rows whose route is in this "
+                         "comma-separated list")
+    ap.add_argument("--per-route", type=int, default=0,
+                    help="with --from-audit, keep at most N rows per route -- "
+                         "one certificate per family is what pins a family")
     ap.add_argument("--shape", default="",
                     help="with --from-audit, only rows with this cert_shape "
                          "(e.g. 'other' = the certs the proof kernel cannot check)")
@@ -160,12 +174,19 @@ def main() -> int:
     ap.add_argument("--false-budget", type=float, default=2.0)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--write-fixture", action="store_true",
-                    help=f"write accepted rows to {FIXTURE_PATH.name} for the gate")
+                    help=f"REPLACE {FIXTURE_PATH.name} with this run's accepted "
+                         "rows. Only correct for a full re-judge sweep -- a "
+                         "narrow run would silently drop every other pin.")
+    ap.add_argument("--append-fixture", action="store_true",
+                    help=f"add this run's accepted rows to {FIXTURE_PATH.name}, "
+                         "keeping existing entries (id collisions are replaced)")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
     ids: list[str] = [i.strip() for i in args.ids.split(",") if i.strip()]
     if args.from_audit:
+        wanted = {r.strip() for r in args.route.split(",") if r.strip()}
+        per_route: dict[str, int] = {}
         report = json.loads(args.from_audit.read_text(encoding="utf-8"))
         for _set_name, blob in report["sets"].items():
             for row in blob["rows"]:
@@ -173,6 +194,13 @@ def main() -> int:
                     continue
                 if args.shape and row.get("cert_shape") != args.shape:
                     continue
+                route = str(row.get("route", ""))
+                if wanted and route not in wanted:
+                    continue
+                if args.per_route:
+                    if per_route.get(route, 0) >= args.per_route:
+                        continue
+                    per_route[route] = per_route.get(route, 0) + 1
                 ids.append(str(row["id"]))
     # Preserve order, drop duplicates (sample_* mirror rows in normal).
     ids = list(dict.fromkeys(ids))
@@ -183,6 +211,9 @@ def main() -> int:
         return 2
 
     catalog = all_problems()
+    for path in args.problems:
+        for problem in load_problems(path):
+            catalog.setdefault(str(problem.get("id", "")), problem)
     missing = [i for i in ids if i not in catalog]
     if missing:
         print(f"[warn] {len(missing)} unknown id(s): {missing[:5]}")
@@ -220,14 +251,33 @@ def main() -> int:
         args.out.write_text(json.dumps(rows, indent=2), encoding="utf-8")
         print(f"\nWrote {args.out}")
 
-    if args.write_fixture:
+    if args.write_fixture or args.append_fixture:
         accepted = [r for r in rows if r["status"] == "accepted"]
         FIXTURE_PATH.parent.mkdir(parents=True, exist_ok=True)
         stamp = time.strftime("%Y-%m-%d")
+        existing: list[dict] = []
+        if args.append_fixture and FIXTURE_PATH.exists():
+            new_ids = {r["id"] for r in accepted}
+            existing = [json.loads(line) for line
+                        in FIXTURE_PATH.read_text(encoding="utf-8").splitlines()
+                        if line.strip()]
+            existing = [e for e in existing if e.get("id") not in new_ids]
         with FIXTURE_PATH.open("w", encoding="utf-8") as handle:
+            for e in existing:
+                handle.write(json.dumps(e, separators=(",", ":")) + "\n")
             for r in accepted:
                 handle.write(json.dumps({
                     "id": r["id"],
+                    # Carry the equations so the fixture is self-contained: the
+                    # gate resolves pinned rows from the official/HF sets, and a
+                    # row pinned from a generated sweep batch is not in them
+                    # (and the batch files are gitignored, so CI would not have
+                    # them either). Without this, a pin from unseen territory
+                    # silently degrades to a skipped test.
+                    "eq1_id": r.get("eq1_id"),
+                    "eq2_id": r.get("eq2_id"),
+                    "equation1": r.get("equation1"),
+                    "equation2": r.get("equation2"),
                     "route": r["route"],
                     "verdict": r["verdict"],
                     "cert_shape": r["cert_shape"],
@@ -236,7 +286,9 @@ def main() -> int:
                     "judge_seconds": r["judge_seconds"],
                     "verified_on": stamp,
                 }, separators=(",", ":")) + "\n")
-        print(f"Wrote {len(accepted)} judge-verified certs to {FIXTURE_PATH}")
+        total = len(existing) + len(accepted)
+        print(f"Wrote {len(accepted)} judge-verified certs to {FIXTURE_PATH} "
+              f"({total} entries total)")
 
     # Infrastructure failures are not certificate failures; surface separately.
     if any(r["status"] == "infra_error" for r in rows):

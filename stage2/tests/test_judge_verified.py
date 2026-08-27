@@ -53,7 +53,18 @@ ENTRIES = _load()
 def test_judge_verified_cert_unchanged(solver, problems_by_id, entry):
     problem = problems_by_id.get(entry["id"])
     if problem is None:
-        pytest.skip(f"problem {entry['id']} not present locally")
+        # Entries pinned from a generated sweep batch are not in the official or
+        # HF sets, and those batch files are gitignored, so they carry their own
+        # equations. Falling back to them keeps an unseen-territory pin a real
+        # test instead of a silent skip.
+        if entry.get("equation1") and entry.get("equation2"):
+            problem = {"id": entry["id"],
+                       "eq1_id": entry.get("eq1_id"),
+                       "eq2_id": entry.get("eq2_id"),
+                       "equation1": entry["equation1"],
+                       "equation2": entry["equation2"]}
+        else:
+            pytest.skip(f"problem {entry['id']} not present locally")
 
     record = solver.solve_problem(problem, false_time_budget=5.0)
     assert record is not None, (

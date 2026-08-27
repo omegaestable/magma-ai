@@ -51,13 +51,19 @@ def sample_rows(count: int, seed: int, exclude: set[str] | None = None) -> list[
     seen = load_coverage()  # avoid pairs the standing spotcheck loop already used
     seen = seen | (exclude or set())
     drawn: set[str] = set()
+    # `pool` is `seen | drawn` maintained incrementally. Building that union
+    # inside the draw loop is O(len(seen) + len(drawn)) per row, so a 100,000-row
+    # draw spent essentially all of its time copying sets (10,000 rows finished
+    # in ~1 min; 100,000 was still running after 10). Same contents, same RNG
+    # sequence, same output — only the cost changes.
+    pool: set[str] = set(seen)
     rows: list[dict] = []
     n_true = count // 2
     n_false = count - n_true
     for want_true, target in ((True, n_true), (False, n_false)):
         got = 0
         while got < target:
-            row = etp.sample(want_true, seen | drawn, rng, pure_random=False)
+            row = etp.sample(want_true, pool, rng, pure_random=False)
             if row is None:
                 # exhausted-unseen fallback returned nothing; fall back to
                 # ignoring the ledger rather than looping forever.
@@ -66,6 +72,7 @@ def sample_rows(count: int, seed: int, exclude: set[str] | None = None) -> list[
             if key in drawn:
                 continue
             drawn.add(key)
+            pool.add(key)
             rows.append(row)
             got += 1
     rng.shuffle(rows)

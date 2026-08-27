@@ -42,6 +42,11 @@ stage2/submissions/__pycache__/
 stage2/results/*.json
 stage2/results/*.jsonl
 stage2/results/*.log
+
+# Generated equation catalogs. Regenerated exactly (and verified against ETP's
+# own eq_size5.txt, line for line) by:
+#   python stage2/experiments/generate_eq_catalog.py --ops 6 --max-variables 2 #       --out data/generated/eq_order6_vars2.txt
+data/generated/
 stage2/experiments/tmp*/
 
 # Vendored official harness local build/runtime artifacts

@@ -1,0 +1,135 @@
+# Sweep report: order5-sweep-20k-2026-08-25-b03
+
+- rows: **5000**
+- solved: **4906 (98.12%)**
+- soundness events (oracle failure / label mismatch): **0**
+- crashes: **0**
+- skips: **94**
+- solver-claimed verdicts: {'false': 3815, 'true': 1091}
+- TRUE certs with no independent verification (vacuous battery, unsupported shape): 1, 1
+- seconds: total 42856.2, mean 8.571, p50 0.012, p95 9.371, p99 65.1, slowest solved 282.136
+
+## Route families
+
+- `witness`: 3267
+- `completion`: 429
+- `singleton`: 329
+- `linear`: 304
+- `egg_collapse`: 230
+- `spine`: 188
+- `enum_fin3`: 27
+- `equational_closure`: 21
+- `derived_cp_closure`: 16
+- `egg_bootstrap`: 16
+- `egg_ladder`: 13
+- `constancy`: 12
+- `lemma_chain`: 8
+- `constraint_fin8`: 8
+- `local_model4`: 7
+- `affine`: 7
+- `lemma_bootstrap`: 5
+- `egg_closure`: 3
+- `constraint_fin9`: 3
+- `rewrite`: 3
+- `universal_identity`: 2
+- `absorption_context_bridge`: 2
+- `constraint_fin6`: 1
+- `constraint_fin5`: 1
+- `absorption_closure`: 1
+
+## Failure clustering by hypothesis law
+
+- eq1 `13731`: 2 failures
+- eq1 `7643`: 2 failures
+- eq1 `6009`: 2 failures
+- eq1 `23653`: 2 failures
+- eq1 `7587`: 2 failures
+- eq1 `20874`: 2 failures
+- eq1 `9603`: 2 failures
+- eq1 `28021`: 2 failures
+
+Failure shapes: {'eq1_bare_variable_side': 90, 'eq1_vars': {3: 94}, 'eq1_ops': {5: 94}}
+
+## Failure ledger
+
+- `order5_33883_875` [skip, label=unlabelled, 300.001s] eq1 `x = ((y * x) * (y * (x * z))) * y` => eq2 `x = y * ((x * x) * (z * x))`
+- `order5_13731_41178` [skip, label=unlabelled, 300.001s] eq1 `x = y * ((x * ((y * z) * y)) * z)` => eq2 `x = ((((y * z) * x) * y) * y) * x`
+- `order5_27763_36084` [skip, label=unlabelled, 299.994s] eq1 `x = ((y * (x * y)) * z) * (y * z)` => eq2 `x = ((y * (z * z)) * (z * x)) * y`
+- `order5_4952_27512` [skip, label=unlabelled, 299.987s] eq1 `x = y * (x * (y * (y * (z * y))))` => eq2 `x = ((x * (x * y)) * x) * (x * x)`
+- `order5_31682_39262` [skip, label=unlabelled, 299.995s] eq1 `x = (y * ((z * z) * (y * x))) * y` => eq2 `x = (((y * y) * (x * y)) * x) * x`
+- `order5_33349_33839` [skip, label=unlabelled, 300.0s] eq1 `x = (y * (((z * y) * x) * z)) * x` => eq2 `x = ((y * x) * (x * (x * x))) * x`
+- `order5_31037_52299` [skip, label=unlabelled, 299.997s] eq1 `x = (x * ((x * y) * (y * z))) * y` => eq2 `x * y = ((x * (y * x)) * z) * x`
+- `order5_7643_13008` [skip, label=unlabelled, 300.001s] eq1 `x = y * (x * ((z * (z * y)) * z))` => eq2 `x = y * ((y * (y * (z * z))) * y)`
+- `order5_12972_31389` [skip, label=unlabelled, 300.002s] eq1 `x = y * ((y * (x * (z * z))) * z)` => eq2 `x = (y * ((y * x) * (z * z))) * z`
+- `order5_21714_40159` [skip, label=unlabelled, 299.992s] eq1 `x = (y * (y * x)) * (x * (x * z))` => eq2 `x = (((y * (y * x)) * z) * z) * z`
+- `order5_51685_51433` [skip, label=unlabelled, 299.429s] eq1 `x * y = ((z * x) * (x * y)) * x` => eq2 `x * y = ((x * y) * (y * z)) * y`
+- `order5_40659_42407` [skip, label=unlabelled, 300.013s] eq1 `x = ((((x * x) * x) * y) * x) * z` => eq2 `x * x = x * (x * ((x * x) * y))`
+- `order5_36713_3145` [skip, label=unlabelled, 300.002s] eq1 `x = (((y * y) * z) * (y * x)) * y` => eq2 `x = (((y * y) * x) * z) * x`
+- `order5_13098_17947` [skip, label=unlabelled, 300.0s] eq1 `x = y * ((z * (x * (x * y))) * y)` => eq2 `x = (x * y) * (y * ((x * z) * z))`
+- `order5_11216_51197` [skip, label=unlabelled, 300.001s] eq1 `x = y * ((y * (x * z)) * (z * x))` => eq2 `x * x = ((x * y) * (x * z)) * x`
+- `order5_6034_55134` [skip, label=unlabelled, 300.0s] eq1 `x = y * (y * (z * ((z * x) * x)))` => eq2 `x * (y * y) = z * ((y * y) * y)`
+- `order5_6009_39145` [skip, label=unlabelled, 299.989s] eq1 `x = y * (y * (z * ((x * z) * y)))` => eq2 `x = (((y * x) * (y * x)) * z) * y`
+- `order5_13731_18217` [skip, label=unlabelled, 299.986s] eq1 `x = y * ((x * ((y * z) * y)) * z)` => eq2 `x = (y * y) * (x * ((y * y) * x))`
+- `order5_34888_3924` [skip, label=unlabelled, 299.998s] eq1 `x = ((y * y) * ((x * z) * x)) * y` => eq2 `x * y = (x * (y * x)) * x`
+- `order5_38057_33646` [skip, label=unlabelled, 300.002s] eq1 `x = ((x * ((x * y) * z)) * x) * y` => eq2 `x = ((x * x) * (x * (y * y))) * z`
+- `order5_20562_25809` [skip, label=unlabelled, 299.999s] eq1 `x = (x * y) * (((x * z) * z) * y)` => eq2 `x = (x * ((y * x) * y)) * (y * y)`
+- `order5_31593_32851` [skip, label=unlabelled, 299.994s] eq1 `x = (y * ((z * y) * (x * y))) * z` => eq2 `x = (x * (((y * y) * x) * y)) * x`
+- `order5_40956_35481` [skip, label=unlabelled, 300.005s] eq1 `x = ((((y * x) * z) * y) * z) * z` => eq2 `x = ((x * (y * y)) * (x * x)) * z`
+- `order5_23575_5167` [skip, label=unlabelled, 300.0s] eq1 `x = ((y * y) * z) * (z * (x * y))` => eq2 `x = y * (y * (z * (z * (z * z))))`
+- `order5_38605_16154` [skip, label=unlabelled, 300.001s] eq1 `x = ((y * ((z * y) * x)) * x) * z` => eq2 `x = x * ((((y * x) * x) * z) * x)`
+- `order5_22446_38690` [skip, label=unlabelled, 299.997s] eq1 `x = (y * (x * x)) * ((x * z) * z)` => eq2 `x = ((y * ((z * z) * x)) * z) * z`
+- `order5_14866_11426` [skip, label=unlabelled, 300.001s] eq1 `x = y * (((z * x) * (y * x)) * z)` => eq2 `x = y * ((z * (y * x)) * (z * z))`
+- `order5_9604_25474` [skip, label=unlabelled, 300.001s] eq1 `x = y * ((z * x) * (y * (x * z)))` => eq2 `x = (y * (z * (y * y))) * (z * y)`
+- `order5_23653_35137` [skip, label=unlabelled, 300.0s] eq1 `x = ((y * z) * x) * (z * (x * z))` => eq2 `x = ((y * z) * ((y * z) * z)) * x`
+- `order5_7587_15225` [skip, label=unlabelled, 299.996s] eq1 `x = y * (x * ((y * (z * x)) * y))` => eq2 `x = x * (((x * (x * y)) * x) * y)`
+- `order5_19979_28620` [skip, label=unlabelled, 300.0s] eq1 `x = (y * y) * ((x * (z * x)) * y)` => eq2 `x = (((y * x) * y) * x) * (z * x)`
+- `order5_27729_52677` [skip, label=unlabelled, 299.996s] eq1 `x = ((y * (x * x)) * z) * (z * y)` => eq2 `x * y = ((z * (y * z)) * z) * x`
+- `order5_26291_56708` [skip, label=unlabelled, 300.0s] eq1 `x = (y * ((z * x) * z)) * (z * y)` => eq2 `x * (y * x) = (y * (z * z)) * z`
+- `order5_33892_31100` [skip, label=unlabelled, 299.996s] eq1 `x = ((y * x) * (y * (y * z))) * x` => eq2 `x = (x * ((y * y) * (x * z))) * x`
+- `order5_13928_54686` [skip, label=unlabelled, 300.002s] eq1 `x = y * ((y * ((z * z) * x)) * y)` => eq2 `x * (x * x) = x * ((x * y) * x)`
+- `order5_7367_5575` [skip, label=unlabelled, 300.002s] eq1 `x = x * (x * ((y * (z * y)) * z))` => eq2 `x = x * (x * (x * ((x * y) * y)))`
+- `order5_52989_61727` [skip, label=unlabelled, 299.99s] eq1 `x * x = (((y * x) * x) * z) * y` => eq2 `(x * x) * x = ((y * y) * x) * z`
+- `order5_7594_18840` [skip, label=unlabelled, 299.993s] eq1 `x = y * (x * ((y * (z * z)) * x))` => eq2 `x = (x * y) * ((y * z) * (y * x))`
+- `order5_19732_41816` [skip, label=unlabelled, 299.997s] eq1 `x = (x * y) * ((z * (x * x)) * z)` => eq2 `x * y = x * (z * (x * (z * z)))`
+- `order5_16628_5140` [skip, label=unlabelled, 299.996s] eq1 `x = y * ((((z * x) * y) * z) * z)` => eq2 `x = y * (y * (z * (y * (x * x))))`
+- `order5_18510_38388` [skip, label=unlabelled, 299.998s] eq1 `x = (y * z) * (z * ((x * x) * y))` => eq2 `x = ((y * ((y * x) * y)) * y) * x`
+- `order5_9667_13731` [skip, label=unlabelled, 300.001s] eq1 `x = y * ((z * y) * (x * (y * y)))` => eq2 `x = y * ((x * ((y * z) * y)) * z)`
+- `order5_37522_39877` [skip, label=unlabelled, 299.997s] eq1 `x = ((y * (y * (x * z))) * y) * x` => eq2 `x = (((x * (y * y)) * y) * y) * x`
+- `order5_40909_1931` [skip, label=unlabelled, 299.999s] eq1 `x = ((((y * x) * y) * y) * z) * y` => eq2 `x = (y * (y * y)) * (x * x)`
+- `order5_18137_3695` [skip, label=unlabelled, 299.991s] eq1 `x = (y * x) * (z * ((x * z) * z))` => eq2 `x * x = (y * z) * (x * y)`
+- `order5_40951_54208` [skip, label=unlabelled, 300.002s] eq1 `x = ((((y * x) * z) * y) * y) * y` => eq2 `x * (y * y) = y * (y * (x * x))`
+- `order5_7643_52567` [skip, label=unlabelled, 300.0s] eq1 `x = y * (x * ((z * (z * y)) * z))` => eq2 `x * y = ((z * (x * x)) * z) * y`
+- `order5_36084_1301` [skip, label=unlabelled, 299.993s] eq1 `x = ((y * (z * z)) * (z * x)) * y` => eq2 `x = y * (((x * z) * y) * z)`
+- `order5_16610_48974` [skip, label=unlabelled, 300.011s] eq1 `x = y * ((((z * x) * x) * z) * y)` => eq2 `x * y = ((y * z) * x) * (x * y)`
+- `order5_11082_5234` [skip, label=unlabelled, 300.001s] eq1 `x = y * ((x * (y * x)) * (z * z))` => eq2 `x = y * (z * (x * (z * (x * x))))`
+- `order5_8334_40733` [skip, label=unlabelled, 299.997s] eq1 `x = x * (y * (((z * x) * y) * y))` => eq2 `x = ((((x * y) * x) * z) * z) * y`
+- `order5_37822_41840` [skip, label=unlabelled, 300.001s] eq1 `x = ((y * (z * (z * y))) * x) * z` => eq2 `x * y = x * (z * (z * (x * x)))`
+- `order5_31075_41541` [skip, label=unlabelled, 299.998s] eq1 `x = (x * ((y * x) * (y * z))) * z` => eq2 `x * x = x * (x * (y * (z * y)))`
+- `order5_33020_12640` [skip, label=unlabelled, 300.0s] eq1 `x = (y * (((x * y) * z) * x)) * y` => eq2 `x = x * ((y * (x * (x * x))) * x)`
+- `order5_9680_55378` [skip, label=unlabelled, 299.992s] eq1 `x = y * ((z * y) * (y * (x * y)))` => eq2 `x * (y * z) = z * ((z * x) * y)`
+- `order5_30500_30153` [skip, label=unlabelled, 299.994s] eq1 `x = (y * (y * ((x * y) * z))) * z` => eq2 `x = (x * (x * ((y * y) * x))) * x`
+- `order5_23653_43964` [skip, label=unlabelled, 299.999s] eq1 `x = ((y * z) * x) * (z * (x * z))` => eq2 `x * y = z * ((z * y) * (y * y))`
+- `order5_13102_50677` [skip, label=unlabelled, 300.003s] eq1 `x = y * ((z * (x * (x * z))) * y)` => eq2 `x * y = (y * ((x * z) * y)) * x`
+- `order5_31288_22618` [skip, label=unlabelled, 300.001s] eq1 `x = (y * ((x * z) * (x * y))) * z` => eq2 `x = (y * (y * x)) * ((z * z) * y)`
+- `order5_6009_40708` [skip, label=unlabelled, 300.0s] eq1 `x = y * (y * (z * ((x * z) * y)))` => eq2 `x = ((((x * y) * x) * x) * y) * y`
+- `order5_8503_11155` [skip, label=unlabelled, 300.0s] eq1 `x = y * (x * (((z * y) * y) * z))` => eq2 `x = y * ((x * (z * z)) * (z * z))`
+- `order5_20874_5841` [skip, label=unlabelled, 299.995s] eq1 `x = (y * y) * (((y * x) * x) * z)` => eq2 `x = y * (x * (y * ((z * z) * y)))`
+- `order5_36487_1126` [skip, label=unlabelled, 299.992s] eq1 `x = (((y * x) * x) * (y * z)) * y` => eq2 `x = y * ((y * (y * z)) * y)`
+- `order5_24606_43372` [skip, label=unlabelled, 299.997s] eq1 `x = ((y * z) * y) * ((z * x) * y)` => eq2 `x * x = y * ((y * x) * (x * x))`
+- `order5_14083_18221` [skip, label=unlabelled, 299.996s] eq1 `x = y * ((z * ((y * z) * x)) * z)` => eq2 `x = (y * y) * (x * ((y * z) * y))`
+- `order5_20874_38620` [skip, label=unlabelled, 299.994s] eq1 `x = (y * y) * (((y * x) * x) * z)` => eq2 `x = ((y * ((z * y) * y)) * x) * x`
+- `order5_29068_19146` [skip, label=unlabelled, 300.0s] eq1 `x = (((y * z) * z) * z) * (x * y)` => eq2 `x = (y * y) * ((y * z) * (z * x))`
+- `order5_22591_42188` [skip, label=unlabelled, 299.999s] eq1 `x = (y * (y * x)) * ((x * x) * z)` => eq2 `x * y = z * (z * (x * (x * x)))`
+- `order5_20911_45582` [skip, label=unlabelled, 300.001s] eq1 `x = (y * y) * (((z * x) * x) * z)` => eq2 `x * y = z * (((x * z) * y) * z)`
+- `order5_5093_12731` [skip, label=unlabelled, 299.995s] eq1 `x = y * (y * (y * (x * (z * y))))` => eq2 `x = x * ((y * (z * (y * x))) * x)`
+- `order5_32500_3414` [skip, label=unlabelled, 300.001s] eq1 `x = (y * ((z * (y * z)) * x)) * z` => eq2 `x * y = z * (z * (x * y))`
+- `order5_32102_22671` [skip, label=unlabelled, 299.992s] eq1 `x = (y * ((x * (x * y)) * z)) * y` => eq2 `x = (y * (y * z)) * ((x * z) * x)`
+- `order5_10633_50299` [skip, label=unlabelled, 299.995s] eq1 `x = y * ((z * z) * ((y * x) * x))` => eq2 `x * x = (x * ((x * x) * x)) * x`
+- `order5_9603_504` [skip, label=unlabelled, 300.001s] eq1 `x = y * ((z * x) * (y * (x * y)))` => eq2 `x = y * (y * (x * (y * y)))`
+- `order5_13764_59505` [skip, label=unlabelled, 299.998s] eq1 `x = y * ((x * ((z * y) * y)) * y)` => eq2 `(x * y) * y = z * ((x * z) * x)`
+- `order5_7588_54502` [skip, label=unlabelled, 300.0s] eq1 `x = y * (x * ((y * (z * x)) * z))` => eq2 `x * (y * z) = z * (z * (x * z))`
+- `order5_28021_25336` [skip, label=unlabelled, 299.995s] eq1 `x = ((y * (z * x)) * y) * (x * z)` => eq2 `x = (y * (y * (z * z))) * (z * x)`
+- `order5_10489_50039` [skip, label=unlabelled, 300.0s] eq1 `x = y * ((z * x) * ((y * z) * z))` => eq2 `x * y = (z * (y * (z * x))) * y`
+- `order5_33419_15282` [skip, label=unlabelled, 300.002s] eq1 `x = (y * (((z * z) * x) * x)) * y` => eq2 `x = x * (((y * (x * y)) * x) * y)`
+- `order5_42872_44303` [skip, label=unlabelled, 300.0s] eq1 `x * y = y * (z * ((z * y) * x))` => eq2 `x * x = y * ((z * (y * x)) * x)`
+- ... 14 more in the ledger jsonl

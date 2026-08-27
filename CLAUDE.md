@@ -98,7 +98,7 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (audit 2026-08-24; judge parity 2026-08-24 on Lean 4.32.2)
+## Current measured state (deep sweep 2026-08-25; judge parity on Lean 4.32.2)
 
 Every coverage number below is from a **fresh audit run on 2026-08-24** after
 the upstream re-sync and the completion goal bridge shipped, diffed by row id
@@ -113,17 +113,50 @@ git history and in `stage2/results/2026-08-21-completion-engine-and-latency.md`.
 | HF mirror sets | **800 / 800 — complete** |
 | `sample_200` (a 200-row **ETP** sample, disjoint from `normal`) | **200 / 200** |
 | Remaining unsolved, anywhere local | **0** — combined offline **2669 / 2669 distinct rows** (official 1669 + HF 800 + `sample_200` 200; never sum `sample_20` on top, it is a strict subset of `normal`) |
-| Unseen order-4 frontier (20,000-row ETP sample of 2026-08-20) | was 52 rows; `true:completion` closed 43 on 2026-08-21 and the **goal bridge closed 6 of the remaining 8 TRUE rows on 2026-08-24** — now **2 TRUE + 1 FALSE open in 20,000 (99.985%)** |
-| Order-5 generated sample (4,000 rows, no ground truth — kernel-verified proofs + FALSE oracle only) | **3,920 / 4,000 solved (98.0%)**, 0 crashes, 0 oracle failures — was 94.9% on 2026-08-20; `completion` serves 374 rows. **Order 5 is now ¼ of the official score** |
+| **Unseen order-4 (110,000 fresh rows, 2026-08-25)** | **109,954 / 110,000 = 99.958%**, 46 misses (40 TRUE / 6 FALSE), **0 crashes, 0 oracle failures, 0 label mismatches**. Prior basis was 20,000 rows on 2026-08-20 at 99.74% |
+| **Order-5, ≤3 vars (20,000 fresh rows, 2026-08-25 — no ground truth, so this is "0 unsound certificates", not "0 wrong answers")** | **19,647 / 20,000 = 98.24%**, 353 misses, 0 crashes, 0 oracle failures — was 94.9% on a 4,000-row sample on 2026-08-20. `completion` is its **second largest route family** at 1,769 rows. **Order 5 is ¼ of the official score and is the lowest-scoring track** |
+| Order-6, ≤2 vars (900 pilot rows, 2026-08-25 — first order-6 rows ever drawn) | 899 / 900, 0 crashes, 0 oracle failures, 0 deadline overshoots, certificates 265–982 B against a 19,500 B cap. **Nothing in the solver is tuned to term size ≤ 5** |
 | Oracle failures / crashes / label mismatches | **0 / 0 / 0**; row-id diff vs the 2026-08-21 baseline is **0 lost, 0 gained, 0 verdict flips** over 2,669 common rows |
-| **Judge parity on the new toolchain (Lean 4.32.2 / Mathlib v4.32.2)** | **102/102 accepted** in the 2026-08-24 re-judge sweep — every pinned certificate family plus the envelope rows (`hard2_0092` maxRecDepth boundary, `hard2_0027` infinite Nat + omega, `hard2_0051` order-13 `List.getD`, completion join/collapse). The fixture is rebuilt from that sweep: **102 entries, all dated 2026-08-24** |
+| **Judge parity (Lean 4.32.2 / Mathlib v4.32.2)** | **102/102 accepted** in the 2026-08-24 re-judge sweep, **plus 10/10 on 2026-08-25** — the last route families emitting kernel-unparseable certificates with no evidence of any kind. Fixture is now **112 entries**, and **every such family across all 130,700 rows audited on 2026-08-25 is judge-pinned** |
 | Real-judge evidence, new certificate shape | **`true:completion:bridge` 10/10 accepted** on v4.32.2 (6 order-4 frontier rows, 2 order-5 rows, 2 formerly distilled-only families; 730–11,061 B) — `stage2/results/2026-08-24-bridge-certs-judged.jsonl` |
 | Real Solo (first tier-ladder evidence ever) | **25/25 `hard2` rows solved, 0 failed, 0 LLM calls**, ~5–8 s/row, on the 2026-08-24 artifact through the official `pipeline.runner` (2026-08-24) |
 | Real Marathon | **1,000 fresh unseen ETP rows (seed `20260824`): 1,000/1,000 accepted, 0 rejected, 0 `not_attempted`, 0 tokens — solver used 1,186.5 s of a 300,000 s budget (~1.2 s/row)** (2026-08-24, final artifact, v4.32.2 judge). **Plus 200 order-5 rows the same day: 193/200 accepted, 0 rejected, 7 `not_attempted` (all from the known order-5 tail)** — two batches after a console-close kill, see the results doc. Prior: `hard3` 400/400 + ETP-200 200/200, 0 rejected (2026-08-21) |
 | Spotcheck (standing loop) | **90 rows / 9 sources, 100% accuracy, 100% coverage, 0 mistakes** (2026-08-24) |
-| Offline gate | **260 passed, 2 skipped, ~14 s** (`-n auto`) — three tests gained from the fixture rebuild |
+| Offline gate | **270 passed, 2 skipped, ~14 s** (`-n auto`) — ten tests gained from the 2026-08-25 judge pins |
 | Packaged size | **472,522 bytes of 500,000 — 27,478 bytes (5.5%) headroom** (2026-08-24 final build; the goal bridge + banned-token gate cost ~6.2 KB). CI builds the artifact and asserts the cap on **it**, not on the source |
 | Solver source | ~11,217 lines / 579,027 B (over the cap **by design** — comments are stripped at packaging) |
+
+**2026-08-25 session** (`stage2/results/2026-08-25-deep-sweep-campaign.md`)
+**— the deep sweep: 130,900 unseen rows in one day, 4.9× everything the solver
+had ever been measured on, and no solver change.** Measurement and logging only,
+by instruction; fixes deferred to an improvement pass scoped from the merged
+ledgers. Results: order-4 **109,954/110,000 (99.958%)**, order-5 ≤3 vars
+**19,647/20,000 (98.24%)**, order-6 pilots 899/900 — **0 crashes, 0 oracle
+failures, 0 label mismatches anywhere**. Spotcheck 90/90, gate 270 passed.
+
+- **The order-4 frontier is four laws.** 46 misses in 110,000 rows, and eq1
+  `2923` (16), `3569` (7), `650` (5), `3983` (4) are **32 of them — 70%**. The
+  concentration has *risen* with sample size (57% at 10k → 58% at 20k → **70% at
+  110k**), which is the opposite of what sampling noise does.
+- **Order-5's frontier is a different shape entirely** — a *size/arity* wall,
+  not a family wall. Largest cluster is 4 rows of 353, but **all 353 have
+  exactly 5 operations and 352 of 353 have 3 variables**. A fix aimed at order-4
+  will not move it, and order-5 is a quarter of the score sitting 1.7 points
+  below order-4.
+- **The last unverified certificates are now judge-pinned.** 29 route families
+  emit Lean the proof kernel cannot parse; **10 had no offline *and* no judge
+  evidence** — 138 rows whose certificate text nothing checked. One cert from
+  each went to the real judge: **10/10 accepted**. Fixture 102 → 112.
+- **The wide countermodel search takes 37–76% of every unsolved order-4 row's
+  clock**, and on 4 of 5 profiled rows it hunts a witness that cannot exist (the
+  row is TRUE). Not a deadline bug — the budget is spent exactly as configured.
+  Whether the *configuration* is right is now a measurable question, because
+  `sweep_report --diagnose` produces the profile on any batch.
+- **A low variable cap collapses the TRUE base rate, measurably**: 37.10% over
+  all 22,028,942 order-≤4 pairs, **4.17%** restricted to ≤2 variables on both
+  sides. Two 200-row order-6 (≤2 var) pilots came back 200/200 FALSE for exactly
+  that reason; `filter_hard_region.py` stratifies such a draw instead (14.2%
+  survive an independent small-model refutation).
 
 **2026-08-24 session** (`stage2/results/2026-08-24-final-session-upstream-sync-and-goal-bridge.md`)
 **— the final working session: upstream re-sync, judge parity on Lean 4.32.2,
@@ -860,6 +893,55 @@ on the artifact, then pins the solver's judge-limit constants to
     trusting new local judge evidence, and re-apply/verify the local Windows
     patches documented in `UPSTREAM.md`.
 
+15. **Killing a sweep does not kill its worker pool — and the chain shell can
+    start another batch before it dies.** Bit twice on 2026-08-25: one stopped
+    chain left **17 orphaned workers** burning cores while a "clean" measurement
+    was supposed to be starting, and a second stop found the shell had already
+    relaunched an audit under a fresh PID (which is why the PIDs kept changing
+    between kill attempts and it looked like nothing was dying). Kill the shell
+    tree first, then any `audit_corpus` tree, then **confirm
+    `Get-Process python*` is empty** before starting anything else. The recipe
+    is in the header of `stage2/experiments/sweeps/sweep_chain.sh`. This is
+    rail 5e's enforcement arm: the rail says never run two sweeps at once, and
+    this is how you find out you are.
+16. **A pin that skips is worse than no pin — it reads as coverage.** Ten
+    freshly judge-accepted certificates were appended to
+    `judge_verified_certs.jsonl` on 2026-08-25 and the gate went from
+    `260 passed, 2 skipped` to `260 passed, **12** skipped`:
+    `test_judge_verified.py` resolves a pinned row from the official and HF
+    sets, and rows pinned from a generated sweep batch are in neither — and the
+    batch files are gitignored, so CI would not have them either. Ten real judge
+    calls had silently become ten skipped tests. Fixture entries now carry their
+    own `equation1`/`equation2`/eq ids. Two riders: **`judge_rows.py
+    --write-fixture` REPLACES the fixture** (a 10-row run would have deleted the
+    other 102 pins — use `--append-fixture`), and after any fixture change,
+    **compare the skip count, not just the pass count**.
+17. **A sampler that grows an exclusion set is O(n²) waiting to happen.**
+    `sample_etp_matrix.py` rebuilt `seen | drawn` on every drawn row: 10,000
+    rows took ~1 min and 100,000 had not finished in 10. An incrementally
+    maintained set is 100,000 in **5.5 s**, byte-identical output for the same
+    seed (verified against an already-drawn batch — which is the cheap way to
+    prove a performance fix changed nothing else). Generalisable: any helper
+    written for one scale is suspect at 10×, and the audit tooling is now
+    routinely run at 10× what it was written for.
+18. **A low variable cap collapses the TRUE base rate, and that is measurable
+    before you spend hours on it.** Over all 22,028,942 order-≤4 pairs the base
+    TRUE rate is **37.10%**; restricted to ≤2 variables on both sides it is
+    **4.17%**; for a 4-op ≤2-var hypothesis against any ≤2-var goal, **2.87%**.
+    Fewer variables means a more constraining law, and two unrelated
+    constraining laws essentially never imply one another. Two 200-row order-6
+    (≤2 var) pilots came back **200/200 FALSE with a p50 of 8 ms** — a uniform
+    draw there measures the named-witness table and nothing else. Stratify with
+    `filter_hard_region.py` (keeps the pairs an *independent* small-model search
+    cannot refute; 14.2% survive at order 6) and **report the batch as
+    stratified, never as random** — its solve rate is not comparable to a
+    uniform sweep's. Check the base rate of a population before sweeping it.
+19. **Wall clocks from different worker counts must never be averaged.** Track
+    B's b01–b04 ran at 16 workers and b05–b10 at 20 after a thermal complaint.
+    Coverage is comparable across the two (order-4 at `fast` is not
+    budget-marginal — p95 9.4 s against no per-row cap); time is not. Record the
+    worker count next to every wall clock, the way the machine's background load
+    is already recorded.
 ## Environment gotchas that will bite you
 
 - **UTF-8.** Printing `◇` crashes with `UnicodeEncodeError` on Windows cp1252.
@@ -1024,7 +1106,9 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
-| **Next session plan (skips, latency, closing real Marathon)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
+| **Next session plan (200k unseen order-4 sweep, staged and ready)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
+| Deep-sweep campaign log + ranked levers | `stage2/results/2026-08-25-deep-sweep-campaign.md` |
+| Deep-sweep design, cost model, per-batch protocol | `stage2/docs/DEEP_SWEEP_ROADMAP.md` |
 | Latest session detail, ranked next levers | `stage2/docs/LATEST_HANDOFF.md` |
 | Operational truth, effort tiers, open rows | `CURRENT_STATE.md` |
 | Route inventory | `stage2/docs/solver-route-ledger.md`, `stage2/docs/motif-cards/` |
@@ -1042,7 +1126,28 @@ solver primitive cannot hide itself in the oracle.
 `sample_20`'s 20 rows on top of `normal`, which already contains all of them
 (corrected 2026-08-13).
 
-**Outside the local corpus the frontier is now tiny (updated 2026-08-24).**
+**Measured at 130,900 unseen rows on 2026-08-25 — and the order-4 frontier
+turned out to be four laws.** 46 misses in 110,000 fresh order-4 rows, of which
+eq1 `2923` (16 misses), `3569` (7), `650` (5) and `3983` (4) are **32 — 70%**.
+The concentration *rose* with sample size (57% at 10k, 58% at 20k, 70% at 110k),
+which is not what sampling noise does. Every miss has a 4-operation hypothesis
+and 38 of 46 have 3 variables. `3569` is `x ◇ y = y ◇ ((z ◇ y) ◇ x)`, already
+known open; `2923` is `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x`, the `x = F(x, y, z)` shape
+ordered completion closed for `hard2_0073`, failing here against 16 goals.
+The FALSE side is now characterised rather than anecdotal: **6 misses in
+110,000** (`etp_481_3050`, `etp_481_2132`, `etp_2162_3877`, `etp_2531_23`,
+`etp_898_4270`, `etp_2316_4656`) — `481` twice.
+
+**Order-5's frontier is a completely different shape, and this is the more
+important half.** 353 misses in 20,000 rows, largest cluster **4**, so there is
+no family to name — but **all 353 have exactly 5 operations and 352 of 353 have
+3 variables**. Order-4 is a *family* wall (a few hypotheses the proof search
+cannot get through); order-5 is a *size and arity* wall (the solver runs out of
+room at the top of the space, uniformly). A fix for one will not move the other,
+and order-5 is a quarter of the score sitting at 98.24% against order-4's
+99.96%.
+
+**The pre-2026-08-25 frontier notes, still accurate as far as they go:**
 The 2026-08-20 session sampled **20,000 rows of the full order-4 ETP matrix**
 and found 52 misses; `true:completion` closed 43 on 2026-08-21 and the **goal
 bridge closed 6 of the remaining 8** on 2026-08-24 (judge-accepted). What is
