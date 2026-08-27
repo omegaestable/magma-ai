@@ -19,120 +19,195 @@ from typing import Any, Callable, NamedTuple
 _PROCESS_START = time.monotonic()
 
 
-PROMPT = """You produce proofs about magmas. A magma is a type G with one binary operation
-written `a ◇ b`. You are given two equational laws and must prove the first
-implies the second.
-
-The deterministic solver already searched for a finite magma satisfying Equation1
-but breaking Equation2 -- named tables, structured/affine/quadratic families,
-every magma of order <= 3, duals, and a randomized order 4-6 search -- and found
-none. So Equation1 very likely IMPLIES Equation2: prove it.
-
-That search is NOT exhaustive. If you can actually exhibit a finite magma where
-Equation1 HOLDS and Equation2 FAILS, send that instead of a proof:
-{"verdict":"false","table":[[...],[...]]}
-giving the full n x n Cayley table over {0,...,n-1} (rows = left argument).
-The solver re-checks every table exhaustively before submitting, so a wrong
-table is discarded harmlessly and a correct one wins the problem outright.
-Only do this if you have actually verified both conditions on the table;
-otherwise prove TRUE.
+# The prompt is a THIN SHELL and must stay one top-level string literal: the
+# official proxy extracts it by AST (`pipeline/proxy.py:_extract_prompt_from_solver`,
+# `ast.Constant` only — no f-string, no concatenation) and fills
+# `{problem.*}` / `{history.*}` / `{solver.*}` itself, stripping any placeholder
+# nothing filled. `_fill_prompt_template` turns ANY key the solver puts in its
+# `context` payload into `{solver.<key>}`, which is what lets the round body
+# vary without touching this literal — see `PROTOCOL_BODIES`.
+#
+# The body below is protocol A2 from the 2026-08-27 prompt study, measured
+# against six alternatives on the same 37 hard rows (gpt-oss-120b, DeepInfra
+# bf16, reasoning low, temperature 0, seed 0): shipped-prompt 0/37, terms-only
+# 0/37, plain derivation 1/37, **A2 (justified derivation) 2/37** — settling two
+# rows the full deterministic solver misses at 420 s/row. Requiring the
+# `from`/`subst` justification is the active ingredient: it cut verbatim copies
+# of laws the solver has already tried from 54% to 21% and doubled the rate of
+# laws the solver can actually prove (4% -> 9%). The copyable "laws worth
+# considering" menu that used to live here is gone for the same reason, replaced
+# by an exclusion list framed as already-tried.
+#
+# The FALSE branch stays a one-line escape and nothing more: a dedicated
+# FALSE-table protocol was measured at 0/24 valid tables (24/24 claimed FALSE),
+# including 10 rows with a witness known at order <= 11 — the model can be
+# steered to the branch but cannot construct a magma of order >= 4 satisfying a
+# 4-5 operation law. It is kept because `llm:false:table` is the only LLM route
+# that has ever won a real-judge row (8/8 in the 2026-07-31 Marathon).
+PROMPT = """You reason about magmas. A magma is a type G with one binary operation
+written `a ◇ b`. It is NOT associative and NOT commutative: never
+reassociate `a ◇ (b ◇ c)` into `(a ◇ b) ◇ c`, and never
+reorder `a ◇ b` into `b ◇ a`, unless the hypothesis proves it.
 
 Problem {problem.id}: prove Equation{problem.eq1_id} implies Equation{problem.eq2_id}.
 Hypothesis (Equation1):  {problem.equation1}
 Goal       (Equation2):  {problem.equation2}
 
-Deterministic solver hints:
 {solver.analysis}
 
-################  BEST WAY TO ANSWER: the rewrite chain  ################
-Give the sequence of terms from the goal's left side to the goal's right side,
-where EACH consecutive pair differs by exactly ONE use of the hypothesis on ONE
-subterm. THE SOLVER computes the exact effect of each hypothesis application and
-builds the Lean proof for you — so you never do term bookkeeping by hand (that is
-the #1 source of mistakes). Use only the goal's variables.
+The deterministic solver has already run, from the hypothesis alone: equality
+saturation, ordered Knuth-Bendix completion, and an exhaustive search for a
+finite magma of size <= 7 that satisfies the hypothesis and breaks the goal.
+It found no countermodel and no proof. In this family the hypothesis usually
+forces the magma to have exactly ONE element, after which every goal holds.
+What the solver cannot find is the INTERMEDIATE LAWS. That is the whole job.
 
-CRITICAL: ◇ is NOT associative and NOT commutative unless the hypothesis itself
-says so. Never reassociate `a ◇ (b ◇ c)` to `(a ◇ b) ◇ c`, and never reorder
-`a ◇ b` to `b ◇ a`, as a chain step — those are not valid. Every step must change
-exactly one subterm by matching (an instance of) one side of the hypothesis and
-replacing it with the other side. Keep the full parenthesization explicit.
+################  ANSWER FORMAT: a justified derivation  ################
+Return exactly one JSON object:
 
-{"verdict":"true","proof_kind":"guided_chain","chain":["<goal-lhs>","<t1>","...","<goal-rhs>"],"key_terms":["<t>","..."]}
+{"verdict":"true","derivation":[
+  {"law":"<equation>","from":["hypothesis"],"subst":"<what you substituted>"},
+  {"law":"<equation>","from":["hypothesis","law 1"],"subst":"<...>"},
+  "..."]}
 
-To design the chain, think of the hypothesis L = R as a two-way rewrite: anywhere
-you see (an instance of) L you may replace it by R, and vice-versa. List the terms
-you pass through. Make each step a single such replacement. Smaller steps are
-safer — the solver proves each step by search, so many small steps beat few big
-ones.
+Each "law" is a universally quantified equation over FRESH variables a, b, c, d
+-- for example "a ◇ a = a" or "(a ◇ b) ◇ a = b". "from" names
+which earlier facts you used and "subst" records the substitution you applied
+to them; both are your own bookkeeping -- writing them down is what keeps the
+law correct. THE SOLVER RE-PROVES EVERY LAW ITSELF by equality saturation over
+{hypothesis} plus the laws it has already proved, and retries the goal after
+each one, so you never write Lean and never do term bookkeeping.
 
-"key_terms" is optional but powerful: list up to 8 extra terms (goal variables
-only, full parenthesization) that you believe appear somewhere in the derivation —
-useful hypothesis instantiations, absorbing shapes, or halfway terms. Even if your
-chain has a gap, the solver runs a bidirectional equational search SEEDED with your
-chain terms and key_terms and can finish the proof. If you are unsure of the exact
-chain, give your best chain AND generous key_terms.
+RULES THAT MAKE THIS WORK
+* Small steps: a law the solver cannot prove in a few seconds is dropped and
+  the rest of your ladder still runs. Ten small laws beat three clever ones.
+* Order matters: only earlier laws are available to a later one.
+* Aim at the collapse "a = b" (every element equal) -- it closes ANY goal.
+* The solver has ALREADY TRIED, and failed to prove, every one of these
+  standard laws on this row, so do not propose them:
+    a ◇ a = a       a ◇ b = a       a ◇ b = b       a ◇ b = b ◇ a
+    a ◇ b = a ◇ c   a ◇ b = c ◇ b   (a ◇ a) ◇ a = a
+    a ◇ (b ◇ c) = a ◇ b
+  What it cannot do is invent a law SPECIFIC TO THIS HYPOTHESIS. Derive one
+  like this: instantiate the hypothesis at concrete terms so that one side
+  becomes an instance of the other side, or of a law you already have;
+  whatever equation is left over is your new law. Then repeat with it in hand.
+* The last law may be the goal itself, in the goal's own variables.
+* Wrong laws are harmless -- unprovable ones are dropped -- so give 6 to 12.
+* If you honestly believe the implication is FALSE, answer instead with
+  {"verdict":"false","table":[[...],[...]]}: the full n x n Cayley table over
+  {0,...,n-1}, rows indexed by the left argument. The solver re-checks it
+  exhaustively, so a wrong table is discarded harmlessly.
 
-Also optional: "peak_term" — many of these proofs EXPAND both sides to one big
-common term and meet there. If you can name that single largest middle term, give
-it as "peak_term":"<term>"; the solver then searches goal-lhs -> peak and
-peak -> goal-rhs separately, which is much easier than the full jump.
-
-################  OFTEN EASIER: name a lemma  ################
-You do not have to prove the goal at all. If you can name a SMALL law that (a)
-follows from the hypothesis and (b) makes the goal obvious, just say so:
-
-{"verdict":"true","proof_kind":"lemma","lemma":"a ◇ b = a","lemmas":["<alt>","..."]}
-
-Use fresh variables (a, b, c...) — the lemma is its own universally quantified
-law, independent of the goal's variables. THE SOLVER proves the lemma from the
-hypothesis itself and then derives the goal from it; you supply only the idea.
-
-This is often far easier than a chain, because a small law is a much smaller
-search target than the goal. Laws worth considering, strongest first:
-  "a = b"            -- the hypothesis forces the magma to have one element
-  "a ◇ b = a"        -- left projection      "a ◇ b = b"  -- right projection
-  "a ◇ a = a"        -- idempotence
-  "a ◇ b = a ◇ c"    -- the right argument never matters
-  "a ◇ b = c ◇ b"    -- the left argument never matters
-  "a ◇ b = b ◇ a"    -- commutativity
-Any equation is allowed, not just these. Give "lemmas" as a list to offer
-several; the solver tries each and keeps the first that works. A lemma that is
-too strong to be true is discarded harmlessly, so guess boldly — but a lemma
-must genuinely IMPLY the goal, or it is useless even if true.
-
-################  FALLBACK: a full Lean proof  ################
-Only if a chain is impossible. Return {"verdict":"true","code":"<full Lean file>"}
-whose code field is exactly (newlines written as \\n inside the JSON string):
-
-import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  intro <goal vars>
-  <steps>
-
-After `intro G _ h`, `h` is the hypothesis law (fully quantified) and the goal is
-`<Eq2-LHS> = <Eq2-RHS>`. Use ONLY these tactics:
-  rw [h a b ...]           -- replace <Eq1-LHS>[a,b,...] by <Eq1-RHS>; `rw [← h ...]` reverses
-  calc ... := by rw [...]   -- an explicit equational chain
-  Eq.trans, Eq.symm, congrArg (fun t => t ◇ c) / (fun t => c ◇ t), exact, rfl
-DO NOT use `simp`, `simpa`, `simp_all`, `aesop`, or `grind`: on these laws `simp`
-loops (maximum recursion depth) and is rejected. When you write `h a b c`, the
-result is <Eq1-LHS> and <Eq1-RHS> with the variables literally replaced by a,b,c;
-substitute carefully or you will get a type mismatch.
-
-Import nothing except `import JudgeProblem`. No `sorry`/`admit`. No Mathlib.
-
-################  Learn from previous attempts ################
+################  Learn from previous attempts  ################
 {history.attempts}
 {solver.feedback}
-If a Lean error shows a type mismatch, your hypothesis instantiation was wrong —
-recompute it or switch to the rewrite chain. If a chain step was unprovable,
-split it into smaller single-rewrite steps.
-
+{solver.protocol}
 Output exactly ONE JSON object (first char {, last char }). No markdown, no
-<think>, no prose.
+prose, no reasoning trace.
 """
+
+# Round bodies for `{solver.protocol}`. Marathon walks these in order over the
+# rows still unresolved after the deterministic pass, and Solo cycles them over
+# its rounds; the first is empty, so round 1 is the measured A2 shell verbatim.
+#
+# The rounds MUST differ in text. `temperature = 0.0` and `seed = 0` are pinned
+# by the evaluation spec, so re-sending an identical prompt returns an identical
+# answer: a plain retry is a guaranteed no-op and pure token waste. That is why
+# the old lane's single pass over `unresolved` could not simply be looped.
+# Round 1 is the bare A2 shell: no extra body at all.
+PROTOCOL_DERIVATION = ""
+
+# Round 2. This text and this position are both measured, on the 37-row hard
+# sample, one real call per row per round through this solver's own
+# `render_marathon_prompt` (2026-08-27, gpt-oss-120b low, DeepInfra bf16,
+# temperature 0, seed 0):
+#
+#   round 1 shell alone            1/37 settled,  2.4 laws proposed per row
+#   round 2 with this body         2/24 settled, 11.8 laws proposed per row
+#   (12 of the 37 round-2 calls were lost to provider 429s)
+#   both rounds together           3/37 settled -- etp_4453_4652,
+#                                  etp_3983_3997, etp_3983_3963
+#   control: the old copyable law menu restored in the shell, one round: 1/37
+#
+# A reworded variant of this body, moved to round 1 and with the "an earlier
+# round already answered" framing removed, measured 0/37 in a second full run:
+# do not "clean up" this text without re-measuring it, and do not move it to
+# round 1 -- its framing is true only in a later round.
+PROTOCOL_DERIVATION_EXCLUSION = """
+################  THIS ROUND: different laws, not the same ones  ################
+An earlier round already answered this row and every law it proposed either
+failed to verify or did not close the goal. Do not repeat it. In particular do
+not propose any law with only one variable, and do not propose any law that is
+a rearrangement of the goal.
+
+Give 10 to 16 laws this time, each with two or three distinct variables, and
+build each one MECHANICALLY rather than by recognition: take the hypothesis
+L = R, choose a non-variable subterm of L, unify it with L again under a
+renaming, and write down the equation the overlap leaves behind. That is the
+one construction the solver's own search cannot perform on this row, and it is
+what produces hypothesis-specific laws such as
+"b ◇ ((b ◇ a) ◇ a) = b" or "x ◇ y = (z ◇ (x ◇ z)) ◇ y".
+Keep the same JSON answer format (verdict/derivation with from and subst).
+"""
+
+PROTOCOL_TERMS = """
+################  THIS ROUND: terms, not laws  ################
+Ignore the derivation format above. The solver runs a bidirectional equational
+search between the goal's two sides; what it needs from you now is not a proof
+but the SET OF TERMS the proof passes through. Answer instead with
+
+{"verdict":"true","key_terms":["<term>","<term>","..."],"peak_term":"<term>"}
+
+* Every term uses ONLY the goal's variables, fully parenthesised.
+* Give 8 to 16 key_terms: useful instantiations of the hypothesis's left or
+  right side, absorbing shapes, and halfway terms between the goal's sides.
+* "peak_term" is the single largest middle term -- these proofs usually expand
+  both sides of the goal to one big common term and meet there. Naming it lets
+  the solver search goal-lhs -> peak and peak -> goal-rhs separately.
+* Extra terms cost nothing: the solver seeds its search with all of them.
+"""
+
+# Sent only to rows where the deterministic FALSE search actually saw models of
+# the hypothesis and was then CUT OFF (`hypothesis_models_seen() > 0 and not
+# constraint_search_exhausted()`), i.e. where a witness plausibly exists just
+# past the cheap tier. Everywhere else it is measured waste: 0/24 valid tables.
+PROTOCOL_FALSE_FIRST = """
+################  THIS ROUND: refute it  ################
+Ignore the derivation format above. The countermodel search that ran on this
+row was CUT OFF before it finished -- it did find finite magmas satisfying the
+hypothesis, it simply ran out of orders to try. So a finite countermodel
+plausibly exists just past where it stopped, and finding one wins the row
+outright.
+
+A refutation is a finite magma: a carrier {0,...,n-1} and an n x n table for
+`a ◇ b`. It works when BOTH of these hold:
+  (1) the HYPOTHESIS holds for every assignment of its variables from the
+      carrier -- all n^k assignments, no exceptions;
+  (2) the GOAL fails for at least one assignment.
+Every magma of order <= 3, the named tables and the affine/quadratic families
+over small rings have already been checked, so aim at order 4 to 8, and build
+the table from structure rather than by guessing: a group or quasigroup on Z_n
+twisted by a permutation, `a ◇ b = (p*a + q*b + c) mod n`, or a left/right zero
+adjoined to a smaller magma. A hypothesis shaped `x = <term in x,y,z>` forces
+every left- and right-multiplication map to be a bijection, so a Latin square
+is nearly always the right shape; a constant table or a table with a repeated
+row cannot satisfy one and must not be sent.
+
+{"verdict":"false","tables":[[[...],[...]],[[...],[...]]],
+ "breaks":"<the assignment that falsifies the goal>"}
+
+"tables" is a LIST of 1 to 5 candidate tables, best first; row i lists
+i ◇ 0, i ◇ 1, ..., i ◇ (n-1). The solver checks every table you send,
+exhaustively, and keeps the first that works -- so send your alternatives too.
+A wrong table costs nothing.
+"""
+
+PROTOCOL_BODIES: tuple[str, ...] = (
+    PROTOCOL_DERIVATION,
+    PROTOCOL_DERIVATION_EXCLUSION,
+    PROTOCOL_TERMS,
+)
 
 # Source of truth: `vendor/stage2-official/pipeline/config.json` (`judge`
 # block), which `pipeline/proxy.py` passes straight into `_call_judge`. The
@@ -250,8 +325,27 @@ LLM_MAX_ROUNDS = 6
 SOLO_FALLBACK_RESERVE_SECONDS = 310.0
 SOLO_DETERMINISTIC_SHARE = 0.55
 SOLO_LLM_ROUND_MIN_SECONDS = 620.0
-MARATHON_LLM_MAX_CALLS = 64
+# Absolute sanity ceiling on Marathon LLM calls, nothing more. It was 64 and
+# *binding*: the 2026-07-31 real Marathon on `normal.jsonl` (N=1000, budget
+# 32,768,000 tokens) made exactly 64 calls with ~713 rows unresolved -- 649 rows
+# never got one -- and spent 1.3% of the token budget; the 2026-08-27 hard-1000
+# run spent 0.03%. What bounds the lane now is
+# `marathon_llm_call_allowance`, derived from the budget the runner actually
+# passed. Marathon scoring counts `accepted` with no penalty for `incorrect`
+# (`pipeline/marathon_score.py`), so an extra attempt is free upside bounded
+# only by tokens and wall clock.
+MARATHON_LLM_MAX_CALLS = 4000
 MARATHON_LLM_BATCH_SIZE = 8
+# Measured cost of one deployed call, prompt + completion, over the real runs
+# and the 322-call protocol study: 5,346-10,772 total tokens (`call_llm` bills
+# `usage.total_tokens`, reasoning tokens included). 8,000 is the mean; at that
+# rate an N-row budget of N x 32768 affords ~4.1 calls per row.
+MARATHON_LLM_CALL_TOKEN_ESTIMATE = 8000
+# Never plan the last 32,768 tokens of the budget: the proxy reserves
+# `prompt_estimate + max_tokens` for the duration of a round trip and refuses a
+# call that would overrun, so spending to the last token turns the tail of the
+# lane into refused calls.
+MARATHON_LLM_TOKEN_RESERVE = 32768
 MARATHON_REF_SECONDS_DEFAULT = 600.0
 MARATHON_DETERMINISTIC_SHARE = 0.6
 # How many times its fair share of the remaining deterministic clock one
@@ -270,7 +364,17 @@ MARATHON_ROW_BORROW = 3.0
 # pathological case from "tail unattempted" into "tail gets its cheap routes".
 MARATHON_ROW_MIN_SECONDS = 1.0
 LLM_MAX_TABLE_N = 8
-LLM_MAX_OUTPUT_TOKENS = 16384
+# 16384 until 2026-08-27. The judge's deployed cap is 65536
+# (`pipeline/config.json`, `llm.max_output_tokens`), and the 322-call protocol
+# study made every call at 65536 with **0 truncations**: at `reasoning_effort =
+# low` this model spends ~2,000 completion tokens on a derivation and ~5,600 at
+# medium, so the cap is nowhere near binding and only costs rows when it clips
+# a long answer. It is *not* raised to the judge's own 65536 because the proxy
+# reserves `prompt_estimate + max_tokens` against the run's token budget for
+# the duration of the round trip, so an oversized request can be refused while
+# budget remains. 32768 is one Marathon row's whole token share and four times
+# the measured mean call cost.
+LLM_MAX_OUTPUT_TOKENS = 32768
 # 75.0 until 2026-08-13, which aborted *half* of all real calls this repo has
 # ever made: over the 446 logged real gpt-oss-120b calls in `stage2/results/`
 # (same model, same pin, `temperature=0.0`), 225 took longer than 75 s, and in
@@ -406,10 +510,21 @@ LLM_CONFIG = {
     # The official evaluation spec pins gpt-oss-120b at reasoning_effort=low
     # (rules/evaluation.md, final config 2026-08-21). The Marathon proxy
     # forwards whatever the solver requests, so this value is what DeepInfra
-    # actually runs — and reasoning tokens bill against the same N x 32768
-    # budget the answer needs. The proxy's own comments record high-effort
-    # runaway generation on this exact model (840 s of trickled tokens past a
-    # 300 s budget), so requesting above the deployed level is pure downside.
+    # actually runs (Solo's proxy rebuilds it from `pipeline/config.json`, so
+    # there the knob is theirs, not ours).
+    #
+    # Keep it low, and not for the reason this comment used to give. The token
+    # budget is not the binding argument -- it is 1.3% to 11% utilised in every
+    # real run measured. The binding argument is that medium buys nothing and
+    # costs a lot: measured 2026-08-27 on the identical 37-row sample and
+    # protocol, low was 1,969 tokens and a 17.4 s median per call and settled
+    # 2/37, medium was 5,598 tokens and a 126.0 s median (p90 195.8 s, max
+    # 344.5 s) and settled the *same* 2/37 -- with its tail past
+    # `LLM_HTTP_TIMEOUT_SECONDS`, and an aborted call still spends its tokens.
+    # Spend a surplus on more protocol rounds (`PROTOCOL_BODIES`), not on
+    # effort. The proxy's own comments also record high-effort runaway
+    # generation on this exact model (840 s of trickled tokens past a 300 s
+    # budget).
     "reasoning_effort": os.environ.get("JUDGE_MARATHON_REASONING_EFFORT", "low"),
     "use_seed": True,
     "seed": 0,
@@ -10558,6 +10673,142 @@ def usable_llm_lemma(text: str) -> dict[str, Any] | None:
     return lemma
 
 
+# Per-law and whole-routine budgets for `llm_ladder_candidate`. 3.0 s per rung
+# is what the 2026-08-27 protocol study measured the winning ladders at: every
+# law that ever verified did so well inside it, and a law that does not verify
+# in 3 s on a frontier row does not verify in 30 either. The total is polled
+# per law (rail 5f-iv: a deadline checked once per outer loop is not a
+# deadline) because a 16-law ladder tries up to 4 saturations per law.
+LLM_LADDER_STEP_BUDGET = 3.0
+LLM_LADDER_TOTAL_BUDGET = 60.0
+LLM_LADDER_MAX_LAWS = 16
+
+# The collapse: any goal follows from it, and it is what the hypotheses on this
+# frontier usually force. Kept as a module constant so the ladder does not
+# rebuild it per row.
+LLM_LADDER_COLLAPSE: dict[str, Any] = {
+    "lhs": ("var", "a"), "rhs": ("var", "b"),
+    "variables": ["a", "b"], "text": "a = b",
+}
+
+
+def llm_derivation_law_texts(obj: dict[str, Any]) -> list[str]:
+    """The law texts of a proposed derivation, in order.
+
+    Accepts both A2's justified form (a list of `{"law":..., "from":...,
+    "subst":...}` objects) and the bare list of strings, plus the `laws` /
+    `lemmas` / `lemma` spellings the model reaches for when it ignores the
+    format.
+    """
+    raw = obj.get("derivation")
+    if raw is None:
+        raw = obj.get("laws")
+    if raw is None:
+        raw = obj.get("lemmas")
+    if raw is None:
+        raw = obj.get("lemma")
+    if isinstance(raw, str):
+        raw = [raw]
+    if not isinstance(raw, list):
+        return []
+    texts: list[str] = []
+    for item in raw:
+        if isinstance(item, str):
+            texts.append(item)
+        elif isinstance(item, dict):
+            for key in ("law", "equation", "lemma", "eq"):
+                value = item.get(key)
+                if isinstance(value, str):
+                    texts.append(value)
+                    break
+    return texts
+
+
+def llm_ladder_candidate(
+    problem: dict[str, Any],
+    eq1: dict[str, Any],
+    eq2: dict[str, Any],
+    obj: dict[str, Any],
+) -> tuple[dict[str, Any] | None, str | None]:
+    """Replay a model-proposed derivation as `egg_ladder` rungs.
+
+    `llm_lemma_candidate` requires a proposed law to *syntactically imply the
+    goal* before it will even try to prove it, so a law that is a genuine
+    consequence of eq1 but only a step on the way is dropped unproved —
+    `lemma_does_not_imply_goal` fires on 84 of 353 rows in the logged
+    2026-08-26 run. `egg_ladder_route` already shows that is the wrong test: a
+    rung does not have to imply the goal, it is bound with `have` and the goal
+    is retried by multi-rule saturation with the rung in scope.
+
+    So: prove each proposed law from eq1 plus the laws already proved; on
+    success add it to the rule set and retry the goal, the pivot
+    (`lemma_closes_goal`) and the collapse. A law that does not prove costs its
+    step budget and nothing else, which is why the prompt asks for 6-12 of
+    them. The certificate is the existing `lemma_chain` shape, so
+    `check_true_lemma_chain_certificate` verifies every block independently and
+    there is no new oracle surface.
+
+    Measured 2026-08-27 on the 37-row hard sample: 2/37 settled with the A2
+    prompt (`etp_4453_4652`, `etp_3983_3997` — rows the full solver misses at
+    420 s/row), 0/37 with either half alone.
+    """
+    laws = llm_derivation_law_texts(obj)
+    if not laws:
+        return None, None
+    deadline = local_deadline(_eff_time(LLM_LADDER_TOTAL_BUDGET))
+    step_budget = _eff_time(LLM_LADDER_STEP_BUDGET)
+    rules = [_egg_rule_from(eq1, "h")]
+    blocks: list[tuple[str, dict[str, Any], str]] = []
+    seen = {canonical_law_key(eq1)}
+    reason = "ladder_no_usable_law"
+    for text in laws[:LLM_LADDER_MAX_LAWS]:
+        if deadline_expired(deadline):
+            return None, "ladder_deadline"
+        lemma = usable_llm_lemma(text)
+        if lemma is None:
+            continue
+        key = canonical_law_key(lemma)
+        if key in seen:
+            continue
+        seen.add(key)
+        reason = "ladder_no_law_verified"
+        proof = egg_saturate_prove_multi(rules, lemma, time_budget=step_budget)
+        if proof is None:
+            continue
+        reason = "ladder_exhausted"
+        name = f"hlem{len(blocks)}"
+        blocks.append((name, lemma, proof))
+        rules.append(_egg_rule_from(lemma, name))
+        goal_proof = egg_saturate_prove_multi(rules, eq2, time_budget=step_budget)
+        if goal_proof is not None:
+            return _ladder_answer(problem, blocks, eq2, goal_proof, "goal")
+        expr = lemma_closes_goal(lemma, eq2)
+        if expr is not None:
+            return _ladder_answer(problem, blocks, eq2, expr, "pivot")
+        collapse_proof = egg_saturate_prove_multi(
+            rules, LLM_LADDER_COLLAPSE, time_budget=step_budget)
+        if collapse_proof is not None:
+            closed = blocks + [("hcol", LLM_LADDER_COLLAPSE, collapse_proof)]
+            return _ladder_answer(problem, closed, eq2, "hcol _ _", "collapse")
+    return None, reason
+
+
+def _ladder_answer(
+    problem: dict[str, Any],
+    blocks: list[tuple[str, dict[str, Any], str]],
+    eq2: dict[str, Any],
+    goal_expr: str,
+    kind: str,
+) -> tuple[dict[str, Any] | None, str | None]:
+    code = _lemma_chain_goal_certificate(blocks, eq2["variables"], goal_expr)
+    if len(code.encode("utf-8")) > MAX_LEAN_CODE_BYTES:
+        return None, "ladder_certificate_too_large"
+    return {
+        "answer": make_true_answer(problem, code),
+        "route": "llm:true:ladder:" + kind,
+    }, None
+
+
 def llm_lemma_candidate(
     problem: dict[str, Any],
     eq1: dict[str, Any],
@@ -10643,19 +10894,41 @@ def candidate_from_llm_text_with_reason(
         return None, "problem_parse_failed"
 
     if verdict == "false":
-        raw_table = obj.get("counterexample_table", obj.get("table"))
-        if raw_table is None:
+        # `tables` (a list of candidates, best first) as well as the single
+        # `table`: the FALSE round body asks for up to 5 because checking one
+        # is `table_is_counterexample` over n**vars assignments and therefore
+        # ~free next to the call that produced it, while the model's first
+        # table is usually degenerate.
+        raw_tables: list[Any] = []
+        many = obj.get("tables")
+        if isinstance(many, list):
+            raw_tables.extend(item for item in many if isinstance(item, list))
+        one = obj.get("counterexample_table", obj.get("table"))
+        if one is not None:
+            raw_tables.append(one)
+        if not raw_tables:
             return None, "false_verdict_without_table"
-        table = normalize_table(raw_table)
-        if table is None:
-            return None, "false_table_invalid_shape"
-        if not table_is_counterexample(eq1, eq2, table):
-            return None, "false_table_not_counterexample"
-        return {
-            "answer": make_false_answer(problem, len(table), table,
-                                        equations=(eq1, eq2)),
-            "route": "llm:false:table",
-        }, "ok"
+        reject = "false_table_invalid_shape"
+        for raw_table in raw_tables:
+            table = normalize_table(raw_table)
+            if table is None:
+                continue
+            reject = "false_table_not_counterexample"
+            if not table_is_counterexample(eq1, eq2, table):
+                continue
+            return {
+                "answer": make_false_answer(problem, len(table), table,
+                                            equations=(eq1, eq2)),
+                "route": "llm:false:table",
+            }, "ok"
+        return None, reject
+
+    # The ladder runs BEFORE the lemma lane: `llm_lemma_candidate` throws away
+    # any proposed law that does not syntactically imply the goal without ever
+    # trying to prove it, and those laws are exactly the rungs.
+    ladder_candidate, ladder_reject = llm_ladder_candidate(problem, eq1, eq2, obj)
+    if ladder_candidate is not None:
+        return ladder_candidate, "ok"
 
     lemma_candidate, lemma_reject = llm_lemma_candidate(problem, eq1, eq2, obj)
     if lemma_candidate is not None:
@@ -10716,6 +10989,8 @@ def candidate_from_llm_text_with_reason(
 
     if lemma_reject is not None:
         chain_reject_reason = f"{lemma_reject}; {chain_reject_reason}"
+    if ladder_reject is not None:
+        chain_reject_reason = f"{ladder_reject}; {chain_reject_reason}"
 
     if isinstance(obj.get("proof"), str) or isinstance(obj.get("proof_body"), str):
         return None, "proof_body_unsupported"
@@ -10820,12 +11095,105 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     return "\n".join(cues)
 
 
-def llm_problem_priority(priority: tuple[int, int, str], problem: dict[str, Any]) -> tuple[int, int, int, str]:
+# Per-row evidence from the deterministic FALSE search, id -> (models_seen,
+# constraint_search_exhausted). `hypothesis_models_seen()` and
+# `constraint_search_exhausted()` are module-level state describing the LAST
+# search, so the only place the numbers exist per row is the deterministic loop
+# that ran it; it records them here and the LLM lane reads them back. Defaults
+# defensively to empty: an unrecorded row is `(-1, False)` = unknown, which
+# takes the derivation direction, so nothing depends on the recording having
+# happened.
+_MARATHON_ROW_EVIDENCE: dict[str, tuple[int, bool]] = {}
+
+
+def marathon_row_evidence(problem: dict[str, Any]) -> tuple[int, bool]:
+    evidence = _MARATHON_ROW_EVIDENCE.get(str(problem.get("id")))
+    if not isinstance(evidence, tuple) or len(evidence) != 2:
+        return (-1, False)
+    return (int(evidence[0]), bool(evidence[1]))
+
+
+def llm_row_is_order5_shaped(problem: dict[str, Any]) -> bool:
+    """Five operations and three variables in the hypothesis.
+
+    The whole order-5 collapse bucket has this shape, and every protocol tried
+    on it scored 0: 20 rows x 6 protocols = 120 calls, 0 settled, and the mined
+    laws that close 19 order-4 rows scored 0/80 there as well. It is not
+    excluded from the lane -- a measured zero on 120 calls is not a proof -- but
+    it goes last, after every row with a shape that has ever produced an accept.
+    """
+    try:
+        eq1 = parse_equation(str(problem["equation1"]))
+    except (KeyError, ValueError):
+        return False
+    return len(eq1["variables"]) == 3 and _term_op_count(eq1) == 5
+
+
+def _term_op_count(eq: dict[str, Any]) -> int:
+    def count(term: Term) -> int:
+        if term[0] == "var":
+            return 0
+        return 1 + count(term[1]) + count(term[2])
+    return count(eq["lhs"]) + count(eq["rhs"])
+
+
+def llm_row_direction(problem: dict[str, Any]) -> str:
+    """Which way to point the model at this row, from evidence, not framing.
+
+    The 2026-08-27 study measured the model's verdict as a function of the
+    prompt and nothing else: 148/148 TRUE under four TRUE-framed prompts --
+    including on four rows with a verified order-7/8 countermodel -- and 24/24
+    FALSE under a FALSE-framed one. So the direction has to be chosen by the
+    solver.
+
+    `models_seen == 0` means the FALSE search never found a single model of the
+    hypothesis: it refuted nothing, a countermodel is implausible, and the row
+    is probably TRUE by collapse -- ask for a derivation and never mention
+    tables. `models_seen > 0` with the search NOT exhausted is the one case
+    where a witness plausibly sits just past where the cheap tier stopped, and
+    it is also the population where `llm:false:table` earned its only real-judge
+    accepts (8/8, 2026-07-31) -- ask for tables. Exhausted means the orders were
+    searched and came back empty: derivation again.
+    """
+    models_seen, exhausted = marathon_row_evidence(problem)
+    if models_seen > 0 and not exhausted:
+        return "false"
+    return "true"
+
+
+def llm_round_body(problem: dict[str, Any], round_idx: int) -> tuple[str, bool]:
+    """(protocol body, strip-the-TRUE-push) for this row in this round."""
+    if llm_row_direction(problem) == "false":
+        if round_idx == 0:
+            return PROTOCOL_FALSE_FIRST, True
+        return PROTOCOL_BODIES[(round_idx - 1) % len(PROTOCOL_BODIES)], False
+    return PROTOCOL_BODIES[round_idx % len(PROTOCOL_BODIES)], False
+
+
+def llm_problem_priority(priority: tuple[int, int, str], problem: dict[str, Any]) -> tuple[int, int, int, int, str]:
+    """Order the unresolved rows for the LLM lane: evidence first, shape second.
+
+    The primary key used to be a purely syntactic score, which spent the lane's
+    calls without regard to what the deterministic pass had already learned
+    about the row. Band 0 is the population the FALSE branch has actually won
+    rows in (models of the hypothesis were found and the search was then cut
+    off); band 1 is everything else; band 2 is the order-5-shaped collapse
+    bucket with no models at all, measured 0/120 under every protocol. The old
+    syntactic score is kept as the tiebreak inside a band.
+    """
     try:
         eq1 = parse_equation(str(problem["equation1"]))
         eq2 = parse_equation(str(problem["equation2"]))
     except (KeyError, ValueError):
-        return (9, priority[0], priority[1], str(problem.get("id", "")))
+        return (9, 9, priority[0], priority[1], str(problem.get("id", "")))
+
+    models_seen, exhausted = marathon_row_evidence(problem)
+    if models_seen > 0 and not exhausted:
+        band = 0
+    elif models_seen == 0 and llm_row_is_order5_shaped(problem):
+        band = 2
+    else:
+        band = 1
 
     score = 4
     if absorption_hypothesis(eq1):
@@ -10842,10 +11210,17 @@ def llm_problem_priority(priority: tuple[int, int, str], problem: dict[str, Any]
         score += 1
     score = max(0, score)
     size = term_size(eq1["lhs"]) + term_size(eq1["rhs"]) + term_size(eq2["lhs"]) + term_size(eq2["rhs"])
-    return (score, priority[0], size, str(problem.get("id", "")))
+    return (band, score, priority[0], size, str(problem.get("id", "")))
 
 
-def render_marathon_prompt(problem: dict[str, Any], analysis: str) -> str:
+def render_marathon_prompt(problem: dict[str, Any], analysis: str,
+                           protocol: str = "") -> str:
+    """Fill `PROMPT` the way `pipeline/proxy.py:_fill_prompt_template` does.
+
+    Marathon has no proxy-side template filling — the solver builds the whole
+    prompt — so `{solver.protocol}` is filled here from the round body. Solo
+    sends the same key in its `context` payload and the proxy fills it there.
+    """
     replacements = {
         "problem.id": str(problem.get("id", "")),
         "problem.eq1_id": str(problem.get("eq1_id", "")),
@@ -10853,6 +11228,8 @@ def render_marathon_prompt(problem: dict[str, Any], analysis: str) -> str:
         "problem.equation1": str(problem.get("equation1", "")),
         "problem.equation2": str(problem.get("equation2", "")),
         "solver.analysis": analysis,
+        "solver.protocol": protocol,
+        "solver.feedback": "",
         "history.attempts": "",
     }
     prompt = PROMPT
@@ -10897,6 +11274,8 @@ def marathon_llm_attempt(
     problem: dict[str, Any],
     config: dict[str, Any],
     deadline: float,
+    protocol: str = "",
+    neutral_analysis: bool = False,
 ) -> dict[str, Any]:
     pid = str(problem.get("id"))
     started = time.monotonic()
@@ -10904,7 +11283,15 @@ def marathon_llm_attempt(
     result: dict[str, Any] = {"id": pid}
     try:
         analysis = solver_analysis(problem)
-        prompt = render_marathon_prompt(problem, analysis)
+        if neutral_analysis:
+            # `solver_analysis` ends by telling the model the row "is very
+            # likely TRUE -- build a proof". On a row we are deliberately
+            # asking to refute (LLM-3's evidence gate) that cue is the exact
+            # push the study measured steering 148/148 answers to TRUE.
+            analysis = "\n".join(
+                line for line in analysis.splitlines()
+                if not line.startswith("This row escaped deterministic"))
+        prompt = render_marathon_prompt(problem, analysis, protocol)
         response = call_llm(prompt, config=config, max_seconds=max_seconds)
     except Exception as exc:  # noqa: BLE001
         result["error"] = str(exc)
@@ -11042,6 +11429,14 @@ def run_solo() -> int:
                     "round": str(round_idx),
                     "analysis": analysis,
                     "feedback": feedback,
+                    # `_fill_prompt_template` turns any context key into
+                    # `{solver.<key>}`, and PROMPT ends with
+                    # `{solver.protocol}` -- so this is what makes each round
+                    # ask a different question. Without it every round after
+                    # the first re-sends the identical prompt, and with
+                    # `temperature = 0.0` and `seed = 0` pinned by the
+                    # evaluation spec that returns the identical answer.
+                    "protocol": PROTOCOL_BODIES[round_idx % len(PROTOCOL_BODIES)],
                 },
             }
         )
@@ -11223,6 +11618,23 @@ def marathon_per_problem_budget(total_budget: float, problem_count: int, ref_sec
     return max(floor, min(60.0, 0.05 * share))
 
 
+def marathon_llm_call_allowance(budget_tokens: int, tokens_used: int | None) -> int:
+    """How many LLM calls the remaining token budget can pay for.
+
+    A negative `budget_tokens` means "unlimited" in the official runner, and
+    zero means the lane is off (handled by the caller). Everything else is
+    `(budget - used - reserve) / cost-per-call`, which is what makes the lane
+    scale with N instead of with a constant that ignores it.
+    """
+    if budget_tokens < 0:
+        return 10 ** 9
+    used = 0 if tokens_used is None else max(0, int(tokens_used))
+    spendable = budget_tokens - used - MARATHON_LLM_TOKEN_RESERVE
+    if spendable <= 0:
+        return 0
+    return max(0, spendable // MARATHON_LLM_CALL_TOKEN_ESTIMATE)
+
+
 def load_marathon_llm() -> tuple[Any | None, Any | None, Any | None]:
     lib_dir = os.environ.get("JUDGE_MARATHON_LIB_DIR")
     if not lib_dir:
@@ -11355,129 +11767,201 @@ def run_marathon() -> int:
             if str(problem.get("id")) not in solved_ids
         ]
         unresolved.sort(key=lambda item: item[0])
-        index = 0
+        # How many calls the *budget* pays for, versus the one-call-per-row the
+        # lane used to make. At the deployed N x 32768 that is ~4.1 calls per
+        # row; the round count is what turns the surplus into attempts, and the
+        # rounds must differ in text because temperature 0 + seed 0 make an
+        # identical re-prompt return an identical answer.
+        initial_allowance = marathon_llm_call_allowance(
+            budget_tokens, tokens_used() if tokens_used is not None else None)
+        rounds = max(1, min(len(PROTOCOL_BODIES),
+                            initial_allowance // max(1, len(unresolved))))
+        log_stderr({
+            "route": "llm:plan",
+            "unresolved": len(unresolved),
+            "budget_tokens": budget_tokens,
+            "call_allowance": initial_allowance,
+            "rounds": rounds,
+            "max_output_tokens": LLM_CONFIG["max_output_tokens"],
+        })
         stop_llm = False
+        lowered_tokens: dict[str, int] = {}
         with ThreadPoolExecutor(max_workers=MARATHON_LLM_BATCH_SIZE) as executor:
-            while index < len(unresolved) and llm_calls < MARATHON_LLM_MAX_CALLS and not stop_llm:
-                if time.monotonic() + 20.0 >= deadline:
+            for round_idx in range(rounds):
+                if stop_llm:
                     break
-                # Per batch, for the same reason the deterministic loop resets
-                # per row: this is the lane's unit of work, and a guard trip in
-                # one batch must not disable every engine for all the batches
-                # after it.
-                reset_memory_reclaims()
-                used = tokens_used() if tokens_used is not None else None
-                if budget_tokens > 0 and used is not None and used >= budget_tokens:
-                    log_stderr(
-                        {
-                            "route": "llm:disabled",
-                            "reason": "token_budget_spent",
-                            "tokens_used": used,
-                            "budget_tokens": budget_tokens,
-                        }
-                    )
+                queue = [problem for _priority, problem in unresolved
+                         if str(problem.get("id")) not in solved_ids]
+                if not queue:
                     break
-                remaining = budget_remaining() if budget_remaining is not None else None
-                min_headroom = int(LLM_CONFIG["max_output_tokens"])
-                if budget_tokens > 0 and remaining is not None and remaining >= 0 and remaining < min_headroom:
-                    log_stderr(
-                        {
-                            "route": "llm:disabled",
-                            "reason": "insufficient_remaining_token_headroom",
-                            "budget_remaining": remaining,
-                            "required_headroom": min_headroom,
-                            "budget_tokens": budget_tokens,
-                        }
-                    )
-                    break
-
-                batch: list[dict[str, Any]] = []
-                remaining_call_slots = MARATHON_LLM_MAX_CALLS - llm_calls
-                while index < len(unresolved) and len(batch) < min(MARATHON_LLM_BATCH_SIZE, remaining_call_slots):
-                    _priority, problem = unresolved[index]
-                    index += 1
-                    pid = str(problem.get("id"))
-                    if pid not in solved_ids:
-                        batch.append(problem)
-                if not batch:
-                    continue
-
-                llm_calls += len(batch)
-                log_stderr(
-                    {
-                        "route": "llm:batch_start",
-                        "size": len(batch),
-                        "ids": [str(problem.get("id")) for problem in batch],
-                        "llm_calls": llm_calls,
-                        "max_output_tokens": LLM_CONFIG["max_output_tokens"],
-                        "reasoning_effort": LLM_CONFIG.get("reasoning_effort"),
-                        "http_timeout_seconds": LLM_CONFIG.get("http_timeout_seconds"),
-                        "allow_raw_true": marathon_allow_raw_true(),
-                        "budget_remaining": remaining,
-                    }
-                )
-                futures = {
-                    executor.submit(marathon_llm_attempt, call_llm, problem, LLM_CONFIG, deadline): problem
-                    for problem in batch
-                }
-                for future in as_completed(futures):
-                    problem = futures[future]
-                    pid = str(problem.get("id"))
-                    try:
-                        result = future.result()
-                    except Exception as exc:  # noqa: BLE001
-                        log_stderr({"route": "llm:error", "id": pid, "error": str(exc)})
-                        continue
-                    if "error" in result:
-                        error = str(result.get("error", ""))
+                index = 0
+                while index < len(queue) and llm_calls < MARATHON_LLM_MAX_CALLS and not stop_llm:
+                    if time.monotonic() + 20.0 >= deadline:
+                        break
+                    # Per batch, for the same reason the deterministic loop resets
+                    # per row: this is the lane's unit of work, and a guard trip in
+                    # one batch must not disable every engine for all the batches
+                    # after it.
+                    reset_memory_reclaims()
+                    used = tokens_used() if tokens_used is not None else None
+                    if budget_tokens > 0 and used is not None and used >= budget_tokens:
                         log_stderr(
                             {
-                                "route": "llm:error",
-                                "id": pid,
-                                "error": error,
-                                "elapsed_seconds": result.get("elapsed_seconds"),
-                                "budget_remaining": result.get("budget_remaining"),
+                                "route": "llm:disabled",
+                                "reason": "token_budget_spent",
+                                "tokens_used": used,
+                                "budget_tokens": budget_tokens,
                             }
                         )
-                        if "exhausted" in error or "budget" in error:
-                            stop_llm = True
-                        continue
-                    if "candidate" not in result:
+                        stop_llm = True
+                        break
+                    allowance = marathon_llm_call_allowance(budget_tokens, used)
+                    if allowance <= 0:
                         log_stderr(
                             {
-                                "route": "llm:reject",
+                                "route": "llm:disabled",
+                                "reason": "call_allowance_spent",
+                                "tokens_used": used,
+                                "budget_tokens": budget_tokens,
+                            }
+                        )
+                        stop_llm = True
+                        break
+                    remaining = budget_remaining() if budget_remaining is not None else None
+                    # One call's worth, not one full generation's worth. This
+                    # was `LLM_CONFIG["max_output_tokens"]`, which disabled the
+                    # whole lane while several calls' worth of budget remained.
+                    min_headroom = MARATHON_LLM_CALL_TOKEN_ESTIMATE
+                    if budget_tokens > 0 and remaining is not None and remaining >= 0 and remaining < min_headroom:
+                        log_stderr(
+                            {
+                                "route": "llm:disabled",
+                                "reason": "insufficient_remaining_token_headroom",
+                                "budget_remaining": remaining,
+                                "required_headroom": min_headroom,
+                                "budget_tokens": budget_tokens,
+                            }
+                        )
+                        stop_llm = True
+                        break
+
+                    batch: list[dict[str, Any]] = []
+                    slots = min(MARATHON_LLM_BATCH_SIZE,
+                                MARATHON_LLM_MAX_CALLS - llm_calls,
+                                allowance)
+                    while index < len(queue) and len(batch) < slots:
+                        problem = queue[index]
+                        index += 1
+                        if str(problem.get("id")) not in solved_ids:
+                            batch.append(problem)
+                    if not batch:
+                        continue
+
+                    llm_calls += len(batch)
+                    log_stderr(
+                        {
+                            "route": "llm:batch_start",
+                            "round": round_idx,
+                            "size": len(batch),
+                            "ids": [str(problem.get("id")) for problem in batch],
+                            "llm_calls": llm_calls,
+                            "max_output_tokens": LLM_CONFIG["max_output_tokens"],
+                            "reasoning_effort": LLM_CONFIG.get("reasoning_effort"),
+                            "http_timeout_seconds": LLM_CONFIG.get("http_timeout_seconds"),
+                            "allow_raw_true": marathon_allow_raw_true(),
+                            "budget_remaining": remaining,
+                            "call_allowance": allowance,
+                        }
+                    )
+                    futures = {}
+                    for problem in batch:
+                        pid = str(problem.get("id"))
+                        body, neutral = llm_round_body(problem, round_idx)
+                        config = LLM_CONFIG
+                        if pid in lowered_tokens:
+                            config = dict(LLM_CONFIG)
+                            config["max_output_tokens"] = lowered_tokens[pid]
+                        futures[executor.submit(
+                            marathon_llm_attempt, call_llm, problem, config,
+                            deadline, body, neutral)] = problem
+                    for future in as_completed(futures):
+                        problem = futures[future]
+                        pid = str(problem.get("id"))
+                        try:
+                            result = future.result()
+                        except Exception as exc:  # noqa: BLE001
+                            log_stderr({"route": "llm:error", "id": pid, "error": str(exc)})
+                            continue
+                        if "error" in result:
+                            error = str(result.get("error", ""))
+                            lowered = error.lower()
+                            log_stderr(
+                                {
+                                    "route": "llm:error",
+                                    "id": pid,
+                                    "error": error,
+                                    "elapsed_seconds": result.get("elapsed_seconds"),
+                                    "budget_remaining": result.get("budget_remaining"),
+                                }
+                            )
+                            # Only a budget that is actually gone stops the
+                            # lane. `... would be exhausted by this call` is the
+                            # proxy's per-call reservation refusing ONE request
+                            # (`prompt_estimate + max_tokens` held across the
+                            # round trip); treating it as terminal killed the
+                            # lane for the rest of the run on a transient. Retry
+                            # that row once with a smaller output cap instead.
+                            if ("token budget exhausted" in lowered
+                                    or "token budget is zero" in lowered):
+                                stop_llm = True
+                            elif "would be exhausted" in lowered and pid not in lowered_tokens:
+                                lowered_tokens[pid] = max(
+                                    2048, int(LLM_CONFIG["max_output_tokens"]) // 4)
+                                queue.append(problem)
+                                log_stderr({
+                                    "route": "llm:retry_lower_max_tokens",
+                                    "id": pid,
+                                    "max_output_tokens": lowered_tokens[pid],
+                                })
+                            continue
+                        if "candidate" not in result:
+                            log_stderr(
+                                {
+                                    "route": "llm:reject",
+                                    "id": pid,
+                                    "round": round_idx,
+                                    "reason": result.get("reject_reason", "unknown"),
+                                    "elapsed_seconds": result.get("elapsed_seconds"),
+                                    "tokens_used_call": result.get("tokens_used_call"),
+                                    "budget_remaining": result.get("budget_remaining"),
+                                    # distinguishes a token-exhausted call (raw
+                                    # reasoning trace, finish_reason=length) from a
+                                    # genuinely malformed answer in the triage log
+                                    "truncated": result.get("truncated", False),
+                                    "response_chars": result.get("response_chars"),
+                                    "response_preview": result.get("response_preview"),
+                                }
+                            )
+                            continue
+
+                        candidate = result["candidate"]
+                        if not append_answer(output_path, candidate["answer"]):
+                            continue
+                        route = str(candidate["route"])
+                        route_counts[route] = route_counts.get(route, 0) + 1
+                        solved += 1
+                        solved_ids.add(pid)
+                        log_stderr(
+                            {
+                                "route": "llm:accepted_candidate",
                                 "id": pid,
-                                "reason": result.get("reject_reason", "unknown"),
+                                "round": round_idx,
+                                "candidate_route": route,
                                 "elapsed_seconds": result.get("elapsed_seconds"),
                                 "tokens_used_call": result.get("tokens_used_call"),
                                 "budget_remaining": result.get("budget_remaining"),
-                                # distinguishes a token-exhausted call (raw
-                                # reasoning trace, finish_reason=length) from a
-                                # genuinely malformed answer in the triage log
-                                "truncated": result.get("truncated", False),
-                                "response_chars": result.get("response_chars"),
-                                "response_preview": result.get("response_preview"),
                             }
                         )
-                        continue
-
-                    candidate = result["candidate"]
-                    if not append_answer(output_path, candidate["answer"]):
-                        continue
-                    route = str(candidate["route"])
-                    route_counts[route] = route_counts.get(route, 0) + 1
-                    solved += 1
-                    solved_ids.add(pid)
-                    log_stderr(
-                        {
-                            "route": "llm:accepted_candidate",
-                            "id": pid,
-                            "candidate_route": route,
-                            "elapsed_seconds": result.get("elapsed_seconds"),
-                            "tokens_used_call": result.get("tokens_used_call"),
-                            "budget_remaining": result.get("budget_remaining"),
-                        }
-                    )
 
     log_route_count_chunks(route_counts)
     log_stderr(
