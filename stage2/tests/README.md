@@ -11,9 +11,22 @@ Run the gate:
 ```
 
 `-n auto` (pytest-xdist) matters: the gate re-solves ~170 real problems, which was
-~160 s serially and ~47 s across cores when measured on 2026-07-29. The current
-gate is **257 passed, 2 skipped** (`-n auto`, 2026-08-21 — the figure
-`CLAUDE.md` carries). A slow gate is a gate people skip.
+~160 s serially and ~47 s across cores when measured on 2026-07-29. A slow gate
+is a gate people skip.
+
+**The current pass/skip counts live in `CLAUDE.md`** (the *four commands* block
+and the measured-state table) so there is exactly one copy to keep true. Two
+rules when you change anything here:
+
+- **Compare the SKIP count, not just the pass count** (`CLAUDE.md` rail 16). Ten
+  freshly judge-accepted certificates once turned into ten silently *skipped*
+  tests, because `test_judge_verified.py` resolves a pinned row from the
+  official and HF sets and rows pinned from a generated batch are in neither.
+  Fixture entries therefore carry their own `equation1`/`equation2`/eq ids.
+- `judge_rows.py --write-fixture` **REPLACES** `judge_verified_certs.jsonl`.
+  Use `--append-fixture` unless you mean to delete every other pin. Certificate
+  text you already have (e.g. from a worktree with no Lean build) goes through
+  `stage2/experiments/judge_cert_text.py` instead.
 
 `stage2/solver/package_solver.ps1` runs it automatically and refuses to
 package on failure (`-SkipTests` only for a deliberate spike).

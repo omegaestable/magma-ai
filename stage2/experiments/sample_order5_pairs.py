@@ -41,7 +41,8 @@ EQ_SIZE5_PATH = (REPO_ROOT / "vendor" / "stage2-official" / "examples"
 
 
 def load_catalog(max_variables: int,
-                  catalog_path: Path | None = None) -> list[tuple[int, str]]:
+                  catalog_path: Path | None = None,
+                  min_variables: int = 0) -> list[tuple[int, str]]:
     lines = (catalog_path or EQ_SIZE5_PATH).read_text(
         encoding="utf-8").splitlines()
     catalog: list[tuple[int, str]] = []
@@ -50,7 +51,7 @@ def load_catalog(max_variables: int,
         if not text:
             continue
         eq = S.parse_equation(text)
-        if len(eq["variables"]) <= max_variables:
+        if min_variables <= len(eq["variables"]) <= max_variables:
             catalog.append((i, text))
     return catalog
 
@@ -60,8 +61,11 @@ def sample_pairs(count: int, seed: int, max_variables: int,
                   catalog_path: Path | None = None,
                   id_prefix: str = "order5",
                   goal_catalog_path: Path | None = None,
-                  goal_max_variables: int | None = None) -> list[dict]:
-    catalog = load_catalog(max_variables, catalog_path)
+                  goal_max_variables: int | None = None,
+                  min_variables: int = 0,
+                  goal_min_variables: int | None = None) -> list[dict]:
+    catalog = load_catalog(max_variables, catalog_path,
+                            min_variables=min_variables)
     # A separate goal catalog makes "big hypothesis, small goal" draws possible.
     # Drawing both sides from the same high-order catalog produces an almost
     # pure-FALSE population -- an order-6 pilot came back 200/200 FALSE, because
@@ -70,7 +74,10 @@ def sample_pairs(count: int, seed: int, max_variables: int,
     goal_catalog = (catalog if goal_catalog_path is None else
                     load_catalog(goal_max_variables if goal_max_variables
                                  is not None else max_variables,
-                                 goal_catalog_path))
+                                 goal_catalog_path,
+                                 min_variables=(goal_min_variables
+                                                if goal_min_variables is not None
+                                                else min_variables)))
     same_catalog = goal_catalog_path is None
     rng = random.Random(seed)
     exclude = exclude or set()
@@ -116,6 +123,17 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--count", type=int, default=10000)
     ap.add_argument("--max-variables", type=int, default=3)
+    ap.add_argument("--min-variables", type=int, default=0,
+                    help="lower variable bound, inclusive. Every order-5 sweep "
+                         "before 2026-08-27 ran at --max-variables 3, but "
+                         "56.9%% of eq_size5.txt has >= 4 variables and the HF "
+                         "order-5 mirror is 50%% >= 4 -- so the <=3-var "
+                         "population is not the official-shaped one. Use "
+                         "--min-variables 4 to draw the unmeasured half, and "
+                         "label any number from it as stratified (rail 33).")
+    ap.add_argument("--goal-min-variables", type=int, default=None,
+                    help="lower variable bound for the goal catalog "
+                         "(default: same as --min-variables)")
     ap.add_argument("--seed", type=int, default=20260820)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--exclude", type=Path, nargs="*", default=[],
@@ -143,13 +161,16 @@ def main() -> int:
     rows = sample_pairs(args.count, args.seed, args.max_variables, exclude,
                         catalog_path=args.catalog, id_prefix=args.id_prefix,
                         goal_catalog_path=args.goal_catalog,
-                        goal_max_variables=args.goal_max_variables)
+                        goal_max_variables=args.goal_max_variables,
+                        min_variables=args.min_variables,
+                        goal_min_variables=args.goal_min_variables)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
-    print(f"Wrote {len(rows)} {args.id_prefix} pairs (<= {args.max_variables} "
-          f"variables each, no ground truth) to {args.out}")
+    print(f"Wrote {len(rows)} {args.id_prefix} pairs "
+          f"({args.min_variables}..{args.max_variables} variables each, "
+          f"no ground truth) to {args.out}")
     return 0
 
 

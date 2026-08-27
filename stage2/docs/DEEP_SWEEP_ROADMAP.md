@@ -1,5 +1,13 @@
 # Deep sweep roadmap — 150,000 unseen rows
 
+**This is the design document — the cost model, the batch plan and the
+reasoning. For the commands, run `stage2/docs/DEEP_SWEEP_RUNBOOK.md` instead
+(written 2026-08-27, every flag `--help`-verified).** Two things this file
+predates: `sample_order5_pairs.py --min-variables` (the ≥4-variable order-5
+stratum, 56.9% of the population and never swept — `CLAUDE.md` rail 33) and
+`stage2/experiments/run_marathon_batch.py` / `run_solo_batch.py` being tracked
+in the repo rather than in gitignored scratch.
+
 Written 2026-08-25. Owner doc for the measurement campaign that follows the
 2026-08-24 final engine session. **Measurement and logging only** — no solver
 changes until the campaign has produced a ranked, evidence-backed defect list.

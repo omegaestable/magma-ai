@@ -27,7 +27,11 @@ The `50_000` / `10_000` / `120` in `vendor/stage2-official/judge/verify.py` are
 the fallback for invoking the verifier with no config — reading them as the
 judge's limits cost this repo two weeks of halved caps (`CLAUDE.md`, rail 3b,
 third instance). Anything that judges locally must pass the production values;
-`stage2/experiments/judge_rows.py` now sets them for you.
+`stage2/experiments/judge_rows.py` now sets them for you. To judge certificate
+**text** you already have (e.g. from a git worktree, which has no `.lake`
+build), use `stage2/experiments/judge_cert_text.py --in <certs.jsonl> --out
+<judged.jsonl>` — rows `{id, equation1, equation2, eq1_id, eq2_id, verdict,
+code}`, deployed caps applied, `accepted N/M` printed.
 
 ## Setup Gate
 
@@ -80,8 +84,17 @@ then asserts the directory holds nothing but `solver.py`. A failed build
 therefore leaves the previous artifact intact rather than an empty directory.
 
 Do not carry package sizes forward in this file; the current figure lives in
-`CLAUDE.md` (**466,320 bytes** on 2026-08-21). The `138939` bytes this line used
-to quote was a 2026-05-30 measurement and was stale by ~300 KB.
+`CLAUDE.md`'s measured-state table. The `138939` bytes this line used to quote
+was a 2026-05-30 measurement and was stale by ~300 KB.
+
+Check 3 is not cosmetic. On 2026-08-27 the organizers' own validator,
+`pipeline.proxy._validate_submission_layout`, rejected our directory over a
+`__pycache__/solver.cpython-311.pyc` that a tool had created by *importing* the
+artifact after the last build. `marathon_runner.py:166-168` enforces the same
+rule; in Solo the run returns `{solved: False}` before the process starts, so
+every problem scores 0 with nothing that looks like a solver bug. Re-check the
+directory immediately before upload, not just after packaging (`CLAUDE.md`
+rail 23).
 
 The cap that matters is on the **artifact**, not on `stage2/solver/solver.py` —
 the source carries comments and docstrings and is legitimately over 500 KB. CI
@@ -161,6 +174,23 @@ tested against both current upstream budget interpretations (`600` vs `3600`
 seconds per reference problem).
 
 Custom local Solo environment knobs are not reliable official behavior because the proxy sanitizes the solver subprocess environment. Treat runner/proxy behavior as authoritative.
+
+Batch wrappers, tracked in the repo since 2026-08-27 (they used to live only in
+gitignored `tmp_stage2_smoke/real-run-tools/`, where a clean tree would have
+lost them):
+
+```powershell
+.\.venv\Scripts\python.exe stage2/experiments/run_marathon_batch.py --manifest <jsonl> --output-dir <dir> [--budget-tokens N] [--budget-seconds N] [--score-only] [--no-score]
+.\.venv\Scripts\python.exe stage2/experiments/run_solo_batch.py --problems <jsonl> --output <jsonl> [--limit N]
+```
+
+Both import `local_runner_env`, whose `judge_cap_env()` reads the deployed
+judge caps out of `pipeline/config.json`. Without them `judge/verify.py` falls
+back to 50,000 / 10,000 / 120 and you score against a stricter judge than
+production — that is rail 3b-iv, and it cost a real 200-row Marathon a phantom
+`malformed`. Both also prepend `~\.elan\bin` to `PATH`, which a detached
+process does not inherit. Full deep-sweep procedure:
+`stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
 
 ## Certificate Distillation
 
