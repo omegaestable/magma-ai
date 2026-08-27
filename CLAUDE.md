@@ -98,33 +98,39 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (deep sweep 2026-08-25; judge parity on Lean 4.32.2)
+## Current measured state (2026-08-27; judge parity on Lean 4.33.1)
 
-Every coverage number below is from a **fresh audit run on 2026-08-24** after
-the upstream re-sync and the completion goal bridge shipped, diffed by row id
-against `audit-2026-08-21-completion.json`. The packaged-size row is the
-2026-08-24 build. The 2026-08-21 numbers this table previously carried are in
-git history and in `stage2/results/2026-08-21-completion-engine-and-latency.md`.
+Every number below is from the 2026-08-26/27 improvement pass
+(`stage2/results/2026-08-26-improvement-pass.md`), measured on the packaged
+2026-08-27 artifact. Diff by row id, never by total (rail 2).
 
 | Metric | Value |
 | --- | --- |
-| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669 (100%)** |
-| Official TRUE / FALSE | **819 / 819** and **850 / 850** — both complete |
-| HF mirror sets | **800 / 800 — complete** |
-| `sample_200` (a 200-row **ETP** sample, disjoint from `normal`) | **200 / 200** |
-| Remaining unsolved, anywhere local | **0** — combined offline **2669 / 2669 distinct rows** (official 1669 + HF 800 + `sample_200` 200; never sum `sample_20` on top, it is a strict subset of `normal`) |
-| **Unseen order-4 (110,000 fresh rows, 2026-08-25)** | **109,954 / 110,000 = 99.958%**, 46 misses (40 TRUE / 6 FALSE), **0 crashes, 0 oracle failures, 0 label mismatches**. Prior basis was 20,000 rows on 2026-08-20 at 99.74% |
-| **Order-5, ≤3 vars (20,000 fresh rows, 2026-08-25 — no ground truth, so this is "0 unsound certificates", not "0 wrong answers")** | **19,647 / 20,000 = 98.24%**, 353 misses, 0 crashes, 0 oracle failures — was 94.9% on a 4,000-row sample on 2026-08-20. `completion` is its **second largest route family** at 1,769 rows. **Order 5 is ¼ of the official score and is the lowest-scoring track** |
-| Order-6, ≤2 vars (900 pilot rows, 2026-08-25 — first order-6 rows ever drawn) | 899 / 900, 0 crashes, 0 oracle failures, 0 deadline overshoots, certificates 265–982 B against a 19,500 B cap. **Nothing in the solver is tuned to term size ≤ 5** |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0**; row-id diff vs the 2026-08-21 baseline is **0 lost, 0 gained, 0 verdict flips** over 2,669 common rows |
-| **Judge parity (Lean 4.32.2 / Mathlib v4.32.2)** | **102/102 accepted** in the 2026-08-24 re-judge sweep, **plus 10/10 on 2026-08-25** — the last route families emitting kernel-unparseable certificates with no evidence of any kind. Fixture is now **112 entries**, and **every such family across all 130,700 rows audited on 2026-08-25 is judge-pinned** |
-| Real-judge evidence, new certificate shape | **`true:completion:bridge` 10/10 accepted** on v4.32.2 (6 order-4 frontier rows, 2 order-5 rows, 2 formerly distilled-only families; 730–11,061 B) — `stage2/results/2026-08-24-bridge-certs-judged.jsonl` |
-| Real Solo (first tier-ladder evidence ever) | **25/25 `hard2` rows solved, 0 failed, 0 LLM calls**, ~5–8 s/row, on the 2026-08-24 artifact through the official `pipeline.runner` (2026-08-24) |
-| Real Marathon | **1,000 fresh unseen ETP rows (seed `20260824`): 1,000/1,000 accepted, 0 rejected, 0 `not_attempted`, 0 tokens — solver used 1,186.5 s of a 300,000 s budget (~1.2 s/row)** (2026-08-24, final artifact, v4.32.2 judge). **Plus 200 order-5 rows the same day: 193/200 accepted, 0 rejected, 7 `not_attempted` (all from the known order-5 tail)** — two batches after a console-close kill, see the results doc. Prior: `hard3` 400/400 + ETP-200 200/200, 0 rejected (2026-08-21) |
-| Spotcheck (standing loop) | **90 rows / 9 sources, 100% accuracy, 100% coverage, 0 mistakes** (2026-08-24) |
-| Offline gate | **270 passed, 2 skipped, ~14 s** (`-n auto`) — ten tests gained from the 2026-08-25 judge pins |
-| Packaged size | **472,522 bytes of 500,000 — 27,478 bytes (5.5%) headroom** (2026-08-24 final build; the goal bridge + banned-token gate cost ~6.2 KB). CI builds the artifact and asserts the cap on **it**, not on the source |
-| Solver source | ~11,217 lines / 579,027 B (over the cap **by design** — comments are stripped at packaging) |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`+samples) | **1869 / 1869**, isolated, **0 lost / 0 gained / 0 flips** vs 2026-08-24 |
+| HF mirror sets | **800 / 800**, isolated, 0 lost / 0 gained / 0 flips |
+| **The merged order-4 miss ledger (218 rows the sweeps had failed, 190 TRUE / 28 FALSE)** | **163–167 / 218** solved (two isolated runs; the spread is timing-marginal `2923`/`650` rows), 0 oracle failures, 0 label mismatches. Families: `650` 46/47, `2923` 46/49, `3569` 34/34, `2854` 2/2, both former "unreachable" survivors closed in 0.1 s; FALSE 18/28 |
+| Order-5 (353 misses, no labels) | 27 + escalation (~7.5% of the 253 TRUE-by-collapse bucket); see the frontier section — a proof-size wall, now characterised |
+| Real judge (Lean 4.33.1) on every new certificate family | **41/41 accepted**: multi-fill bridge ×5, library witnesses ×5 (orders 5–11), `formula:WCG5` ×6, infinite/large distilled ×10, 16 formerly-distilled rows on their live routes; parity smoke 4/4 |
+| **Organizer stress test** (2026-08-27; the final-leaderboard configuration, 4 categories × 25 T / 25 F) | **200 / 200 offline, 200 / 200 real-judge accepted**, 0 rejected, 23 s total |
+| Real Marathon, 1000-row **stratified hard** unseen batch (`etp-hardtest-1000-2026-08-26.jsonl`, 4-op ≥3-var hypotheses, FALSE side hard-region filtered) | **999 / 1000 accepted, 0 rejected, 1 not attempted**; 5,048 s of 300,000 s, 10.8k LLM tokens (0 accepts) — run 2026-08-27 on the packaged artifact, 4.33.1 judge |
+| LLM lane, real calls | **433 calls / ~820k tokens / 0 accepted** across gpt-oss-120b low (353 rows), medium (40), gemma-4-31b (40) |
+| Spotcheck | 90 / 90, 0 mistakes |
+| Offline gate | **297 passed, 2 skipped** (one pin flaps on timing under load — a third skip is that, not coverage) |
+| Packaged size | **426,613 bytes of 500,000 — 73 KB headroom** after deleting 16 live-solvable distilled entries (81 KB) and shipping five infinite/large certs |
+
+**2026-08-26/27 session — the improvement pass.** Four mechanisms, each
+aimed at a family: the **multi-fill goal bridge** (+ bridge in the probe slot,
+node cap 200k) closes eq1 `3569`/`2854`/`1366` and both former survivors in
+≤ 0.1 s; **`COMPLETION_BUDGET` 8 → 90 (capped 300)** closes `2923`/`650` by
+plain join; **`FP_WITNESS_TABLES`** (113 teorth tables by greedy set-cover,
+tested last in the portfolio) covers 421/436 hard FALSE rows the old tables
+missed; **`false:formula:WCG5`** renders the 𝔽₂⁵ twisted weak central groupoid
+as a bit formula (15 s vs 262 s as a table); **escalated completion caps** on
+false saturation for the order-5 collapse bucket. Ten search-resistant FALSE
+rows were settled from teorth's constructions (infinite ℕ parity models,
+order-21/24/36 tables) and shipped content-keyed. Harness synced to upstream
+`13648682` (**Lean/Mathlib v4.33.1**, kernel-soundness release; judge caps
+unchanged). New rails 20–22 below.
 
 **2026-08-25 session** (`stage2/results/2026-08-25-deep-sweep-campaign.md`)
 **— the deep sweep: 130,900 unseen rows in one day, 4.9× everything the solver
@@ -942,6 +948,26 @@ on the artifact, then pins the solver's judge-limit constants to
     budget-marginal — p95 9.4 s against no per-row cap); time is not. Record the
     worker count next to every wall clock, the way the machine's background load
     is already recorded.
+20. **Sixth instance of rail 5f-iv, and the shape to grep for: a generator
+    that `continue`s past rejected candidates never reaches the caller's
+    poll.** The multi-fill bridge enumerated `product(fills, repeat=len(unbound))`
+    and rejected most images on size *inside* the generator; the deadline was
+    polled per *yielded* neighbour, so `hard3_0283` spent 1,445 s inside a 2 s
+    probe slot. Stack-sampled (`faulthandler.dump_traceback_later`), not
+    inferred — the first guess (library-table cost) was wrong. Fix: poll inside
+    the enumeration, prune on a size lower bound before it, cap branching.
+21. **A "saturated" completion is only as complete as its size cap.**
+    `COMPLETION_MAX_SIZE = 44` discards every critical pair above weight 44 at
+    `push`, so on 5-operation hypotheses the engine reports saturation in < 4 s
+    with the collapse sitting in a discarded pair — z3 proved 40/40 sampled
+    order-5 "collapse candidates" have no finite model to n=7. Escalate the caps
+    on saturation-with-clock-left (never on expiry) so no served row pays.
+22. **Your own parallel jobs are rail 5e too.** The first full-solver ledger
+    audit read 60/218 under four probe shards, two LLM verify pools and an
+    agent's searches; isolated it read 167/218 with the same code. An 18 s join
+    became a 40 s miss. Record the load next to every coverage number, and
+    treat any audit that overlapped other work as timing-only evidence.
+
 ## Environment gotchas that will bite you
 
 - **UTF-8.** Printing `◇` crashes with `UnicodeEncodeError` on Windows cp1252.
@@ -1120,6 +1146,19 @@ solver primitive cannot hide itself in the oracle.
 | Agent role playbooks | `AGENTS.md` |
 
 ## Known open frontier
+
+**Updated 2026-08-27 after the improvement pass.** Order-4: the four-law
+frontier is closed as a family (`650`, `2923`, `3569`, `2854`); what remains is
+eq1 `3983` (bridge needs ~175 s — closes at standard/deep only), `3051`/`463`
+and a few singletons (structural even at escalated caps: need derived helper
+facts), and five FALSE rows (`481` ×3, `2531` ×2) that teorth refutes only by
+confluence/greedy constructions. Order-5: z3 proved the 253-row
+"collapse-candidate" bucket is TRUE-by-collapse with the collapse sitting in
+critical pairs the size cap discards — the next engine is a completion that
+keeps large pairs cheaply (rail 21); the FALSE side needs witnesses at orders
+z3 reaches and the propagation search does not. Full detail and ranked levers:
+`stage2/docs/NEXT_SESSION_BRIEF.md`.
+
 
 **None, anywhere local: official 1669/1669, HF 800/800, `sample_200` 200/200 —
 2669 distinct rows (2026-08-12, session 2).** The "2689" that stood here added

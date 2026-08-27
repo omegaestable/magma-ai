@@ -1,3 +1,18 @@
+# Latest handoff — 2026-08-27 (improvement pass)
+
+Read `CLAUDE.md` first, then `stage2/results/2026-08-26-improvement-pass.md`
+(the session record) and `stage2/docs/NEXT_SESSION_BRIEF.md` (ranked levers).
+Everything from 2026-08-26/27 is in the working tree, uncommitted at handoff.
+
+Headline: the order-4 four-law frontier is closed as a family (multi-fill goal
+bridge, completion budget), the FALSE side got a 113-table teorth library plus
+a closed-form 𝔽₂⁵ witness and ten infinite/large certs, order-5's wall is now
+characterised (TRUE-by-collapse, proof-size bound — rail 21), the LLM lane was
+measured at 0/433 real calls, the harness is on Lean/Mathlib v4.33.1, and the
+artifact is 426,613 B with 73 KB headroom. Official + HF audits: 0 lost.
+
+---
+
 # Latest Handoff
 
 ## 2026-08-24: the final working session — upstream re-sync, Lean 4.32.2 parity, and the completion goal bridge

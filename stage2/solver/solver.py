@@ -502,11 +502,175 @@ WITNESS_TABLES = (
 )
 
 
+FP_WITNESS_TABLES = (
+    # Teorth FinitePoly library, greedy set-cover selection (2026-08-26). The
+    # witness hunt on the 530k-row order-4 frontier found 13 of 28 unseen FALSE
+    # misses refuted by tables already in `data/teorth_cache`, while constraint
+    # search to order 9, z3 to order 10 and ~1M quadratic polynomials found 0.
+    # Selected by `stage2/experiments/select_witness_library.py` over 480 FALSE
+    # rows the tables above do NOT refute (prior sweeps' constraint/local-model
+    # solves + known misses + hard-region survivors, all disjoint from the
+    # held-out test batch): these 113 tables cover 421 of the 436, at ~1.5 ms
+    # per row for the whole block. Tested AFTER the structured/affine/quadratic
+    # families (not inside WITNESS_TABLES) so every route those already claim
+    # keeps its golden pin; only rows that reached bounded enumeration or the
+    # search engines can land here.
+    ("FP0", [[4, 2, 3, 1, 0], [3, 4, 0, 2, 1], [1, 3, 4, 0, 2], [2, 0, 1, 4, 3], [0, 1, 2, 3, 4]]),
+    ("FP1", [[1, 1, 1], [2, 2, 2], [0, 0, 0]]),
+    ("FP2", [[0, 3, 2, 1], [3, 0, 1, 2], [2, 1, 0, 3], [1, 2, 3, 0]]),
+    ("FP3", [[1, 2, 0], [1, 2, 0], [1, 2, 0]]),
+    ("FP4", [[1, 2, 5, 6, 4, 3, 7, 0], [4, 3, 0, 7, 1, 2, 6, 5], [2, 1, 7, 0, 3, 4, 5, 6], [0, 6, 4, 2, 5, 7, 3, 1], [7, 5, 2, 4, 6, 0, 1, 3], [6, 0, 3, 1, 7, 5, 4, 2], [3, 4, 6, 5, 2, 1, 0, 7], [5, 7, 1, 3, 0, 6, 2, 4]]),
+    ("FP5", [[0, 1, 2], [0, 1, 2], [1, 0, 2]]),
+    ("FP6", [[1, 2, 4, 0, 5, 6, 3, 7], [7, 3, 5, 6, 4, 0, 2, 1], [2, 1, 6, 5, 0, 4, 7, 3], [6, 4, 2, 7, 3, 1, 5, 0], [0, 5, 3, 1, 2, 7, 4, 6], [3, 7, 0, 4, 6, 5, 1, 2], [4, 6, 1, 3, 7, 2, 0, 5], [5, 0, 7, 2, 1, 3, 6, 4]]),
+    ("FP7", [[3, 2, 3, 3], [1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]]),
+    ("FP8", [[1, 0, 2], [0, 2, 1], [2, 1, 0]]),
+    ("FP9", [[3, 0, 3, 3], [3, 3, 0, 3], [3, 1, 3, 3], [3, 0, 3, 3]]),
+    ("FP10", [[0, 2, 2, 3], [2, 1, 2, 3], [0, 1, 2, 0], [0, 1, 1, 3]]),
+    ("FP11", [[1, 2, 3, 3], [2, 2, 2, 2], [3, 3, 3, 3], [3, 3, 3, 3]]),
+    ("FP12", [[2, 1, 2, 3], [2, 1, 2, 3], [2, 1, 2, 3], [1, 1, 2, 3]]),
+    ("FP13", [[0, 2, 1, 3], [0, 1, 2, 3], [3, 1, 2, 0], [0, 1, 2, 3]]),
+    ("FP14", [[3, 2, 3, 3], [3, 3, 0, 3], [3, 3, 3, 3], [3, 3, 3, 3]]),
+    ("FP15", [[0, 0, 0, 1], [1, 1, 0, 1], [2, 0, 2, 2], [2, 3, 3, 3]]),
+    ("FP16", [[1, 1, 1, 1], [2, 2, 2, 2], [0, 0, 3, 3], [1, 1, 1, 1]]),
+    ("FP17", [[3, 1, 3, 1], [3, 1, 1, 1], [3, 1, 0, 1], [3, 1, 1, 1]]),
+    ("FP18", [[2, 3, 2, 2, 2], [4, 2, 2, 2, 4], [2, 2, 2, 2, 2], [2, 1, 2, 2, 2], [2, 2, 2, 2, 2]]),
+    ("FP19", [[0, 1, 0, 1], [0, 3, 0, 3], [2, 3, 2, 3], [2, 1, 2, 1]]),
+    ("FP20", [[3, 3, 1, 1], [3, 3, 3, 3], [2, 3, 3, 1], [3, 3, 3, 3]]),
+    ("FP21", [[3, 0, 3, 1], [3, 3, 1, 2], [2, 3, 3, 0], [3, 3, 3, 3]]),
+    ("FP22", [[0, 3, 3, 3], [3, 1, 2, 2], [3, 1, 2, 3], [0, 1, 2, 3]]),
+    ("FP23", [[1, 3, 1, 3], [3, 3, 1, 3], [3, 3, 3, 3], [3, 3, 3, 3]]),
+    ("FP24", [[2, 0, 3, 1], [2, 1, 1, 2], [2, 2, 1, 2], [2, 3, 3, 1]]),
+    ("FP25", [[0, 2, 1, 3], [0, 1, 2, 3], [0, 1, 2, 3], [1, 0, 2, 3]]),
+    ("FP26", [[1, 1, 3, 4, 1], [2, 1, 1, 1, 1], [2, 1, 1, 1, 1], [1, 1, 1, 1, 1], [4, 1, 1, 1, 1]]),
+    ("FP27", [[1, 5, 4, 2, 0, 3], [2, 5, 4, 1, 3, 0], [2, 5, 4, 1, 3, 0], [1, 5, 4, 2, 0, 3], [1, 4, 5, 2, 3, 0], [1, 4, 5, 2, 3, 0]]),
+    ("FP28", [[1, 4, 1, 1, 4, 1], [2, 2, 5, 2, 2, 5], [3, 0, 0, 3, 0, 0], [4, 1, 4, 4, 1, 4], [5, 5, 2, 5, 5, 2], [0, 3, 3, 0, 3, 3]]),
+    ("FP29", [[0, 0, 4, 0, 0], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3], [1, 1, 1, 1, 1], [4, 4, 0, 4, 4]]),
+    ("FP30", [[0, 2, 0, 4, 0], [3, 3, 3, 3, 3], [2, 4, 2, 0, 2], [1, 1, 1, 1, 1], [4, 0, 4, 2, 4]]),
+    ("FP31", [[0, 2, 2, 0], [3, 3, 1, 1], [0, 2, 2, 0], [3, 3, 1, 1]]),
+    ("FP32", [[3, 1, 3, 3], [2, 2, 2, 1], [0, 1, 1, 1], [0, 0, 2, 0]]),
+    ("FP33", [[2, 1, 3, 3], [2, 3, 0, 3], [0, 1, 2, 3], [0, 1, 2, 3]]),
+    ("FP34", [[3, 2, 1, 3], [3, 3, 2, 0], [3, 3, 3, 3], [3, 3, 3, 3]]),
+    ("FP35", [[0, 2, 0, 0], [1, 1, 1, 0], [2, 3, 2, 2], [2, 3, 3, 3]]),
+    ("FP36", [[1, 1, 2, 1], [3, 3, 3, 3], [3, 3, 1, 3], [0, 0, 0, 0]]),
+    ("FP37", [[3, 2, 0, 1], [3, 2, 0, 1], [3, 2, 0, 1], [3, 2, 0, 1]]),
+    ("FP38", [[1, 2, 3, 4, 5, 0], [5, 0, 1, 2, 3, 4], [1, 2, 3, 4, 5, 0], [5, 0, 1, 2, 3, 4], [1, 2, 3, 4, 5, 0], [5, 0, 1, 2, 3, 4]]),
+    ("FP39", [[4, 3, 0, 1, 0], [2, 4, 0, 1, 1], [2, 3, 4, 1, 2], [2, 3, 0, 4, 3], [4, 4, 4, 4, 4]]),
+    ("FP40", [[1, 2, 1, 4, 3], [3, 2, 1, 0, 0], [1, 2, 1, 4, 3], [4, 0, 1, 4, 0], [3, 0, 1, 0, 3]]),
+    ("FP41", [[1, 2, 3, 2, 1], [0, 4, 0, 0, 0], [3, 0, 3, 0, 3], [2, 0, 0, 2, 2], [1, 1, 1, 1, 1]]),
+    ("FP42", [[1, 2, 4, 3, 0], [2, 1, 0, 4, 3], [3, 0, 1, 2, 4], [0, 4, 3, 1, 2], [4, 3, 2, 0, 1]]),
+    ("FP43", [[1, 1, 3, 3, 3], [2, 2, 2, 2, 2], [4, 4, 4, 4, 4], [2, 2, 2, 2, 2], [0, 0, 0, 0, 0]]),
+    ("FP44", [[0, 4, 2, 3, 4], [2, 1, 2, 2, 3], [3, 4, 2, 0, 0], [0, 4, 0, 3, 4], [3, 1, 1, 3, 4]]),
+    ("FP45", [[1, 3, 4, 0, 0], [1, 4, 3, 0, 0], [2, 4, 4, 0, 0], [2, 3, 3, 0, 0], [2, 4, 4, 0, 0]]),
+    ("FP46", [[0, 2, 1], [1, 0, 2], [2, 1, 0]]),
+    ("FP47", [[0, 1, 2], [2, 0, 1], [1, 2, 0]]),
+    ("FP48", [[1, 2, 2], [0, 2, 0], [1, 1, 0]]),
+    ("FP49", [[0, 1, 2], [0, 2, 0], [0, 0, 1]]),
+    ("FP50", [[0, 0, 2], [0, 0, 2], [1, 1, 2]]),
+    ("FP51", [[0, 0, 1], [0, 0, 1], [1, 1, 0]]),
+    ("FP52", [[0, 2, 1], [0, 2, 0], [0, 0, 1]]),
+    ("FP53", [[0, 0, 2], [2, 2, 0], [0, 0, 2]]),
+    ("FP54", [[3, 2, 1, 4, 3, 4], [2, 2, 0, 0, 5, 4], [3, 2, 1, 0, 5, 4], [2, 2, 0, 0, 5, 4], [3, 2, 1, 0, 5, 4], [3, 2, 1, 4, 3, 4]]),
+    ("FP55", [[3, 2, 3, 5, 5, 5], [4, 3, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5], [3, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5]]),
+    ("FP56", [[0, 1, 2, 3], [3, 2, 1, 0], [2, 3, 0, 1], [1, 0, 3, 2]]),
+    ("FP57", [[2, 3, 2, 3], [3, 2, 3, 2], [1, 0, 1, 0], [0, 1, 0, 1]]),
+    ("FP58", [[0, 1, 0, 1], [0, 3, 2, 3], [0, 1, 0, 3], [0, 3, 2, 3]]),
+    ("FP59", [[1, 0, 3, 3], [3, 2, 1, 3], [2, 3, 0, 3], [0, 1, 2, 3]]),
+    ("FP60", [[3, 0, 1, 1], [1, 1, 1, 1], [1, 2, 0, 1], [0, 3, 1, 2]]),
+    ("FP61", [[3, 3, 1, 3], [3, 3, 3, 3], [0, 0, 0, 0], [3, 3, 3, 3]]),
+    ("FP62", [[3, 2, 3, 1], [3, 1, 3, 2], [1, 2, 1, 3], [1, 3, 1, 1]]),
+    ("FP63", [[1, 0, 0, 3], [1, 1, 1, 1], [2, 2, 2, 2], [2, 3, 3, 3]]),
+    ("FP64", [[2, 0, 1, 3], [3, 1, 0, 2], [0, 2, 3, 1], [1, 3, 2, 0]]),
+    ("FP65", [[0, 2, 0, 1], [3, 2, 1, 1], [2, 2, 2, 2], [2, 2, 3, 3]]),
+    ("FP66", [[0, 2, 0, 0], [3, 3, 1, 1], [2, 2, 0, 2], [3, 3, 3, 3]]),
+    ("FP67", [[0, 2, 0, 1], [3, 1, 0, 1], [3, 1, 3, 1], [0, 2, 0, 2]]),
+    ("FP68", [[2, 0, 0, 1], [2, 2, 1, 3], [2, 2, 2, 2], [3, 2, 3, 2]]),
+    ("FP69", [[3, 1, 3, 3], [3, 3, 2, 3], [0, 3, 3, 3], [2, 0, 1, 3]]),
+    ("FP70", [[3, 1, 3, 3], [3, 3, 3, 3], [1, 1, 3, 3], [3, 3, 3, 3]]),
+    ("FP71", [[2, 3, 3, 1], [3, 0, 3, 2], [3, 3, 1, 0], [3, 3, 3, 3]]),
+    ("FP72", [[1, 1, 1, 1], [2, 3, 2, 3], [3, 1, 3, 3], [0, 1, 2, 3]]),
+    ("FP73", [[3, 0, 3, 1], [3, 2, 3, 1], [0, 2, 3, 1], [3, 2, 3, 1]]),
+    ("FP74", [[3, 3, 1, 3], [3, 3, 3, 3], [2, 2, 2, 2], [3, 3, 3, 3]]),
+    ("FP75", [[1, 2, 2, 1], [3, 3, 0, 0], [3, 3, 2, 0], [3, 3, 2, 1]]),
+    ("FP76", [[3, 2, 3, 3], [3, 3, 3, 3], [2, 2, 3, 3], [3, 3, 3, 3]]),
+    ("FP77", [[1, 0, 2, 3], [1, 0, 2, 3], [0, 3, 2, 1], [1, 0, 2, 3]]),
+    ("FP78", [[3, 2, 0, 1], [2, 3, 1, 0], [2, 3, 1, 0], [3, 2, 0, 1]]),
+    ("FP79", [[2, 3, 1, 3], [3, 0, 2, 2], [1, 1, 3, 0], [0, 2, 0, 1]]),
+    ("FP80", [[3, 1, 0, 1], [2, 2, 1, 2], [2, 2, 2, 2], [2, 1, 3, 1]]),
+    ("FP81", [[2, 0, 1, 3], [3, 1, 0, 2], [1, 3, 2, 0], [0, 2, 3, 1]]),
+    ("FP82", [[1, 2, 3, 1], [3, 3, 3, 0], [3, 0, 0, 0], [2, 0, 1, 2]]),
+    ("FP83", [[3, 0, 3, 3], [3, 3, 3, 0], [2, 0, 3, 3], [3, 0, 3, 3]]),
+    ("FP84", [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [0, 0, 0, 0]]),
+    ("FP85", [[1, 3, 1, 3], [3, 3, 3, 3], [3, 3, 1, 3], [3, 3, 3, 3]]),
+    ("FP86", [[3, 3, 2, 3], [3, 3, 2, 3], [1, 3, 2, 3], [3, 3, 2, 3]]),
+    ("FP87", [[0, 2, 4, 1, 3], [4, 1, 3, 0, 2], [3, 0, 2, 4, 1], [2, 4, 1, 3, 0], [1, 3, 0, 2, 4]]),
+    ("FP88", [[0, 2, 3, 0, 0], [4, 1, 4, 4, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3], [4, 4, 4, 4, 4]]),
+    ("FP89", [[0, 0, 3, 0, 1], [2, 1, 1, 1, 1], [3, 4, 2, 2, 2], [3, 4, 3, 3, 3], [3, 4, 3, 4, 4]]),
+    ("FP90", [[1, 2, 1, 0, 2], [3, 1, 4, 0, 2], [1, 1, 1, 0, 2], [3, 2, 1, 1, 1], [3, 1, 4, 0, 1]]),
+    ("FP91", [[4, 2, 3, 3, 0], [3, 2, 1, 3, 0], [4, 2, 1, 3, 3], [4, 2, 1, 3, 0], [4, 3, 1, 3, 0]]),
+    ("FP92", [[0, 2, 2, 4, 3], [3, 1, 3, 3, 4], [0, 1, 2, 4, 3], [0, 1, 2, 3, 4], [2, 1, 3, 3, 4]]),
+    ("FP93", [[4, 2, 2, 2, 4], [3, 4, 3, 3, 4], [0, 0, 4, 0, 4], [1, 1, 1, 4, 4], [0, 1, 2, 3, 4]]),
+    ("FP94", [[4, 2, 2, 3, 4], [3, 4, 2, 3, 4], [3, 3, 2, 3, 4], [4, 2, 2, 3, 4], [4, 4, 2, 3, 4]]),
+    ("FP95", [[1, 3, 1, 3, 1], [2, 2, 4, 2, 4], [1, 3, 1, 3, 1], [1, 3, 1, 3, 1], [2, 2, 4, 2, 4]]),
+    ("FP96", [[0, 2, 3, 1, 4], [0, 2, 3, 1, 4], [4, 2, 3, 1, 0], [0, 2, 3, 1, 4], [0, 2, 3, 1, 4]]),
+    ("FP97", [[0, 2, 1, 5, 3, 4], [4, 2, 1, 3, 5, 0], [3, 2, 1, 4, 0, 5], [4, 2, 1, 3, 5, 0], [5, 2, 1, 0, 4, 3], [3, 2, 1, 4, 0, 5]]),
+    ("FP98", [[1, 3, 0, 4, 5, 2], [2, 0, 5, 1, 3, 4], [2, 3, 5, 1, 0, 4], [1, 3, 0, 4, 5, 2], [1, 0, 5, 2, 3, 4], [4, 0, 3, 1, 5, 2]]),
+    ("FP99", [[2, 3, 5, 0, 1, 4], [2, 5, 3, 4, 1, 0], [2, 5, 3, 4, 1, 0], [1, 5, 3, 0, 2, 4], [2, 3, 5, 0, 1, 4], [1, 5, 3, 0, 2, 4]]),
+    ("FP100", [[2, 2, 2, 2, 2, 2], [3, 3, 3, 4, 3, 4], [5, 0, 0, 0, 5, 0], [1, 1, 1, 1, 1, 1], [5, 5, 5, 1, 5, 1], [2, 4, 4, 4, 2, 4]]),
+    ("FP101", [[1, 2, 3, 2, 5, 2], [4, 3, 2, 3, 0, 3], [3, 4, 5, 4, 1, 4], [0, 5, 4, 5, 2, 5], [5, 0, 1, 0, 3, 0], [2, 1, 0, 1, 4, 1]]),
+    ("FP102", [[1, 2, 2, 3, 1, 5], [2, 2, 3, 3, 4, 5], [0, 3, 5, 5, 4, 5], [0, 1, 5, 5, 4, 4], [1, 1, 2, 3, 1, 0], [0, 1, 2, 4, 0, 0]]),
+    ("FP103", [[5, 1, 2, 0, 5, 4], [2, 0, 0, 3, 1, 5], [1, 0, 0, 5, 2, 3], [4, 5, 3, 1, 0, 1], [5, 2, 1, 4, 5, 0], [0, 3, 5, 1, 4, 1]]),
+    ("FP104", [[4, 1, 4, 3, 0, 2], [3, 2, 1, 2, 4, 5], [4, 3, 4, 1, 2, 0], [1, 2, 3, 2, 5, 4], [2, 5, 0, 4, 3, 3], [0, 4, 2, 5, 3, 3]]),
+    ("FP105", [[0, 2, 5, 5, 0, 5], [4, 1, 2, 1, 4, 1], [4, 3, 2, 3, 4, 2], [4, 3, 2, 3, 4, 3], [4, 3, 2, 3, 4, 4], [0, 5, 5, 5, 5, 5]]),
+    ("FP106", [[1, 2, 0, 5, 3, 4], [1, 4, 3, 5, 0, 2], [5, 4, 0, 1, 3, 2], [1, 2, 0, 5, 3, 4], [5, 4, 0, 1, 3, 2], [1, 4, 3, 5, 0, 2]]),
+    ("FP107", [[2, 0, 3, 0, 0, 2], [1, 0, 1, 1, 5, 0], [3, 2, 3, 4, 2, 2], [3, 3, 4, 4, 1, 3], [4, 5, 4, 1, 5, 4], [2, 0, 5, 5, 5, 0]]),
+    ("FP108", [[0, 2, 6, 1, 5, 3, 4], [5, 5, 1, 6, 0, 5, 5], [4, 3, 4, 4, 4, 2, 0], [2, 0, 2, 2, 2, 4, 3], [3, 4, 3, 3, 3, 0, 2], [6, 6, 0, 5, 1, 6, 6], [1, 1, 5, 0, 6, 1, 1]]),
+    ("FP109", [[1, 2, 3, 6, 6, 2, 6], [4, 6, 2, 3, 6, 5, 6], [0, 1, 5, 6, 4, 6, 6], [4, 1, 3, 6, 4, 4, 6], [4, 6, 2, 3, 6, 5, 6], [0, 1, 5, 6, 4, 6, 6], [0, 1, 2, 3, 4, 5, 6]]),
+    ("FP110", [[1, 5, 5, 1, 1, 1, 5, 5], [2, 0, 0, 2, 2, 2, 0, 0], [3, 1, 1, 3, 3, 3, 1, 1], [4, 2, 2, 4, 4, 4, 2, 2], [7, 3, 3, 7, 7, 7, 3, 3], [0, 6, 6, 0, 0, 0, 6, 6], [5, 7, 7, 5, 5, 5, 7, 7], [6, 4, 4, 6, 6, 6, 4, 4]]),
+    ("FP111", [[2, 1, 2, 2, 4, 2, 6, 4, 8, 2, 2], [3, 5, 9, 3, 5, 5, 5, 3, 9, 9, 9], [0, 6, 6, 3, 4, 5, 6, 7, 6, 9, 9], [4, 1, 2, 2, 4, 2, 6, 4, 8, 2, 2], [0, 8, 2, 3, 8, 5, 8, 5, 8, 9, 10], [10, 1, 2, 9, 4, 9, 6, 4, 8, 9, 10], [0, 8, 2, 3, 5, 5, 5, 5, 8, 9, 10], [10, 8, 2, 9, 8, 2, 8, 8, 8, 9, 10], [0, 6, 9, 3, 4, 5, 6, 7, 9, 9, 9], [7, 1, 2, 7, 4, 5, 6, 7, 8, 4, 2], [7, 6, 6, 7, 4, 5, 6, 7, 6, 4, 6]]),
+    ("FP112", [[2, 3, 0, 4, 0, 10, 0, 10, 0, 7, 7], [1, 5, 6, 1, 8, 1, 8, 8, 6, 1, 6], [2, 9, 6, 2, 2, 2, 2, 2, 9, 2, 6], [2, 3, 3, 2, 3, 9, 3, 9, 3, 7, 7], [4, 5, 4, 4, 8, 4, 5, 8, 4, 4, 4], [2, 5, 5, 2, 5, 9, 5, 2, 5, 5, 5], [6, 5, 6, 6, 8, 6, 5, 8, 6, 6, 6], [4, 3, 7, 4, 5, 4, 5, 8, 7, 7, 7], [8, 9, 6, 8, 8, 8, 8, 8, 9, 8, 6], [2, 9, 9, 2, 9, 9, 9, 9, 9, 4, 4], [2, 9, 9, 2, 10, 10, 10, 10, 9, 2, 6]]),
+)
+
+
 def reflexive_true_certificate() -> str:
     return submission_certificate([], "  exact h\n")
 
 
 DECIDE_MAX_REC_DEPTH_APPLICATIONS = 4_096
+
+
+def _wcg5_table() -> list[list[int]]:
+    """Twisted weak central groupoid on F_2^5 (ETP blueprint, 'Twisting a weak
+    central groupoid'): bit i of x ◇ y is `1 - x_{i+1} y_{i-1}`, indices mod 5.
+    Refutes the 1485/2162 WCG rows no table in the portfolio touches; k = 3, 4,
+    6 refute nothing (measured 2026-08-27)."""
+    def op(x: int, y: int) -> int:
+        return 31 - (((x >> 1) | ((x & 1) << 4)) & (((y << 1) & 31) | (y >> 4)))
+    return [[op(x, y) for y in range(32)] for x in range(32)]
+
+
+def _formula_certificate(a: str, b: str) -> str:
+    # Judge-accepted shape (2026-08-26, 15 s): the same magma as a 1024-cell
+    # `List.getD` table took 262 s, so the bit formula is the whole point.
+    return (
+        "import JudgeProblem\nimport JudgeDecide.DecideBang\n"
+        "set_option maxRecDepth 40000\nset_option maxHeartbeats 0\n\n"
+        "def submission : Goal := by\n"
+        "  let m : Magma (Fin 32) := { op := fun i j => Fin.mk (Nat.sub 31 (Nat.land "
+        f"(Nat.lor (Nat.shiftRight (Fin.val {a}) 1) (Nat.shiftLeft (Nat.land (Fin.val {a}) 1) 4)) "
+        f"(Nat.lor (Nat.land (Nat.shiftLeft (Fin.val {b}) 1) 31) (Nat.shiftRight (Fin.val {b}) 4)))) "
+        "(Nat.lt_succ_of_le (Nat.sub_le 31 _)) }\n"
+        "  refine Exists.intro (Fin 32) ?_\n  refine Exists.intro m ?_\n  decideFin!\n"
+    )
+
+
+# Closed-form magmas rendered as a formula instead of a table. `witness_check`
+# reads the Python table; `make_false_answer` swaps in the formula certificate
+# by table identity, and the transpose (the dual pass) gets the swapped formula.
+FORMULA_WITNESSES = (("WCG5", _wcg5_table()),)
+FORMULA_CERTS = {}
+for _name, _t in FORMULA_WITNESSES:
+    FORMULA_CERTS[json.dumps(_t, separators=(",", ":"))] = _formula_certificate("i", "j")
+    FORMULA_CERTS[json.dumps([list(c) for c in zip(*_t)], separators=(",", ":"))] = _formula_certificate("j", "i")
 
 
 def false_certificate_memo(n: int, table: list[list[int]],
@@ -672,10 +836,13 @@ def make_false_answer(problem: dict[str, Any], n: int, table: list[list[int]],
     rather than from the order; see `DECIDE_MAX_REC_DEPTH_APPLICATIONS`."""
     applications = (witness_decide_applications(n, *equations)
                     if equations else None)
+    code = FORMULA_CERTS.get(json.dumps(table, separators=(",", ":")))
+    if code is None:
+        code = false_certificate(n, table, decide_applications=applications)
     return {
         "id": str(problem.get("id", "")),
         "verdict": "false",
-        "code": false_certificate(n, table, decide_applications=applications),
+        "code": code,
     }
 
 
@@ -4186,10 +4353,26 @@ def _kb_unify(a: Term, b: Term, subst: dict[str, Term]) -> dict[str, Term] | Non
 
 
 def _kb_resolve(term: Term, subst: dict[str, Term]) -> Term:
-    term = _kb_walk(term, subst)
-    if term[0] == "var":
-        return term
-    return ("op", _kb_resolve(term[1], subst), _kb_resolve(term[2], subst))
+    # Memoized within one call: a triangular substitution makes the naive
+    # rewalk quadratic-to-exponential on chained bindings, and `crit_pairs`
+    # resolves the same big bound terms at every occurrence. Measured on the
+    # eq1-2923 frontier family (2026-08-26): 47.6M recursive calls for one
+    # row's completion run, ~55% of the whole join's clock, cut to ~1/20th by
+    # sharing resolved substructure. The substitution is frozen once
+    # `_kb_unify` returns it, so caching per call is sound.
+    cache: dict[Term, Term] = {}
+
+    def go(node: Term) -> Term:
+        node = _kb_walk(node, subst)
+        if node[0] == "var":
+            return node
+        found = cache.get(node)
+        if found is None:
+            found = ("op", go(node[1]), go(node[2]))
+            cache[node] = found
+        return found
+
+    return go(term)
 
 
 def _kb_rename(term: Term, suffix: str) -> Term:
@@ -4532,6 +4715,10 @@ LEMMA_APPLY_CHAIN_MAX_DEPTH = 3
 # tier inside `derived_cp_closure_proof_expr`.
 LEMMA_LIBRARY_CLOSURE_TIME_BUDGET = 1.5
 LLM_LEMMA_CLOSURE_TIME_BUDGET = 4.0
+# Egg fallback budget for an LLM-proposed lemma the CP closure cannot derive.
+# Matches EGG_BOOTSTRAP_LEMMA_BUDGET's scale; gated by `lemma_survives_models`
+# so refutable proposals never reach it.
+LLM_LEMMA_EGG_TIME_BUDGET = 8.0
 
 # Enumerated small-law candidates extending the curated library. ETP mining on
 # the 2026-07-22 playground misses showed the winning pivots are simply *small
@@ -6758,13 +6945,22 @@ COMPLETION_MAX_PASSIVE = 40000
 COMPLETION_NORMALIZE_LIMIT = 120
 COMPLETION_POLL_EVERY = 192
 COMPLETION_MAX_LEMMAS = 48
+# Second-pass caps for `completion_route` when the cheap caps saturate short of
+# the goal with clock left (see completion_prove). The dev tool values that
+# derived the order-5 collapses on 2026-08-27.
+COMPLETION_ESCALATED_MAX_SIZE = 60
+COMPLETION_ESCALATED_MAX_ACTIVE = 2000
 # The post-saturation goal bridge (unfailing completion's move into the goal
 # disequality). Runs only on rows completion would otherwise *lose* after
 # saturating, so its cost never touches a row another engine serves. The node
 # cap is a memory guard on the BFS dictionaries — the deadline is the real
 # stopping criterion (rail 5f); the slack bounds how far above the normal
 # forms an intermediate term may grow.
-COMPLETION_BRIDGE_MAX_NODES = 6000
+COMPLETION_BRIDGE_MAX_NODES = 200000
+# Multi-fill branching guard: a rule direction with more unbound variables than
+# this gets the single classic fill (the fill set is |goal constants|+1, so a
+# 5-unbound rule would otherwise enumerate up to 5^5 images per match).
+COMPLETION_BRIDGE_MAX_UNBOUND = 3
 COMPLETION_BRIDGE_SLACK = 8
 # Unscaled, and placed with `egg_probe`: on the 20k-sample frontier every row
 # completion can close lands in <= 0.4 s, and on a row it cannot it usually
@@ -6772,8 +6968,22 @@ COMPLETION_BRIDGE_SLACK = 8
 # budget. That asymmetry is what makes an early slot pay rather than cost.
 COMPLETION_PROBE_BUDGET = 2.0
 # Tier-scaled last-resort slot, for rows whose passive queue is still productive
-# when the probe's unscaled clock runs out.
-COMPLETION_BUDGET = 8.0
+# when the probe's unscaled clock runs out. Raised 8 -> 40 on 2026-08-26: the
+# eq1-2923 family (49 of the 218 misses on the 530k-row order-4 frontier)
+# closes by plain `completion:join` in ~18 s and the 3983 family's multi-fill
+# bridge lands in ~26 s — both unreachable at 8 s, and both land before the
+# wide countermodel tiers that were burning 37-76% of those rows' clock. The
+# cost lands only on rows nothing else claimed (last-resort slot), where the
+# alternative was spending the same clock lower in the pass.
+COMPLETION_BUDGET = 90.0
+# Cap on the tier-scaled route budget. Measured 2026-08-26 on the eq1-2923
+# family: the same join takes 19 s in a fresh process, 42 s on the same
+# (thermally loaded) machine an hour later, and 60-72 s once the closure and
+# egg engines have run first — so the fast-tier slot needs ~4x the idle number.
+# Scaling 90 s by the deep tier (x22) would hand completion the whole Solo row
+# ahead of the wide countermodel tiers; no row on record needs more than the
+# 3983 family's ~175 s bridge, so the scaled budget is clamped here.
+COMPLETION_ROUTE_MAX_SECONDS = 300.0
 
 # `h` is the hypothesis and `t` the congrArg placeholder; neither can be a binder.
 _KB_LETTERS = "abcdefgijklmnopqrsuvw"
@@ -7181,36 +7391,62 @@ class _KBCompletion:
             return None
         return left_steps + [(p, i, s, -d) for (p, i, s, d) in reversed(right_steps)]
 
-    def _goal_neighbors(self, term: Term, max_size: int):
+    def _goal_neighbors(self, term: Term, max_size: int,
+                        fills: tuple[Term, ...] = ()):
         """Every one-step rewrite of `term` by any active equation, either
         direction, order ignored — unfailing completion's move into the goal.
-        Unbound target-side variables are filled with the smallest constant of
-        the matched subterm, exactly as `_rewrite_ground_unoriented` does, so
-        the recorded substitution replays byte-exactly in the renderer."""
+        Unbound target-side variables are filled from a small candidate set:
+        the smallest constant of the matched subterm (the original single
+        fill), plus `fills` — the goal's own skolem constants. One fill choice
+        is a heuristic that provably loses whole families whose meeting term
+        mentions a goal constant the matched subterm does not (eq1 3569/3983/
+        2854 on the 530k order-4 frontier all close under multi-fill and none
+        closes without it); real unfailing completion would keep the variable
+        and unify later, and enumerating the goal's constants is the bounded
+        stand-in. Every fill is bound explicitly in the recorded substitution,
+        so the renderer's replay stays byte-exact."""
         for path in subterm_paths_tuple(term):
             sub = term_at_path(term, path)
             if sub[0] != "op":
                 continue
             sub_mask = _kb_shape_mask(sub)
             sub_size = term_size(sub)
-            fill = ("var", min(term_vars(sub)))
+            candidates = tuple(dict.fromkeys(
+                (("var", min(term_vars(sub))),) + fills))
             for eq in self.active:
                 for (pat, target, direction) in ((eq.lhs, eq.rhs, 1),
                                                  (eq.rhs, eq.lhs, -1)):
                     if term_size(pat) > sub_size or (_kb_shape_mask(pat) & ~sub_mask):
                         continue
-                    subst: dict[str, Term] = {}
-                    if not match_term(pat, sub, subst):
+                    base: dict[str, Term] = {}
+                    if not match_term(pat, sub, base):
                         continue
-                    for var in sorted(term_vars(target) - set(subst)):
-                        subst[var] = fill
-                    image = instantiate_term(target, subst)
-                    if image == sub:
+                    unbound = sorted(term_vars(target) - set(base))
+                    # Cheapest possible image (every unbound variable a bare
+                    # constant) already too big? Then no fill can fit — skip
+                    # the whole product instead of building and rejecting
+                    # every combination. Rail 5f-iv, sixth instance: a rule
+                    # with five unbound variables enumerates 5^5 rejected
+                    # images per match with no deadline poll between them,
+                    # and `hard3_0283` spent 1,400 s inside the probe's 2 s
+                    # slot that way (stack-sampled 2026-08-27).
+                    smallest = _kb_fill(target, base, ("var", "_"))
+                    if (term_size(term) - sub_size + term_size(smallest)
+                            > max_size):
                         continue
-                    out = replace_subterm(term, path, image)
-                    if term_size(out) > max_size:
-                        continue
-                    yield out, (path, eq.eid, subst, direction)
+                    pool = candidates if len(unbound) <= COMPLETION_BRIDGE_MAX_UNBOUND                         else candidates[:1]
+                    for combo in product(pool, repeat=len(unbound)):
+                        if self.out_of_time():
+                            return
+                        subst = dict(base)
+                        subst.update(zip(unbound, combo))
+                        image = instantiate_term(target, subst)
+                        if image == sub:
+                            continue
+                        out = replace_subterm(term, path, image)
+                        if term_size(out) > max_size:
+                            continue
+                        yield out, (path, eq.eid, subst, direction)
 
     def goal_bridge(self, lhs: Term, rhs: Term,
                     max_nodes: int = COMPLETION_BRIDGE_MAX_NODES) -> list[Any] | None:
@@ -7230,6 +7466,8 @@ class _KBCompletion:
         if left == right:
             return (left_steps
                     + [(p, i, s, -d) for (p, i, s, d) in reversed(right_steps)])
+        fills = tuple(("var", var)
+                      for var in sorted(term_vars(lhs) | term_vars(rhs)))
         max_size = max(term_size(left), term_size(right)) + COMPLETION_BRIDGE_SLACK
         # seen: term -> (side, steps-from-that-side's-normal-form)
         seen: dict[Term, tuple[int, list[Any]]] = {left: (0, []), right: (1, [])}
@@ -7244,7 +7482,7 @@ class _KBCompletion:
             _weight, _tie, current = heapq.heappop(frontier)
             side, steps = seen[current]
             expanded += 1
-            for nxt, step in self._goal_neighbors(current, max_size):
+            for nxt, step in self._goal_neighbors(current, max_size, fills):
                 if self.out_of_time():
                     return None
                 found = seen.get(nxt)
@@ -7409,7 +7647,8 @@ def _kb_collapse_certificate(comp: _KBCompletion, eq: _KBEquation, var: str,
 
 def completion_prove(eq1: dict[str, Any], eq2: dict[str, Any],
                      *, time_budget: float,
-                     bridge: bool = True) -> tuple[str, str] | None:
+                     bridge: bool = True,
+                     escalate: bool = False) -> tuple[str, str] | None:
     """Complete from eq1 alone; return `(route, certificate)` or None.
 
     Two ways to win, taken in whichever order they become available: the goal's
@@ -7418,7 +7657,31 @@ def completion_prove(eq1: dict[str, Any], eq2: dict[str, Any],
     loss — that asymmetry is what lets this sit early without taxing every row.
     """
     deadline = local_deadline(time_budget)
-    comp = _KBCompletion([(eq1["lhs"], eq1["rhs"])], deadline=deadline)
+    found = _completion_prove_once(eq1, eq2, deadline=deadline, bridge=bridge)
+    if found is not None or not escalate:
+        return found
+    # Saturated short of the goal under the cheap caps with clock left. On
+    # 5-operation hypotheses `COMPLETION_MAX_SIZE = 44` discards the critical
+    # pairs that matter, so "saturated" is a false floor: measured 2026-08-27
+    # on the order-5 frontier, the shipped route saturates in 0-12 s where the
+    # same completion at (60, 2000) derives the collapse or is still productive
+    # at 800+ steps. Escalate only in that case — an expired run is spent
+    # honestly and a cheap-cap win is untouched, so no row already served pays.
+    if deadline_expired(deadline):
+        return None
+    return _completion_prove_once(
+        eq1, eq2, deadline=deadline, bridge=bridge,
+        max_size=COMPLETION_ESCALATED_MAX_SIZE,
+        max_active=COMPLETION_ESCALATED_MAX_ACTIVE)
+
+
+def _completion_prove_once(eq1: dict[str, Any], eq2: dict[str, Any], *,
+                           deadline: float | None, bridge: bool,
+                           max_size: int = COMPLETION_MAX_SIZE,
+                           max_active: int = COMPLETION_MAX_ACTIVE,
+                           ) -> tuple[str, str] | None:
+    comp = _KBCompletion([(eq1["lhs"], eq1["rhs"])], deadline=deadline,
+                         max_size=max_size, max_active=max_active)
     comp.seed()
     joined = comp.goal_join(eq2["lhs"], eq2["rhs"])
     if joined is not None:
@@ -7471,16 +7734,28 @@ _TERM_CACHE_FUNCS = _TERM_CACHE_FUNCS + (_kb_shape_mask, _kb_var_counts)
 def completion_probe_route(
     eq1: dict[str, Any], eq2: dict[str, Any]
 ) -> tuple[str, str] | None:
-    """Unscaled early probe, beside `egg_probe`. See COMPLETION_PROBE_BUDGET."""
+    """Unscaled early probe, beside `egg_probe`. See COMPLETION_PROBE_BUDGET.
+
+    The bridge is ON here since 2026-08-26. It was off (2026-08-24) because a
+    single-fill bridge could turn the probe's ~0 s saturation loss into a
+    full-budget loss; the multi-fill bridge closes the whole eq1
+    3569/2854/1366 frontier family in <= 0.1 s, and its search polls this
+    slot's own 2 s deadline, so the worst case is the probe budget — while
+    the alternative, measured in the gate, was every engine below burning its
+    budget first and the same rows landing 120-160 s later.
+    """
     return completion_prove(eq1, eq2, time_budget=COMPLETION_PROBE_BUDGET,
-                            bridge=False)
+                            bridge=True)
 
 
 def completion_route(
     eq1: dict[str, Any], eq2: dict[str, Any]
 ) -> tuple[str, str] | None:
     """Tier-scaled last-resort completion, after the whole egg family."""
-    return completion_prove(eq1, eq2, time_budget=_eff_time(COMPLETION_BUDGET))
+    return completion_prove(
+        eq1, eq2,
+        time_budget=min(_eff_time(COMPLETION_BUDGET), COMPLETION_ROUTE_MAX_SECONDS),
+        escalate=True)
 
 def projection_cue(eq1: dict[str, Any], eq2: dict[str, Any]) -> bool:
     eq1_left, eq1_right = boundary_vars(eq1["lhs"])
@@ -7595,6 +7870,19 @@ def _false_witness_portfolio(
                 return None
             if witness_check(eq1, eq2, table):
                 return n, table, f"false:enum_fin{n}"
+
+    # Last in the portfolio so every route above keeps its golden pin; these
+    # only ever claim a row that enumeration could not refute.
+    for name, table in FP_WITNESS_TABLES:
+        if deadline_expired(deadline):
+            return None
+        if witness_check(eq1, eq2, table):
+            return len(table), table, f"false:witness:{name}"
+    for name, table in FORMULA_WITNESSES:
+        if deadline_expired(deadline):
+            return None
+        if witness_check(eq1, eq2, table):
+            return len(table), table, f"false:formula:{name}"
     return None
 
 
@@ -8490,50 +8778,6 @@ def submission : Goal := by
   intro x y
   exact hlem2 x ((y ◇ y) ◇ x) x
 """),
-    ("v0 = ((v1 ◇ v0) ◇ ((v0 ◇ v2) ◇ v2))",
-     "v0 = ((v1 ◇ (v2 ◇ (v1 ◇ v2))) ◇ v2)"): ("true", "e1689_e2391", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem1 : ∀ a b c : G, (a ◇ ((((a ◇ b) ◇ b) ◇ c) ◇ c)) = ((a ◇ b) ◇ b) := by
-    intro a b c
-    exact ((congrArg (fun t => (t ◇ ((((a ◇ b) ◇ b) ◇ c) ◇ c))) (h a a b)).trans ((h ((a ◇ b) ◇ b) (a ◇ a) c).symm))
-  have hlem2 : ∀ a b c d : G, ((a ◇ (b ◇ c)) ◇ (c ◇ ((c ◇ d) ◇ d))) = (b ◇ c) := by
-    intro a b c d
-    exact ((congrArg (fun t => ((a ◇ (b ◇ c)) ◇ (t ◇ ((c ◇ d) ◇ d)))) (h c b d)).trans ((h (b ◇ c) a ((c ◇ d) ◇ d)).symm))
-  have hlem3 : ∀ a b c : G, (a ◇ (b ◇ ((b ◇ c) ◇ c))) = ((a ◇ b) ◇ b) := by
-    intro a b c
-    exact ((congrArg (fun t => (a ◇ (t ◇ ((b ◇ c) ◇ c)))) (h b (a ◇ b) c)).trans (hlem1 a b ((b ◇ c) ◇ c)))
-  have hlem4 : ∀ a b c d : G, ((a ◇ b) ◇ (b ◇ (c ◇ ((c ◇ d) ◇ d)))) = b := by
-    intro a b c d
-    exact ((congrArg (fun t => ((a ◇ b) ◇ t)) (hlem3 b c d)).trans ((h b a c).symm))
-  have hlem5 : ∀ a b c : G, (((a ◇ (b ◇ c)) ◇ c) ◇ c) = (b ◇ c) := by
-    intro a b c
-    exact (((hlem3 (a ◇ (b ◇ c)) c a).symm).trans (hlem2 a b c a))
-  have hlem6 : ∀ a b : G, (a ◇ ((a ◇ b) ◇ b)) = a := by
-    intro a b
-    exact ((((congrArg (fun t => (t ◇ ((a ◇ b) ◇ b))) (h a a b)).trans (congrArg (fun t => (((a ◇ t) ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ b))) (h a a b))).trans (hlem5 a (a ◇ a) ((a ◇ b) ◇ b))).trans ((h a a b).symm))
-  have hlem7 : ∀ a b : G, (a ◇ b) = ((a ◇ b) ◇ b) := by
-    intro a b
-    exact ((congrArg (fun t => (a ◇ t)) ((hlem6 b a).symm)).trans (hlem3 a b a))
-  have hlem8 : ∀ a b : G, (a ◇ (a ◇ b)) = a := by
-    intro a b
-    exact ((congrArg (fun t => (a ◇ t)) (hlem7 a b)).trans (hlem6 a b))
-  have hlem9 : ∀ a b : G, ((a ◇ b) ◇ b) = b := by
-    intro a b
-    exact ((congrArg (fun t => ((a ◇ b) ◇ t)) ((hlem8 b ((b ◇ a) ◇ a)).symm)).trans (hlem4 a b b a))
-  have hlem10 : ∀ a b : G, (a ◇ b) = b := by
-    intro a b
-    exact (((hlem5 a a b).symm).trans (hlem9 (a ◇ (a ◇ b)) b))
-  have hlem11 : ∀ a b : G, (a ◇ b) = a := by
-    intro a b
-    exact ((congrArg (fun t => (a ◇ t)) ((hlem9 a b).symm)).trans (hlem6 a b))
-  have hlem12 : ∀ a b : G, a = b := by
-    intro a b
-    exact (((hlem10 b a).symm).trans (hlem11 b a))
-  intro x y z
-  exact hlem12 x ((y ◇ (z ◇ (y ◇ z))) ◇ z)
-"""),
     ("v0 = (v1 ◇ (v0 ◇ (((v2 ◇ v1) ◇ v1) ◇ v1)))",
      "v0 = (((v1 ◇ v2) ◇ (v0 ◇ v1)) ◇ (v0 ◇ v2))"): ("true", "e8502_e27144", """import JudgeProblem
 
@@ -8720,39 +8964,6 @@ def submission : Goal := by
   intro x y z w u
   exact hlem x (((y ◇ z) ◇ (y ◇ w)) ◇ u)
 """),
-    ("v0 = (((v1 ◇ v2) ◇ (v1 ◇ v0)) ◇ v1)",
-     "v0 = (((v1 ◇ (v2 ◇ v3)) ◇ v1) ◇ v1)"): ("true", "e2788_e3030", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact (((((h a ((a ◇ a) ◇ (a ◇ a)) a)).trans (congrArg (fun t => ((t ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ a)) ◇ ((a ◇ a) ◇ (a ◇ a)))) ((h a a a).symm))).trans ((congrArg (fun t => ((a ◇ t) ◇ ((a ◇ a) ◇ (a ◇ a)))) ((h a a a).symm)).trans ((congrArg (fun t => ((a ◇ a) ◇ ((t ◇ a) ◇ (a ◇ a)))) ((h a ((a ◇ a) ◇ (a ◇ a)) a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((((t ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ a)) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ a) ◇ (a ◇ a)))) ((h a a a).symm))))).trans (((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ t) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ a) ◇ (a ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ t) ◇ (a ◇ a)))) ((h a ((a ◇ b) ◇ (a ◇ a)) a)))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ ((t ◇ (((a ◇ b) ◇ (a ◇ a)) ◇ a)) ◇ ((a ◇ b) ◇ (a ◇ a)))) ◇ (a ◇ a)))) ((h a a b).symm)).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ ((a ◇ t) ◇ ((a ◇ b) ◇ (a ◇ a)))) ◇ (a ◇ a)))) ((h a a b).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h ((a ◇ b) ◇ (a ◇ a)) (a ◇ a) ((a ◇ a) ◇ (a ◇ a))).symm)))))).trans ((((congrArg (fun t => ((a ◇ a) ◇ ((t ◇ b) ◇ (a ◇ a)))) ((h a ((a ◇ a) ◇ (a ◇ a)) a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((((t ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ a)) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ t) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm)).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ t) ◇ (a ◇ a)))) ((h b ((b ◇ a) ◇ (b ◇ a)) b))).trans (congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ ((t ◇ (((b ◇ a) ◇ (b ◇ a)) ◇ b)) ◇ ((b ◇ a) ◇ (b ◇ a)))) ◇ (a ◇ a)))) ((h a b a).symm))))).trans (((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ (a ◇ a))) ◇ ((a ◇ t) ◇ ((b ◇ a) ◇ (b ◇ a)))) ◇ (a ◇ a)))) ((h a b a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h ((b ◇ a) ◇ (b ◇ a)) (a ◇ a) ((a ◇ a) ◇ (a ◇ a))).symm))).trans ((congrArg (fun t => ((t ◇ a) ◇ ((b ◇ a) ◇ (b ◇ a)))) ((h a b a))).trans ((congrArg (fun t => (((((b ◇ a) ◇ (b ◇ a)) ◇ b) ◇ t) ◇ ((b ◇ a) ◇ (b ◇ a)))) ((h a b a))).trans ((h b ((b ◇ a) ◇ (b ◇ a)) b).symm)))))
-  intro x y z w
-  exact hlem x (((y ◇ (z ◇ w)) ◇ y) ◇ y)
-"""),
-    ("v0 = (v1 ◇ ((v0 ◇ v1) ◇ (v2 ◇ v1)))",
-     "(v0 ◇ v1) = ((v2 ◇ (v3 ◇ v3)) ◇ v3)"): ("true", "e886_e4057", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ x y : G, x = y := by
-    intro x y
-    exact (((((h x ((x ◇ x) ◇ (x ◇ x)) x)).trans (congrArg (fun t => (((x ◇ x) ◇ (x ◇ x)) ◇ (t ◇ (x ◇ ((x ◇ x) ◇ (x ◇ x)))))) ((h x x x).symm))).trans ((congrArg (fun t => (((x ◇ x) ◇ (x ◇ x)) ◇ (x ◇ t))) ((h x x x).symm)).trans ((congrArg (fun t => (((x ◇ x) ◇ (t ◇ x)) ◇ (x ◇ x))) ((h x ((x ◇ x) ◇ (y ◇ x)) x))).trans (congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ x) ◇ (y ◇ x)) ◇ (t ◇ (x ◇ ((x ◇ x) ◇ (y ◇ x))))) ◇ x)) ◇ (x ◇ x))) ((h x x y).symm))))).trans (((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ x) ◇ (y ◇ x)) ◇ (x ◇ t)) ◇ x)) ◇ (x ◇ x))) ((h x x y).symm)).trans (congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ x) ◇ (y ◇ x)) ◇ (x ◇ x)) ◇ t)) ◇ (x ◇ x))) ((h x ((x ◇ x) ◇ (x ◇ x)) x)))).trans ((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ x) ◇ (y ◇ x)) ◇ (x ◇ x)) ◇ (((x ◇ x) ◇ (x ◇ x)) ◇ (t ◇ (x ◇ ((x ◇ x) ◇ (x ◇ x))))))) ◇ (x ◇ x))) ((h x x x).symm)).trans ((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ x) ◇ (y ◇ x)) ◇ (x ◇ x)) ◇ (((x ◇ x) ◇ (x ◇ x)) ◇ (x ◇ t)))) ◇ (x ◇ x))) ((h x x x).symm)).trans (congrArg (fun t => (t ◇ (x ◇ x))) ((h ((x ◇ x) ◇ (y ◇ x)) (x ◇ x) ((x ◇ x) ◇ (x ◇ x))).symm)))))).trans ((((congrArg (fun t => (((x ◇ x) ◇ (t ◇ x)) ◇ (x ◇ x))) ((h y ((x ◇ y) ◇ (x ◇ y)) y))).trans (congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ y) ◇ (x ◇ y)) ◇ (t ◇ (y ◇ ((x ◇ y) ◇ (x ◇ y))))) ◇ x)) ◇ (x ◇ x))) ((h x y x).symm))).trans ((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ t)) ◇ x)) ◇ (x ◇ x))) ((h x y x).symm)).trans ((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ x)) ◇ t)) ◇ (x ◇ x))) ((h x ((x ◇ x) ◇ (x ◇ x)) x))).trans (congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ x)) ◇ (((x ◇ x) ◇ (x ◇ x)) ◇ (t ◇ (x ◇ ((x ◇ x) ◇ (x ◇ x))))))) ◇ (x ◇ x))) ((h x x x).symm))))).trans (((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ x)) ◇ (((x ◇ x) ◇ (x ◇ x)) ◇ (x ◇ t)))) ◇ (x ◇ x))) ((h x x x).symm)).trans (congrArg (fun t => (t ◇ (x ◇ x))) ((h ((x ◇ y) ◇ (x ◇ y)) (x ◇ x) ((x ◇ x) ◇ (x ◇ x))).symm))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (t ◇ x))) ((h x y x))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((y ◇ ((x ◇ y) ◇ (x ◇ y))) ◇ t))) ((h x y x))).trans ((h y ((x ◇ y) ◇ (x ◇ y)) y).symm)))))
-  intro x y z w
-  exact hlem (x ◇ y) ((z ◇ (w ◇ w)) ◇ w)
-"""),
-    ("v0 = ((v1 ◇ v0) ◇ ((v0 ◇ v0) ◇ v2))",
-     "(v0 ◇ v1) = (v0 ◇ ((v2 ◇ v0) ◇ v3))"): ("true", "e1683_e3531", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ x y z : G, (x ◇ y) = (x ◇ z) := by
-    intro x y z
-    exact (((((((h (x ◇ y) (x ◇ y) (x ◇ z))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((t ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h (x ◇ y) ((x ◇ x) ◇ ((x ◇ x) ◇ x)) (x ◇ y))))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((((x ◇ x) ◇ ((x ◇ x) ◇ x)) ◇ (t ◇ y)) ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ y))) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x (x ◇ x) x))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((t ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ y))) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h ((x ◇ x) ◇ x) (x ◇ x) y).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ t)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h (x ◇ y) (x ◇ y) x)))))).trans (((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ t) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h (x ◇ y) (x ◇ y) (((x ◇ y) ◇ (x ◇ y)) ◇ x)).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ (t ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x (x ◇ x) x)))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ ((((x ◇ x) ◇ t) ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x y))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ ((t ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ ((x ◇ ((x ◇ x) ◇ t)) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x y))))))).trans ((((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ ((x ◇ t) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((t ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x (x ◇ x) y).symm))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((t ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x (x ◇ x) x))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ t) ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x y))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((t ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)).symm))))).trans (((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ ((x ◇ x) ◇ t)) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x y))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ t) ◇ (x ◇ y)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)).symm))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ x) ◇ (t ◇ y)) ◇ (x ◇ z)))) ((h x (x ◇ x) x))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ x) ◇ ((((x ◇ x) ◇ t) ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ z)))) ((h x x y))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ x) ◇ ((t ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)).symm))))))).trans (((((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ x) ◇ ((x ◇ ((x ◇ x) ◇ t)) ◇ y)) ◇ (x ◇ z)))) ((h x x y))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ x) ◇ ((x ◇ t) ◇ y)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)).symm))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (t ◇ (x ◇ z)))) ((h x x y).symm)).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (t ◇ (x ◇ z)))) ((h x ((x ◇ x) ◇ x) z))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((((x ◇ x) ◇ x) ◇ t) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y))))))).trans (((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((t ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x (x ◇ x) ((x ◇ x) ◇ ((x ◇ x) ◇ y))).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((t ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x (x ◇ x) y)))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((t ◇ ((x ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h ((x ◇ x) ◇ x) (x ◇ x) y))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((t ◇ ((((x ◇ x) ◇ x) ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ ((x ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x x).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((x ◇ (t ◇ y)) ◇ ((x ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x (x ◇ x) x).symm)))))).trans ((((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((x ◇ (x ◇ y)) ◇ ((t ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((x ◇ (x ◇ y)) ◇ ((((x ◇ x) ◇ t) ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x y).symm))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((x ◇ (x ◇ y)) ◇ ((((x ◇ x) ◇ x) ◇ t) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((x ◇ (x ◇ y)) ◇ (t ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x (x ◇ x) ((x ◇ x) ◇ ((x ◇ x) ◇ y))).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((((x ◇ (x ◇ y)) ◇ t) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h (x ◇ y) (x ◇ y) (((x ◇ y) ◇ (x ◇ y)) ◇ x))))))).trans (((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ ((t ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h (x ◇ y) x (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ x))).symm)).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ ((t ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)))).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ ((((x ◇ x) ◇ t) ◇ x) ◇ z)) ◇ (x ◇ z)))) ((h x x y).symm)))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ ((((x ◇ x) ◇ x) ◇ t) ◇ z)) ◇ (x ◇ z)))) ((h x x ((x ◇ x) ◇ y)))).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ (t ◇ z)) ◇ (x ◇ z)))) ((h x (x ◇ x) ((x ◇ x) ◇ ((x ◇ x) ◇ y))).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ (x ◇ z)) ◇ t))) ((h (x ◇ z) (x ◇ z) (((x ◇ z) ◇ (x ◇ z)) ◇ x)))))))))).trans ((((((congrArg (fun t => (((x ◇ y) ◇ (x ◇ y)) ◇ t)) ((h (x ◇ z) (x ◇ y) (((x ◇ z) ◇ (x ◇ z)) ◇ (((x ◇ z) ◇ (x ◇ z)) ◇ x))).symm)).trans (congrArg (fun t => ((t ◇ (x ◇ y)) ◇ (x ◇ z))) ((h (x ◇ y) ((x ◇ x) ◇ ((x ◇ x) ◇ x)) (x ◇ y))))).trans ((congrArg (fun t => ((((((x ◇ x) ◇ ((x ◇ x) ◇ x)) ◇ (t ◇ y)) ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ y))) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x (x ◇ x) x))).trans ((congrArg (fun t => (((t ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ (x ◇ y))) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h ((x ◇ x) ◇ x) (x ◇ x) y).symm)).trans (congrArg (fun t => (((((x ◇ x) ◇ x) ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ t)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h (x ◇ y) (x ◇ y) x)))))).trans (((congrArg (fun t => (((((x ◇ x) ◇ x) ◇ t) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h (x ◇ y) (x ◇ y) (((x ◇ y) ◇ (x ◇ y)) ◇ x)).symm)).trans (congrArg (fun t => (((((x ◇ x) ◇ x) ◇ (t ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x (x ◇ x) x)))).trans ((congrArg (fun t => (((((x ◇ x) ◇ x) ◇ ((((x ◇ x) ◇ t) ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x y))).trans ((congrArg (fun t => (((((x ◇ x) ◇ x) ◇ ((t ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => (((((x ◇ x) ◇ x) ◇ ((x ◇ ((x ◇ x) ◇ t)) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x y))))))).trans ((((congrArg (fun t => (((((x ◇ x) ◇ x) ◇ ((x ◇ t) ◇ y)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => ((t ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x (x ◇ x) y).symm))).trans ((congrArg (fun t => ((t ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x (x ◇ x) x))).trans ((congrArg (fun t => (((((x ◇ x) ◇ t) ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x y))).trans (congrArg (fun t => (((t ◇ ((x ◇ x) ◇ x)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)).symm))))).trans (((congrArg (fun t => (((x ◇ ((x ◇ x) ◇ t)) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x y))).trans ((congrArg (fun t => (((x ◇ t) ◇ (x ◇ y)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => (((x ◇ x) ◇ (t ◇ y)) ◇ (x ◇ z))) ((h x (x ◇ x) x))))).trans ((congrArg (fun t => (((x ◇ x) ◇ ((((x ◇ x) ◇ t) ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ z))) ((h x x y))).trans ((congrArg (fun t => (((x ◇ x) ◇ ((t ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => (((x ◇ x) ◇ ((x ◇ ((x ◇ x) ◇ t)) ◇ y)) ◇ (x ◇ z))) ((h x x y)))))))).trans (((((congrArg (fun t => (((x ◇ x) ◇ ((x ◇ t) ◇ y)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)).symm)).trans (congrArg (fun t => (t ◇ (x ◇ z))) ((h x x y).symm))).trans ((congrArg (fun t => (t ◇ (x ◇ z))) ((h x ((x ◇ x) ◇ x) z))).trans ((congrArg (fun t => (((((x ◇ x) ◇ x) ◇ t) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)))).trans (congrArg (fun t => ((t ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x (x ◇ x) ((x ◇ x) ◇ ((x ◇ x) ◇ y))).symm))))).trans (((congrArg (fun t => ((t ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x (x ◇ x) y))).trans (congrArg (fun t => (((t ◇ ((x ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h ((x ◇ x) ◇ x) (x ◇ x) y)))).trans ((congrArg (fun t => ((((t ◇ ((((x ◇ x) ◇ x) ◇ ((x ◇ x) ◇ x)) ◇ y)) ◇ ((x ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x x).symm)).trans ((congrArg (fun t => ((((x ◇ (t ◇ y)) ◇ ((x ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x (x ◇ x) x).symm)).trans (congrArg (fun t => ((((x ◇ (x ◇ y)) ◇ ((t ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)))))))).trans ((((congrArg (fun t => ((((x ◇ (x ◇ y)) ◇ ((((x ◇ x) ◇ t) ◇ x) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x y).symm)).trans (congrArg (fun t => ((((x ◇ (x ◇ y)) ◇ ((((x ◇ x) ◇ x) ◇ t) ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y))))).trans ((congrArg (fun t => ((((x ◇ (x ◇ y)) ◇ (t ◇ y)) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x (x ◇ x) ((x ◇ x) ◇ ((x ◇ x) ◇ y))).symm)).trans ((congrArg (fun t => ((((x ◇ (x ◇ y)) ◇ t) ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h (x ◇ y) (x ◇ y) (((x ◇ y) ◇ (x ◇ y)) ◇ x)))).trans (congrArg (fun t => ((t ◇ ((x ◇ x) ◇ z)) ◇ (x ◇ z))) ((h (x ◇ y) x (((x ◇ y) ◇ (x ◇ y)) ◇ (((x ◇ y) ◇ (x ◇ y)) ◇ x))).symm))))).trans (((congrArg (fun t => (((x ◇ y) ◇ ((t ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)))).trans ((congrArg (fun t => (((x ◇ y) ◇ ((((x ◇ x) ◇ t) ◇ x) ◇ z)) ◇ (x ◇ z))) ((h x x y).symm)).trans (congrArg (fun t => (((x ◇ y) ◇ ((((x ◇ x) ◇ x) ◇ t) ◇ z)) ◇ (x ◇ z))) ((h x x ((x ◇ x) ◇ y)))))).trans ((congrArg (fun t => (((x ◇ y) ◇ (t ◇ z)) ◇ (x ◇ z))) ((h x (x ◇ x) ((x ◇ x) ◇ ((x ◇ x) ◇ y))).symm)).trans ((congrArg (fun t => (((x ◇ y) ◇ (x ◇ z)) ◇ t)) ((h (x ◇ z) (x ◇ z) (((x ◇ z) ◇ (x ◇ z)) ◇ x)))).trans ((h (x ◇ z) (x ◇ y) (((x ◇ z) ◇ (x ◇ z)) ◇ (((x ◇ z) ◇ (x ◇ z)) ◇ x))).symm)))))))
-  intro x y z w
-  exact hlem x y ((z ◇ x) ◇ w)
-"""),
     ("v0 = (v1 ◇ (v1 ◇ (v2 ◇ (v0 ◇ v1))))",
      "v0 = ((v1 ◇ v1) ◇ (v0 ◇ (v0 ◇ v0)))"): ("true", "e521_e1515", """import JudgeProblem
 
@@ -8785,39 +8996,6 @@ def submission : Goal := by
     exact ((h a a (a ◇ (a ◇ (a ◇ a)))).trans (congrArg (fun t => a ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t))) ((h a a a).symm))).trans (((h b a (a ◇ (a ◇ (a ◇ a)))).trans (congrArg (fun t => a ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t))) ((h a b a).symm))).symm)
   intro x y z
   exact hlem x (y ◇ (y ◇ ((y ◇ z) ◇ x)))
-"""),
-    ("v0 = (v1 ◇ (v0 ◇ ((v2 ◇ v1) ◇ v1)))",
-     "v0 = (((v0 ◇ v0) ◇ v0) ◇ (v1 ◇ v1))"): ("true", "e691_e2038", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact (((((h a b b)).trans (congrArg (fun t => (t ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b (b ◇ b) (b ◇ (a ◇ b)))))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ t)) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ (t ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ t) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ ((a ◇ b) ◇ b)) b a)))))).trans (((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ t)))) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ (t ◇ (b ◇ ((a ◇ b) ◇ b))))))) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a)))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ t)) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (a ◇ b) (b ◇ ((a ◇ b) ◇ b)) b).symm)).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ t))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ ((a ◇ b) ◇ b)) b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ t)))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))))))).trans ((((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ (t ◇ (b ◇ ((a ◇ b) ◇ b))))))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ (b ◇ t)))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (a ◇ b) (b ◇ ((a ◇ b) ◇ b)) b).symm))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (t ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b (b ◇ (a ◇ b)) b).symm)).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (b ◇ t))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ b) (b ◇ ((b ◇ b) ◇ b)) b))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (b ◇ ((b ◇ ((b ◇ b) ◇ b)) ◇ ((b ◇ b) ◇ (t ◇ (b ◇ ((b ◇ b) ◇ b)))))))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b b).symm))))).trans (((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (b ◇ ((b ◇ ((b ◇ b) ◇ b)) ◇ ((b ◇ b) ◇ t))))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b b).symm)).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ t)) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ ((b ◇ b) ◇ b)) b b).symm))).trans ((congrArg (fun t => (((b ◇ b) ◇ t) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b b).symm)).trans ((congrArg (fun t => (((b ◇ b) ◇ b) ◇ t)) ((h (a ◇ ((b ◇ b) ◇ b)) b b))).trans ((h b ((b ◇ b) ◇ b) a).symm)))))
-  intro x y
-  exact hlem x (((x ◇ x) ◇ x) ◇ (y ◇ y))
-"""),
-    ("v0 = (v1 ◇ (v0 ◇ ((v2 ◇ v1) ◇ v1)))",
-     "v0 = (((v1 ◇ v2) ◇ (v2 ◇ v2)) ◇ v0)"): ("true", "e691_e2812", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact (((((h a b b)).trans (congrArg (fun t => (t ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b (b ◇ b) (b ◇ (a ◇ b)))))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ t)) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ (t ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ t) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ ((a ◇ b) ◇ b)) b a)))))).trans (((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ t)))) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ (t ◇ (b ◇ ((a ◇ b) ◇ b))))))) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a)))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ t)) ◇ (b ◇ ((a ◇ b) ◇ b))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (a ◇ b) (b ◇ ((a ◇ b) ◇ b)) b).symm)).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ t))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ ((a ◇ b) ◇ b)) b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ t)))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))))))).trans ((((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ (b ◇ ((b ◇ ((a ◇ b) ◇ b)) ◇ ((a ◇ b) ◇ (t ◇ (b ◇ ((a ◇ b) ◇ b))))))))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b a))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (((b ◇ (a ◇ b)) ◇ (b ◇ ((b ◇ (b ◇ (a ◇ b))) ◇ (b ◇ t)))) ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (a ◇ b) (b ◇ ((a ◇ b) ◇ b)) b).symm))).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (t ◇ (b ◇ b)))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b (b ◇ (a ◇ b)) b).symm)).trans ((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (b ◇ t))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ b) (b ◇ ((b ◇ b) ◇ b)) b))).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ (b ◇ ((b ◇ ((b ◇ b) ◇ b)) ◇ ((b ◇ b) ◇ (t ◇ (b ◇ ((b ◇ b) ◇ b)))))))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b b).symm))))).trans (((congrArg (fun t => (((b ◇ b) ◇ (b ◇ (b ◇ ((b ◇ ((b ◇ b) ◇ b)) ◇ ((b ◇ b) ◇ t))))) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b b).symm)).trans (congrArg (fun t => (((b ◇ b) ◇ (b ◇ t)) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h (b ◇ ((b ◇ b) ◇ b)) b b).symm))).trans ((congrArg (fun t => (((b ◇ b) ◇ t) ◇ (a ◇ ((b ◇ b) ◇ b)))) ((h b b b).symm)).trans ((congrArg (fun t => (((b ◇ b) ◇ b) ◇ t)) ((h (a ◇ ((b ◇ b) ◇ b)) b b))).trans ((h b ((b ◇ b) ◇ b) a).symm)))))
-  intro x y z
-  exact hlem x (((y ◇ z) ◇ (z ◇ z)) ◇ x)
-"""),
-    ("v0 = ((v1 ◇ ((v0 ◇ v2) ◇ v2)) ◇ v0)",
-     "v0 = ((((v1 ◇ v2) ◇ v3) ◇ v1) ◇ v0)"): ("true", "e2521_e3232", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ a b : G, (a ◇ b) = b := by
-    intro a b
-    exact (((((congrArg (fun t => (t ◇ b)) ((h a (a ◇ a) a))).trans (congrArg (fun t => ((((a ◇ a) ◇ (t ◇ a)) ◇ a) ◇ b)) ((h (a ◇ a) ((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) a)))).trans ((congrArg (fun t => ((((a ◇ a) ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ a)) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => ((((a ◇ a) ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ t) ◇ (a ◇ a)) ◇ a)) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))).trans (((congrArg (fun t => ((((a ◇ a) ◇ ((t ◇ (a ◇ a)) ◇ a)) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) a).symm)).trans (congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ t) ◇ a)) ◇ a) ◇ b)) ((h (a ◇ a) a a)))).trans ((congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans ((congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ ((a ◇ t) ◇ (a ◇ a))) ◇ a)) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)).trans (congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ a)) ◇ a) ◇ b)) ((h (a ◇ a) ((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) a))))))).trans ((((congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ t) ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm))).trans ((congrArg (fun t => ((((a ◇ a) ◇ ((a ◇ ((t ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) a).symm)).trans ((congrArg (fun t => ((((a ◇ a) ◇ t) ◇ a) ◇ b)) ((h a a (a ◇ a)).symm)).trans (congrArg (fun t => (((t ◇ a) ◇ a) ◇ b)) ((h (a ◇ a) ((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) a)))))).trans (((congrArg (fun t => (((((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ a) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => (((((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ t) ◇ (a ◇ a)) ◇ a) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm))).trans ((congrArg (fun t => ((((t ◇ (a ◇ a)) ◇ a) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) a).symm)).trans ((congrArg (fun t => ((((a ◇ t) ◇ a) ◇ a) ◇ b)) ((h (a ◇ a) a a))).trans (congrArg (fun t => ((((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) a a)))))))).trans (((((congrArg (fun t => ((((a ◇ ((a ◇ t) ◇ (a ◇ a))) ◇ a) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)).trans (congrArg (fun t => ((((a ◇ (t ◇ (a ◇ a))) ◇ a) ◇ a) ◇ b)) ((h (a ◇ a) ((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) a)))).trans ((congrArg (fun t => ((((a ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans ((congrArg (fun t => ((((a ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ t) ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)).trans (congrArg (fun t => ((((a ◇ ((t ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) a).symm))))).trans (((congrArg (fun t => ((t ◇ a) ◇ b)) ((h a a (a ◇ a)).symm)).trans (congrArg (fun t => ((a ◇ t) ◇ b)) ((h a b a)))).trans ((congrArg (fun t => ((a ◇ ((b ◇ (t ◇ a)) ◇ a)) ◇ b)) ((h (a ◇ a) ((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) a))).trans ((congrArg (fun t => ((a ◇ ((b ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ a)) ◇ a)) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => ((a ◇ ((b ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ t) ◇ (a ◇ a)) ◇ a)) ◇ a)) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))))).trans ((((congrArg (fun t => ((a ◇ ((b ◇ ((t ◇ (a ◇ a)) ◇ a)) ◇ a)) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) a).symm)).trans (congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ t) ◇ a)) ◇ a)) ◇ b)) ((h (a ◇ a) a a)))).trans ((congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans ((congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ ((a ◇ t) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)).trans (congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b)) ((h (a ◇ a) ((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) a)))))).trans (((congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ (((((a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ t) ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm))).trans ((congrArg (fun t => ((a ◇ ((b ◇ ((a ◇ ((t ◇ (a ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ b) ◇ b)) a).symm)).trans ((congrArg (fun t => ((a ◇ ((b ◇ t) ◇ a)) ◇ b)) ((h a a (a ◇ a)).symm)).trans ((h b a a).symm))))))
-  intro x y z w
-  exact (hlem (((y ◇ z) ◇ w) ◇ y) x).symm
 """),
     ("v0 = ((v1 ◇ (v1 ◇ v0)) ◇ (v0 ◇ v2))",
      "(v0 ◇ v1) = (v0 ◇ (v0 ◇ (v1 ◇ v1)))"): ("true", "e1923_e3309", """import JudgeProblem
@@ -8859,50 +9037,6 @@ def submission : Goal := by
     exact (hlem6 a b).trans (hlem9 a b)
   intro x y
   exact (hlem10 x y).trans ((hlem10 x (x ◇ (y ◇ y))).symm)
-"""),
-    ("(v0 ◇ v1) = (v1 ◇ ((v1 ◇ v2) ◇ v0))",
-     "(v0 ◇ v1) = (((v2 ◇ v0) ◇ v1) ◇ v0)"): ("true", "e3561_e4195", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a b c : G, (a ◇ b) = (b ◇ ((c ◇ b) ◇ a)) := by
-    intro a b c
-    exact (((h a b ((b ◇ (a ◇ b)) ◇ c)))).trans (congrArg (fun t => (b ◇ (t ◇ a))) ((h c b (a ◇ b)).symm))
-  have hlem1 : ∀ a b c d : G, ((((a ◇ b) ◇ c) ◇ d) ◇ a) = (a ◇ (d ◇ (a ◇ b))) := by
-    intro a b c d
-    exact (((h (((a ◇ b) ◇ c) ◇ d) a b))).trans (congrArg (fun t => (a ◇ t)) ((h d (a ◇ b) c).symm))
-  have hlem2 : ∀ a b c d : G, ((((a ◇ b) ◇ c) ◇ d) ◇ b) = (b ◇ (d ◇ (a ◇ b))) := by
-    intro a b c d
-    exact (((hlem0 (((a ◇ b) ◇ c) ◇ d) b a))).trans (congrArg (fun t => (b ◇ t)) ((h d (a ◇ b) c).symm))
-  have hlem3 : ∀ a b c : G, (a ◇ b) = (b ◇ (a ◇ (b ◇ (a ◇ c)))) := by
-    intro a b c
-    exact ((((hlem0 a b (b ◇ (a ◇ c))))).trans (congrArg (fun t => (b ◇ t)) ((h ((b ◇ (a ◇ c)) ◇ b) a c)))).trans (congrArg (fun t => (b ◇ (a ◇ t))) ((hlem0 b (a ◇ c) b).symm))
-  have hlem4 : ∀ a b : G, (a ◇ b) = (b ◇ (b ◇ a)) := by
-    intro a b
-    exact (((hlem3 a b (b ◇ a)))).trans (congrArg (fun t => (b ◇ t)) ((hlem3 b a a).symm))
-  have hlem5 : ∀ a b c d : G, ((a ◇ ((b ◇ c) ◇ (a ◇ d))) ◇ b) = (b ◇ (a ◇ (b ◇ c))) := by
-    intro a b c d
-    exact (((h (a ◇ ((b ◇ c) ◇ (a ◇ d))) b c))).trans (congrArg (fun t => (b ◇ t)) ((hlem3 a (b ◇ c) d).symm))
-  have hlem6 : ∀ a b c d : G, (a ◇ (b ◇ ((b ◇ c) ◇ a))) = ((b ◇ (d ◇ (b ◇ c))) ◇ a) := by
-    intro a b c d
-    exact (((hlem2 (b ◇ c) a d b).symm)).trans (congrArg (fun t => (t ◇ a)) ((hlem1 b c a d)))
-  have hlem7 : ∀ a b c d : G, ((a ◇ (b ◇ (a ◇ c))) ◇ d) = (d ◇ (d ◇ a)) := by
-    intro a b c d
-    exact (((hlem6 d a c b).symm)).trans (congrArg (fun t => (d ◇ t)) ((h d a c).symm))
-  have hlem8 : ∀ a b c d : G, (a ◇ b) = ((a ◇ (c ◇ (a ◇ d))) ◇ b) := by
-    intro a b c d
-    exact (((hlem4 a b))).trans ((hlem7 a c d b).symm)
-  have hlem9 : ∀ a b c : G, (a ◇ b) = (b ◇ (a ◇ (b ◇ c))) := by
-    intro a b c
-    exact (((hlem8 a b (b ◇ c) (a ◇ b)))).trans ((hlem5 a b c (a ◇ b)))
-  have hlem10 : ∀ a b c : G, (a ◇ b) = ((c ◇ a) ◇ b) := by
-    intro a b c
-    exact (((hlem8 a b c (c ◇ a)))).trans (congrArg (fun t => (t ◇ b)) ((hlem3 c a a).symm))
-  have hlem11 : ∀ a b c : G, (a ◇ b) = (b ◇ (c ◇ a)) := by
-    intro a b c
-    exact (((h a b c))).trans (congrArg (fun t => (b ◇ t)) ((hlem10 c a b).symm))
-  intro x y z
-  exact (((((hlem11 x y z))).trans ((hlem9 y (z ◇ x) y))).trans ((hlem10 x (y ◇ ((z ◇ x) ◇ y)) z).symm)).trans ((hlem11 ((z ◇ x) ◇ y) x y).symm)
 """),
     ("v0 = ((v1 ◇ v0) ◇ ((v1 ◇ v1) ◇ v1))",
      "v0 = (v1 ◇ (v0 ◇ ((v1 ◇ v1) ◇ v1)))"): ("true", "e1695_e680", """import JudgeProblem
@@ -8957,17 +9091,6 @@ def submission : Goal := by
     exact ((((((hlem0 ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) b).trans (congrArg (fun q => (((q ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) ◇ b)) ((hlem0 (((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))).symm))).trans (congrArg (fun q => ((q ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) ◇ b)) (((hlem0 ((((a ◇ a) ◇ a) ◇ a)) ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))).trans (congrArg (fun q => (((q ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))) ((hlem0 a ((((a ◇ a) ◇ a) ◇ a))).symm))).symm))).trans (congrArg (fun q => (q ◇ b)) ((hlem0 a ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))).symm))).symm).trans ((((hlem0 ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) c).trans (congrArg (fun q => (((q ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) ◇ c)) ((hlem0 (((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))).symm))).trans (congrArg (fun q => ((q ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)))) ◇ c)) (((hlem0 ((((a ◇ a) ◇ a) ◇ a)) ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))).trans (congrArg (fun q => (((q ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))) ((hlem0 a ((((a ◇ a) ◇ a) ◇ a))).symm))).symm))).trans (congrArg (fun q => (q ◇ c)) ((hlem0 a ((((((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ a))))).symm))))
   intro x y z
   exact ((((hlem0 x y).trans (congrArg (fun q => (((q ◇ x) ◇ x) ◇ y)) (hlem1 x x y))).trans (congrArg (fun q => ((q ◇ x) ◇ y)) (hlem1 ((x ◇ y)) x y))).trans (congrArg (fun q => (q ◇ y)) (hlem1 (((x ◇ y) ◇ y)) x z)))
-"""),
-    ("v0 = ((v1 ◇ v0) ◇ ((v2 ◇ v0) ◇ v2))",
-     "v0 = ((v1 ◇ v0) ◇ (v1 ◇ (v0 ◇ v0)))"): ("true", "e1703_e1488", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact (((((((h a (a ◇ a) a)).trans (congrArg (fun t => (t ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a))))).trans ((congrArg (fun t => ((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ (t ◇ (a ◇ a))) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)))).trans (((congrArg (fun t => ((t ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ a) ◇ a))) ((h a a b))).trans (congrArg (fun t => ((((a ◇ a) ◇ ((b ◇ a) ◇ b)) ◇ (t ◇ (a ◇ a))) ◇ ((a ◇ a) ◇ a))) ((h a a b)))).trans ((congrArg (fun t => (t ◇ ((a ◇ a) ◇ a))) ((h ((b ◇ a) ◇ b) (a ◇ a) (a ◇ a)).symm)).trans ((congrArg (fun t => ((t ◇ b) ◇ ((a ◇ a) ◇ a))) ((h (b ◇ a) a a))).trans (congrArg (fun t => (((t ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h (a ◇ (b ◇ a)) ((a ◇ a) ◇ ((a ◇ a) ◇ a)) a))))))).trans ((((congrArg (fun t => (((((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a b a))).trans (congrArg (fun t => ((((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm))).trans ((congrArg (fun t => ((((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))).trans ((congrArg (fun t => (((((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)).trans (congrArg (fun t => (((((a ◇ (t ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm))))).trans (((congrArg (fun t => (((((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a))).trans (congrArg (fun t => (((((a ◇ (a ◇ (a ◇ a))) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a b a)))).trans ((congrArg (fun t => (((((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm)).trans ((congrArg (fun t => (((((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))).trans (congrArg (fun t => (((((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm))))))).trans (((((congrArg (fun t => (((((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)).trans (congrArg (fun t => (((t ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h (a ◇ (a ◇ a)) a a).symm))).trans ((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h (a ◇ (b ◇ a)) ((a ◇ a) ◇ ((a ◇ a) ◇ a)) a))).trans (congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a b a))))).trans (((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ ((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm)).trans (congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ ((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a))))).trans ((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)).trans ((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (t ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)).trans (congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a))))))).trans ((((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a b a))).trans (congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm))).trans ((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))).trans ((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm)).trans (congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h a a a).symm))))).trans (((congrArg (fun t => ((((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ b) ◇ ((a ◇ a) ◇ a))) ((h (a ◇ (a ◇ a)) a a).symm)).trans (congrArg (fun t => ((t ◇ b) ◇ ((a ◇ a) ◇ a))) ((h (a ◇ a) a a).symm))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ t)) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))))) ((h a a a).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (a ◇ (t ◇ (a ◇ a))))) ((h a a a).symm)))))))).trans ((((((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (t ◇ (a ◇ (a ◇ a))))) ((h a a (a ◇ a)))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((a ◇ a) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))) ◇ (t ◇ (a ◇ a))))) ((h a a (a ◇ a))))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ t)) ((h (((a ◇ a) ◇ a) ◇ (a ◇ a)) (a ◇ a) (a ◇ a)).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (t ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))))).trans (((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ (a ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ (a ◇ a)))) ((h a a a).symm))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ (a ◇ a)))) ((h a a b))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ a) ◇ ((b ◇ a) ◇ b)) ◇ (t ◇ (a ◇ a))) ◇ (a ◇ a)))) ((h a a b))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (t ◇ (a ◇ a)))) ((h ((b ◇ a) ◇ b) (a ◇ a) (a ◇ a)).symm)))))).trans ((((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((t ◇ b) ◇ (a ◇ a)))) ((h (b ◇ a) a a))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((t ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h (a ◇ (b ◇ a)) ((a ◇ a) ◇ ((a ◇ a) ◇ a)) a)))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a b a))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a))))))).trans (((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (t ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (a ◇ (a ◇ a))) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a b a))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm))))))).trans (((((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ a)) ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ (((t ◇ ((a ◇ (b ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h (a ◇ (a ◇ a)) a a).symm)))).trans (((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h (a ◇ (b ◇ a)) ((a ◇ a) ◇ ((a ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a b a)))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ ((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm)).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ ((t ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a)))).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm)))))).trans ((((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (t ◇ (a ◇ a))) ◇ ((a ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (a ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a)))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (t ◇ (b ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a b a))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (b ◇ a)).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ (t ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h ((a ◇ a) ◇ a) (a ◇ a) (a ◇ a))))))).trans (((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((t ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (((a ◇ (a ◇ (a ◇ a))) ◇ ((a ◇ (t ◇ (a ◇ a))) ◇ a)) ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h a a a).symm))).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ b) ◇ (a ◇ a)))) ((h (a ◇ (a ◇ a)) a a).symm)).trans ((congrArg (fun t => (((a ◇ a) ◇ b) ◇ ((t ◇ b) ◇ (a ◇ a)))) ((h (a ◇ a) a a).symm)).trans ((h b (a ◇ a) (a ◇ a)).symm)))))))
-  intro x y
-  exact hlem x ((y ◇ x) ◇ (y ◇ (x ◇ x)))
 """),
     ("v0 = (((v1 ◇ v2) ◇ ((v1 ◇ v1) ◇ v2)) ◇ v0)",
      "v0 = (v1 ◇ (v0 ◇ ((v2 ◇ (v0 ◇ v1)) ◇ v0)))"): ("true", "e35120_e7607", """import JudgeProblem
@@ -9119,20 +9242,6 @@ def submission : Goal := by
   refine Exists.intro m ?_
   decideFin!
 """),
-    ("v0 = ((v1 ◇ (v0 ◇ (v0 ◇ v2))) ◇ v1)",
-     "v0 = ((((v0 ◇ v1) ◇ v2) ◇ v1) ◇ v0)"): ("true", "e2297_e3089", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a : G, (a ◇ a) = a := by
-    intro a
-    exact (((((congrArg (fun t => (a ◇ t)) ((h a a a))).trans ((congrArg (fun t => (a ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h a a a))).trans (congrArg (fun t => (a ◇ ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))))).trans (((congrArg (fun t => (a ◇ ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => (a ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))).symm))).trans ((congrArg (fun t => (a ◇ (t ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ t) ◇ a))) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a))))))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) ◇ t)) ◇ a))) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)))).trans ((congrArg (fun t => (a ◇ t)) ((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) a (a ◇ a)).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ t) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ (a ◇ a))))))).trans (((congrArg (fun t => (a ◇ ((a ◇ (t ◇ a)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h (a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ (a ◇ a))))) a a))).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ ((a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ (a ◇ a))))) ◇ t)) ◇ a) ◇ a)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ (a ◇ a))).symm))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ t) ◇ a) ◇ a)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ (a ◇ a))).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ t)) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ a)))))))).trans ((((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (t ◇ a))) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h (a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ a)))) a a))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ ((a ◇ (a ◇ (a ◇ ((a ◇ a) ◇ a)))) ◇ t)) ◇ a) ◇ a))) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ a)).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ t) ◇ a) ◇ a))) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))))) ((h a a ((a ◇ a) ◇ a)).symm)))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ t))) ((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) a (a ◇ a)))).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) ◇ t)) ◇ a)))) ((h (a ◇ a) (a ◇ a) a).symm))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((a ◇ t) ◇ a)))) ((h (a ◇ a) (a ◇ a) a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ (t ◇ a)))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a)))))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))))).trans ((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)))).trans (((congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a)))) ((h a a a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a))) ◇ t))) ((h a a a).symm))).trans ((congrArg (fun t => (a ◇ t)) ((h ((a ◇ a) ◇ a) a a).symm)).trans (congrArg (fun t => (a ◇ ((a ◇ t) ◇ a))) ((h a a a)))))))).trans (((((congrArg (fun t => (a ◇ ((a ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t)) ◇ a))) ((h a a a))).trans ((congrArg (fun t => (a ◇ t)) ((h (a ◇ (a ◇ (a ◇ a))) a a).symm)).trans (congrArg (fun t => (a ◇ (t ◇ (a ◇ (a ◇ a))))) ((h a a a))))).trans (((congrArg (fun t => (a ◇ (((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => (a ◇ (((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a)))).trans ((congrArg (fun t => (a ◇ (t ◇ (a ◇ (a ◇ a))))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))).symm)).trans (congrArg (fun t => (a ◇ t)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm))))).trans ((((h (a ◇ (a ◇ (a ◇ a))) a a)).trans ((congrArg (fun t => ((a ◇ ((a ◇ (a ◇ (a ◇ a))) ◇ t)) ◇ a)) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ t) ◇ a)) ((h a a a).symm)))).trans (((congrArg (fun t => ((a ◇ a) ◇ t)) ((h a a a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h a a a)))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))))))).trans ((((congrArg (fun t => ((a ◇ a) ◇ ((t ◇ (a ◇ (a ◇ a))) ◇ a))) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))).symm)).trans ((congrArg (fun t => ((a ◇ a) ◇ (t ◇ a))) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ ((a ◇ t) ◇ a))) ((h (a ◇ a) (a ◇ a) a))))).trans (((congrArg (fun t => ((a ◇ a) ◇ ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) ◇ t)) ◇ a))) ((h (a ◇ a) (a ◇ a) a))).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a))) a (a ◇ a)).symm))).trans (((h ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) a (a ◇ a))).trans (congrArg (fun t => ((a ◇ (((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ ((a ◇ a) ◇ a)))) ◇ t)) ◇ a)) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)).symm))))).trans (((congrArg (fun t => ((a ◇ t) ◇ a)) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)).symm)).trans ((congrArg (fun t => (t ◇ a)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a))).trans (congrArg (fun t => ((t ◇ (a ◇ (a ◇ a))) ◇ a)) ((h ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) a (a ◇ (a ◇ a))))))).trans (((congrArg (fun t => ((((a ◇ (((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ ((a ◇ (a ◇ a)) ◇ a))) ◇ t)) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => ((((a ◇ t) ◇ a) ◇ (a ◇ (a ◇ a))) ◇ a)) ((h (a ◇ (a ◇ a)) (a ◇ (a ◇ a)) a).symm))).trans ((congrArg (fun t => ((t ◇ (a ◇ (a ◇ a))) ◇ a)) ((h a a a).symm)).trans ((h a a a).symm))))))
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact ((((h a b a)).trans ((congrArg (fun t => ((b ◇ (a ◇ t)) ◇ b)) ((hlem0 a))).trans (congrArg (fun t => ((b ◇ t) ◇ b)) ((hlem0 a))))).trans (((congrArg (fun t => (t ◇ b)) ((h (b ◇ a) b (b ◇ a)))).trans (congrArg (fun t => (((b ◇ ((b ◇ a) ◇ t)) ◇ b) ◇ b)) ((hlem0 (b ◇ a))))).trans ((congrArg (fun t => (((b ◇ t) ◇ b) ◇ b)) ((hlem0 (b ◇ a)))).trans (congrArg (fun t => (((b ◇ (b ◇ t)) ◇ b) ◇ b)) ((h a (a ◇ b) a)))))).trans (((congrArg (fun t => (((b ◇ (b ◇ (((a ◇ t) ◇ (a ◇ (a ◇ a))) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 b).symm)).trans ((congrArg (fun t => (((b ◇ (b ◇ (((a ◇ (b ◇ t)) ◇ (a ◇ (a ◇ a))) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 b).symm)).trans (congrArg (fun t => (((b ◇ (b ◇ (((a ◇ (b ◇ (b ◇ b))) ◇ (a ◇ t)) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 a))))).trans (((congrArg (fun t => (((b ◇ (b ◇ (((a ◇ (b ◇ (b ◇ b))) ◇ t) ◇ (a ◇ b)))) ◇ b) ◇ b)) ((hlem0 a))).trans (congrArg (fun t => (((b ◇ (b ◇ (t ◇ (a ◇ b)))) ◇ b) ◇ b)) ((h b a b).symm))).trans ((congrArg (fun t => (t ◇ b)) ((h b b (a ◇ b)).symm)).trans ((hlem0 b)))))
-  intro x y z
-  exact hlem x ((((x ◇ y) ◇ z) ◇ y) ◇ x)
-"""),
     ("v0 = ((v1 ◇ ((v1 ◇ v0) ◇ v0)) ◇ v1)",
      "(v0 ◇ (v0 ◇ v1)) = (v2 ◇ (v2 ◇ v1))"): ("false", "e2531_e4307", """import JudgeProblem
 import JudgeDecide.DecideBang
@@ -9155,20 +9264,6 @@ def submission : Goal := by
   intro x y
   exact ((((hlem0 x).symm).trans (congrArg (fun t => (x ◇ t)) ((h x y x)))).trans ((congrArg (fun t => (x ◇ ((y ◇ (x ◇ t)) ◇ x))) ((hlem0 x))).trans ((congrArg (fun t => (x ◇ ((y ◇ t) ◇ x))) ((hlem0 x))).trans (congrArg (fun t => (t ◇ ((y ◇ x) ◇ x))) ((hlem0 x).symm))))).trans (((congrArg (fun t => ((x ◇ t) ◇ ((y ◇ x) ◇ x))) ((h x y x))).trans ((congrArg (fun t => ((x ◇ ((y ◇ (x ◇ t)) ◇ x)) ◇ ((y ◇ x) ◇ x))) ((hlem0 x))).trans (congrArg (fun t => ((x ◇ ((y ◇ t) ◇ x)) ◇ ((y ◇ x) ◇ x))) ((hlem0 x))))).trans ((congrArg (fun t => ((x ◇ ((y ◇ x) ◇ x)) ◇ ((y ◇ t) ◇ x))) ((hlem0 x).symm)).trans ((congrArg (fun t => ((x ◇ ((y ◇ x) ◇ x)) ◇ ((y ◇ (x ◇ t)) ◇ x))) ((hlem0 x).symm)).trans (congrArg (fun t => ((x ◇ ((y ◇ x) ◇ x)) ◇ t)) ((h x y x).symm)))))
 """),
-    ("v0 = ((v1 ◇ ((v0 ◇ v2) ◇ v2)) ◇ v0)",
-     "v0 = ((v0 ◇ (v1 ◇ v2)) ◇ (v3 ◇ v0))"): ("true", "e2521_e1879", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a : G, (a ◇ a) = a := by
-    intro a
-    exact ((((congrArg (fun t => (t ◇ a)) ((h a a (a ◇ a)))).trans ((congrArg (fun t => (((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ ((a ◇ ((t ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)))).trans ((congrArg (fun t => (((a ◇ ((t ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ (a ◇ a)) ◇ (a ◇ a))) a))).trans ((congrArg (fun t => (((a ◇ (((t ◇ a) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a (a ◇ a)).symm)).trans (congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ t) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a)))))).trans (((congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ (t ◇ a)) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)).trans ((congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((t ◇ a) ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => (((a ◇ (((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))).trans ((congrArg (fun t => (((a ◇ (t ◇ (a ◇ a))) ◇ a) ◇ a)) ((h (a ◇ a) ((a ◇ a) ◇ a) a).symm)).trans ((congrArg (fun t => (((a ◇ ((a ◇ t) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ ((a ◇ (t ◇ a)) ◇ (a ◇ a))) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)))))).trans ((((congrArg (fun t => (((a ◇ t) ◇ a) ◇ a)) ((h (a ◇ a) a a).symm)).trans ((congrArg (fun t => (((a ◇ (t ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a))).trans (congrArg (fun t => (((a ◇ ((t ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)))).trans ((congrArg (fun t => (((t ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ (a ◇ a)) ◇ (a ◇ a))) a))).trans ((congrArg (fun t => ((((t ◇ a) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a (a ◇ a)).symm)).trans (congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ t) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a)))))).trans (((congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ (t ◇ a)) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a).symm)).trans ((congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((t ◇ a) ◇ a)) ◇ a) ◇ a)) ((h ((a ◇ a) ◇ a) a a))).trans (congrArg (fun t => ((((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ (t ◇ a)) ◇ a) ◇ a)) ((h a (a ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))).trans ((congrArg (fun t => ((t ◇ a) ◇ a)) ((h (a ◇ a) ((a ◇ a) ◇ a) a).symm)).trans ((congrArg (fun t => (t ◇ a)) ((h ((a ◇ a) ◇ a) (((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) a))).trans ((h a ((((a ◇ a) ◇ a) ◇ (((a ◇ a) ◇ a) ◇ a)) ◇ ((((a ◇ a) ◇ a) ◇ a) ◇ a)) a).symm)))))
-  have hlem : ∀ a b : G, (a ◇ b) = b := by
-    intro a b
-    exact ((congrArg (fun t => (t ◇ b)) ((hlem0 a).symm)).trans (congrArg (fun t => ((a ◇ t) ◇ b)) ((h a b a)))).trans ((congrArg (fun t => ((a ◇ ((b ◇ (t ◇ a)) ◇ a)) ◇ b)) ((hlem0 a))).trans ((congrArg (fun t => ((a ◇ ((b ◇ t) ◇ a)) ◇ b)) ((hlem0 a))).trans ((h b a a).symm)))
-  intro x y z w
-  exact ((hlem w x).symm).trans ((hlem (x ◇ (y ◇ z)) (w ◇ x)).symm)
-"""),
     ("v0 = (v0 ◇ ((v1 ◇ (v2 ◇ v0)) ◇ v2))",
      "v0 = ((v0 ◇ v1) ◇ (v1 ◇ (v1 ◇ v0)))"): ("true", "e1057_e1454", """import JudgeProblem
 
@@ -9179,20 +9274,6 @@ def submission : Goal := by
     exact (congrArg (fun t => (a ◇ t)) (h b a (a ◇ b))).trans (((h a b ((a ◇ ((a ◇ b) ◇ b)) ◇ (a ◇ b))).trans (congrArg (fun t => (a ◇ (t ◇ ((a ◇ ((a ◇ b) ◇ b)) ◇ (a ◇ b))))) ((h b (a ◇ ((a ◇ b) ◇ b)) a).symm))).symm)
   intro x y
   exact ((hlem (x ◇ y) (y ◇ (y ◇ x))).trans (hlem x y)).symm
-"""),
-    ("v0 = ((v1 ◇ v0) ◇ ((v0 ◇ v2) ◇ v1))",
-     "v0 = ((((v0 ◇ v1) ◇ v2) ◇ v3) ◇ v3)"): ("true", "e1688_e3100", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a : G, (a ◇ a) = a := by
-    intro a
-    exact ((((h (a ◇ a) (a ◇ (a ◇ a)) (a ◇ a))).trans ((congrArg (fun t => (((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a))))) ((h a a a))).trans (congrArg (fun t => (t ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (a ◇ (a ◇ a))))) ((h (a ◇ a) a ((a ◇ a) ◇ a)).symm)))).trans (((congrArg (fun t => ((a ◇ a) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (t ◇ (a ◇ a))))) ((h a a a))).trans (congrArg (fun t => ((a ◇ a) ◇ t)) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a)).symm))).trans ((congrArg (fun t => ((a ◇ a) ◇ t)) ((h (a ◇ a) (a ◇ a) a))).trans (congrArg (fun t => ((a ◇ a) ◇ ((t ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h (a ◇ a) a ((a ◇ a) ◇ a))))))).trans ((((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (a ◇ a)) ◇ (t ◇ a)) ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (a ◇ a)) ◇ (a ◇ a)) ◇ t) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h (a ◇ a) (a ◇ a) ((a ◇ a) ◇ a))))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((((a ◇ (a ◇ a)) ◇ (a ◇ a)) ◇ (((a ◇ a) ◇ (a ◇ a)) ◇ (t ◇ (a ◇ a)))) ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h a a a).symm)).trans (congrArg (fun t => ((a ◇ a) ◇ (t ◇ (((a ◇ a) ◇ a) ◇ (a ◇ a))))) ((h (a ◇ a) (a ◇ (a ◇ a)) (a ◇ a)).symm)))).trans (((congrArg (fun t => ((a ◇ a) ◇ ((a ◇ a) ◇ (((a ◇ a) ◇ a) ◇ t)))) ((h (a ◇ a) a ((a ◇ a) ◇ a)))).trans (congrArg (fun t => ((a ◇ a) ◇ ((a ◇ a) ◇ (((a ◇ a) ◇ a) ◇ ((a ◇ (a ◇ a)) ◇ (t ◇ a)))))) ((h a a a).symm))).trans ((congrArg (fun t => ((a ◇ a) ◇ ((a ◇ a) ◇ t))) ((h a (a ◇ a) (a ◇ a)).symm)).trans ((h a a a).symm))))
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact (((((h a (a ◇ b) a)).trans ((congrArg (fun t => ((t ◇ a) ◇ ((a ◇ a) ◇ (a ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans (congrArg (fun t => ((((a ◇ b) ◇ (a ◇ b)) ◇ t) ◇ ((a ◇ a) ◇ (a ◇ b)))) ((h a (a ◇ b) b))))).trans ((congrArg (fun t => ((((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t)) ◇ ((a ◇ a) ◇ (a ◇ b)))) ((hlem0 (a ◇ b)))).trans ((congrArg (fun t => (t ◇ ((a ◇ a) ◇ (a ◇ b)))) ((h (a ◇ b) (a ◇ b) a).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ t))) ((h (a ◇ b) (a ◇ b) a)))))).trans (((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ (((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t))))) ((hlem0 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ (((a ◇ b) ◇ (a ◇ b)) ◇ t)))) ((h a (a ◇ b) b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((a ◇ a) ◇ (t ◇ a)))) ((hlem0 (a ◇ b)))))).trans (((congrArg (fun t => ((a ◇ b) ◇ t)) ((h a a b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ t)) ((h a b b)))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (t ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((t ◇ (a ◇ b)) ◇ b)))) ((h (a ◇ b) (a ◇ b) a))))))).trans ((((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t)) ◇ (a ◇ b)) ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((((a ◇ b) ◇ (a ◇ b)) ◇ t) ◇ (a ◇ b)) ◇ b)))) ((h a (a ◇ b) b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((t ◇ a) ◇ (a ◇ b)) ◇ b)))) ((hlem0 (a ◇ b)))))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((((a ◇ b) ◇ a) ◇ t) ◇ b)))) ((hlem0 (a ◇ b)).symm)).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (t ◇ b)))) ((h a (a ◇ b) b).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ t))) ((hlem0 (a ◇ b)).symm))))).trans (((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (t ◇ (a ◇ b))))) ((h (a ◇ b) (a ◇ b) a))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((((a ◇ b) ◇ (a ◇ b)) ◇ (((a ◇ b) ◇ a) ◇ t)) ◇ (a ◇ b))))) ((hlem0 (a ◇ b)).symm)).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((((a ◇ b) ◇ (a ◇ b)) ◇ t) ◇ (a ◇ b))))) ((h a (a ◇ b) b).symm)))).trans (((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ ((t ◇ a) ◇ (a ◇ b))))) ((hlem0 (a ◇ b)))).trans (congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ (((a ◇ b) ◇ a) ◇ t)))) ((hlem0 (a ◇ b)).symm))).trans ((congrArg (fun t => ((a ◇ b) ◇ ((b ◇ a) ◇ t))) ((h a (a ◇ b) b).symm)).trans ((h b a a).symm)))))
-  intro x y z w
-  exact hlem x ((((x ◇ y) ◇ z) ◇ w) ◇ w)
 """),
     ("v0 = ((v1 ◇ ((v2 ◇ v0) ◇ v2)) ◇ v0)",
      "v0 = (((v1 ◇ v2) ◇ v3) ◇ (v3 ◇ v0))"): ("true", "e2575_e2227", """import JudgeProblem
@@ -9257,38 +9338,6 @@ def submission : Goal := by
     exact ((((h a (b ◇ (b ◇ a)) a)).trans (congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (t ◇ (b ◇ (b ◇ a))))) ((h (a ◇ (a ◇ a)) (b ◇ b) (a ◇ (a ◇ a)))))).trans ((congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ (t ◇ (b ◇ b))) ◇ (b ◇ (b ◇ a))))) ((h a (a ◇ (a ◇ a)) a).symm)).trans (congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ t) ◇ (b ◇ (b ◇ a))))) ((h (a ◇ (b ◇ b)) b (a ◇ (b ◇ b))))))).trans (((congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ (b ◇ (t ◇ b))) ◇ (b ◇ (b ◇ a))))) ((h b (a ◇ (b ◇ b)) a).symm)).trans (congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (((b ◇ b) ◇ (t ◇ (b ◇ b))) ◇ (b ◇ (b ◇ a))))) ((h b (b ◇ (b ◇ b)) b)))).trans ((congrArg (fun t => ((b ◇ (b ◇ a)) ◇ (t ◇ (b ◇ (b ◇ a))))) ((h (b ◇ (b ◇ b)) (b ◇ b) (b ◇ (b ◇ b))).symm)).trans ((h b (b ◇ (b ◇ a)) b).symm)))
   intro x y z
   exact hlem x (x ◇ (y ◇ ((y ◇ x) ◇ z)))
-"""),
-    ("v0 = ((v1 ◇ (v0 ◇ (v2 ◇ v3))) ◇ v1)",
-     "v0 = ((((v1 ◇ v2) ◇ v0) ◇ v1) ◇ v0)"): ("true", "e2323_e3180", """import JudgeProblem
-
-def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a b c : G, a = ((b ◇ (a ◇ c)) ◇ b) := by
-    intro a b c
-    exact (h a b (a ◇ (c ◇ (a ◇ a))) a).trans (congrArg (fun t => ((b ◇ (a ◇ t)) ◇ b)) ((h c a a a).symm))
-  have hlem1 : ∀ a b c d e f : G, a = (b ◇ ((a ◇ (c ◇ d)) ◇ (b ◇ (e ◇ f)))) := by
-    intro a b c d e f
-    exact (h a ((a ◇ (c ◇ d)) ◇ (b ◇ (e ◇ f))) c d).trans (congrArg (fun t => (t ◇ ((a ◇ (c ◇ d)) ◇ (b ◇ (e ◇ f))))) ((h b (a ◇ (c ◇ d)) e f).symm))
-  have hlem2 : ∀ a b c d e f : G, ((a ◇ b) ◇ (c ◇ (d ◇ e))) = ((f ◇ c) ◇ f) := by
-    intro a b c d e f
-    exact (h ((a ◇ b) ◇ (c ◇ (d ◇ e))) f a b).trans (congrArg (fun t => ((f ◇ t) ◇ f)) ((h c (a ◇ b) d e).symm))
-  have hlem3 : ∀ a : G, (a ◇ a) = a := by
-    intro a
-    exact ((hlem1 (a ◇ a) (a ◇ (a ◇ a)) a a ((a ◇ a) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ a) ◇ (a ◇ a)) a a a a).symm))).trans (hlem0 a a a).symm
-  have hlem4 : ∀ a b c : G, (a ◇ b) = (a ◇ c) := by
-    intro a b c
-    exact ((hlem1 (a ◇ b) (a ◇ (a ◇ a)) a a ((a ◇ b) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ b) ◇ (a ◇ a)) a a a a).symm))).trans ((hlem1 (a ◇ c) (a ◇ (a ◇ a)) a a ((a ◇ c) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ c) ◇ (a ◇ a)) a a a a).symm))).symm
-  have hlem5 : ∀ a b c : G, (a ◇ b) = (c ◇ b) := by
-    intro a b c
-    exact ((hlem1 (a ◇ b) (a ◇ (a ◇ a)) a a ((a ◇ b) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((a ◇ b) ◇ (a ◇ a)) a a a a).symm))).trans ((hlem1 (c ◇ b) (a ◇ (a ◇ a)) a a ((c ◇ b) ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (a ◇ a)) ◇ t)) ((hlem1 a ((c ◇ b) ◇ (a ◇ a)) a a a a).symm))).symm
-  have hlem6 : ∀ a b c d : G, (a ◇ b) = (c ◇ d) := by
-    intro a b c d
-    exact (hlem5 a b c).trans (hlem4 c d b).symm
-  have hlem : ∀ a b : G, a = b := by
-    intro a b
-    exact ((hlem1 a (a ◇ (b ◇ a)) a a (a ◇ (a ◇ a)) (a ◇ a)).trans (congrArg (fun t => ((a ◇ (b ◇ a)) ◇ t)) ((hlem1 a (a ◇ (a ◇ a)) b a a a).symm))).trans (hlem0 b a a).symm
-  intro x y z
-  exact hlem x ((((y ◇ z) ◇ x) ◇ y) ◇ x)
 """),
     ("v0 = ((v1 ◇ v0) ◇ (v2 ◇ (v2 ◇ v0)))",
      "(v0 ◇ v0) = ((v0 ◇ v0) ◇ v0)"): ("true", "e1506_e359", """import JudgeProblem
@@ -9544,160 +9593,414 @@ def submission : Goal := by
   refine Exists.intro m ?_
   decideFin!
 """),
-    ('v0 = (((v0 ◇ (v0 ◇ v1)) ◇ v2) ◇ v2)',
-     '(v0 ◇ v0) = (v0 ◇ ((v0 ◇ v1) ◇ v0))'): ("true", 'e2860_e3458', """import JudgeProblem
+
+
+    # Infinite / large countermodels from the 2026-08-26 theory pass, judged on
+    # Lean 4.33.1. Every finite search (constraint to order 9, z3 to order 10,
+    # ~1M polynomials) found nothing for these rows; the witnesses come from
+    # teorth's constructions (a twisted weak central groupoid on F_2^5 as a bit
+    # formula; refutation tables of order 21 and 24). Content-keyed (rail 5h).
+    ('v0 = (((v1 ◇ v1) ◇ v0) ◇ (v0 ◇ v2))',
+     'v0 = (((v1 ◇ v2) ◇ v0) ◇ (v0 ◇ v1))'): ("false", "inf_e2126_e2162", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
 
 def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a b c : G, a ◇ ((a ◇ (a ◇ c)) ◇ b) = a ◇ (a ◇ c) := by
-    intro a b c
-    exact (congrArg (fun t => t ◇ ((a ◇ (a ◇ c)) ◇ b)) (h a c ((a ◇ (a ◇ c)) ◇ b))).trans (((h (a ◇ (a ◇ c)) b ((a ◇ (a ◇ c)) ◇ b)).symm))
-  have hlem1 : ∀ a b c d : G, ((((a ◇ (a ◇ b)) ◇ d) ◇ a) ◇ c) ◇ c = (a ◇ (a ◇ b)) ◇ d := by
-    intro a b c d
-    exact (congrArg (fun t => ((((a ◇ (a ◇ b)) ◇ d) ◇ t) ◇ c) ◇ c) (h a b d)).trans (((h ((a ◇ (a ◇ b)) ◇ d) d c).symm))
-  have hlem2 : ∀ a b c : G, (a ◇ (a ◇ c)) ◇ a = (a ◇ (a ◇ c)) ◇ ((a ◇ (a ◇ c)) ◇ b) := by
-    intro a b c
-    exact (congrArg (fun t => (a ◇ (a ◇ c)) ◇ t) (h a c ((a ◇ (a ◇ c)) ◇ b))).trans ((hlem0 (a ◇ (a ◇ c)) ((a ◇ (a ◇ c)) ◇ b) b))
-  have hlem3 : ∀ a b c d : G, (((a ◇ (a ◇ c)) ◇ a) ◇ d) ◇ d = a ◇ (a ◇ c) := by
-    intro a b c d
-    exact (congrArg (fun t => (t ◇ d) ◇ d) (hlem2 a b c)).trans (((h (a ◇ (a ◇ c)) b d).symm))
-  have hlem4 : ∀ a b : G, b ◇ b = b ◇ (b ◇ a) := by
-    intro a b
-    exact (congrArg (fun t => t ◇ b) (h b a b)).trans ((hlem3 b a a b))
-  have hlem5 : ∀ a b c : G, ((c ◇ c) ◇ b) ◇ b = c := by
-    intro a b c
-    exact (congrArg (fun t => (t ◇ b) ◇ b) (hlem4 a c)).trans (((h c a b).symm))
-  have hlem6 : ∀ a b c : G, (c ◇ b) ◇ b = (c ◇ c) ◇ c := by
-    intro a b c
-    exact (congrArg (fun t => (t ◇ b) ◇ b) (h c a c)).trans ((hlem1 c a b c).trans ((congrArg (fun t => t ◇ c) ((hlem4 a c).symm))))
-  have hlem7 : ∀ a b : G, b ◇ ((b ◇ b) ◇ a) = b ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ ((b ◇ b) ◇ a)) ((hlem5 a ((b ◇ b) ◇ a) b).symm)).trans (((h (b ◇ b) a ((b ◇ b) ◇ a)).symm))
-  have hlem8 : ∀ a b : G, (b ◇ b) ◇ (b ◇ a) = (b ◇ b) ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (b ◇ a)) (hlem4 a b)).trans ((hlem6 a (b ◇ a) b))
-  have hlem9 : ∀ a b c : G, ((((b ◇ b) ◇ c) ◇ b) ◇ a) ◇ a = (b ◇ b) ◇ c := by
-    intro a b c
-    exact (congrArg (fun t => ((((b ◇ b) ◇ c) ◇ t) ◇ a) ◇ a) ((hlem5 a c b).symm)).trans (((h ((b ◇ b) ◇ c) c a).symm))
-  have hlem10 : ∀ a b : G, ((a ◇ b) ◇ (a ◇ b)) ◇ ((a ◇ a) ◇ a) = ((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b) := by
-    intro a b
-    exact (congrArg (fun t => ((a ◇ b) ◇ (a ◇ b)) ◇ t) ((hlem6 a b a).symm)).trans ((hlem8 b (a ◇ b)))
-  have hlem11 : ∀ a b : G, (((a ◇ b) ◇ (a ◇ b)) ◇ ((a ◇ a) ◇ a)) ◇ (a ◇ b) = a ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (a ◇ b)) (hlem10 a b)).trans ((hlem5 a (a ◇ b) (a ◇ b)))
-  have hlem12 : ∀ a b c : G, ((b ◇ c) ◇ a) ◇ a = ((b ◇ c) ◇ (b ◇ c)) ◇ ((b ◇ b) ◇ b) := by
-    intro a b c
-    exact (congrArg (fun t => (t ◇ a) ◇ a) ((hlem11 b c).symm)).trans ((hlem9 a (b ◇ c) ((b ◇ b) ◇ b)))
-  have hlem13 : ∀ a b : G, ((b ◇ b) ◇ b) ◇ a = ((b ◇ a) ◇ (b ◇ a)) ◇ ((b ◇ b) ◇ b) := by
-    intro a b
-    exact (congrArg (fun t => t ◇ a) ((hlem6 a a b).symm)).trans ((hlem12 a b a))
-  have hlem14 : ∀ a b : G, (((a ◇ a) ◇ a) ◇ b) ◇ (a ◇ b) = a ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (a ◇ b)) (hlem13 b a)).trans ((congrArg (fun t => t ◇ (a ◇ b)) (hlem10 a b)).trans ((hlem5 a (a ◇ b) (a ◇ b))))
-  have hlem15 : ∀ a b : G, (a ◇ b) ◇ ((a ◇ a) ◇ b) = (a ◇ a) ◇ b := by
-    intro a b
-    exact (congrArg (fun t => (t ◇ b) ◇ ((a ◇ a) ◇ b)) ((hlem5 a (a ◇ a) a).symm)).trans ((hlem14 (a ◇ a) b))
-  have hlem16 : ∀ a b c : G, (((b ◇ b) ◇ c) ◇ a) ◇ a = b ◇ c := by
-    intro a b c
-    exact (congrArg (fun t => (t ◇ a) ◇ a) ((hlem15 b c).symm)).trans ((congrArg (fun t => (((b ◇ c) ◇ t) ◇ a) ◇ a) ((hlem15 b c).symm)).trans (((h (b ◇ c) ((b ◇ b) ◇ c) a).symm)))
-  have hlem17 : ∀ a b : G, (a ◇ b) ◇ a = (a ◇ a) ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ a) ((hlem16 a a b).symm)).trans ((hlem9 a a b))
-  have hlem18 : ∀ a b : G, a ◇ ((a ◇ b) ◇ a) = a ◇ a := by
-    intro a b
-    exact (congrArg (fun t => a ◇ t) (hlem17 a b)).trans ((hlem7 b a))
-  intro x y
-  exact ((hlem18 x y).symm)
+  let m : Magma (Fin 21) := { op := fun i j => Fin.mk (Nat.mod (List.getD [1,1,19,1,19,1,1,19,16,19,16,1,19,16,19,1,1,16,19,16,19,15,1,5,5,5,1,11,11,16,5,16,1,15,11,15,1,1,11,5,16,11,15,1,5,5,5,1,11,11,16,5,16,1,15,11,15,1,1,11,5,16,11,17,20,7,7,7,20,17,7,17,17,20,20,17,7,17,20,20,20,20,20,7,14,0,12,9,9,8,9,12,14,14,9,8,14,12,14,8,0,12,9,0,12,4,2,18,9,9,2,9,3,4,4,9,2,4,18,4,2,2,3,9,18,3,15,1,5,5,5,1,11,11,16,5,16,1,15,11,15,1,1,11,5,16,11,4,2,7,13,7,2,13,7,4,4,20,2,4,7,4,2,2,20,20,13,7,15,15,5,5,5,11,11,11,5,5,5,5,15,11,15,15,5,11,5,11,11,4,6,18,10,10,6,10,3,4,4,10,6,4,18,4,6,6,3,10,18,3,4,6,18,10,10,6,10,3,4,4,10,6,4,18,4,6,6,3,10,18,3,17,6,7,13,7,6,13,7,17,17,20,6,17,7,17,6,6,20,20,13,7,17,2,7,13,7,2,13,7,17,17,20,2,17,7,17,2,2,20,20,13,7,19,6,19,6,19,6,6,3,6,19,6,6,19,6,19,6,6,3,19,19,3,14,0,12,9,9,8,9,12,14,14,9,8,14,12,14,8,0,12,9,0,12,14,0,12,0,14,12,0,12,14,14,0,0,14,12,14,14,0,12,0,0,12,10,19,19,10,10,8,10,10,8,19,10,8,19,10,19,8,10,19,10,19,10,14,0,12,9,9,8,9,12,14,14,9,8,14,12,14,8,0,12,9,0,12,13,2,19,13,19,2,13,13,2,19,13,2,19,2,19,2,2,13,2,13,19,14,2,12,9,9,2,9,12,14,14,9,2,14,12,14,2,2,12,9,12,12,17,10,18,10,10,17,10,18,17,17,10,18,17,18,17,17,10,17,10,18,17] (Nat.add (Nat.mul (Fin.val i) 21) (Fin.val j)) 0) 21) (Nat.mod_lt _ (Nat.succ_pos 20)) }
+  refine Exists.intro (Fin 21) ?_
+  refine Exists.intro m ?_
+  decideFin!
 """),
-
-    ('v0 = (((v1 ◇ v1) ◇ v1) ◇ (v0 ◇ v1))',
-     'v0 = (((v1 ◇ v1) ◇ v0) ◇ (v1 ◇ v1))'): ("true", 'e2135_e2128', """import JudgeProblem
+    ('v0 = ((v1 ◇ v0) ◇ (v0 ◇ (v2 ◇ v1)))',
+     'v0 = ((v1 ◇ v0) ◇ (v0 ◇ (v1 ◇ v2)))'): ("false", "inf_e1485_e1483", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
+set_option maxHeartbeats 0
 
 def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a b : G, (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) ◇ a = (b ◇ b) ◇ b := by
-    intro a b
-    exact (congrArg (fun t => (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) ◇ t) (h a b)).trans (((h ((b ◇ b) ◇ b) (a ◇ b)).symm))
-  have hlem1 : ∀ a b : G, ((a ◇ a) ◇ a) ◇ ((b ◇ b) ◇ b) = ((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b) := by
-    intro a b
-    exact (congrArg (fun t => ((a ◇ a) ◇ a) ◇ t) ((hlem0 a b).symm)).trans (((h (((a ◇ b) ◇ (a ◇ b)) ◇ (a ◇ b)) a).symm))
-  have hlem2 : ∀ a b c : G, (((b ◇ b) ◇ b) ◇ ((c ◇ c) ◇ c)) ◇ (a ◇ (b ◇ c)) = a := by
-    intro a b c
-    exact (congrArg (fun t => t ◇ (a ◇ (b ◇ c))) (hlem1 b c)).trans (((h a (b ◇ c)).symm))
-  have hlem3 : ∀ a b : G, (b ◇ b) ◇ (a ◇ (b ◇ b)) = a := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (a ◇ (b ◇ b))) (h (b ◇ b) b)).trans ((hlem2 a b b))
-  have hlem4 : ∀ a b c d : G, (((b ◇ b) ◇ b) ◇ (((c ◇ c) ◇ c) ◇ ((d ◇ d) ◇ d))) ◇ (a ◇ (b ◇ (c ◇ d))) = a := by
-    intro a b c d
-    exact (congrArg (fun t => (((b ◇ b) ◇ b) ◇ t) ◇ (a ◇ (b ◇ (c ◇ d)))) (hlem1 c d)).trans ((hlem2 a b (c ◇ d)))
-  have hlem5 : ∀ a b c : G, (((b ◇ b) ◇ b) ◇ (c ◇ c)) ◇ (a ◇ (b ◇ (c ◇ c))) = a := by
-    intro a b c
-    exact (congrArg (fun t => (((b ◇ b) ◇ b) ◇ t) ◇ (a ◇ (b ◇ (c ◇ c)))) (h (c ◇ c) c)).trans ((hlem4 a b c c))
-  have hlem6 : ∀ a b : G, b ◇ (a ◇ (b ◇ (b ◇ b))) = a := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (a ◇ (b ◇ (b ◇ b)))) (h b b)).trans ((hlem5 a b b))
-  have hlem7 : ∀ a b : G, (((a ◇ a) ◇ a) ◇ (b ◇ b)) ◇ a = b ◇ b := by
-    intro a b
-    exact (congrArg (fun t => (((a ◇ a) ◇ a) ◇ (b ◇ b)) ◇ t) ((hlem3 a b).symm)).trans ((hlem5 (b ◇ b) a b))
-  have hlem8 : ∀ a b c : G, ((((a ◇ a) ◇ a) ◇ ((b ◇ b) ◇ b)) ◇ (c ◇ c)) ◇ (a ◇ b) = c ◇ c := by
-    intro a b c
-    exact (congrArg (fun t => (t ◇ (c ◇ c)) ◇ (a ◇ b)) (hlem1 a b)).trans ((hlem7 (a ◇ b) c))
-  have hlem9 : ∀ a b : G, ((a ◇ a) ◇ (b ◇ b)) ◇ (a ◇ a) = b ◇ b := by
-    intro a b
-    exact (congrArg (fun t => (t ◇ (b ◇ b)) ◇ (a ◇ a)) (h (a ◇ a) a)).trans ((hlem8 a a b))
-  have hlem10 : ∀ a b : G, (((a ◇ a) ◇ a) ◇ b) ◇ a = b := by
-    intro a b
-    exact (congrArg (fun t => (((a ◇ a) ◇ a) ◇ t) ◇ a) (h b b)).trans ((congrArg (fun t => (((a ◇ a) ◇ a) ◇ (((b ◇ b) ◇ b) ◇ t)) ◇ a) (h (b ◇ b) b)).trans ((congrArg (fun t => (((a ◇ a) ◇ a) ◇ (((b ◇ b) ◇ b) ◇ t)) ◇ a) (hlem1 b b)).trans ((congrArg (fun t => (((a ◇ a) ◇ a) ◇ (((b ◇ b) ◇ b) ◇ (((b ◇ b) ◇ (b ◇ b)) ◇ (b ◇ b)))) ◇ t) ((hlem6 a b).symm)).trans ((hlem4 b a b (b ◇ b))))))
-  have hlem11 : ∀ a b : G, ((b ◇ b) ◇ a) ◇ (b ◇ b) = a := by
-    intro a b
-    exact (congrArg (fun t => (t ◇ a) ◇ (b ◇ b)) ((hlem9 b b).symm)).trans ((hlem10 (b ◇ b) a))
-  intro x y
-  exact ((hlem11 x y).symm)
+  let m : Magma (Fin 32) := { op := fun i j => Fin.mk (Nat.sub 31 (Nat.land (Nat.lor (Nat.shiftRight (Fin.val i) 1) (Nat.shiftLeft (Nat.land (Fin.val i) 1) 4)) (Nat.lor (Nat.land (Nat.shiftLeft (Fin.val j) 1) 31) (Nat.shiftRight (Fin.val j) 4)))) (Nat.lt_succ_of_le (Nat.sub_le 31 _)) }
+  refine Exists.intro (Fin 32) ?_
+  refine Exists.intro m ?_
+  decideFin!
 """),
-
-    ('v0 = (((v0 ◇ v1) ◇ v0) ◇ (v1 ◇ v2))',
-     'v0 = (((v0 ◇ v0) ◇ (v1 ◇ v2)) ◇ v1)'): ("true", 'e2055_e2656', """import JudgeProblem
+    ('v0 = (((v1 ◇ v2) ◇ v0) ◇ (v0 ◇ v1))',
+     '(v0 ◇ v0) = ((v1 ◇ (v0 ◇ v0)) ◇ v0)'): ("false", "inf_e2162_e3877", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
+set_option maxHeartbeats 0
 
 def submission : Goal := by
-  intro G _ h
-  have hlem0 : ∀ a b : G, b ◇ (b ◇ a) = b ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (b ◇ a)) (h b b b)).trans (((h (b ◇ b) b a).symm))
-  have hlem1 : ∀ a b c d : G, ((a ◇ ((b ◇ c) ◇ b)) ◇ a) ◇ b = a := by
-    intro a b c d
-    exact (congrArg (fun t => ((a ◇ ((b ◇ c) ◇ b)) ◇ a) ◇ t) (h b c d)).trans (((h a ((b ◇ c) ◇ b) (c ◇ d)).symm))
-  have hlem2 : ∀ a b c : G, ((b ◇ b) ◇ b) ◇ ((b ◇ c) ◇ a) = b := by
-    intro a b c
-    exact (congrArg (fun t => (t ◇ b) ◇ ((b ◇ c) ◇ a)) ((hlem0 c b).symm)).trans (((h b (b ◇ c) a).symm))
-  have hlem3 : ∀ a b : G, (a ◇ ((a ◇ a) ◇ a)) ◇ a = (a ◇ a) ◇ a := by
-    intro a b
-    exact (congrArg (fun t => (t ◇ ((a ◇ a) ◇ a)) ◇ a) ((hlem2 a a b).symm)).trans ((hlem1 ((a ◇ a) ◇ a) a b a))
-  have hlem4 : ∀ a : G, ((a ◇ a) ◇ a) ◇ a = a := by
-    intro a
-    exact (congrArg (fun t => t ◇ a) ((hlem3 a a).symm)).trans ((hlem1 a a a a))
-  have hlem5 : ∀ a b : G, (((b ◇ a) ◇ (b ◇ a)) ◇ (b ◇ a)) ◇ b = b ◇ a := by
-    intro a b
-    exact (congrArg (fun t => (t ◇ (b ◇ a)) ◇ b) ((hlem0 b (b ◇ a)).symm)).trans ((hlem1 (b ◇ a) b a a))
-  have hlem6 : ∀ a b : G, (b ◇ ((b ◇ b) ◇ b)) ◇ (b ◇ a) = (b ◇ b) ◇ b := by
-    intro a b
-    exact (congrArg (fun t => (t ◇ ((b ◇ b) ◇ b)) ◇ (b ◇ a)) ((hlem4 b).symm)).trans (((h ((b ◇ b) ◇ b) b a).symm))
-  have hlem7 : ∀ a : G, a ◇ a = a ◇ ((a ◇ a) ◇ a) := by
-    intro a
-    exact (congrArg (fun t => t ◇ a) (h a a ((a ◇ a) ◇ a))).trans ((congrArg (fun t => (t ◇ (a ◇ ((a ◇ a) ◇ a))) ◇ a) ((hlem6 ((a ◇ a) ◇ a) a).symm)).trans ((hlem5 ((a ◇ a) ◇ a) a)))
-  have hlem8 : ∀ a b : G, (b ◇ b) ◇ (b ◇ a) = (b ◇ b) ◇ b := by
-    intro a b
-    exact (congrArg (fun t => t ◇ (b ◇ a)) (hlem7 b)).trans ((congrArg (fun t => (t ◇ ((b ◇ b) ◇ b)) ◇ (b ◇ a)) ((hlem4 b).symm)).trans (((h ((b ◇ b) ◇ b) b a).symm)))
-  have hlem9 : ∀ a b c : G, b ◇ ((b ◇ c) ◇ a) = b ◇ b := by
-    intro a b c
-    exact (congrArg (fun t => t ◇ ((b ◇ c) ◇ a)) (h b b b)).trans ((congrArg (fun t => (t ◇ (b ◇ b)) ◇ ((b ◇ c) ◇ a)) ((hlem8 c b).symm)).trans (((h (b ◇ b) (b ◇ c) a).symm)))
-  have hlem10 : ∀ a b c : G, (a ◇ a) ◇ c = (a ◇ (c ◇ b)) ◇ a := by
-    intro a b c
-    exact (congrArg (fun t => t ◇ c) ((hlem9 a a (c ◇ b)).symm)).trans ((congrArg (fun t => (t ◇ ((a ◇ (c ◇ b)) ◇ a)) ◇ c) (h a (c ◇ b) c)).trans ((hlem1 ((a ◇ (c ◇ b)) ◇ a) c b a)))
-  have hlem11 : ∀ a b c d : G, ((a ◇ a) ◇ (b ◇ c)) ◇ b = a := by
-    intro a b c d
-    exact (congrArg (fun t => t ◇ b) (hlem10 a b (b ◇ c))).trans ((congrArg (fun t => ((a ◇ ((b ◇ c) ◇ b)) ◇ a) ◇ t) (h b c d)).trans (((h a ((b ◇ c) ◇ b) (c ◇ d)).symm)))
+  let m : Magma (Fin 32) := { op := fun i j => Fin.mk (Nat.sub 31 (Nat.land (Nat.lor (Nat.shiftRight (Fin.val j) 1) (Nat.shiftLeft (Nat.land (Fin.val j) 1) 4)) (Nat.lor (Nat.land (Nat.shiftLeft (Fin.val i) 1) 31) (Nat.shiftRight (Fin.val i) 4)))) (Nat.lt_succ_of_le (Nat.sub_le 31 _)) }
+  refine Exists.intro (Fin 32) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ('v0 = (((v1 ◇ v2) ◇ v0) ◇ (v0 ◇ v1))',
+     'v0 = ((v0 ◇ v0) ◇ (v0 ◇ v1))'): ("false", "inf_e2162_e152", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
+set_option maxHeartbeats 0
+
+def submission : Goal := by
+  let m : Magma (Fin 32) := { op := fun i j => Fin.mk (Nat.sub 31 (Nat.land (Nat.lor (Nat.shiftRight (Fin.val j) 1) (Nat.shiftLeft (Nat.land (Fin.val j) 1) 4)) (Nat.lor (Nat.land (Nat.shiftLeft (Fin.val i) 1) 31) (Nat.shiftRight (Fin.val i) 4)))) (Nat.lt_succ_of_le (Nat.sub_le 31 _)) }
+  refine Exists.intro (Fin 32) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ('v0 = (v0 ◇ ((v1 ◇ v2) ◇ (v0 ◇ v2)))',
+     'v0 = (v0 ◇ ((v1 ◇ (v1 ◇ v0)) ◇ v0))'): ("false", "inf_e854_e1045", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
+
+def submission : Goal := by
+  let m : Magma (Fin 24) := { op := fun i j => Fin.mk (Nat.mod (List.getD [5,11,0,11,0,0,14,13,0,0,14,3,0,14,13,13,14,0,13,21,14,19,19,0,5,11,1,17,1,1,4,1,1,1,5,1,1,5,1,1,5,1,1,21,14,19,19,1,2,2,7,2,8,4,4,2,4,8,2,8,7,2,2,2,17,4,8,2,2,17,17,22,5,11,3,5,3,3,4,3,3,3,14,3,3,5,3,3,5,3,3,21,14,19,19,3,4,4,7,4,7,4,4,4,4,8,4,8,0,4,4,4,8,4,8,21,4,19,19,4,5,5,20,5,5,4,7,5,1,5,5,5,20,5,5,5,5,15,5,5,2,5,5,22,5,5,20,5,6,1,15,6,1,6,5,6,20,5,6,6,5,1,6,6,2,5,5,22,8,7,7,7,7,7,7,13,7,7,7,23,7,7,8,9,7,7,23,8,7,7,7,7,8,8,20,8,8,4,4,8,1,8,8,8,20,8,8,8,8,15,8,8,2,8,8,22,9,9,7,9,14,9,9,9,9,8,9,8,14,9,9,9,8,9,8,21,9,19,19,9,5,11,10,11,10,10,4,10,10,10,14,3,10,5,10,10,5,10,10,21,15,19,19,10,9,11,0,11,0,11,18,16,11,0,18,8,0,18,16,16,14,11,13,21,18,19,19,11,12,12,7,12,8,4,4,12,4,8,12,8,20,12,12,12,8,4,8,12,12,17,8,22,5,11,13,11,13,13,4,13,13,13,9,3,13,17,13,13,17,13,13,21,15,19,19,13,8,14,14,14,14,14,14,13,14,14,14,23,14,14,5,9,14,14,23,5,14,14,14,14,8,15,15,15,15,15,15,13,15,15,15,8,15,15,8,9,15,15,5,8,15,15,15,15,9,11,13,11,13,16,9,16,16,13,9,3,13,9,16,16,17,16,13,21,2,19,19,16,17,17,20,17,17,4,4,17,1,17,17,17,20,17,17,17,17,15,17,17,2,17,17,22,9,18,7,18,7,18,18,9,18,7,18,8,7,18,9,9,7,18,8,21,18,19,19,18,9,11,0,11,0,19,18,16,19,0,18,3,0,18,16,16,14,19,13,23,18,19,19,19,5,17,20,17,20,1,15,20,1,20,17,20,20,17,20,20,17,1,20,20,15,17,17,22,9,11,0,11,0,21,18,21,21,13,18,3,0,9,21,21,17,21,13,21,18,17,19,21,4,11,0,11,13,22,4,22,22,13,9,3,0,9,22,22,17,22,13,22,18,17,19,22,23,23,20,23,23,4,4,23,1,23,23,23,20,23,23,23,23,15,23,23,2,23,23,22] (Nat.add (Nat.mul (Fin.val i) 24) (Fin.val j)) 0) 24) (Nat.mod_lt _ (Nat.succ_pos 23)) }
+  refine Exists.intro (Fin 24) ?_
+  refine Exists.intro m ?_
+  decideFin!
+"""),
+    ('v0 = ((v1 ◇ (v2 ◇ v1)) ◇ (v1 ◇ v0))',
+     'v0 = ((v0 ◇ v1) ◇ ((v2 ◇ v1) ◇ v0))'): ("false", "inf_e1979_e1668", """import JudgeProblem
+set_option maxHeartbeats 1000000
+
+def submission.op (a b : Nat) : Nat :=
+  if b = 0 then (if a % 2 = 0 then 0 else 2)
+  else if b = 1 then (if a % 2 = 0 then 1 else 3)
+  else if b = 2 then (if a % 2 = 0 then 2 else 0)
+  else if b = 3 then (if a % 2 = 0 then 4 else 1)
+  else if a % 2 = b % 2 then b - 1 else b + 1
+
+def submission.inst : Magma Nat := { op := submission.op }
+
+theorem submission.spec (a b : Nat) :
+    (b = 0 ∧ submission.op a b = 2 * (a % 2)) ∨
+    (b = 1 ∧ submission.op a b = 1 + 2 * (a % 2)) ∨
+    (b = 2 ∧ submission.op a b = 2 - 2 * (a % 2)) ∨
+    (b = 3 ∧ submission.op a b = 4 - 3 * (a % 2)) ∨
+    (4 ≤ b ∧ a % 2 = b % 2 ∧ submission.op a b = b - 1) ∨
+    (4 ≤ b ∧ a % 2 ≠ b % 2 ∧ submission.op a b = b + 1) := by
+  unfold submission.op
+  by_cases h0 : b = 0
+  · rw [if_pos h0]
+    by_cases ha : a % 2 = 0
+    · rw [if_pos ha]; omega
+    · rw [if_neg ha]; omega
+  · rw [if_neg h0]
+    by_cases h1 : b = 1
+    · rw [if_pos h1]
+      by_cases ha : a % 2 = 0
+      · rw [if_pos ha]; omega
+      · rw [if_neg ha]; omega
+    · rw [if_neg h1]
+      by_cases h2 : b = 2
+      · rw [if_pos h2]
+        by_cases ha : a % 2 = 0
+        · rw [if_pos ha]; omega
+        · rw [if_neg ha]; omega
+      · rw [if_neg h2]
+        by_cases h3 : b = 3
+        · rw [if_pos h3]
+          by_cases ha : a % 2 = 0
+          · rw [if_pos ha]; omega
+          · rw [if_neg ha]; omega
+        · rw [if_neg h3]
+          by_cases hp : a % 2 = b % 2
+          · rw [if_pos hp]; omega
+          · rw [if_neg hp]; omega
+
+theorem submission.lhs : @EquationLHS Nat submission.inst := by
   intro x y z
-  exact ((hlem11 x y z x).symm)
+  show x = submission.op (submission.op y (submission.op z y)) (submission.op y x)
+  have h1 := submission.spec z y
+  revert h1
+  generalize submission.op z y = p
+  intro h1
+  have h2 := submission.spec y p
+  revert h2
+  generalize submission.op y p = q
+  intro h2
+  rcases h1 with h1 | h1 | h1 | h1 | h1 | h1 <;>
+  rcases h2 with h2 | h2 | h2 | h2 | h2 | h2 <;>
+  (try omega) <;>
+  (have h3 := submission.spec y x
+   revert h3
+   generalize submission.op y x = r
+   intro h3
+   have h4 := submission.spec q r
+   revert h4
+   generalize submission.op q r = s
+   intro h4
+   rcases h3 with h3 | h3 | h3 | h3 | h3 | h3 <;>
+   rcases h4 with h4 | h4 | h4 | h4 | h4 | h4 <;>
+   omega)
+
+theorem submission.rhs : ¬ @EquationRHS Nat submission.inst := by
+  intro h
+  exact absurd (h 0 3 1) (by decide)
+
+def submission : Goal :=
+  Exists.intro Nat (Exists.intro submission.inst
+    (And.intro submission.lhs submission.rhs))
+"""),
+    ('v0 = ((v1 ◇ (v2 ◇ v1)) ◇ (v1 ◇ v0))',
+     'v0 = ((v1 ◇ v1) ◇ ((v2 ◇ v1) ◇ v0))'): ("false", "inf_e1979_e1742", """import JudgeProblem
+set_option maxHeartbeats 1000000
+
+def submission.op (a b : Nat) : Nat :=
+  if b = 0 then (if a % 2 = 0 then 0 else 2)
+  else if b = 1 then (if a % 2 = 0 then 1 else 3)
+  else if b = 2 then (if a % 2 = 0 then 2 else 0)
+  else if b = 3 then (if a % 2 = 0 then 4 else 1)
+  else if a % 2 = b % 2 then b - 1 else b + 1
+
+def submission.inst : Magma Nat := { op := submission.op }
+
+theorem submission.spec (a b : Nat) :
+    (b = 0 ∧ submission.op a b = 2 * (a % 2)) ∨
+    (b = 1 ∧ submission.op a b = 1 + 2 * (a % 2)) ∨
+    (b = 2 ∧ submission.op a b = 2 - 2 * (a % 2)) ∨
+    (b = 3 ∧ submission.op a b = 4 - 3 * (a % 2)) ∨
+    (4 ≤ b ∧ a % 2 = b % 2 ∧ submission.op a b = b - 1) ∨
+    (4 ≤ b ∧ a % 2 ≠ b % 2 ∧ submission.op a b = b + 1) := by
+  unfold submission.op
+  by_cases h0 : b = 0
+  · rw [if_pos h0]
+    by_cases ha : a % 2 = 0
+    · rw [if_pos ha]; omega
+    · rw [if_neg ha]; omega
+  · rw [if_neg h0]
+    by_cases h1 : b = 1
+    · rw [if_pos h1]
+      by_cases ha : a % 2 = 0
+      · rw [if_pos ha]; omega
+      · rw [if_neg ha]; omega
+    · rw [if_neg h1]
+      by_cases h2 : b = 2
+      · rw [if_pos h2]
+        by_cases ha : a % 2 = 0
+        · rw [if_pos ha]; omega
+        · rw [if_neg ha]; omega
+      · rw [if_neg h2]
+        by_cases h3 : b = 3
+        · rw [if_pos h3]
+          by_cases ha : a % 2 = 0
+          · rw [if_pos ha]; omega
+          · rw [if_neg ha]; omega
+        · rw [if_neg h3]
+          by_cases hp : a % 2 = b % 2
+          · rw [if_pos hp]; omega
+          · rw [if_neg hp]; omega
+
+theorem submission.lhs : @EquationLHS Nat submission.inst := by
+  intro x y z
+  show x = submission.op (submission.op y (submission.op z y)) (submission.op y x)
+  have h1 := submission.spec z y
+  revert h1
+  generalize submission.op z y = p
+  intro h1
+  have h2 := submission.spec y p
+  revert h2
+  generalize submission.op y p = q
+  intro h2
+  rcases h1 with h1 | h1 | h1 | h1 | h1 | h1 <;>
+  rcases h2 with h2 | h2 | h2 | h2 | h2 | h2 <;>
+  (try omega) <;>
+  (have h3 := submission.spec y x
+   revert h3
+   generalize submission.op y x = r
+   intro h3
+   have h4 := submission.spec q r
+   revert h4
+   generalize submission.op q r = s
+   intro h4
+   rcases h3 with h3 | h3 | h3 | h3 | h3 | h3 <;>
+   rcases h4 with h4 | h4 | h4 | h4 | h4 | h4 <;>
+   omega)
+
+theorem submission.rhs : ¬ @EquationRHS Nat submission.inst := by
+  intro h
+  exact absurd (h 0 3 0) (by decide)
+
+def submission : Goal :=
+  Exists.intro Nat (Exists.intro submission.inst
+    (And.intro submission.lhs submission.rhs))
+"""),
+    ('v0 = (v1 ◇ ((v1 ◇ (v2 ◇ v1)) ◇ v0))',
+     'v0 = (v1 ◇ ((v2 ◇ (v1 ◇ v1)) ◇ v0))'): ("false", "inf_e1133_e1167", """import JudgeProblem
+set_option maxHeartbeats 1000000
+
+def submission.op (a b : Nat) : Nat :=
+  if b = 0 then (if a % 2 = 0 then 0 else 2)
+  else if b = 1 then (if a % 2 = 0 then 1 else 3)
+  else if b = 2 then (if a % 2 = 0 then 2 else 0)
+  else if b = 3 then (if a % 2 = 0 then 4 else 1)
+  else if a % 2 = b % 2 then b - 1 else b + 1
+
+def submission.inst : Magma Nat := { op := submission.op }
+
+theorem submission.spec (a b : Nat) :
+    (b = 0 ∧ submission.op a b = 2 * (a % 2)) ∨
+    (b = 1 ∧ submission.op a b = 1 + 2 * (a % 2)) ∨
+    (b = 2 ∧ submission.op a b = 2 - 2 * (a % 2)) ∨
+    (b = 3 ∧ submission.op a b = 4 - 3 * (a % 2)) ∨
+    (4 ≤ b ∧ a % 2 = b % 2 ∧ submission.op a b = b - 1) ∨
+    (4 ≤ b ∧ a % 2 ≠ b % 2 ∧ submission.op a b = b + 1) := by
+  unfold submission.op
+  by_cases h0 : b = 0
+  · rw [if_pos h0]
+    by_cases ha : a % 2 = 0
+    · rw [if_pos ha]; omega
+    · rw [if_neg ha]; omega
+  · rw [if_neg h0]
+    by_cases h1 : b = 1
+    · rw [if_pos h1]
+      by_cases ha : a % 2 = 0
+      · rw [if_pos ha]; omega
+      · rw [if_neg ha]; omega
+    · rw [if_neg h1]
+      by_cases h2 : b = 2
+      · rw [if_pos h2]
+        by_cases ha : a % 2 = 0
+        · rw [if_pos ha]; omega
+        · rw [if_neg ha]; omega
+      · rw [if_neg h2]
+        by_cases h3 : b = 3
+        · rw [if_pos h3]
+          by_cases ha : a % 2 = 0
+          · rw [if_pos ha]; omega
+          · rw [if_neg ha]; omega
+        · rw [if_neg h3]
+          by_cases hp : a % 2 = b % 2
+          · rw [if_pos hp]; omega
+          · rw [if_neg hp]; omega
+
+theorem submission.lhs : @EquationLHS Nat submission.inst := by
+  intro x y z
+  show x = submission.op y (submission.op (submission.op y (submission.op z y)) x)
+  have h1 := submission.spec z y
+  revert h1
+  generalize submission.op z y = p
+  intro h1
+  have h2 := submission.spec y p
+  revert h2
+  generalize submission.op y p = q
+  intro h2
+  rcases h1 with h1 | h1 | h1 | h1 | h1 | h1 <;>
+  rcases h2 with h2 | h2 | h2 | h2 | h2 | h2 <;>
+  (try omega) <;>
+  (have h3 := submission.spec q x
+   revert h3
+   generalize submission.op q x = r
+   intro h3
+   have h4 := submission.spec y r
+   revert h4
+   generalize submission.op y r = s
+   intro h4
+   rcases h3 with h3 | h3 | h3 | h3 | h3 | h3 <;>
+   rcases h4 with h4 | h4 | h4 | h4 | h4 | h4 <;>
+   omega)
+
+theorem submission.rhs : ¬ @EquationRHS Nat submission.inst := by
+  intro h
+  exact absurd (h 0 1 0) (by decide)
+
+def submission : Goal :=
+  Exists.intro Nat (Exists.intro submission.inst
+    (And.intro submission.lhs submission.rhs))
+"""),
+    ('v0 = (v1 ◇ ((v1 ◇ (v2 ◇ v1)) ◇ v0))',
+     'v0 = ((v1 ◇ (v0 ◇ v2)) ◇ (v2 ◇ v0))'): ("false", "inf_e1133_e1912", """import JudgeProblem
+set_option maxHeartbeats 1000000
+
+def submission.op (a b : Nat) : Nat :=
+  if b = 0 then (if a % 2 = 0 then 0 else 2)
+  else if b = 1 then (if a % 2 = 0 then 1 else 3)
+  else if b = 2 then (if a % 2 = 0 then 2 else 0)
+  else if b = 3 then (if a % 2 = 0 then 4 else 1)
+  else if a % 2 = b % 2 then b - 1 else b + 1
+
+def submission.inst : Magma Nat := { op := submission.op }
+
+theorem submission.spec (a b : Nat) :
+    (b = 0 ∧ submission.op a b = 2 * (a % 2)) ∨
+    (b = 1 ∧ submission.op a b = 1 + 2 * (a % 2)) ∨
+    (b = 2 ∧ submission.op a b = 2 - 2 * (a % 2)) ∨
+    (b = 3 ∧ submission.op a b = 4 - 3 * (a % 2)) ∨
+    (4 ≤ b ∧ a % 2 = b % 2 ∧ submission.op a b = b - 1) ∨
+    (4 ≤ b ∧ a % 2 ≠ b % 2 ∧ submission.op a b = b + 1) := by
+  unfold submission.op
+  by_cases h0 : b = 0
+  · rw [if_pos h0]
+    by_cases ha : a % 2 = 0
+    · rw [if_pos ha]; omega
+    · rw [if_neg ha]; omega
+  · rw [if_neg h0]
+    by_cases h1 : b = 1
+    · rw [if_pos h1]
+      by_cases ha : a % 2 = 0
+      · rw [if_pos ha]; omega
+      · rw [if_neg ha]; omega
+    · rw [if_neg h1]
+      by_cases h2 : b = 2
+      · rw [if_pos h2]
+        by_cases ha : a % 2 = 0
+        · rw [if_pos ha]; omega
+        · rw [if_neg ha]; omega
+      · rw [if_neg h2]
+        by_cases h3 : b = 3
+        · rw [if_pos h3]
+          by_cases ha : a % 2 = 0
+          · rw [if_pos ha]; omega
+          · rw [if_neg ha]; omega
+        · rw [if_neg h3]
+          by_cases hp : a % 2 = b % 2
+          · rw [if_pos hp]; omega
+          · rw [if_neg hp]; omega
+
+theorem submission.lhs : @EquationLHS Nat submission.inst := by
+  intro x y z
+  show x = submission.op y (submission.op (submission.op y (submission.op z y)) x)
+  have h1 := submission.spec z y
+  revert h1
+  generalize submission.op z y = p
+  intro h1
+  have h2 := submission.spec y p
+  revert h2
+  generalize submission.op y p = q
+  intro h2
+  rcases h1 with h1 | h1 | h1 | h1 | h1 | h1 <;>
+  rcases h2 with h2 | h2 | h2 | h2 | h2 | h2 <;>
+  (try omega) <;>
+  (have h3 := submission.spec q x
+   revert h3
+   generalize submission.op q x = r
+   intro h3
+   have h4 := submission.spec y r
+   revert h4
+   generalize submission.op y r = s
+   intro h4
+   rcases h3 with h3 | h3 | h3 | h3 | h3 | h3 <;>
+   rcases h4 with h4 | h4 | h4 | h4 | h4 | h4 <;>
+   omega)
+
+theorem submission.rhs : ¬ @EquationRHS Nat submission.inst := by
+  intro h
+  exact absurd (h 0 1 4) (by decide)
+
+def submission : Goal :=
+  Exists.intro Nat (Exists.intro submission.inst
+    (And.intro submission.lhs submission.rhs))
+"""),
+    ('v0 = (v1 ◇ (v0 ◇ (v1 ◇ (v1 ◇ v0))))',
+     '(v0 ◇ v0) = (((v0 ◇ v0) ◇ v0) ◇ v0)'): ("false", "inf_e476_e4065", """import JudgeProblem
+import JudgeDecide.DecideBang
+set_option maxRecDepth 40000
+set_option maxHeartbeats 0
+
+def submission : Goal := by
+  let m : Magma (Fin 36) := { op := fun i j => Fin.mk (Nat.mod (List.getD [17,9,12,14,10,13,11,16,15,30,32,29,28,27,33,35,31,34,1,7,0,4,6,2,5,3,8,18,22,23,24,25,26,19,20,21,16,11,13,17,12,10,15,14,9,31,35,33,30,29,27,34,28,32,3,5,2,1,0,6,8,4,7,20,19,26,18,23,25,21,24,22,15,12,16,11,17,14,13,9,10,34,29,31,35,30,28,33,32,27,8,0,3,5,1,4,2,7,6,21,23,20,19,18,24,26,22,25,9,13,14,15,16,17,10,11,12,32,33,28,34,31,30,27,35,29,7,2,4,8,3,1,6,5,0,22,26,24,21,20,18,25,19,23,12,14,11,10,9,15,17,13,16,29,28,35,27,32,34,30,33,31,0,4,5,6,7,8,1,2,3,23,24,19,25,22,21,18,26,20,14,15,10,16,13,12,9,17,11,28,34,27,31,33,29,32,30,35,4,8,6,3,2,0,7,1,5,24,21,25,20,26,23,22,18,19,10,16,9,13,15,11,14,12,17,27,31,32,33,34,35,28,29,30,6,3,7,2,8,5,4,0,1,25,20,22,26,21,19,24,23,18,13,17,15,12,11,9,16,10,14,33,30,34,29,35,32,31,27,28,2,1,8,0,5,7,3,6,4,26,18,21,23,19,22,20,25,24,11,10,17,9,14,16,12,15,13,35,27,30,32,28,31,29,34,33,5,6,1,7,4,3,0,8,2,19,25,18,22,24,20,23,21,26,9,13,14,15,16,17,10,11,12,27,31,32,33,34,35,28,29,30,0,4,5,6,7,8,1,2,3,18,22,23,24,25,26,19,20,21,11,10,17,9,14,16,12,15,13,29,28,35,27,32,34,30,33,31,2,1,8,0,5,7,3,6,4,20,19,26,18,23,25,21,24,22,12,14,11,10,9,15,17,13,16,30,32,29,28,27,33,35,31,34,3,5,2,1,0,6,8,4,7,21,23,20,19,18,24,26,22,25,13,17,15,12,11,9,16,10,14,31,35,33,30,29,27,34,28,32,4,8,6,3,2,0,7,1,5,22,26,24,21,20,18,25,19,23,14,15,10,16,13,12,9,17,11,32,33,28,34,31,30,27,35,29,5,6,1,7,4,3,0,8,2,23,24,19,25,22,21,18,26,20,15,12,16,11,17,14,13,9,10,33,30,34,29,35,32,31,27,28,6,3,7,2,8,5,4,0,1,24,21,25,20,26,23,22,18,19,16,11,13,17,12,10,15,14,9,34,29,31,35,30,28,33,32,27,7,2,4,8,3,1,6,5,0,25,20,22,26,21,19,24,23,18,17,9,12,14,10,13,11,16,15,35,27,30,32,28,31,29,34,33,8,0,3,5,1,4,2,7,6,26,18,21,23,19,22,20,25,24,10,16,9,13,15,11,14,12,17,28,34,27,31,33,29,32,30,35,1,7,0,4,6,2,5,3,8,19,25,18,22,24,20,23,21,26,9,13,14,15,16,17,10,11,12,27,31,32,33,34,35,28,29,30,0,4,5,6,7,8,1,2,3,18,22,23,24,25,26,19,20,21,11,10,17,9,14,16,12,15,13,29,28,35,27,32,34,30,33,31,2,1,8,0,5,7,3,6,4,20,19,26,18,23,25,21,24,22,12,14,11,10,9,15,17,13,16,30,32,29,28,27,33,35,31,34,3,5,2,1,0,6,8,4,7,21,23,20,19,18,24,26,22,25,13,17,15,12,11,9,16,10,14,31,35,33,30,29,27,34,28,32,4,8,6,3,2,0,7,1,5,22,26,24,21,20,18,25,19,23,14,15,10,16,13,12,9,17,11,32,33,28,34,31,30,27,35,29,5,6,1,7,4,3,0,8,2,23,24,19,25,22,21,18,26,20,15,12,16,11,17,14,13,9,10,33,30,34,29,35,32,31,27,28,6,3,7,2,8,5,4,0,1,24,21,25,20,26,23,22,18,19,16,11,13,17,12,10,15,14,9,34,29,31,35,30,28,33,32,27,7,2,4,8,3,1,6,5,0,25,20,22,26,21,19,24,23,18,17,9,12,14,10,13,11,16,15,35,27,30,32,28,31,29,34,33,8,0,3,5,1,4,2,7,6,26,18,21,23,19,22,20,25,24,10,16,9,13,15,11,14,12,17,28,34,27,31,33,29,32,30,35,1,7,0,4,6,2,5,3,8,19,25,18,22,24,20,23,21,26,9,13,14,15,16,17,10,11,12,27,31,32,33,34,35,28,29,30,0,4,5,6,7,8,1,2,3,18,22,23,24,25,26,19,20,21,11,10,17,9,14,16,12,15,13,29,28,35,27,32,34,30,33,31,2,1,8,0,5,7,3,6,4,20,19,26,18,23,25,21,24,22,12,14,11,10,9,15,17,13,16,30,32,29,28,27,33,35,31,34,3,5,2,1,0,6,8,4,7,21,23,20,19,18,24,26,22,25,13,17,15,12,11,9,16,10,14,31,35,33,30,29,27,34,28,32,4,8,6,3,2,0,7,1,5,22,26,24,21,20,18,25,19,23,14,15,10,16,13,12,9,17,11,32,33,28,34,31,30,27,35,29,5,6,1,7,4,3,0,8,2,23,24,19,25,22,21,18,26,20,15,12,16,11,17,14,13,9,10,33,30,34,29,35,32,31,27,28,6,3,7,2,8,5,4,0,1,24,21,25,20,26,23,22,18,19,16,11,13,17,12,10,15,14,9,34,29,31,35,30,28,33,32,27,7,2,4,8,3,1,6,5,0,25,20,22,26,21,19,24,23,18,17,9,12,14,10,13,11,16,15,35,27,30,32,28,31,29,34,33,8,0,3,5,1,4,2,7,6,26,18,21,23,19,22,20,25,24,10,16,9,13,15,11,14,12,17,28,34,27,31,33,29,32,30,35,1,7,0,4,6,2,5,3,8,19,25,18,22,24,20,23,21,26] (Nat.add (Nat.mul (Fin.val i) 36) (Fin.val j)) 0) 36) (Nat.mod_lt _ (Nat.succ_pos 35)) }
+  refine Exists.intro (Fin 36) ?_
+  refine Exists.intro m ?_
+  decideFin!
 """),
 }
 
@@ -10298,6 +10601,14 @@ def llm_lemma_candidate(
             continue
         lemma_proof = lemma_closure_proof(
             eq1, lemma, time_budget=LLM_LEMMA_CLOSURE_TIME_BUDGET)
+        if lemma_proof is None and lemma_survives_models(eq1, lemma):
+            # Egg fallback: the CP closure was the measured wall of the LLM
+            # lemma lane (2026-07-22: 13 of 16 parsed proposals died here while
+            # egg proved the same pivot on 10 of 14 rows — the finding that
+            # became `egg_priority_bootstrap`). The certificate shape is
+            # identical, so the kernel checks the egg proof the same way.
+            lemma_proof = egg_saturate_prove(
+                eq1, lemma, time_budget=LLM_LEMMA_EGG_TIME_BUDGET)
         if lemma_proof is None:
             reason = "lemma_not_derivable_from_hypothesis"
             continue

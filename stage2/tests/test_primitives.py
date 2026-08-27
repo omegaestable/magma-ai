@@ -833,6 +833,28 @@ def test_completion_collapse_certificate_handles_the_variable_on_either_side(sol
     assert backward is not None, "left-hand branch produced no certificate"
     oracles.check_true_lemma_chain_certificate(backward, eq1, eq2)
 
+
+def test_completion_bridge_multi_fill_reaches_goal_constants(solver):
+    """The goal bridge must try the goal's own skolem constants as fills.
+
+    A single fill (the smallest constant of the matched subterm) provably loses
+    whole families: on the 530k-row order-4 frontier (2026-08-26), every eq1
+    `3569`/`3983`/`2854` miss closes under multi-fill and none closes without
+    it. This row is one of the two former "structurally unreachable" survivors
+    — eq1 saturates to a handful of rules in ~0.1 s, and the goal's
+    fresh-variable-heavy RHS is only reachable when an unbound target-side
+    variable is instantiated at a goal constant the matched subterm does not
+    mention. Regression fixture, not solver policy (rail 9): the content is
+    the equations, no id is consulted anywhere.
+    """
+    eq1 = solver.parse_equation("x ◇ y = y ◇ ((z ◇ y) ◇ x)")
+    eq2 = solver.parse_equation("(x ◇ y) ◇ x = (z ◇ w) ◇ u")
+    found = solver.completion_prove(eq1, eq2, time_budget=20.0)
+    assert found is not None, "multi-fill bridge no longer closes the fixture row"
+    route, code = found
+    assert route == "true:completion:bridge"
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+
 # The single-rule / multi-rule engines are twins by construction, and every
 # bounding fix so far has landed on exactly one of the pair.
 _ENGINE_TWINS = (

@@ -1,0 +1,1000 @@
+{"id": "etp_4468_4080", "eq1_id": 4468, "eq2_id": 4080, "equation1": "x ◇ (y ◇ x) = (z ◇ w) ◇ u", "equation2": "x ◇ x = ((y ◇ x) ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3175_4142", "eq1_id": 3175, "eq2_id": 4142, "equation1": "x = (((y ◇ y) ◇ z) ◇ w) ◇ u", "equation2": "x ◇ y = ((x ◇ z) ◇ y) ◇ y", "answer": true}
+{"id": "etp_3933_3673", "eq1_id": 3933, "eq2_id": 3673, "equation1": "x ◇ y = (x ◇ (y ◇ z)) ◇ w", "equation2": "x ◇ x = (x ◇ y) ◇ (z ◇ w)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_450_151", "eq1_id": 450, "eq2_id": 151, "equation1": "x = x ◇ (y ◇ (z ◇ (y ◇ x)))", "equation2": "x = (x ◇ x) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1698_329", "eq1_id": 1698, "eq2_id": 329, "equation1": "x = (y ◇ x) ◇ ((y ◇ z) ◇ y)", "equation2": "x ◇ y = x ◇ (z ◇ y)", "answer": true}
+{"id": "etp_4459_3664", "eq1_id": 4459, "eq2_id": 3664, "equation1": "x ◇ (y ◇ x) = (z ◇ y) ◇ w", "equation2": "x ◇ x = (x ◇ y) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_694_3359", "eq1_id": 694, "eq2_id": 3359, "equation1": "x = y ◇ (x ◇ ((z ◇ z) ◇ x))", "equation2": "x ◇ y = y ◇ (y ◇ (z ◇ y))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1338_2300", "eq1_id": 1338, "eq2_id": 2300, "equation1": "x = y ◇ (((y ◇ z) ◇ y) ◇ z)", "equation2": "x = (y ◇ (x ◇ (y ◇ x))) ◇ x", "answer": true}
+{"id": "etp_1372_2763", "eq1_id": 1372, "eq2_id": 2763, "equation1": "x = y ◇ (((z ◇ y) ◇ y) ◇ z)", "equation2": "x = ((y ◇ y) ◇ (z ◇ z)) ◇ z", "answer": true}
+{"id": "etp_1014_3732", "eq1_id": 1014, "eq2_id": 3732, "equation1": "x = y ◇ ((z ◇ w) ◇ (u ◇ x))", "equation2": "x ◇ y = (x ◇ z) ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1537_2241", "eq1_id": 1537, "eq2_id": 2241, "equation1": "x = (y ◇ y) ◇ (z ◇ (x ◇ z))", "equation2": "x = (x ◇ (x ◇ (x ◇ y))) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2719_4357", "eq1_id": 2719, "eq2_id": 4357, "equation1": "x = ((y ◇ x) ◇ (z ◇ x)) ◇ w", "equation2": "x ◇ (y ◇ z) = x ◇ (y ◇ w)", "answer": true}
+{"id": "etp_2987_3793", "eq1_id": 2987, "eq2_id": 3793, "equation1": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ z", "equation2": "x ◇ y = (z ◇ x) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_896_1883", "eq1_id": 896, "eq2_id": 1883, "equation1": "x = y ◇ ((x ◇ z) ◇ (y ◇ w))", "equation2": "x = (x ◇ (y ◇ z)) ◇ (w ◇ u)", "answer": true}
+{"id": "etp_3882_4580", "eq1_id": 3882, "eq2_id": 4580, "equation1": "x ◇ x = (y ◇ (x ◇ y)) ◇ z", "equation2": "x ◇ (y ◇ z) = (w ◇ u) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2512_3761", "eq1_id": 2512, "eq2_id": 3761, "equation1": "x = (y ◇ ((x ◇ y) ◇ z)) ◇ w", "equation2": "x ◇ y = (y ◇ y) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_4423_3585", "eq1_id": 4423, "eq2_id": 3585, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ x", "equation2": "x ◇ y = z ◇ ((x ◇ x) ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1202_45", "eq1_id": 1202, "eq2_id": 45, "equation1": "x = y ◇ ((z ◇ (w ◇ y)) ◇ x)", "equation2": "x ◇ y = z ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_730_1270", "eq1_id": 730, "eq2_id": 1270, "equation1": "x = y ◇ (y ◇ ((z ◇ y) ◇ w))", "equation2": "x = x ◇ (((y ◇ z) ◇ w) ◇ x)", "answer": true}
+{"id": "etp_4688_4164", "eq1_id": 4688, "eq2_id": 4164, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ u", "equation2": "x ◇ y = ((y ◇ y) ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1717_3456", "eq1_id": 1717, "eq2_id": 3456, "equation1": "x = (y ◇ x) ◇ ((z ◇ w) ◇ u)", "equation2": "x ◇ x = x ◇ ((x ◇ x) ◇ x)", "answer": true}
+{"id": "etp_4347_4575", "eq1_id": 4347, "eq2_id": 4575, "equation1": "x ◇ (y ◇ y) = y ◇ (z ◇ w)", "equation2": "x ◇ (y ◇ z) = (w ◇ w) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_624_3723", "eq1_id": 624, "eq2_id": 3723, "equation1": "x = x ◇ (x ◇ ((y ◇ y) ◇ z))", "equation2": "x ◇ y = (x ◇ y) ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1575_3362", "eq1_id": 1575, "eq2_id": 3362, "equation1": "x = (y ◇ z) ◇ (y ◇ (y ◇ z))", "equation2": "x ◇ y = y ◇ (z ◇ (x ◇ x))", "answer": true}
+{"id": "etp_2042_3721", "eq1_id": 2042, "eq2_id": 3721, "equation1": "x = ((x ◇ x) ◇ y) ◇ (x ◇ z)", "equation2": "x ◇ y = (x ◇ y) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1846_4140", "eq1_id": 1846, "eq2_id": 4140, "equation1": "x = (x ◇ (x ◇ y)) ◇ (z ◇ w)", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ w", "answer": true}
+{"id": "etp_738_4391", "eq1_id": 738, "eq2_id": 4391, "equation1": "x = y ◇ (y ◇ ((z ◇ w) ◇ w))", "equation2": "x ◇ (x ◇ x) = (y ◇ z) ◇ x", "answer": true}
+{"id": "etp_1132_3566", "eq1_id": 1132, "eq2_id": 3566, "equation1": "x = y ◇ ((y ◇ (z ◇ x)) ◇ w)", "equation2": "x ◇ y = y ◇ ((z ◇ x) ◇ y)", "answer": true}
+{"id": "etp_3185_2402", "eq1_id": 3185, "eq2_id": 2402, "equation1": "x = (((y ◇ z) ◇ x) ◇ z) ◇ y", "equation2": "x = (y ◇ (z ◇ (z ◇ y))) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1623_1318", "eq1_id": 1623, "eq2_id": 1318, "equation1": "x = (y ◇ z) ◇ (w ◇ (u ◇ x))", "equation2": "x = y ◇ (((y ◇ x) ◇ z) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4678_4101", "eq1_id": 4678, "eq2_id": 4101, "equation1": "(x ◇ y) ◇ z = (y ◇ x) ◇ w", "equation2": "x ◇ x = ((y ◇ z) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2397_1588", "eq1_id": 2397, "eq2_id": 1588, "equation1": "x = (y ◇ (z ◇ (y ◇ w))) ◇ u", "equation2": "x = (y ◇ z) ◇ (z ◇ (x ◇ z))", "answer": true}
+{"id": "etp_2440_3851", "eq1_id": 2440, "eq2_id": 3851, "equation1": "x = (y ◇ (z ◇ (w ◇ u))) ◇ v", "equation2": "x ◇ y = (z ◇ w) ◇ (w ◇ x)", "answer": true}
+{"id": "etp_4565_3482", "eq1_id": 4565, "eq2_id": 3482, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ w", "equation2": "x ◇ x = y ◇ ((y ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2701_461", "eq1_id": 2701, "eq2_id": 461, "equation1": "x = ((y ◇ x) ◇ (x ◇ y)) ◇ z", "equation2": "x = x ◇ (y ◇ (z ◇ (w ◇ w)))", "answer": true}
+{"id": "etp_1539_2550", "eq1_id": 1539, "eq2_id": 2550, "equation1": "x = (y ◇ y) ◇ (z ◇ (y ◇ x))", "equation2": "x = (y ◇ ((y ◇ z) ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1999_1523", "eq1_id": 1999, "eq2_id": 1523, "equation1": "x = (y ◇ (z ◇ z)) ◇ (y ◇ w)", "equation2": "x = (y ◇ y) ◇ (x ◇ (z ◇ z))", "answer": true}
+{"id": "etp_2918_4254", "eq1_id": 2918, "eq2_id": 4254, "equation1": "x = ((y ◇ (x ◇ y)) ◇ z) ◇ w", "equation2": "x ◇ y = ((z ◇ w) ◇ z) ◇ z", "answer": true}
+{"id": "etp_2384_2332", "eq1_id": 2384, "eq2_id": 2332, "equation1": "x = (y ◇ (z ◇ (y ◇ x))) ◇ w", "equation2": "x = (y ◇ (y ◇ (x ◇ y))) ◇ z", "answer": true}
+{"id": "etp_546_703", "eq1_id": 546, "eq2_id": 703, "equation1": "x = y ◇ (z ◇ (x ◇ (z ◇ y)))", "equation2": "x = y ◇ (y ◇ ((x ◇ x) ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4322_4055", "eq1_id": 4322, "eq2_id": 4055, "equation1": "x ◇ (y ◇ x) = y ◇ (x ◇ z)", "equation2": "x ◇ y = (z ◇ (w ◇ w)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3241_3629", "eq1_id": 3241, "eq2_id": 3629, "equation1": "x = (((y ◇ z) ◇ w) ◇ z) ◇ u", "equation2": "x ◇ y = z ◇ ((z ◇ w) ◇ y)", "answer": true}
+{"id": "etp_1211_4255", "eq1_id": 1211, "eq2_id": 4255, "equation1": "x = y ◇ ((z ◇ (w ◇ z)) ◇ u)", "equation2": "x ◇ y = ((z ◇ w) ◇ z) ◇ w", "answer": true}
+{"id": "etp_741_222", "eq1_id": 741, "eq2_id": 222, "equation1": "x = y ◇ (z ◇ ((x ◇ x) ◇ y))", "equation2": "x = (y ◇ (x ◇ y)) ◇ y", "answer": true}
+{"id": "etp_621_2483", "eq1_id": 621, "eq2_id": 2483, "equation1": "x = x ◇ (x ◇ ((y ◇ x) ◇ z))", "equation2": "x = (x ◇ ((y ◇ z) ◇ y)) ◇ w", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3164_2716", "eq1_id": 3164, "eq2_id": 2716, "equation1": "x = (((y ◇ y) ◇ z) ◇ y) ◇ y", "equation2": "x = ((y ◇ x) ◇ (z ◇ x)) ◇ x", "answer": true}
+{"id": "etp_4468_4162", "eq1_id": 4468, "eq2_id": 4162, "equation1": "x ◇ (y ◇ x) = (z ◇ w) ◇ u", "equation2": "x ◇ y = ((y ◇ x) ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2319_481", "eq1_id": 2319, "eq2_id": 481, "equation1": "x = (y ◇ (x ◇ (z ◇ z))) ◇ y", "equation2": "x = y ◇ (x ◇ (y ◇ (z ◇ z)))", "answer": true}
+{"id": "etp_4539_4247", "eq1_id": 4539, "eq2_id": 4247, "equation1": "x ◇ (y ◇ z) = (y ◇ w) ◇ u", "equation2": "x ◇ y = ((z ◇ w) ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4375_3539", "eq1_id": 4375, "eq2_id": 3539, "equation1": "x ◇ (y ◇ z) = w ◇ (y ◇ u)", "equation2": "x ◇ y = x ◇ ((z ◇ z) ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_744_3722", "eq1_id": 744, "eq2_id": 3722, "equation1": "x = y ◇ (z ◇ ((x ◇ y) ◇ x))", "equation2": "x ◇ y = (x ◇ y) ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_984_2478", "eq1_id": 984, "eq2_id": 2478, "equation1": "x = y ◇ ((z ◇ z) ◇ (y ◇ w))", "equation2": "x = (x ◇ ((y ◇ z) ◇ x)) ◇ z", "answer": true}
+{"id": "etp_2413_3811", "eq1_id": 2413, "eq2_id": 3811, "equation1": "x = (y ◇ (z ◇ (z ◇ w))) ◇ w", "equation2": "x ◇ y = (z ◇ y) ◇ (z ◇ y)", "answer": true}
+{"id": "etp_2860_55", "eq1_id": 2860, "eq2_id": 55, "equation1": "x = ((x ◇ (x ◇ y)) ◇ z) ◇ z", "equation2": "x = x ◇ (y ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4102_3671", "eq1_id": 4102, "eq2_id": 3671, "equation1": "x ◇ x = ((y ◇ z) ◇ x) ◇ z", "equation2": "x ◇ x = (x ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2809_1616", "eq1_id": 2809, "eq2_id": 1616, "equation1": "x = ((y ◇ z) ◇ (z ◇ y)) ◇ y", "equation2": "x = (y ◇ z) ◇ (w ◇ (z ◇ w))", "answer": true}
+{"id": "etp_3452_4477", "eq1_id": 3452, "eq2_id": 4477, "equation1": "x ◇ y = z ◇ (w ◇ (u ◇ z))", "equation2": "x ◇ (y ◇ y) = (x ◇ z) ◇ z", "answer": true}
+{"id": "etp_1389_79", "eq1_id": 1389, "eq2_id": 79, "equation1": "x = y ◇ (((z ◇ z) ◇ y) ◇ z)", "equation2": "x = y ◇ (y ◇ (z ◇ y))", "answer": true}
+{"id": "etp_4421_3364", "eq1_id": 4421, "eq2_id": 3364, "equation1": "x ◇ (x ◇ y) = (z ◇ y) ◇ z", "equation2": "x ◇ y = y ◇ (z ◇ (x ◇ z))", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2490_3532", "eq1_id": 2490, "eq2_id": 3532, "equation1": "x = (x ◇ ((y ◇ z) ◇ w)) ◇ z", "equation2": "x ◇ y = x ◇ ((z ◇ y) ◇ x)", "answer": true}
+{"id": "etp_881_514", "eq1_id": 881, "eq2_id": 514, "equation1": "x = y ◇ ((x ◇ y) ◇ (x ◇ z))", "equation2": "x = y ◇ (y ◇ (y ◇ (y ◇ y)))", "answer": true}
+{"id": "etp_4453_3997", "eq1_id": 4453, "eq2_id": 3997, "equation1": "x ◇ (y ◇ x) = (z ◇ x) ◇ y", "equation2": "x ◇ y = (z ◇ (x ◇ z)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1162_339", "eq1_id": 1162, "eq2_id": 339, "equation1": "x = y ◇ ((z ◇ (x ◇ w)) ◇ u)", "equation2": "x ◇ y = y ◇ (z ◇ y)", "answer": true}
+{"id": "etp_3025_3852", "eq1_id": 3025, "eq2_id": 3852, "equation1": "x = ((y ◇ (z ◇ w)) ◇ x) ◇ y", "equation2": "x ◇ y = (z ◇ w) ◇ (w ◇ y)", "answer": true}
+{"id": "etp_1797_1400", "eq1_id": 1797, "eq2_id": 1400, "equation1": "x = (y ◇ z) ◇ ((z ◇ z) ◇ x)", "equation2": "x = y ◇ (((z ◇ w) ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1636_3310", "eq1_id": 1636, "eq2_id": 3310, "equation1": "x = (x ◇ x) ◇ ((y ◇ x) ◇ z)", "equation2": "x ◇ y = x ◇ (x ◇ (y ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1337_1529", "eq1_id": 1337, "eq2_id": 1529, "equation1": "x = y ◇ (((y ◇ z) ◇ y) ◇ y)", "equation2": "x = (y ◇ y) ◇ (y ◇ (y ◇ y))", "answer": true}
+{"id": "etp_915_4589", "eq1_id": 915, "eq2_id": 4589, "equation1": "x = y ◇ ((y ◇ x) ◇ (z ◇ w))", "equation2": "(x ◇ x) ◇ x = (y ◇ x) ◇ z", "answer": true}
+{"id": "etp_4532_3527", "eq1_id": 4532, "eq2_id": 3527, "equation1": "x ◇ (y ◇ z) = (y ◇ z) ◇ y", "equation2": "x ◇ y = x ◇ ((y ◇ z) ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2353_1148", "eq1_id": 2353, "eq2_id": 1148, "equation1": "x = (y ◇ (y ◇ (z ◇ y))) ◇ z", "equation2": "x = y ◇ ((z ◇ (x ◇ x)) ◇ z)", "answer": true}
+{"id": "etp_2204_133", "eq1_id": 2204, "eq2_id": 133, "equation1": "x = ((y ◇ z) ◇ z) ◇ (z ◇ y)", "equation2": "x = y ◇ ((y ◇ z) ◇ w)", "answer": true}
+{"id": "etp_783_3662", "eq1_id": 783, "eq2_id": 3662, "equation1": "x = y ◇ (z ◇ ((z ◇ z) ◇ y))", "equation2": "x ◇ x = (x ◇ x) ◇ (y ◇ y)", "answer": true}
+{"id": "etp_607_3115", "eq1_id": 607, "eq2_id": 3115, "equation1": "x = y ◇ (z ◇ (w ◇ (w ◇ u)))", "equation2": "x = (((y ◇ x) ◇ y) ◇ y) ◇ x", "answer": true}
+{"id": "etp_1762_1454", "eq1_id": 1762, "eq2_id": 1454, "equation1": "x = (y ◇ z) ◇ ((x ◇ y) ◇ w)", "equation2": "x = (x ◇ y) ◇ (y ◇ (y ◇ x))", "answer": true}
+{"id": "etp_3892_322", "eq1_id": 3892, "eq2_id": 322, "equation1": "x ◇ x = (y ◇ (y ◇ y)) ◇ z", "equation2": "x ◇ y = x ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3892_4220", "eq1_id": 3892, "eq2_id": 4220, "equation1": "x ◇ x = (y ◇ (y ◇ y)) ◇ z", "equation2": "x ◇ y = ((z ◇ y) ◇ w) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3886_4177", "eq1_id": 3886, "eq2_id": 4177, "equation1": "x ◇ x = (y ◇ (x ◇ z)) ◇ w", "equation2": "x ◇ y = ((y ◇ z) ◇ x) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3969_4643", "eq1_id": 3969, "eq2_id": 4643, "equation1": "x ◇ y = (y ◇ (y ◇ z)) ◇ z", "equation2": "(x ◇ y) ◇ x = (z ◇ x) ◇ y", "answer": true}
+{"id": "etp_3502_4140", "eq1_id": 3502, "eq2_id": 4140, "equation1": "x ◇ x = y ◇ ((z ◇ z) ◇ w)", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3229_1368", "eq1_id": 3229, "eq2_id": 1368, "equation1": "x = (((y ◇ z) ◇ w) ◇ x) ◇ z", "equation2": "x = y ◇ (((z ◇ y) ◇ x) ◇ z)", "answer": true}
+{"id": "etp_415_3062", "eq1_id": 415, "eq2_id": 3062, "equation1": "x = x ◇ (x ◇ (x ◇ (y ◇ z)))", "equation2": "x = (((x ◇ x) ◇ y) ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2823_3418", "eq1_id": 2823, "eq2_id": 3418, "equation1": "x = ((y ◇ z) ◇ (w ◇ x)) ◇ z", "equation2": "x ◇ y = z ◇ (z ◇ (y ◇ y))", "answer": true}
+{"id": "etp_4311_4239", "eq1_id": 4311, "eq2_id": 4239, "equation1": "x ◇ (x ◇ y) = z ◇ (w ◇ z)", "equation2": "x ◇ y = ((z ◇ z) ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2999_2289", "eq1_id": 2999, "eq2_id": 2289, "equation1": "x = ((y ◇ (z ◇ y)) ◇ z) ◇ y", "equation2": "x = (x ◇ (y ◇ (z ◇ w))) ◇ u", "answer": true}
+{"id": "etp_1563_2465", "eq1_id": 1563, "eq2_id": 2465, "equation1": "x = (y ◇ z) ◇ (x ◇ (z ◇ w))", "equation2": "x = (x ◇ ((y ◇ x) ◇ z)) ◇ w", "answer": true}
+{"id": "etp_1960_4411", "eq1_id": 1960, "eq2_id": 4411, "equation1": "x = (y ◇ (z ◇ x)) ◇ (x ◇ z)", "equation2": "x ◇ (x ◇ y) = (y ◇ z) ◇ x", "answer": true}
+{"id": "etp_2495_2843", "eq1_id": 2495, "eq2_id": 2843, "equation1": "x = (y ◇ ((x ◇ x) ◇ x)) ◇ z", "equation2": "x = ((y ◇ z) ◇ (w ◇ u)) ◇ z", "answer": true}
+{"id": "etp_3413_4610", "eq1_id": 3413, "eq2_id": 4610, "equation1": "x ◇ y = z ◇ (z ◇ (x ◇ x))", "equation2": "(x ◇ x) ◇ y = (y ◇ z) ◇ x", "answer": true}
+{"id": "etp_3710_3380", "eq1_id": 3710, "eq2_id": 3380, "equation1": "x ◇ x = (y ◇ z) ◇ (w ◇ u)", "equation2": "x ◇ y = z ◇ (x ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2576_8", "eq1_id": 2576, "eq2_id": 8, "equation1": "x = (y ◇ ((z ◇ x) ◇ z)) ◇ y", "equation2": "x = x ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2753_4412", "eq1_id": 2753, "eq2_id": 4412, "equation1": "x = ((y ◇ y) ◇ (z ◇ x)) ◇ x", "equation2": "x ◇ (x ◇ y) = (y ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4560_3761", "eq1_id": 4560, "eq2_id": 3761, "equation1": "x ◇ (y ◇ z) = (w ◇ x) ◇ w", "equation2": "x ◇ y = (y ◇ y) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4495_3690", "eq1_id": 4495, "eq2_id": 3690, "equation1": "x ◇ (y ◇ y) = (z ◇ y) ◇ z", "equation2": "x ◇ x = (y ◇ y) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2042_3727", "eq1_id": 2042, "eq2_id": 3727, "equation1": "x = ((x ◇ x) ◇ y) ◇ (x ◇ z)", "equation2": "x ◇ y = (x ◇ y) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2934_3116", "eq1_id": 2934, "eq2_id": 3116, "equation1": "x = ((y ◇ (x ◇ z)) ◇ w) ◇ w", "equation2": "x = (((y ◇ x) ◇ y) ◇ y) ◇ y", "answer": true}
+{"id": "etp_4577_3984", "eq1_id": 4577, "eq2_id": 3984, "equation1": "x ◇ (y ◇ z) = (w ◇ u) ◇ x", "equation2": "x ◇ y = (y ◇ (z ◇ w)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4685_3549", "eq1_id": 4685, "eq2_id": 3549, "equation1": "(x ◇ y) ◇ z = (z ◇ y) ◇ w", "equation2": "x ◇ y = y ◇ ((x ◇ y) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2261_2251", "eq1_id": 2261, "eq2_id": 2251, "equation1": "x = (x ◇ (y ◇ (x ◇ z))) ◇ z", "equation2": "x = (x ◇ (x ◇ (y ◇ z))) ◇ z", "answer": true}
+{"id": "etp_2890_2070", "eq1_id": 2890, "eq2_id": 2070, "equation1": "x = ((x ◇ (y ◇ z)) ◇ z) ◇ x", "equation2": "x = ((x ◇ y) ◇ z) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2139_3176", "eq1_id": 2139, "eq2_id": 3176, "equation1": "x = ((y ◇ y) ◇ y) ◇ (y ◇ z)", "equation2": "x = (((y ◇ z) ◇ x) ◇ x) ◇ x", "answer": true}
+{"id": "etp_996_3831", "eq1_id": 996, "eq2_id": 3831, "equation1": "x = y ◇ ((z ◇ w) ◇ (x ◇ z))", "equation2": "x ◇ y = (z ◇ z) ◇ (w ◇ x)", "answer": true}
+{"id": "etp_3480_4345", "eq1_id": 3480, "eq2_id": 4345, "equation1": "x ◇ x = y ◇ ((x ◇ z) ◇ w)", "equation2": "x ◇ (y ◇ y) = y ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_532_117", "eq1_id": 532, "eq2_id": 117, "equation1": "x = y ◇ (y ◇ (z ◇ (w ◇ x)))", "equation2": "x = y ◇ ((x ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4205_3435", "eq1_id": 4205, "eq2_id": 3435, "equation1": "x ◇ y = ((z ◇ x) ◇ w) ◇ z", "equation2": "x ◇ y = z ◇ (w ◇ (y ◇ x))", "answer": true}
+{"id": "etp_1174_289", "eq1_id": 1174, "eq2_id": 289, "equation1": "x = y ◇ ((z ◇ (y ◇ z)) ◇ w)", "equation2": "x = ((y ◇ y) ◇ z) ◇ w", "answer": true}
+{"id": "etp_4565_3590", "eq1_id": 4565, "eq2_id": 3590, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ w", "equation2": "x ◇ y = z ◇ ((x ◇ z) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4419_4186", "eq1_id": 4419, "eq2_id": 4186, "equation1": "x ◇ (x ◇ y) = (z ◇ y) ◇ x", "equation2": "x ◇ y = ((y ◇ z) ◇ w) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_425_158", "eq1_id": 425, "eq2_id": 158, "equation1": "x = x ◇ (x ◇ (y ◇ (z ◇ w)))", "equation2": "x = (x ◇ y) ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_955_3639", "eq1_id": 955, "eq2_id": 3639, "equation1": "x = y ◇ ((z ◇ x) ◇ (w ◇ x))", "equation2": "x ◇ y = z ◇ ((w ◇ y) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1024_3329", "eq1_id": 1024, "eq2_id": 3329, "equation1": "x = x ◇ ((x ◇ (x ◇ y)) ◇ z)", "equation2": "x ◇ y = x ◇ (z ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4335_3836", "eq1_id": 4335, "eq2_id": 3836, "equation1": "x ◇ (y ◇ x) = z ◇ (w ◇ y)", "equation2": "x ◇ y = (z ◇ w) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_678_2619", "eq1_id": 678, "eq2_id": 2619, "equation1": "x = y ◇ (x ◇ ((y ◇ x) ◇ z))", "equation2": "x = (y ◇ ((z ◇ w) ◇ x)) ◇ y", "answer": true}
+{"id": "etp_1480_2449", "eq1_id": 1480, "eq2_id": 2449, "equation1": "x = (y ◇ x) ◇ (x ◇ (x ◇ z))", "equation2": "x = (x ◇ ((x ◇ y) ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_2047_2453", "eq1_id": 2047, "eq2_id": 2453, "equation1": "x = ((x ◇ x) ◇ y) ◇ (z ◇ y)", "equation2": "x = (x ◇ ((x ◇ y) ◇ z)) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1480_415", "eq1_id": 1480, "eq2_id": 415, "equation1": "x = (y ◇ x) ◇ (x ◇ (x ◇ z))", "equation2": "x = x ◇ (x ◇ (x ◇ (y ◇ z)))", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_4040_4284", "eq1_id": 4040, "eq2_id": 4284, "equation1": "x ◇ y = (z ◇ (w ◇ x)) ◇ y", "equation2": "x ◇ (x ◇ y) = x ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4553_3745", "eq1_id": 4553, "eq2_id": 3745, "equation1": "x ◇ (y ◇ z) = (z ◇ w) ◇ y", "equation2": "x ◇ y = (x ◇ z) ◇ (w ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4487_357", "eq1_id": 4487, "eq2_id": 357, "equation1": "x ◇ (y ◇ y) = (y ◇ z) ◇ z", "equation2": "x ◇ y = z ◇ (w ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_876_3905", "eq1_id": 876, "eq2_id": 3905, "equation1": "x = y ◇ ((x ◇ x) ◇ (z ◇ y))", "equation2": "x ◇ x = (y ◇ (z ◇ z)) ◇ x", "answer": true}
+{"id": "etp_2989_3561", "eq1_id": 2989, "eq2_id": 3561, "equation1": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ u", "equation2": "x ◇ y = y ◇ ((y ◇ z) ◇ x)", "answer": true}
+{"id": "etp_1032_3059", "eq1_id": 1032, "eq2_id": 3059, "equation1": "x = x ◇ ((x ◇ (y ◇ z)) ◇ y)", "equation2": "x = (((x ◇ x) ◇ y) ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_655_1434", "eq1_id": 655, "eq2_id": 1434, "equation1": "x = x ◇ (y ◇ ((z ◇ y) ◇ z))", "equation2": "x = (x ◇ x) ◇ (y ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1277_219", "eq1_id": 1277, "eq2_id": 219, "equation1": "x = y ◇ (((x ◇ x) ◇ x) ◇ z)", "equation2": "x = (y ◇ (x ◇ x)) ◇ y", "answer": true}
+{"id": "etp_1368_473", "eq1_id": 1368, "eq2_id": 473, "equation1": "x = y ◇ (((z ◇ y) ◇ x) ◇ z)", "equation2": "x = y ◇ (x ◇ (y ◇ (x ◇ x)))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4368_4514", "eq1_id": 4368, "eq2_id": 4514, "equation1": "x ◇ (y ◇ z) = y ◇ (w ◇ u)", "equation2": "x ◇ (y ◇ z) = (x ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1636_2256", "eq1_id": 1636, "eq2_id": 2256, "equation1": "x = (x ◇ x) ◇ ((y ◇ x) ◇ z)", "equation2": "x = (x ◇ (y ◇ (x ◇ y))) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2062_1230", "eq1_id": 2062, "eq2_id": 1230, "equation1": "x = ((x ◇ y) ◇ y) ◇ (x ◇ z)", "equation2": "x = x ◇ (((x ◇ y) ◇ x) ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2656_853", "eq1_id": 2656, "eq2_id": 853, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ y", "equation2": "x = x ◇ ((y ◇ z) ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3455_45", "eq1_id": 3455, "eq2_id": 45, "equation1": "x ◇ y = z ◇ (w ◇ (u ◇ v))", "equation2": "x ◇ y = z ◇ y", "answer": true}
+{"id": "etp_4519_3728", "eq1_id": 4519, "eq2_id": 3728, "equation1": "x ◇ (y ◇ z) = (x ◇ w) ◇ y", "equation2": "x ◇ y = (x ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2416_4565", "eq1_id": 2416, "eq2_id": 4565, "equation1": "x = (y ◇ (z ◇ (w ◇ x))) ◇ y", "equation2": "x ◇ (y ◇ z) = (w ◇ y) ◇ w", "answer": true}
+{"id": "etp_1032_1655", "eq1_id": 1032, "eq2_id": 1655, "equation1": "x = x ◇ ((x ◇ (y ◇ z)) ◇ y)", "equation2": "x = (x ◇ y) ◇ ((y ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2525_3089", "eq1_id": 2525, "eq2_id": 3089, "equation1": "x = (y ◇ ((x ◇ z) ◇ w)) ◇ x", "equation2": "x = (((x ◇ y) ◇ z) ◇ y) ◇ x", "answer": true}
+{"id": "etp_759_2677", "eq1_id": 759, "eq2_id": 2677, "equation1": "x = y ◇ (z ◇ ((y ◇ x) ◇ z))", "equation2": "x = ((x ◇ y) ◇ (y ◇ z)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1012_2666", "eq1_id": 1012, "eq2_id": 2666, "equation1": "x = y ◇ ((z ◇ w) ◇ (w ◇ w))", "equation2": "x = ((x ◇ y) ◇ (x ◇ z)) ◇ y", "answer": true}
+{"id": "etp_1979_1784", "eq1_id": 1979, "eq2_id": 1784, "equation1": "x = (y ◇ (z ◇ y)) ◇ (y ◇ x)", "equation2": "x = (y ◇ z) ◇ ((y ◇ w) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4089_4399", "eq1_id": 4089, "eq2_id": 4399, "equation1": "x ◇ x = ((y ◇ x) ◇ z) ◇ w", "equation2": "x ◇ (x ◇ y) = (x ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1514_3014", "eq1_id": 1514, "eq2_id": 3014, "equation1": "x = (y ◇ x) ◇ (z ◇ (w ◇ u))", "equation2": "x = ((y ◇ (z ◇ z)) ◇ y) ◇ w", "answer": true}
+{"id": "etp_2158_569", "eq1_id": 2158, "eq2_id": 569, "equation1": "x = ((y ◇ y) ◇ z) ◇ (w ◇ z)", "equation2": "x = y ◇ (z ◇ (y ◇ (w ◇ w)))", "answer": true}
+{"id": "etp_1997_3998", "eq1_id": 1997, "eq2_id": 3998, "equation1": "x = (y ◇ (z ◇ z)) ◇ (y ◇ y)", "equation2": "x ◇ y = (z ◇ (x ◇ z)) ◇ z", "answer": true}
+{"id": "etp_4575_3628", "eq1_id": 4575, "eq2_id": 3628, "equation1": "x ◇ (y ◇ z) = (w ◇ w) ◇ w", "equation2": "x ◇ y = z ◇ ((z ◇ w) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1736_1446", "eq1_id": 1736, "eq2_id": 1446, "equation1": "x = (y ◇ y) ◇ ((y ◇ z) ◇ z)", "equation2": "x = (x ◇ y) ◇ (x ◇ (y ◇ z))", "answer": true}
+{"id": "etp_3476_3899", "eq1_id": 3476, "eq2_id": 3899, "equation1": "x ◇ x = y ◇ ((x ◇ y) ◇ z)", "equation2": "x ◇ x = (y ◇ (z ◇ x)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4229_3962", "eq1_id": 4229, "eq2_id": 3962, "equation1": "x ◇ y = ((z ◇ z) ◇ y) ◇ x", "equation2": "x ◇ y = (y ◇ (y ◇ x)) ◇ y", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_779_716", "eq1_id": 779, "eq2_id": 716, "equation1": "x = y ◇ (z ◇ ((z ◇ y) ◇ y))", "equation2": "x = y ◇ (y ◇ ((y ◇ y) ◇ x))", "answer": true}
+{"id": "etp_3045_4565", "eq1_id": 3045, "eq2_id": 4565, "equation1": "x = ((y ◇ (z ◇ w)) ◇ u) ◇ y", "equation2": "x ◇ (y ◇ z) = (w ◇ y) ◇ w", "answer": true}
+{"id": "etp_2080_208", "eq1_id": 2080, "eq2_id": 208, "equation1": "x = ((x ◇ y) ◇ z) ◇ (z ◇ z)", "equation2": "x = (x ◇ (y ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3527_3543", "eq1_id": 3527, "eq2_id": 3543, "equation1": "x ◇ y = x ◇ ((y ◇ z) ◇ w)", "equation2": "x ◇ y = x ◇ ((z ◇ w) ◇ w)", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2864_1039", "eq1_id": 2864, "eq2_id": 1039, "equation1": "x = ((x ◇ (y ◇ x)) ◇ x) ◇ z", "equation2": "x = x ◇ ((y ◇ (x ◇ y)) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2216_688", "eq1_id": 2216, "eq2_id": 688, "equation1": "x = ((y ◇ z) ◇ w) ◇ (x ◇ u)", "equation2": "x = y ◇ (x ◇ ((z ◇ x) ◇ z))", "answer": true}
+{"id": "etp_4454_3850", "eq1_id": 4454, "eq2_id": 3850, "equation1": "x ◇ (y ◇ x) = (z ◇ x) ◇ z", "equation2": "x ◇ y = (z ◇ w) ◇ (z ◇ u)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1560_16", "eq1_id": 1560, "eq2_id": 16, "equation1": "x = (y ◇ z) ◇ (x ◇ (z ◇ x))", "equation2": "x = y ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_761_2746", "eq1_id": 761, "eq2_id": 2746, "equation1": "x = y ◇ (z ◇ ((y ◇ y) ◇ x))", "equation2": "x = ((y ◇ y) ◇ (y ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4478_4402", "eq1_id": 4478, "eq2_id": 4402, "equation1": "x ◇ (y ◇ y) = (x ◇ z) ◇ w", "equation2": "x ◇ (x ◇ y) = (x ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2216_2046", "eq1_id": 2216, "eq2_id": 2046, "equation1": "x = ((y ◇ z) ◇ w) ◇ (x ◇ u)", "equation2": "x = ((x ◇ x) ◇ y) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_2887_1856", "eq1_id": 2887, "eq2_id": 1856, "equation1": "x = ((x ◇ (y ◇ z)) ◇ y) ◇ y", "equation2": "x = (x ◇ (y ◇ x)) ◇ (z ◇ w)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1277_1607", "eq1_id": 1277, "eq2_id": 1607, "equation1": "x = y ◇ (((x ◇ x) ◇ x) ◇ z)", "equation2": "x = (y ◇ z) ◇ (w ◇ (x ◇ u))", "answer": true}
+{"id": "etp_2017_3447", "eq1_id": 2017, "eq2_id": 3447, "equation1": "x = (y ◇ (z ◇ w)) ◇ (y ◇ w)", "equation2": "x ◇ y = z ◇ (w ◇ (w ◇ z))", "answer": true}
+{"id": "etp_1552_3112", "eq1_id": 1552, "eq2_id": 3112, "equation1": "x = (y ◇ z) ◇ (x ◇ (x ◇ x))", "equation2": "x = (((y ◇ x) ◇ y) ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4423_3703", "eq1_id": 4423, "eq2_id": 3703, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ x", "equation2": "x ◇ x = (y ◇ z) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1116_2578", "eq1_id": 1116, "eq2_id": 2578, "equation1": "x = y ◇ ((y ◇ (x ◇ z)) ◇ y)", "equation2": "x = (y ◇ ((z ◇ x) ◇ z)) ◇ w", "answer": true}
+{"id": "etp_1007_2771", "eq1_id": 1007, "eq2_id": 2771, "equation1": "x = y ◇ ((z ◇ w) ◇ (z ◇ w))", "equation2": "x = ((y ◇ z) ◇ (x ◇ x)) ◇ y", "answer": true}
+{"id": "etp_1094_1245", "eq1_id": 1094, "eq2_id": 1245, "equation1": "x = y ◇ ((x ◇ (z ◇ x)) ◇ z)", "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ y)", "answer": true}
+{"id": "etp_2539_311", "eq1_id": 2539, "eq2_id": 311, "equation1": "x = (y ◇ ((y ◇ x) ◇ z)) ◇ w", "equation2": "x ◇ x = x ◇ (y ◇ z)", "answer": true}
+{"id": "etp_1386_1521", "eq1_id": 1386, "eq2_id": 1521, "equation1": "x = y ◇ (((z ◇ z) ◇ x) ◇ w)", "equation2": "x = (y ◇ y) ◇ (x ◇ (z ◇ x))", "answer": true}
+{"id": "etp_3040_871", "eq1_id": 3040, "eq2_id": 871, "equation1": "x = ((y ◇ (z ◇ w)) ◇ w) ◇ y", "equation2": "x = y ◇ ((x ◇ x) ◇ (x ◇ z))", "answer": true}
+{"id": "etp_1573_4486", "eq1_id": 1573, "eq2_id": 4486, "equation1": "x = (y ◇ z) ◇ (y ◇ (y ◇ x))", "equation2": "x ◇ (y ◇ y) = (y ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_471_3379", "eq1_id": 471, "eq2_id": 3379, "equation1": "x = y ◇ (x ◇ (x ◇ (z ◇ z)))", "equation2": "x ◇ y = z ◇ (x ◇ (x ◇ x))", "answer": true}
+{"id": "etp_1227_444", "eq1_id": 1227, "eq2_id": 444, "equation1": "x = x ◇ (((x ◇ x) ◇ y) ◇ z)", "equation2": "x = x ◇ (y ◇ (y ◇ (z ◇ z)))", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3702_361", "eq1_id": 3702, "eq2_id": 361, "equation1": "x ◇ x = (y ◇ z) ◇ (z ◇ x)", "equation2": "x ◇ x = (x ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4664_3427", "eq1_id": 4664, "eq2_id": 3427, "equation1": "(x ◇ y) ◇ y = (z ◇ x) ◇ w", "equation2": "x ◇ y = z ◇ (z ◇ (w ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3273_4197", "eq1_id": 3273, "eq2_id": 4197, "equation1": "x ◇ x = y ◇ (x ◇ (y ◇ z))", "equation2": "x ◇ y = ((z ◇ x) ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3230_2853", "eq1_id": 3230, "eq2_id": 2853, "equation1": "x = (((y ◇ z) ◇ w) ◇ x) ◇ w", "equation2": "x = ((x ◇ (x ◇ y)) ◇ x) ◇ y", "answer": true}
+{"id": "etp_2867_4138", "eq1_id": 2867, "eq2_id": 4138, "equation1": "x = ((x ◇ (y ◇ x)) ◇ y) ◇ z", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1991_2378", "eq1_id": 1991, "eq2_id": 2378, "equation1": "x = (y ◇ (z ◇ y)) ◇ (w ◇ u)", "equation2": "x = (y ◇ (z ◇ (x ◇ w))) ◇ z", "answer": true}
+{"id": "etp_1237_4066", "eq1_id": 1237, "eq2_id": 4066, "equation1": "x = x ◇ (((x ◇ y) ◇ z) ◇ w)", "equation2": "x ◇ x = ((x ◇ x) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3217_3098", "eq1_id": 3217, "eq2_id": 3098, "equation1": "x = (((y ◇ z) ◇ z) ◇ y) ◇ w", "equation2": "x = (((x ◇ y) ◇ z) ◇ w) ◇ y", "answer": true}
+{"id": "etp_2916_2456", "eq1_id": 2916, "eq2_id": 2456, "equation1": "x = ((y ◇ (x ◇ y)) ◇ z) ◇ y", "equation2": "x = (x ◇ ((y ◇ x) ◇ x)) ◇ x", "answer": true}
+{"id": "etp_4404_4283", "eq1_id": 4404, "eq2_id": 4283, "equation1": "x ◇ (x ◇ y) = (x ◇ z) ◇ w", "equation2": "x ◇ (x ◇ y) = x ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1878_4140", "eq1_id": 1878, "eq2_id": 4140, "equation1": "x = (x ◇ (y ◇ z)) ◇ (z ◇ w)", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ w", "answer": true}
+{"id": "etp_678_43", "eq1_id": 678, "eq2_id": 43, "equation1": "x = y ◇ (x ◇ ((y ◇ x) ◇ z))", "equation2": "x ◇ y = y ◇ x", "answer": true}
+{"id": "etp_4618_4002", "eq1_id": 4618, "eq2_id": 4002, "equation1": "(x ◇ x) ◇ y = (z ◇ y) ◇ x", "equation2": "x ◇ y = (z ◇ (x ◇ w)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_829_2878", "eq1_id": 829, "eq2_id": 2878, "equation1": "x = x ◇ ((x ◇ y) ◇ (z ◇ y))", "equation2": "x = ((x ◇ (y ◇ y)) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1486_3862", "eq1_id": 1486, "eq2_id": 3862, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ z))", "equation2": "x ◇ x = (x ◇ (x ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_746_40", "eq1_id": 746, "eq2_id": 40, "equation1": "x = y ◇ (z ◇ ((x ◇ y) ◇ z))", "equation2": "x ◇ x = y ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2356_2352", "eq1_id": 2356, "eq2_id": 2352, "equation1": "x = (y ◇ (y ◇ (z ◇ z))) ◇ y", "equation2": "x = (y ◇ (y ◇ (z ◇ y))) ◇ y", "answer": true}
+{"id": "etp_1480_1872", "eq1_id": 1480, "eq2_id": 1872, "equation1": "x = (y ◇ x) ◇ (x ◇ (x ◇ z))", "equation2": "x = (x ◇ (y ◇ z)) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_523_4262", "eq1_id": 523, "eq2_id": 4262, "equation1": "x = y ◇ (y ◇ (z ◇ (x ◇ w)))", "equation2": "x ◇ y = ((z ◇ w) ◇ u) ◇ x", "answer": true}
+{"id": "etp_1314_3749", "eq1_id": 1314, "eq2_id": 3749, "equation1": "x = y ◇ (((y ◇ x) ◇ x) ◇ z)", "equation2": "x ◇ y = (y ◇ x) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_4564_4663", "eq1_id": 4564, "eq2_id": 4663, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ z", "equation2": "(x ◇ y) ◇ y = (z ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4254_3359", "eq1_id": 4254, "eq2_id": 3359, "equation1": "x ◇ y = ((z ◇ w) ◇ z) ◇ z", "equation2": "x ◇ y = y ◇ (y ◇ (z ◇ y))", "answer": true}
+{"id": "etp_4425_3558", "eq1_id": 4425, "eq2_id": 3558, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ z", "equation2": "x ◇ y = y ◇ ((y ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2754_3592", "eq1_id": 2754, "eq2_id": 3592, "equation1": "x = ((y ◇ y) ◇ (z ◇ x)) ◇ y", "equation2": "x ◇ y = z ◇ ((x ◇ z) ◇ z)", "answer": true}
+{"id": "etp_4688_3896", "eq1_id": 4688, "eq2_id": 3896, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ u", "equation2": "x ◇ x = (y ◇ (y ◇ z)) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_761_4569", "eq1_id": 761, "eq2_id": 4569, "equation1": "x = y ◇ (z ◇ ((y ◇ y) ◇ x))", "equation2": "x ◇ (y ◇ z) = (w ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3473_3575", "eq1_id": 3473, "eq2_id": 3575, "equation1": "x ◇ x = y ◇ ((x ◇ x) ◇ z)", "equation2": "x ◇ y = y ◇ ((z ◇ z) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2764_526", "eq1_id": 2764, "eq2_id": 526, "equation1": "x = ((y ◇ y) ◇ (z ◇ z)) ◇ w", "equation2": "x = y ◇ (y ◇ (z ◇ (y ◇ z)))", "answer": true}
+{"id": "etp_2384_3419", "eq1_id": 2384, "eq2_id": 3419, "equation1": "x = (y ◇ (z ◇ (y ◇ x))) ◇ w", "equation2": "x ◇ y = z ◇ (z ◇ (y ◇ z))", "answer": true}
+{"id": "etp_954_2549", "eq1_id": 954, "eq2_id": 2549, "equation1": "x = y ◇ ((z ◇ x) ◇ (z ◇ w))", "equation2": "x = (y ◇ ((y ◇ y) ◇ z)) ◇ w", "answer": true}
+{"id": "etp_3585_4487", "eq1_id": 3585, "eq2_id": 4487, "equation1": "x ◇ y = z ◇ ((x ◇ x) ◇ w)", "equation2": "x ◇ (y ◇ y) = (y ◇ z) ◇ z", "answer": true}
+{"id": "etp_4489_3452", "eq1_id": 4489, "eq2_id": 3452, "equation1": "x ◇ (y ◇ y) = (z ◇ x) ◇ x", "equation2": "x ◇ y = z ◇ (w ◇ (u ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2378_2411", "eq1_id": 2378, "eq2_id": 2411, "equation1": "x = (y ◇ (z ◇ (x ◇ w))) ◇ z", "equation2": "x = (y ◇ (z ◇ (z ◇ w))) ◇ y", "answer": true}
+{"id": "etp_2408_1679", "eq1_id": 2408, "eq2_id": 1679, "equation1": "x = (y ◇ (z ◇ (z ◇ z))) ◇ z", "equation2": "x = (x ◇ y) ◇ ((z ◇ w) ◇ w)", "answer": true}
+{"id": "etp_4563_3612", "eq1_id": 4563, "eq2_id": 3612, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ y", "equation2": "x ◇ y = z ◇ ((y ◇ w) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2011_4176", "eq1_id": 2011, "eq2_id": 4176, "equation1": "x = (y ◇ (z ◇ w)) ◇ (x ◇ z)", "equation2": "x ◇ y = ((y ◇ z) ◇ x) ◇ z", "answer": true}
+{"id": "etp_1417_2714", "eq1_id": 1417, "eq2_id": 2714, "equation1": "x = y ◇ (((z ◇ w) ◇ w) ◇ z)", "equation2": "x = ((y ◇ x) ◇ (y ◇ z)) ◇ z", "answer": true}
+{"id": "etp_4019_4636", "eq1_id": 4019, "eq2_id": 4636, "equation1": "x ◇ y = (z ◇ (y ◇ w)) ◇ z", "equation2": "(x ◇ y) ◇ x = (y ◇ x) ◇ y", "answer": true}
+{"id": "etp_3642_3665", "eq1_id": 3642, "eq2_id": 3665, "equation1": "x ◇ y = z ◇ ((w ◇ y) ◇ u)", "equation2": "x ◇ x = (x ◇ y) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_785_2889", "eq1_id": 785, "eq2_id": 2889, "equation1": "x = y ◇ (z ◇ ((z ◇ z) ◇ w))", "equation2": "x = ((x ◇ (y ◇ z)) ◇ y) ◇ w", "answer": true}
+{"id": "etp_4580_3713", "eq1_id": 4580, "eq2_id": 3713, "equation1": "x ◇ (y ◇ z) = (w ◇ u) ◇ w", "equation2": "x ◇ y = (x ◇ x) ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1261_4341", "eq1_id": 1261, "eq2_id": 4341, "equation1": "x = x ◇ (((y ◇ z) ◇ x) ◇ w)", "equation2": "x ◇ (y ◇ y) = x ◇ (z ◇ z)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_936_1569", "eq1_id": 936, "eq2_id": 1569, "equation1": "x = y ◇ ((y ◇ z) ◇ (z ◇ z))", "equation2": "x = (y ◇ z) ◇ (y ◇ (x ◇ x))", "answer": true}
+{"id": "etp_2655_1837", "eq1_id": 2655, "eq2_id": 1837, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ x", "equation2": "x = (x ◇ (x ◇ y)) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3483_3673", "eq1_id": 3483, "eq2_id": 3673, "equation1": "x ◇ x = y ◇ ((y ◇ x) ◇ z)", "equation2": "x ◇ x = (x ◇ y) ◇ (z ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4549_318", "eq1_id": 4549, "eq2_id": 318, "equation1": "x ◇ (y ◇ z) = (z ◇ z) ◇ y", "equation2": "x ◇ x = y ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4003_4390", "eq1_id": 4003, "eq2_id": 4390, "equation1": "x ◇ y = (z ◇ (x ◇ w)) ◇ w", "equation2": "x ◇ (x ◇ x) = (y ◇ y) ◇ z", "answer": true}
+{"id": "etp_687_2196", "eq1_id": 687, "eq2_id": 2196, "equation1": "x = y ◇ (x ◇ ((z ◇ x) ◇ y))", "equation2": "x = ((y ◇ z) ◇ z) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_1774_3752", "eq1_id": 1774, "eq2_id": 3752, "equation1": "x = (y ◇ z) ◇ ((y ◇ x) ◇ z)", "equation2": "x ◇ y = (y ◇ x) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3251_132", "eq1_id": 3251, "eq2_id": 132, "equation1": "x = (((y ◇ z) ◇ w) ◇ u) ◇ u", "equation2": "x = y ◇ ((y ◇ z) ◇ z)", "answer": true}
+{"id": "etp_1774_2241", "eq1_id": 1774, "eq2_id": 2241, "equation1": "x = (y ◇ z) ◇ ((y ◇ x) ◇ z)", "equation2": "x = (x ◇ (x ◇ (x ◇ y))) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4180_4514", "eq1_id": 4180, "eq2_id": 4514, "equation1": "x ◇ y = ((y ◇ z) ◇ y) ◇ z", "equation2": "x ◇ (y ◇ z) = (x ◇ z) ◇ x", "answer": true}
+{"id": "etp_4453_3554", "eq1_id": 4453, "eq2_id": 3554, "equation1": "x ◇ (y ◇ x) = (z ◇ x) ◇ y", "equation2": "x ◇ y = y ◇ ((x ◇ z) ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2149_2193", "eq1_id": 2149, "eq2_id": 2193, "equation1": "x = ((y ◇ y) ◇ z) ◇ (y ◇ y)", "equation2": "x = ((y ◇ z) ◇ y) ◇ (w ◇ w)", "answer": true}
+{"id": "etp_2500_3217", "eq1_id": 2500, "eq2_id": 3217, "equation1": "x = (y ◇ ((x ◇ x) ◇ z)) ◇ y", "equation2": "x = (((y ◇ z) ◇ z) ◇ y) ◇ w", "answer": true}
+{"id": "etp_3234_4673", "eq1_id": 3234, "eq2_id": 4673, "equation1": "x = (((y ◇ z) ◇ w) ◇ y) ◇ z", "equation2": "(x ◇ y) ◇ z = (x ◇ z) ◇ y", "answer": true}
+{"id": "etp_1521_2724", "eq1_id": 1521, "eq2_id": 2724, "equation1": "x = (y ◇ y) ◇ (x ◇ (z ◇ x))", "equation2": "x = ((y ◇ x) ◇ (z ◇ z)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4499_3817", "eq1_id": 4499, "eq2_id": 3817, "equation1": "x ◇ (y ◇ y) = (z ◇ z) ◇ z", "equation2": "x ◇ y = (z ◇ y) ◇ (w ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1407_1850", "eq1_id": 1407, "eq2_id": 1850, "equation1": "x = y ◇ (((z ◇ w) ◇ y) ◇ z)", "equation2": "x = (x ◇ (y ◇ x)) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1778_3732", "eq1_id": 1778, "eq2_id": 3732, "equation1": "x = (y ◇ z) ◇ ((y ◇ y) ◇ z)", "equation2": "x ◇ y = (x ◇ z) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_3374_3293", "eq1_id": 3374, "eq2_id": 3293, "equation1": "x ◇ y = y ◇ (z ◇ (w ◇ x))", "equation2": "x ◇ x = y ◇ (z ◇ (y ◇ y))", "answer": true}
+{"id": "etp_1485_1446", "eq1_id": 1485, "eq2_id": 1446, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ y))", "equation2": "x = (x ◇ y) ◇ (x ◇ (y ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4387_3303", "eq1_id": 4387, "eq2_id": 3303, "equation1": "x ◇ (x ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ x = y ◇ (z ◇ (w ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2748_1143", "eq1_id": 2748, "eq2_id": 1143, "equation1": "x = ((y ◇ y) ◇ (y ◇ y)) ◇ z", "equation2": "x = y ◇ ((y ◇ (z ◇ w)) ◇ z)", "answer": true}
+{"id": "etp_772_7", "eq1_id": 772, "eq2_id": 7, "equation1": "x = y ◇ (z ◇ ((y ◇ w) ◇ w))", "equation2": "x = y ◇ z", "answer": true}
+{"id": "etp_4210_3906", "eq1_id": 4210, "eq2_id": 3906, "equation1": "x ◇ y = ((z ◇ y) ◇ x) ◇ z", "equation2": "x ◇ x = (y ◇ (z ◇ z)) ◇ y", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2069_1643", "eq1_id": 2069, "eq2_id": 1643, "equation1": "x = ((x ◇ y) ◇ y) ◇ (z ◇ w)", "equation2": "x = (x ◇ x) ◇ ((y ◇ z) ◇ w)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3455_4172", "eq1_id": 3455, "eq2_id": 4172, "equation1": "x ◇ y = z ◇ (w ◇ (u ◇ v))", "equation2": "x ◇ y = ((y ◇ y) ◇ z) ◇ z", "answer": true}
+{"id": "etp_1538_2810", "eq1_id": 1538, "eq2_id": 2810, "equation1": "x = (y ◇ y) ◇ (z ◇ (x ◇ w))", "equation2": "x = ((y ◇ z) ◇ (z ◇ y)) ◇ z", "answer": true}
+{"id": "etp_1769_4282", "eq1_id": 1769, "eq2_id": 4282, "equation1": "x = (y ◇ z) ◇ ((x ◇ w) ◇ z)", "equation2": "x ◇ (x ◇ y) = x ◇ (x ◇ z)", "answer": true}
+{"id": "etp_1305_3248", "eq1_id": 1305, "eq2_id": 3248, "equation1": "x = y ◇ (((x ◇ z) ◇ z) ◇ z)", "equation2": "x = (((y ◇ z) ◇ w) ◇ u) ◇ y", "answer": true}
+{"id": "etp_1696_3695", "eq1_id": 1696, "eq2_id": 3695, "equation1": "x = (y ◇ x) ◇ ((y ◇ y) ◇ z)", "equation2": "x ◇ x = (y ◇ z) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_4274_4003", "eq1_id": 4274, "eq2_id": 4003, "equation1": "x ◇ (x ◇ x) = y ◇ (x ◇ z)", "equation2": "x ◇ y = (z ◇ (x ◇ w)) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2986_3525", "eq1_id": 2986, "eq2_id": 3525, "equation1": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ y", "equation2": "x ◇ y = x ◇ ((y ◇ z) ◇ y)", "answer": true}
+{"id": "etp_2980_3809", "eq1_id": 2980, "eq2_id": 3809, "equation1": "x = ((y ◇ (z ◇ x)) ◇ y) ◇ w", "equation2": "x ◇ y = (z ◇ y) ◇ (y ◇ w)", "answer": true}
+{"id": "etp_1553_1100", "eq1_id": 1553, "eq2_id": 1100, "equation1": "x = (y ◇ z) ◇ (x ◇ (x ◇ y))", "equation2": "x = y ◇ ((x ◇ (z ◇ z)) ◇ x)", "answer": true}
+{"id": "etp_1990_2426", "eq1_id": 1990, "eq2_id": 2426, "equation1": "x = (y ◇ (z ◇ y)) ◇ (w ◇ w)", "equation2": "x = (y ◇ (z ◇ (w ◇ z))) ◇ y", "answer": true}
+{"id": "etp_2550_3773", "eq1_id": 2550, "eq2_id": 3773, "equation1": "x = (y ◇ ((y ◇ z) ◇ x)) ◇ x", "equation2": "x ◇ y = (y ◇ z) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1236_3059", "eq1_id": 1236, "eq2_id": 3059, "equation1": "x = x ◇ (((x ◇ y) ◇ z) ◇ z)", "equation2": "x = (((x ◇ x) ◇ y) ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2007_2939", "eq1_id": 2007, "eq2_id": 2939, "equation1": "x = (y ◇ (z ◇ z)) ◇ (w ◇ w)", "equation2": "x = ((y ◇ (y ◇ x)) ◇ y) ◇ x", "answer": true}
+{"id": "etp_1134_729", "eq1_id": 1134, "eq2_id": 729, "equation1": "x = y ◇ ((y ◇ (z ◇ y)) ◇ y)", "equation2": "x = y ◇ (y ◇ ((z ◇ y) ◇ z))", "answer": true}
+{"id": "etp_2989_1247", "eq1_id": 2989, "eq2_id": 1247, "equation1": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ u", "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ w)", "answer": true}
+{"id": "etp_1499_1700", "eq1_id": 1499, "eq2_id": 1700, "equation1": "x = (y ◇ x) ◇ (z ◇ (x ◇ y))", "equation2": "x = (y ◇ x) ◇ ((y ◇ z) ◇ w)", "answer": true}
+{"id": "etp_1362_2692", "eq1_id": 1362, "eq2_id": 2692, "equation1": "x = y ◇ (((z ◇ x) ◇ w) ◇ y)", "equation2": "x = ((x ◇ y) ◇ (z ◇ w)) ◇ y", "answer": true}
+{"id": "etp_3171_1344", "eq1_id": 3171, "eq2_id": 1344, "equation1": "x = (((y ◇ y) ◇ z) ◇ w) ◇ x", "equation2": "x = y ◇ (((y ◇ z) ◇ w) ◇ x)", "answer": true}
+{"id": "etp_1971_2393", "eq1_id": 1971, "eq2_id": 2393, "equation1": "x = (y ◇ (z ◇ x)) ◇ (w ◇ y)", "equation2": "x = (y ◇ (z ◇ (y ◇ w))) ◇ x", "answer": true}
+{"id": "etp_1974_2090", "eq1_id": 1974, "eq2_id": 2090, "equation1": "x = (y ◇ (z ◇ x)) ◇ (w ◇ u)", "equation2": "x = ((y ◇ x) ◇ x) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_2423_180", "eq1_id": 2423, "eq2_id": 180, "equation1": "x = (y ◇ (z ◇ (w ◇ y))) ◇ w", "equation2": "x = (y ◇ y) ◇ (y ◇ y)", "answer": true}
+{"id": "etp_532_1180", "eq1_id": 532, "eq2_id": 1180, "equation1": "x = y ◇ (y ◇ (z ◇ (w ◇ x)))", "equation2": "x = y ◇ ((z ◇ (z ◇ x)) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_564_1418", "eq1_id": 564, "eq2_id": 1418, "equation1": "x = y ◇ (z ◇ (y ◇ (z ◇ z)))", "equation2": "x = y ◇ (((z ◇ w) ◇ w) ◇ w)", "answer": true}
+{"id": "etp_1498_3431", "eq1_id": 1498, "eq2_id": 3431, "equation1": "x = (y ◇ x) ◇ (z ◇ (x ◇ x))", "equation2": "x ◇ y = z ◇ (w ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3653_4406", "eq1_id": 3653, "eq2_id": 4406, "equation1": "x ◇ y = z ◇ ((w ◇ u) ◇ x)", "equation2": "x ◇ (x ◇ y) = (y ◇ x) ◇ y", "answer": true}
+{"id": "etp_3137_2092", "eq1_id": 3137, "eq2_id": 2092, "equation1": "x = (((y ◇ x) ◇ z) ◇ w) ◇ w", "equation2": "x = ((y ◇ x) ◇ x) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_2881_1020", "eq1_id": 2881, "eq2_id": 1020, "equation1": "x = ((x ◇ (y ◇ y)) ◇ z) ◇ w", "equation2": "x = x ◇ ((x ◇ (x ◇ x)) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1379_3906", "eq1_id": 1379, "eq2_id": 3906, "equation1": "x = y ◇ (((z ◇ y) ◇ w) ◇ y)", "equation2": "x ◇ x = (y ◇ (z ◇ z)) ◇ y", "answer": true}
+{"id": "etp_2906_3031", "eq1_id": 2906, "eq2_id": 3031, "equation1": "x = ((y ◇ (x ◇ x)) ◇ z) ◇ y", "equation2": "x = ((y ◇ (z ◇ w)) ◇ y) ◇ z", "answer": true}
+{"id": "etp_1509_4066", "eq1_id": 1509, "eq2_id": 4066, "equation1": "x = (y ◇ x) ◇ (z ◇ (z ◇ w))", "equation2": "x ◇ x = ((x ◇ x) ◇ x) ◇ y", "answer": true}
+{"id": "etp_3848_3358", "eq1_id": 3848, "eq2_id": 3358, "equation1": "x ◇ y = (z ◇ w) ◇ (z ◇ z)", "equation2": "x ◇ y = y ◇ (y ◇ (z ◇ x))", "answer": true}
+{"id": "etp_874_1992", "eq1_id": 874, "eq2_id": 1992, "equation1": "x = y ◇ ((x ◇ x) ◇ (y ◇ z))", "equation2": "x = (y ◇ (z ◇ z)) ◇ (x ◇ x)", "answer": true}
+{"id": "etp_2024_1078", "eq1_id": 2024, "eq2_id": 1078, "equation1": "x = (y ◇ (z ◇ w)) ◇ (w ◇ x)", "equation2": "x = y ◇ ((x ◇ (x ◇ z)) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2630_2119", "eq1_id": 2630, "eq2_id": 2119, "equation1": "x = (y ◇ ((z ◇ w) ◇ z)) ◇ z", "equation2": "x = ((y ◇ x) ◇ z) ◇ (w ◇ x)", "answer": true}
+{"id": "etp_3900_4238", "eq1_id": 3900, "eq2_id": 4238, "equation1": "x ◇ x = (y ◇ (z ◇ x)) ◇ w", "equation2": "x ◇ y = ((z ◇ z) ◇ w) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2026_2182", "eq1_id": 2026, "eq2_id": 2182, "equation1": "x = (y ◇ (z ◇ w)) ◇ (w ◇ z)", "equation2": "x = ((y ◇ z) ◇ y) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1942_3399", "eq1_id": 1942, "eq2_id": 3399, "equation1": "x = (y ◇ (y ◇ z)) ◇ (x ◇ y)", "equation2": "x ◇ y = z ◇ (y ◇ (x ◇ w))", "answer": true}
+{"id": "etp_4451_3699", "eq1_id": 4451, "eq2_id": 3699, "equation1": "x ◇ (y ◇ x) = (y ◇ z) ◇ w", "equation2": "x ◇ x = (y ◇ z) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3031_242", "eq1_id": 3031, "eq2_id": 242, "equation1": "x = ((y ◇ (z ◇ w)) ◇ y) ◇ z", "equation2": "x = (y ◇ (z ◇ y)) ◇ x", "answer": true}
+{"id": "etp_4453_3917", "eq1_id": 4453, "eq2_id": 3917, "equation1": "x ◇ (y ◇ x) = (z ◇ x) ◇ y", "equation2": "x ◇ y = (x ◇ (x ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1490_3155", "eq1_id": 1490, "eq2_id": 3155, "equation1": "x = (y ◇ x) ◇ (y ◇ (x ◇ z))", "equation2": "x = (((y ◇ y) ◇ y) ◇ z) ◇ x", "answer": true}
+{"id": "etp_3731_3508", "eq1_id": 3731, "eq2_id": 3508, "equation1": "x ◇ y = (x ◇ z) ◇ (x ◇ x)", "equation2": "x ◇ y = x ◇ ((x ◇ x) ◇ x)", "answer": true}
+{"id": "etp_579_1894", "eq1_id": 579, "eq2_id": 1894, "equation1": "x = y ◇ (z ◇ (z ◇ (z ◇ x)))", "equation2": "x = (y ◇ (x ◇ y)) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2667_104", "eq1_id": 2667, "eq2_id": 104, "equation1": "x = ((x ◇ y) ◇ (x ◇ z)) ◇ z", "equation2": "x = x ◇ ((y ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4561_384", "eq1_id": 4561, "eq2_id": 384, "equation1": "x ◇ (y ◇ z) = (w ◇ x) ◇ u", "equation2": "x ◇ y = (y ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2657_3929", "eq1_id": 2657, "eq2_id": 3929, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ z", "equation2": "x ◇ y = (x ◇ (y ◇ y)) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3557_3628", "eq1_id": 3557, "eq2_id": 3628, "equation1": "x ◇ y = y ◇ ((y ◇ x) ◇ z)", "equation2": "x ◇ y = z ◇ ((z ◇ w) ◇ x)", "answer": true}
+{"id": "etp_2656_3714", "eq1_id": 2656, "eq2_id": 3714, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ y", "equation2": "x ◇ y = (x ◇ x) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2718_82", "eq1_id": 2718, "eq2_id": 82, "equation1": "x = ((y ◇ x) ◇ (z ◇ x)) ◇ z", "equation2": "x = y ◇ (z ◇ (x ◇ x))", "answer": true}
+{"id": "etp_1498_2381", "eq1_id": 1498, "eq2_id": 2381, "equation1": "x = (y ◇ x) ◇ (z ◇ (x ◇ x))", "equation2": "x = (y ◇ (z ◇ (y ◇ x))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1417_2710", "eq1_id": 1417, "eq2_id": 2710, "equation1": "x = y ◇ (((z ◇ w) ◇ w) ◇ z)", "equation2": "x = ((y ◇ x) ◇ (y ◇ y)) ◇ y", "answer": true}
+{"id": "etp_939_3292", "eq1_id": 939, "eq2_id": 3292, "equation1": "x = y ◇ ((y ◇ z) ◇ (w ◇ y))", "equation2": "x ◇ x = y ◇ (z ◇ (y ◇ x))", "answer": true}
+{"id": "etp_908_1851", "eq1_id": 908, "eq2_id": 1851, "equation1": "x = y ◇ ((y ◇ x) ◇ (x ◇ z))", "equation2": "x = (x ◇ (y ◇ x)) ◇ (y ◇ y)", "answer": true}
+{"id": "etp_1033_1854", "eq1_id": 1033, "eq2_id": 1854, "equation1": "x = x ◇ ((x ◇ (y ◇ z)) ◇ z)", "equation2": "x = (x ◇ (y ◇ x)) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_723_110", "eq1_id": 723, "eq2_id": 110, "equation1": "x = y ◇ (y ◇ ((z ◇ x) ◇ x))", "equation2": "x = x ◇ ((y ◇ z) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2656_426", "eq1_id": 2656, "eq2_id": 426, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ y", "equation2": "x = x ◇ (y ◇ (x ◇ (x ◇ x)))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1195_3576", "eq1_id": 1195, "eq2_id": 3576, "equation1": "x = y ◇ ((z ◇ (z ◇ w)) ◇ w)", "equation2": "x ◇ y = y ◇ ((z ◇ z) ◇ w)", "answer": true}
+{"id": "etp_978_4409", "eq1_id": 978, "eq2_id": 4409, "equation1": "x = y ◇ ((z ◇ z) ◇ (x ◇ y))", "equation2": "x ◇ (x ◇ y) = (y ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4463_3563", "eq1_id": 4463, "eq2_id": 3563, "equation1": "x ◇ (y ◇ x) = (z ◇ z) ◇ w", "equation2": "x ◇ y = y ◇ ((y ◇ z) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2978_1744", "eq1_id": 2978, "eq2_id": 1744, "equation1": "x = ((y ◇ (z ◇ x)) ◇ y) ◇ y", "equation2": "x = (y ◇ y) ◇ ((z ◇ y) ◇ z)", "answer": true}
+{"id": "etp_2023_2569", "eq1_id": 2023, "eq2_id": 2569, "equation1": "x = (y ◇ (z ◇ w)) ◇ (z ◇ u)", "equation2": "x = (y ◇ ((z ◇ x) ◇ x)) ◇ z", "answer": true}
+{"id": "etp_1820_390", "eq1_id": 1820, "eq2_id": 390, "equation1": "x = (y ◇ z) ◇ ((w ◇ z) ◇ u)", "equation2": "x ◇ y = (y ◇ z) ◇ x", "answer": true}
+{"id": "etp_1781_2618", "eq1_id": 1781, "eq2_id": 2618, "equation1": "x = (y ◇ z) ◇ ((y ◇ z) ◇ y)", "equation2": "x = (y ◇ ((z ◇ w) ◇ x)) ◇ x", "answer": true}
+{"id": "etp_4110_4452", "eq1_id": 4110, "eq2_id": 4452, "equation1": "x ◇ x = ((y ◇ z) ◇ z) ◇ z", "equation2": "x ◇ (y ◇ x) = (z ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4295_4595", "eq1_id": 4295, "eq2_id": 4595, "equation1": "x ◇ (x ◇ y) = y ◇ (z ◇ x)", "equation2": "(x ◇ x) ◇ x = (y ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2198_3350", "eq1_id": 2198, "eq2_id": 3350, "equation1": "x = ((y ◇ z) ◇ z) ◇ (x ◇ w)", "equation2": "x ◇ y = y ◇ (x ◇ (z ◇ z))", "answer": true}
+{"id": "etp_1498_134", "eq1_id": 1498, "eq2_id": 134, "equation1": "x = (y ◇ x) ◇ (z ◇ (x ◇ x))", "equation2": "x = y ◇ ((z ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4526_4171", "eq1_id": 4526, "eq2_id": 4171, "equation1": "x ◇ (y ◇ z) = (y ◇ x) ◇ w", "equation2": "x ◇ y = ((y ◇ y) ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1089_1154", "eq1_id": 1089, "eq2_id": 1154, "equation1": "x = y ◇ ((x ◇ (y ◇ z)) ◇ y)", "equation2": "x = y ◇ ((z ◇ (x ◇ z)) ◇ x)", "answer": true}
+{"id": "etp_2136_392", "eq1_id": 2136, "eq2_id": 392, "equation1": "x = ((y ◇ y) ◇ y) ◇ (x ◇ z)", "equation2": "x ◇ y = (y ◇ z) ◇ z", "answer": true}
+{"id": "etp_2185_3100", "eq1_id": 2185, "eq2_id": 3100, "equation1": "x = ((y ◇ z) ◇ y) ◇ (y ◇ w)", "equation2": "x = (((x ◇ y) ◇ z) ◇ w) ◇ w", "answer": true}
+{"id": "etp_4522_4119", "eq1_id": 4522, "eq2_id": 4119, "equation1": "x ◇ (y ◇ z) = (x ◇ w) ◇ u", "equation2": "x ◇ y = ((x ◇ x) ◇ x) ◇ z", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2854_1060", "eq1_id": 2854, "eq2_id": 1060, "equation1": "x = ((x ◇ (x ◇ y)) ◇ x) ◇ z", "equation2": "x = x ◇ ((y ◇ (z ◇ y)) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2618_2212", "eq1_id": 2618, "eq2_id": 2212, "equation1": "x = (y ◇ ((z ◇ w) ◇ x)) ◇ x", "equation2": "x = ((y ◇ z) ◇ w) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1143_743", "eq1_id": 1143, "eq2_id": 743, "equation1": "x = y ◇ ((y ◇ (z ◇ w)) ◇ z)", "equation2": "x = y ◇ (z ◇ ((x ◇ x) ◇ w))", "answer": true}
+{"id": "etp_4349_3402", "eq1_id": 4349, "eq2_id": 3402, "equation1": "x ◇ (y ◇ y) = z ◇ (x ◇ w)", "equation2": "x ◇ y = z ◇ (y ◇ (y ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3107_1829", "eq1_id": 3107, "eq2_id": 1829, "equation1": "x = (((y ◇ x) ◇ x) ◇ y) ◇ z", "equation2": "x = (y ◇ z) ◇ ((w ◇ u) ◇ w)", "answer": true}
+{"id": "etp_2732_3581", "eq1_id": 2732, "eq2_id": 3581, "equation1": "x = ((y ◇ x) ◇ (z ◇ w)) ◇ u", "equation2": "x ◇ y = y ◇ ((z ◇ w) ◇ u)", "answer": true}
+{"id": "etp_3695_3493", "eq1_id": 3695, "eq2_id": 3493, "equation1": "x ◇ x = (y ◇ z) ◇ (x ◇ y)", "equation2": "x ◇ x = y ◇ ((z ◇ x) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3929_4380", "eq1_id": 3929, "eq2_id": 4380, "equation1": "x ◇ y = (x ◇ (y ◇ y)) ◇ z", "equation2": "x ◇ (x ◇ x) = (x ◇ x) ◇ x", "answer": true}
+{"id": "etp_1781_2394", "eq1_id": 1781, "eq2_id": 2394, "equation1": "x = (y ◇ z) ◇ ((y ◇ z) ◇ y)", "equation2": "x = (y ◇ (z ◇ (y ◇ w))) ◇ y", "answer": true}
+{"id": "etp_1622_4256", "eq1_id": 1622, "eq2_id": 4256, "equation1": "x = (y ◇ z) ◇ (w ◇ (w ◇ u))", "equation2": "x ◇ y = ((z ◇ w) ◇ z) ◇ u", "answer": true}
+{"id": "etp_480_1201", "eq1_id": 480, "eq2_id": 1201, "equation1": "x = y ◇ (x ◇ (y ◇ (z ◇ y)))", "equation2": "x = y ◇ ((z ◇ (w ◇ x)) ◇ u)", "answer": true}
+{"id": "etp_1331_598", "eq1_id": 1331, "eq2_id": 598, "equation1": "x = y ◇ (((y ◇ y) ◇ z) ◇ w)", "equation2": "x = y ◇ (z ◇ (w ◇ (z ◇ x)))", "answer": true}
+{"id": "etp_2084_2254", "eq1_id": 2084, "eq2_id": 2254, "equation1": "x = ((x ◇ y) ◇ z) ◇ (w ◇ z)", "equation2": "x = (x ◇ (y ◇ (x ◇ x))) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1095_1769", "eq1_id": 1095, "eq2_id": 1769, "equation1": "x = y ◇ ((x ◇ (z ◇ x)) ◇ w)", "equation2": "x = (y ◇ z) ◇ ((x ◇ w) ◇ z)", "answer": true}
+{"id": "etp_1976_4008", "eq1_id": 1976, "eq2_id": 4008, "equation1": "x = (y ◇ (z ◇ y)) ◇ (x ◇ y)", "equation2": "x ◇ y = (z ◇ (y ◇ x)) ◇ w", "answer": true}
+{"id": "etp_3473_4204", "eq1_id": 3473, "eq2_id": 4204, "equation1": "x ◇ x = y ◇ ((x ◇ x) ◇ z)", "equation2": "x ◇ y = ((z ◇ x) ◇ w) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1299_2019", "eq1_id": 1299, "eq2_id": 2019, "equation1": "x = y ◇ (((x ◇ z) ◇ y) ◇ x)", "equation2": "x = (y ◇ (z ◇ w)) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2794_4073", "eq1_id": 2794, "eq2_id": 4073, "equation1": "x = ((y ◇ z) ◇ (y ◇ y)) ◇ w", "equation2": "x ◇ x = ((x ◇ y) ◇ y) ◇ x", "answer": true}
+{"id": "etp_1608_2724", "eq1_id": 1608, "eq2_id": 2724, "equation1": "x = (y ◇ z) ◇ (w ◇ (y ◇ x))", "equation2": "x = ((y ◇ x) ◇ (z ◇ z)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1530_4119", "eq1_id": 1530, "eq2_id": 4119, "equation1": "x = (y ◇ y) ◇ (y ◇ (y ◇ z))", "equation2": "x ◇ y = ((x ◇ x) ◇ x) ◇ z", "answer": true}
+{"id": "etp_4664_4469", "eq1_id": 4664, "eq2_id": 4469, "equation1": "(x ◇ y) ◇ y = (z ◇ x) ◇ w", "equation2": "x ◇ (y ◇ y) = (x ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1106_640", "eq1_id": 1106, "eq2_id": 640, "equation1": "x = y ◇ ((x ◇ (z ◇ w)) ◇ z)", "equation2": "x = x ◇ (y ◇ ((y ◇ x) ◇ y))", "answer": true}
+{"id": "etp_1785_591", "eq1_id": 1785, "eq2_id": 591, "equation1": "x = (y ◇ z) ◇ ((y ◇ w) ◇ y)", "equation2": "x = y ◇ (z ◇ (w ◇ (x ◇ w)))", "answer": true}
+{"id": "etp_3138_2435", "eq1_id": 3138, "eq2_id": 2435, "equation1": "x = (((y ◇ x) ◇ z) ◇ w) ◇ u", "equation2": "x = (y ◇ (z ◇ (w ◇ u))) ◇ x", "answer": true}
+{"id": "etp_3913_364", "eq1_id": 3913, "eq2_id": 364, "equation1": "x ◇ x = (y ◇ (z ◇ w)) ◇ u", "equation2": "x ◇ x = (y ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4491_3256", "eq1_id": 4491, "eq2_id": 3256, "equation1": "x ◇ (y ◇ y) = (z ◇ x) ◇ z", "equation2": "x ◇ x = x ◇ (x ◇ (y ◇ y))", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2398_3519", "eq1_id": 2398, "eq2_id": 3519, "equation1": "x = (y ◇ (z ◇ (z ◇ x))) ◇ x", "equation2": "x ◇ y = x ◇ ((y ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_532_3380", "eq1_id": 532, "eq2_id": 3380, "equation1": "x = y ◇ (y ◇ (z ◇ (w ◇ x)))", "equation2": "x ◇ y = z ◇ (x ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4241_3402", "eq1_id": 4241, "eq2_id": 3402, "equation1": "x ◇ y = ((z ◇ z) ◇ w) ◇ u", "equation2": "x ◇ y = z ◇ (y ◇ (y ◇ z))", "answer": true}
+{"id": "etp_4465_350", "eq1_id": 4465, "eq2_id": 350, "equation1": "x ◇ (y ◇ x) = (z ◇ w) ◇ y", "equation2": "x ◇ y = z ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3417_3700", "eq1_id": 3417, "eq2_id": 3700, "equation1": "x ◇ y = z ◇ (z ◇ (y ◇ x))", "equation2": "x ◇ x = (y ◇ z) ◇ (y ◇ z)", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_588_3264", "eq1_id": 588, "eq2_id": 3264, "equation1": "x = y ◇ (z ◇ (w ◇ (x ◇ x)))", "equation2": "x ◇ x = x ◇ (y ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4486_359", "eq1_id": 4486, "eq2_id": 359, "equation1": "x ◇ (y ◇ y) = (y ◇ z) ◇ y", "equation2": "x ◇ x = (x ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4648_329", "eq1_id": 4648, "eq2_id": 329, "equation1": "(x ◇ y) ◇ x = (z ◇ y) ◇ w", "equation2": "x ◇ y = x ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2164_1752", "eq1_id": 2164, "eq2_id": 1752, "equation1": "x = ((y ◇ z) ◇ x) ◇ (x ◇ w)", "equation2": "x = (y ◇ y) ◇ ((z ◇ w) ◇ z)", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_1997_3687", "eq1_id": 1997, "eq2_id": 3687, "equation1": "x = (y ◇ (z ◇ z)) ◇ (y ◇ y)", "equation2": "x ◇ x = (y ◇ y) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1553_57", "eq1_id": 1553, "eq2_id": 57, "equation1": "x = (y ◇ z) ◇ (x ◇ (x ◇ y))", "equation2": "x = x ◇ (y ◇ (y ◇ z))", "answer": true}
+{"id": "etp_2666_3721", "eq1_id": 2666, "eq2_id": 3721, "equation1": "x = ((x ◇ y) ◇ (x ◇ z)) ◇ y", "equation2": "x ◇ y = (x ◇ y) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3933_362", "eq1_id": 3933, "eq2_id": 362, "equation1": "x ◇ y = (x ◇ (y ◇ z)) ◇ w", "equation2": "x ◇ x = (x ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3913_3414", "eq1_id": 3913, "eq2_id": 3414, "equation1": "x ◇ x = (y ◇ (z ◇ w)) ◇ u", "equation2": "x ◇ y = z ◇ (z ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4447_4205", "eq1_id": 4447, "eq2_id": 4205, "equation1": "x ◇ (y ◇ x) = (y ◇ y) ◇ z", "equation2": "x ◇ y = ((z ◇ x) ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1617_1641", "eq1_id": 1617, "eq2_id": 1641, "equation1": "x = (y ◇ z) ◇ (w ◇ (z ◇ u))", "equation2": "x = (x ◇ x) ◇ ((y ◇ z) ◇ y)", "answer": true}
+{"id": "etp_626_2045", "eq1_id": 626, "eq2_id": 2045, "equation1": "x = x ◇ (x ◇ ((y ◇ z) ◇ y))", "equation2": "x = ((x ◇ x) ◇ y) ◇ (y ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3502_4049", "eq1_id": 3502, "eq2_id": 4049, "equation1": "x ◇ x = y ◇ ((z ◇ z) ◇ w)", "equation2": "x ◇ y = (z ◇ (w ◇ z)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2309_3837", "eq1_id": 2309, "eq2_id": 3837, "equation1": "x = (y ◇ (x ◇ (y ◇ z))) ◇ w", "equation2": "x ◇ y = (z ◇ w) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_2666_3518", "eq1_id": 2666, "eq2_id": 3518, "equation1": "x = ((x ◇ y) ◇ (x ◇ z)) ◇ y", "equation2": "x ◇ y = x ◇ ((y ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_927_3863", "eq1_id": 927, "eq2_id": 3863, "equation1": "x = y ◇ ((y ◇ z) ◇ (x ◇ y))", "equation2": "x ◇ x = (x ◇ (x ◇ x)) ◇ y", "answer": true}
+{"id": "etp_4688_3324", "eq1_id": 4688, "eq2_id": 3324, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ u", "equation2": "x ◇ y = x ◇ (y ◇ (z ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1074_1208", "eq1_id": 1074, "eq2_id": 1208, "equation1": "x = y ◇ ((x ◇ (x ◇ x)) ◇ z)", "equation2": "x = y ◇ ((z ◇ (w ◇ z)) ◇ y)", "answer": true}
+{"id": "etp_673_846", "eq1_id": 673, "eq2_id": 846, "equation1": "x = y ◇ (x ◇ ((x ◇ z) ◇ y))", "equation2": "x = x ◇ ((y ◇ y) ◇ (y ◇ y))", "answer": true}
+{"id": "etp_782_339", "eq1_id": 782, "eq2_id": 339, "equation1": "x = y ◇ (z ◇ ((z ◇ z) ◇ x))", "equation2": "x ◇ y = y ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_553_4566", "eq1_id": 553, "eq2_id": 4566, "equation1": "x = y ◇ (z ◇ (x ◇ (w ◇ u)))", "equation2": "x ◇ (y ◇ z) = (w ◇ y) ◇ u", "answer": true}
+{"id": "etp_480_515", "eq1_id": 480, "eq2_id": 515, "equation1": "x = y ◇ (x ◇ (y ◇ (z ◇ y)))", "equation2": "x = y ◇ (y ◇ (y ◇ (y ◇ z)))", "answer": true}
+{"id": "etp_1594_1041", "eq1_id": 1594, "eq2_id": 1041, "equation1": "x = (y ◇ z) ◇ (z ◇ (z ◇ x))", "equation2": "x = x ◇ ((y ◇ (x ◇ z)) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2693_3942", "eq1_id": 2693, "eq2_id": 3942, "equation1": "x = ((x ◇ y) ◇ (z ◇ w)) ◇ z", "equation2": "x ◇ y = (x ◇ (z ◇ z)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4501_4240", "eq1_id": 4501, "eq2_id": 4240, "equation1": "x ◇ (y ◇ y) = (z ◇ w) ◇ x", "equation2": "x ◇ y = ((z ◇ z) ◇ w) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4485_355", "eq1_id": 4485, "eq2_id": 355, "equation1": "x ◇ (y ◇ y) = (y ◇ z) ◇ x", "equation2": "x ◇ y = z ◇ (w ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_852_2484", "eq1_id": 852, "eq2_id": 2484, "equation1": "x = x ◇ ((y ◇ z) ◇ (x ◇ x))", "equation2": "x = (x ◇ ((y ◇ z) ◇ z)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_973_2115", "eq1_id": 973, "eq2_id": 2115, "equation1": "x = y ◇ ((z ◇ y) ◇ (w ◇ y))", "equation2": "x = ((y ◇ x) ◇ z) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_2295_955", "eq1_id": 2295, "eq2_id": 955, "equation1": "x = (y ◇ (x ◇ (x ◇ y))) ◇ z", "equation2": "x = y ◇ ((z ◇ x) ◇ (w ◇ x))", "answer": true}
+{"id": "etp_3913_4651", "eq1_id": 3913, "eq2_id": 4651, "equation1": "x ◇ x = (y ◇ (z ◇ w)) ◇ u", "equation2": "(x ◇ y) ◇ x = (z ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2214_1922", "eq1_id": 2214, "eq2_id": 1922, "equation1": "x = ((y ◇ z) ◇ w) ◇ (x ◇ z)", "equation2": "x = (y ◇ (y ◇ x)) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_2593_4265", "eq1_id": 2593, "eq2_id": 4265, "equation1": "x = (y ◇ ((z ◇ y) ◇ z)) ◇ y", "equation2": "x ◇ y = ((z ◇ w) ◇ u) ◇ w", "answer": true}
+{"id": "etp_1802_4112", "eq1_id": 1802, "eq2_id": 4112, "equation1": "x = (y ◇ z) ◇ ((z ◇ w) ◇ y)", "equation2": "x ◇ x = ((y ◇ z) ◇ w) ◇ x", "answer": true}
+{"id": "etp_2424_2394", "eq1_id": 2424, "eq2_id": 2394, "equation1": "x = (y ◇ (z ◇ (w ◇ y))) ◇ u", "equation2": "x = (y ◇ (z ◇ (y ◇ w))) ◇ y", "answer": true}
+{"id": "etp_3642_4689", "eq1_id": 3642, "eq2_id": 4689, "equation1": "x ◇ y = z ◇ ((w ◇ y) ◇ u)", "equation2": "(x ◇ y) ◇ z = (w ◇ y) ◇ z", "answer": true}
+{"id": "etp_4183_3255", "eq1_id": 4183, "eq2_id": 3255, "equation1": "x ◇ y = ((y ◇ z) ◇ z) ◇ y", "equation2": "x ◇ x = x ◇ (x ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2067_4135", "eq1_id": 2067, "eq2_id": 4135, "equation1": "x = ((x ◇ y) ◇ y) ◇ (z ◇ y)", "equation2": "x ◇ y = ((x ◇ y) ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2424_543", "eq1_id": 2424, "eq2_id": 543, "equation1": "x = (y ◇ (z ◇ (w ◇ y))) ◇ u", "equation2": "x = y ◇ (z ◇ (x ◇ (y ◇ z)))", "answer": true}
+{"id": "etp_1716_3808", "eq1_id": 1716, "eq2_id": 3808, "equation1": "x = (y ◇ x) ◇ ((z ◇ w) ◇ w)", "equation2": "x ◇ y = (z ◇ y) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_1690_4302", "eq1_id": 1690, "eq2_id": 4302, "equation1": "x = (y ◇ x) ◇ ((x ◇ z) ◇ w)", "equation2": "x ◇ (x ◇ y) = z ◇ (x ◇ w)", "answer": true}
+{"id": "etp_4545_3904", "eq1_id": 4545, "eq2_id": 3904, "equation1": "x ◇ (y ◇ z) = (z ◇ y) ◇ y", "equation2": "x ◇ x = (y ◇ (z ◇ y)) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1087_3076", "eq1_id": 1087, "eq2_id": 3076, "equation1": "x = y ◇ ((x ◇ (y ◇ y)) ◇ z)", "equation2": "x = (((x ◇ y) ◇ y) ◇ x) ◇ y", "answer": true}
+{"id": "etp_2690_1026", "eq1_id": 2690, "eq2_id": 1026, "equation1": "x = ((x ◇ y) ◇ (z ◇ z)) ◇ w", "equation2": "x = x ◇ ((x ◇ (y ◇ x)) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1971_1448", "eq1_id": 1971, "eq2_id": 1448, "equation1": "x = (y ◇ (z ◇ x)) ◇ (w ◇ y)", "equation2": "x = (x ◇ y) ◇ (x ◇ (z ◇ y))", "answer": true}
+{"id": "etp_490_4083", "eq1_id": 490, "eq2_id": 4083, "equation1": "x = y ◇ (x ◇ (z ◇ (y ◇ w)))", "equation2": "x ◇ x = ((y ◇ x) ◇ y) ◇ x", "answer": true}
+{"id": "etp_4618_4562", "eq1_id": 4618, "eq2_id": 4562, "equation1": "(x ◇ x) ◇ y = (z ◇ y) ◇ x", "equation2": "x ◇ (y ◇ z) = (w ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3191_1938", "eq1_id": 3191, "eq2_id": 1938, "equation1": "x = (((y ◇ z) ◇ x) ◇ w) ◇ w", "equation2": "x = (y ◇ (y ◇ y)) ◇ (z ◇ y)", "answer": true}
+{"id": "etp_1804_3395", "eq1_id": 1804, "eq2_id": 3395, "equation1": "x = (y ◇ z) ◇ ((z ◇ w) ◇ w)", "equation2": "x ◇ y = z ◇ (x ◇ (w ◇ u))", "answer": true}
+{"id": "etp_1419_299", "eq1_id": 1419, "eq2_id": 299, "equation1": "x = y ◇ (((z ◇ w) ◇ w) ◇ u)", "equation2": "x = ((y ◇ z) ◇ z) ◇ y", "answer": true}
+{"id": "etp_710_4369", "eq1_id": 710, "eq2_id": 4369, "equation1": "x = y ◇ (y ◇ ((x ◇ z) ◇ y))", "equation2": "x ◇ (y ◇ z) = z ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1583_4488", "eq1_id": 1583, "eq2_id": 4488, "equation1": "x = (y ◇ z) ◇ (y ◇ (w ◇ z))", "equation2": "x ◇ (y ◇ y) = (y ◇ z) ◇ w", "answer": true}
+{"id": "etp_3002_1184", "eq1_id": 3002, "eq2_id": 1184, "equation1": "x = ((y ◇ (z ◇ y)) ◇ w) ◇ x", "equation2": "x = y ◇ ((z ◇ (z ◇ y)) ◇ x)", "answer": true}
+{"id": "etp_2518_4433", "eq1_id": 2518, "eq2_id": 4433, "equation1": "x = (y ◇ ((x ◇ z) ◇ y)) ◇ y", "equation2": "x ◇ (y ◇ x) = (x ◇ x) ◇ y", "answer": true}
+{"id": "etp_762_3706", "eq1_id": 762, "eq2_id": 3706, "equation1": "x = y ◇ (z ◇ ((y ◇ y) ◇ y))", "equation2": "x ◇ x = (y ◇ z) ◇ (w ◇ x)", "answer": true}
+{"id": "etp_3157_2815", "eq1_id": 3157, "eq2_id": 2815, "equation1": "x = (((y ◇ y) ◇ y) ◇ z) ◇ z", "equation2": "x = ((y ◇ z) ◇ (z ◇ z)) ◇ w", "answer": true}
+{"id": "etp_732_2910", "eq1_id": 732, "eq2_id": 2910, "equation1": "x = y ◇ (y ◇ ((z ◇ z) ◇ y))", "equation2": "x = ((y ◇ (x ◇ y)) ◇ x) ◇ y", "answer": true}
+{"id": "etp_2945_4018", "eq1_id": 2945, "eq2_id": 4018, "equation1": "x = ((y ◇ (y ◇ x)) ◇ z) ◇ w", "equation2": "x ◇ y = (z ◇ (y ◇ w)) ◇ y", "answer": true}
+{"id": "etp_4241_3709", "eq1_id": 4241, "eq2_id": 3709, "equation1": "x ◇ y = ((z ◇ z) ◇ w) ◇ u", "equation2": "x ◇ x = (y ◇ z) ◇ (w ◇ w)", "answer": true}
+{"id": "etp_4462_3275", "eq1_id": 4462, "eq2_id": 3275, "equation1": "x ◇ (y ◇ x) = (z ◇ z) ◇ z", "equation2": "x ◇ x = y ◇ (x ◇ (z ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4517_3671", "eq1_id": 4517, "eq2_id": 3671, "equation1": "x ◇ (y ◇ z) = (x ◇ z) ◇ w", "equation2": "x ◇ x = (x ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1298_4121", "eq1_id": 1298, "eq2_id": 4121, "equation1": "x = y ◇ (((x ◇ z) ◇ x) ◇ w)", "equation2": "x ◇ y = ((x ◇ x) ◇ y) ◇ y", "answer": true}
+{"id": "etp_4350_3445", "eq1_id": 4350, "eq2_id": 3445, "equation1": "x ◇ (y ◇ y) = z ◇ (y ◇ x)", "equation2": "x ◇ y = z ◇ (w ◇ (w ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1006_4636", "eq1_id": 1006, "eq2_id": 4636, "equation1": "x = y ◇ ((z ◇ w) ◇ (z ◇ z))", "equation2": "(x ◇ y) ◇ x = (y ◇ x) ◇ y", "answer": true}
+{"id": "etp_1530_3225", "eq1_id": 1530, "eq2_id": 3225, "equation1": "x = (y ◇ y) ◇ (y ◇ (y ◇ z))", "equation2": "x = (((y ◇ z) ◇ z) ◇ w) ◇ w", "answer": true}
+{"id": "etp_564_1439", "eq1_id": 564, "eq2_id": 1439, "equation1": "x = y ◇ (z ◇ (y ◇ (z ◇ z)))", "equation2": "x = (x ◇ x) ◇ (y ◇ (z ◇ z))", "answer": true}
+{"id": "etp_1720_2371", "eq1_id": 1720, "eq2_id": 2371, "equation1": "x = (y ◇ y) ◇ ((x ◇ x) ◇ z)", "equation2": "x = (y ◇ (z ◇ (x ◇ y))) ◇ w", "answer": true}
+{"id": "etp_2010_1728", "eq1_id": 2010, "eq2_id": 1728, "equation1": "x = (y ◇ (z ◇ w)) ◇ (x ◇ y)", "equation2": "x = (y ◇ y) ◇ ((y ◇ x) ◇ x)", "answer": true}
+{"id": "etp_708_2518", "eq1_id": 708, "eq2_id": 2518, "equation1": "x = y ◇ (y ◇ ((x ◇ y) ◇ z))", "equation2": "x = (y ◇ ((x ◇ z) ◇ y)) ◇ y", "answer": true}
+{"id": "etp_1608_4483", "eq1_id": 1608, "eq2_id": 4483, "equation1": "x = (y ◇ z) ◇ (w ◇ (y ◇ x))", "equation2": "x ◇ (y ◇ y) = (y ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1715_1445", "eq1_id": 1715, "eq2_id": 1445, "equation1": "x = (y ◇ x) ◇ ((z ◇ w) ◇ z)", "equation2": "x = (x ◇ y) ◇ (x ◇ (y ◇ y))", "answer": true}
+{"id": "etp_1591_3703", "eq1_id": 1591, "eq2_id": 3703, "equation1": "x = (y ◇ z) ◇ (z ◇ (y ◇ y))", "equation2": "x ◇ x = (y ◇ z) ◇ (z ◇ y)", "answer": true}
+{"id": "etp_1611_2723", "eq1_id": 1611, "eq2_id": 2723, "equation1": "x = (y ◇ z) ◇ (w ◇ (y ◇ w))", "equation2": "x = ((y ◇ x) ◇ (z ◇ y)) ◇ w", "answer": true}
+{"id": "etp_802_3132", "eq1_id": 802, "eq2_id": 3132, "equation1": "x = y ◇ (z ◇ ((w ◇ z) ◇ y))", "equation2": "x = (((y ◇ x) ◇ z) ◇ z) ◇ z", "answer": true}
+{"id": "etp_2753_1344", "eq1_id": 2753, "eq2_id": 1344, "equation1": "x = ((y ◇ y) ◇ (z ◇ x)) ◇ x", "equation2": "x = y ◇ (((y ◇ z) ◇ w) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4468_4160", "eq1_id": 4468, "eq2_id": 4160, "equation1": "x ◇ (y ◇ x) = (z ◇ w) ◇ u", "equation2": "x ◇ y = ((y ◇ x) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2519_2855", "eq1_id": 2519, "eq2_id": 2855, "equation1": "x = (y ◇ ((x ◇ z) ◇ y)) ◇ z", "equation2": "x = ((x ◇ (x ◇ y)) ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_960_2476", "eq1_id": 960, "eq2_id": 2476, "equation1": "x = y ◇ ((z ◇ y) ◇ (x ◇ x))", "equation2": "x = (x ◇ ((y ◇ z) ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1194_2986", "eq1_id": 1194, "eq2_id": 2986, "equation1": "x = y ◇ ((z ◇ (z ◇ w)) ◇ z)", "equation2": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ y", "answer": true}
+{"id": "etp_4648_3409", "eq1_id": 4648, "eq2_id": 3409, "equation1": "(x ◇ y) ◇ x = (z ◇ y) ◇ w", "equation2": "x ◇ y = z ◇ (y ◇ (w ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3061_4138", "eq1_id": 3061, "eq2_id": 4138, "equation1": "x = (((x ◇ x) ◇ y) ◇ z) ◇ x", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1947_2347", "eq1_id": 1947, "eq2_id": 2347, "equation1": "x = (y ◇ (y ◇ z)) ◇ (y ◇ z)", "equation2": "x = (y ◇ (y ◇ (z ◇ x))) ◇ x", "answer": true}
+{"id": "etp_2356_2700", "eq1_id": 2356, "eq2_id": 2700, "equation1": "x = (y ◇ (y ◇ (z ◇ z))) ◇ y", "equation2": "x = ((y ◇ x) ◇ (x ◇ y)) ◇ y", "answer": true}
+{"id": "etp_3200_2120", "eq1_id": 3200, "eq2_id": 2120, "equation1": "x = (((y ◇ z) ◇ y) ◇ y) ◇ w", "equation2": "x = ((y ◇ x) ◇ z) ◇ (w ◇ y)", "answer": true}
+{"id": "etp_4424_3712", "eq1_id": 4424, "eq2_id": 3712, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ y", "equation2": "x ◇ y = (x ◇ x) ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 6, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2666_2249", "eq1_id": 2666, "eq2_id": 2249, "equation1": "x = ((x ◇ y) ◇ (x ◇ z)) ◇ y", "equation2": "x = (x ◇ (x ◇ (y ◇ z))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3445_374", "eq1_id": 3445, "eq2_id": 374, "equation1": "x ◇ y = z ◇ (w ◇ (w ◇ x))", "equation2": "x ◇ y = (x ◇ x) ◇ x", "answer": true}
+{"id": "etp_4417_4124", "eq1_id": 4417, "eq2_id": 4124, "equation1": "x ◇ (x ◇ y) = (z ◇ x) ◇ z", "equation2": "x ◇ y = ((x ◇ x) ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1233_4357", "eq1_id": 1233, "eq2_id": 4357, "equation1": "x = x ◇ (((x ◇ y) ◇ y) ◇ z)", "equation2": "x ◇ (y ◇ z) = x ◇ (y ◇ w)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2073_3671", "eq1_id": 2073, "eq2_id": 3671, "equation1": "x = ((x ◇ y) ◇ z) ◇ (x ◇ w)", "equation2": "x ◇ x = (x ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1159_298", "eq1_id": 1159, "eq2_id": 298, "equation1": "x = y ◇ ((z ◇ (x ◇ w)) ◇ y)", "equation2": "x = ((y ◇ z) ◇ z) ◇ x", "answer": true}
+{"id": "etp_2966_2132", "eq1_id": 2966, "eq2_id": 2132, "equation1": "x = ((y ◇ (y ◇ z)) ◇ z) ◇ z", "equation2": "x = ((y ◇ y) ◇ x) ◇ (z ◇ z)", "answer": true}
+{"id": "etp_1558_1838", "eq1_id": 1558, "eq2_id": 1838, "equation1": "x = (y ◇ z) ◇ (x ◇ (y ◇ z))", "equation2": "x = (x ◇ (x ◇ y)) ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3837_4416", "eq1_id": 3837, "eq2_id": 4416, "equation1": "x ◇ y = (z ◇ w) ◇ (x ◇ y)", "equation2": "x ◇ (x ◇ y) = (z ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1663_3317", "eq1_id": 1663, "eq2_id": 3317, "equation1": "x = (x ◇ y) ◇ ((y ◇ z) ◇ w)", "equation2": "x ◇ y = x ◇ (y ◇ (x ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3227_378", "eq1_id": 3227, "eq2_id": 378, "equation1": "x = (((y ◇ z) ◇ w) ◇ x) ◇ x", "equation2": "x ◇ y = (x ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3986_3880", "eq1_id": 3986, "eq2_id": 3880, "equation1": "x ◇ y = (y ◇ (z ◇ w)) ◇ w", "equation2": "x ◇ x = (y ◇ (x ◇ y)) ◇ x", "answer": true}
+{"id": "etp_2857_3719", "eq1_id": 2857, "eq2_id": 3719, "equation1": "x = ((x ◇ (x ◇ y)) ◇ y) ◇ z", "equation2": "x ◇ y = (x ◇ x) ◇ (z ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4313_3428", "eq1_id": 4313, "eq2_id": 3428, "equation1": "x ◇ (x ◇ y) = z ◇ (w ◇ u)", "equation2": "x ◇ y = z ◇ (z ◇ (w ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_887_1832", "eq1_id": 887, "eq2_id": 1832, "equation1": "x = y ◇ ((x ◇ y) ◇ (z ◇ z))", "equation2": "x = (x ◇ (x ◇ x)) ◇ (x ◇ x)", "answer": true}
+{"id": "etp_3879_3435", "eq1_id": 3879, "eq2_id": 3435, "equation1": "x ◇ x = (y ◇ (x ◇ x)) ◇ z", "equation2": "x ◇ y = z ◇ (w ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1484_3188", "eq1_id": 1484, "eq2_id": 3188, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ x))", "equation2": "x = (((y ◇ z) ◇ x) ◇ w) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1417_4123", "eq1_id": 1417, "eq2_id": 4123, "equation1": "x = y ◇ (((z ◇ w) ◇ w) ◇ z)", "equation2": "x ◇ y = ((x ◇ x) ◇ z) ◇ x", "answer": true}
+{"id": "etp_3600_4086", "eq1_id": 3600, "eq2_id": 4086, "equation1": "x ◇ y = z ◇ ((y ◇ x) ◇ y)", "equation2": "x ◇ x = ((y ◇ x) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1586_703", "eq1_id": 1586, "eq2_id": 703, "equation1": "x = (y ◇ z) ◇ (z ◇ (x ◇ x))", "equation2": "x = y ◇ (y ◇ ((x ◇ x) ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3818_3586", "eq1_id": 3818, "eq2_id": 3586, "equation1": "x ◇ y = (z ◇ y) ◇ (w ◇ u)", "equation2": "x ◇ y = z ◇ ((x ◇ y) ◇ x)", "answer": true}
+{"id": "etp_2490_4286", "eq1_id": 2490, "eq2_id": 4286, "equation1": "x = (x ◇ ((y ◇ z) ◇ w)) ◇ z", "equation2": "x ◇ (x ◇ y) = x ◇ (z ◇ x)", "answer": true}
+{"id": "etp_4444_378", "eq1_id": 4444, "eq2_id": 378, "equation1": "x ◇ (y ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ y = (x ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4539_3659", "eq1_id": 4539, "eq2_id": 3659, "equation1": "x ◇ (y ◇ z) = (y ◇ w) ◇ u", "equation2": "x ◇ x = (x ◇ x) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3084_4151", "eq1_id": 3084, "eq2_id": 4151, "equation1": "x = (((x ◇ y) ◇ y) ◇ z) ◇ w", "equation2": "x ◇ y = ((x ◇ z) ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2052_2049", "eq1_id": 2052, "eq2_id": 2049, "equation1": "x = ((x ◇ y) ◇ x) ◇ (x ◇ z)", "equation2": "x = ((x ◇ x) ◇ y) ◇ (z ◇ w)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4528_3860", "eq1_id": 4528, "eq2_id": 3860, "equation1": "x ◇ (y ◇ z) = (y ◇ y) ◇ y", "equation2": "x ◇ y = (z ◇ w) ◇ (u ◇ u)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2748_662", "eq1_id": 2748, "eq2_id": 662, "equation1": "x = ((y ◇ y) ◇ (y ◇ y)) ◇ z", "equation2": "x = x ◇ (y ◇ ((z ◇ w) ◇ y))", "answer": true}
+{"id": "etp_3187_177", "eq1_id": 3187, "eq2_id": 177, "equation1": "x = (((y ◇ z) ◇ x) ◇ z) ◇ w", "equation2": "x = (y ◇ y) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_2654_4069", "eq1_id": 2654, "eq2_id": 4069, "equation1": "x = ((x ◇ x) ◇ (y ◇ y)) ◇ z", "equation2": "x ◇ x = ((x ◇ x) ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_678_4526", "eq1_id": 678, "eq2_id": 4526, "equation1": "x = y ◇ (x ◇ ((y ◇ x) ◇ z))", "equation2": "x ◇ (y ◇ z) = (y ◇ x) ◇ w", "answer": true}
+{"id": "etp_2122_1422", "eq1_id": 2122, "eq2_id": 1422, "equation1": "x = ((y ◇ x) ◇ z) ◇ (w ◇ w)", "equation2": "x = y ◇ (((z ◇ w) ◇ u) ◇ z)", "answer": true}
+{"id": "etp_1687_1724", "eq1_id": 1687, "eq2_id": 1724, "equation1": "x = (y ◇ x) ◇ ((x ◇ z) ◇ x)", "equation2": "x = (y ◇ y) ◇ ((x ◇ z) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2682_3735", "eq1_id": 2682, "eq2_id": 3735, "equation1": "x = ((x ◇ y) ◇ (z ◇ x)) ◇ w", "equation2": "x ◇ y = (x ◇ z) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2011_4322", "eq1_id": 2011, "eq2_id": 4322, "equation1": "x = (y ◇ (z ◇ w)) ◇ (x ◇ z)", "equation2": "x ◇ (y ◇ x) = y ◇ (x ◇ z)", "answer": true}
+{"id": "etp_3681_354", "eq1_id": 3681, "eq2_id": 354, "equation1": "x ◇ x = (y ◇ x) ◇ (z ◇ y)", "equation2": "x ◇ y = z ◇ (w ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_971_770", "eq1_id": 971, "eq2_id": 770, "equation1": "x = y ◇ ((z ◇ y) ◇ (z ◇ w))", "equation2": "x = y ◇ (z ◇ ((y ◇ w) ◇ y))", "answer": true}
+{"id": "etp_3394_330", "eq1_id": 3394, "eq2_id": 330, "equation1": "x ◇ y = z ◇ (x ◇ (w ◇ w))", "equation2": "x ◇ y = x ◇ (z ◇ z)", "answer": true}
+{"id": "etp_1547_333", "eq1_id": 1547, "eq2_id": 333, "equation1": "x = (y ◇ y) ◇ (z ◇ (w ◇ x))", "equation2": "x ◇ y = y ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4627_4173", "eq1_id": 4627, "eq2_id": 4173, "equation1": "(x ◇ x) ◇ y = (z ◇ w) ◇ w", "equation2": "x ◇ y = ((y ◇ y) ◇ z) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1781_4624", "eq1_id": 1781, "eq2_id": 4624, "equation1": "x = (y ◇ z) ◇ ((y ◇ z) ◇ y)", "equation2": "(x ◇ x) ◇ y = (z ◇ w) ◇ x", "answer": true}
+{"id": "etp_443_1238", "eq1_id": 443, "eq2_id": 1238, "equation1": "x = x ◇ (y ◇ (y ◇ (z ◇ y)))", "equation2": "x = x ◇ (((y ◇ x) ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4411_4521", "eq1_id": 4411, "eq2_id": 4521, "equation1": "x ◇ (x ◇ y) = (y ◇ z) ◇ x", "equation2": "x ◇ (y ◇ z) = (x ◇ w) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1019_2439", "eq1_id": 1019, "eq2_id": 2439, "equation1": "x = y ◇ ((z ◇ w) ◇ (u ◇ v))", "equation2": "x = (y ◇ (z ◇ (w ◇ u))) ◇ u", "answer": true}
+{"id": "etp_1708_943", "eq1_id": 1708, "eq2_id": 943, "equation1": "x = (y ◇ x) ◇ ((z ◇ y) ◇ w)", "equation2": "x = y ◇ ((z ◇ x) ◇ (x ◇ x))", "answer": true}
+{"id": "etp_3012_88", "eq1_id": 3012, "eq2_id": 88, "equation1": "x = ((y ◇ (z ◇ z)) ◇ y) ◇ y", "equation2": "x = y ◇ (z ◇ (y ◇ z))", "answer": true}
+{"id": "etp_2396_3709", "eq1_id": 2396, "eq2_id": 3709, "equation1": "x = (y ◇ (z ◇ (y ◇ w))) ◇ w", "equation2": "x ◇ x = (y ◇ z) ◇ (w ◇ w)", "answer": true}
+{"id": "etp_3144_3005", "eq1_id": 3144, "eq2_id": 3005, "equation1": "x = (((y ◇ y) ◇ x) ◇ y) ◇ z", "equation2": "x = ((y ◇ (z ◇ y)) ◇ w) ◇ w", "answer": true}
+{"id": "etp_1487_3681", "eq1_id": 1487, "eq2_id": 3681, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ w))", "equation2": "x ◇ x = (y ◇ x) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_2315_875", "eq1_id": 2315, "eq2_id": 875, "equation1": "x = (y ◇ (x ◇ (z ◇ y))) ◇ y", "equation2": "x = y ◇ ((x ◇ x) ◇ (z ◇ x))", "answer": true}
+{"id": "etp_4653_3765", "eq1_id": 4653, "eq2_id": 3765, "equation1": "(x ◇ y) ◇ x = (z ◇ w) ◇ u", "equation2": "x ◇ y = (y ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2233_2380", "eq1_id": 2233, "eq2_id": 2380, "equation1": "x = ((y ◇ z) ◇ w) ◇ (u ◇ y)", "equation2": "x = (y ◇ (z ◇ (x ◇ w))) ◇ u", "answer": true}
+{"id": "etp_4240_4006", "eq1_id": 4240, "eq2_id": 4006, "equation1": "x ◇ y = ((z ◇ z) ◇ w) ◇ w", "equation2": "x ◇ y = (z ◇ (y ◇ x)) ◇ y", "answer": true}
+{"id": "etp_4333_3594", "eq1_id": 4333, "eq2_id": 3594, "equation1": "x ◇ (y ◇ x) = z ◇ (y ◇ w)", "equation2": "x ◇ y = z ◇ ((x ◇ w) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1355_1064", "eq1_id": 1355, "eq2_id": 1064, "equation1": "x = y ◇ (((z ◇ x) ◇ y) ◇ z)", "equation2": "x = x ◇ ((y ◇ (z ◇ z)) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_801_3268", "eq1_id": 801, "eq2_id": 3268, "equation1": "x = y ◇ (z ◇ ((w ◇ z) ◇ x))", "equation2": "x ◇ x = y ◇ (x ◇ (x ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_938_99", "eq1_id": 938, "eq2_id": 99, "equation1": "x = y ◇ ((y ◇ z) ◇ (w ◇ x))", "equation2": "x = x ◇ ((x ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2926_1760", "eq1_id": 2926, "eq2_id": 1760, "equation1": "x = ((y ◇ (x ◇ z)) ◇ y) ◇ w", "equation2": "x = (y ◇ z) ◇ ((x ◇ y) ◇ y)", "answer": true}
+{"id": "etp_596_2682", "eq1_id": 596, "eq2_id": 2682, "equation1": "x = y ◇ (z ◇ (w ◇ (y ◇ w)))", "equation2": "x = ((x ◇ y) ◇ (z ◇ x)) ◇ w", "answer": true}
+{"id": "etp_3176_2078", "eq1_id": 3176, "eq2_id": 2078, "equation1": "x = (((y ◇ z) ◇ x) ◇ x) ◇ x", "equation2": "x = ((x ◇ y) ◇ z) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_485_4093", "eq1_id": 485, "eq2_id": 4093, "equation1": "x = y ◇ (x ◇ (z ◇ (x ◇ z)))", "equation2": "x ◇ x = ((y ◇ y) ◇ y) ◇ x", "answer": true}
+{"id": "etp_3513_4067", "eq1_id": 3513, "eq2_id": 4067, "equation1": "x ◇ y = x ◇ ((x ◇ y) ◇ z)", "equation2": "x ◇ x = ((x ◇ x) ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4504_3677", "eq1_id": 4504, "eq2_id": 3677, "equation1": "x ◇ (y ◇ y) = (z ◇ w) ◇ w", "equation2": "x ◇ x = (y ◇ x) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4414_3952", "eq1_id": 4414, "eq2_id": 3952, "equation1": "x ◇ (x ◇ y) = (y ◇ z) ◇ w", "equation2": "x ◇ y = (y ◇ (x ◇ x)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1338_1688", "eq1_id": 1338, "eq2_id": 1688, "equation1": "x = y ◇ (((y ◇ z) ◇ y) ◇ z)", "equation2": "x = (y ◇ x) ◇ ((x ◇ z) ◇ y)", "answer": true}
+{"id": "etp_4573_3703", "eq1_id": 4573, "eq2_id": 3703, "equation1": "x ◇ (y ◇ z) = (w ◇ w) ◇ y", "equation2": "x ◇ x = (y ◇ z) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3018_3895", "eq1_id": 3018, "eq2_id": 3895, "equation1": "x = ((y ◇ (z ◇ z)) ◇ z) ◇ w", "equation2": "x ◇ x = (y ◇ (y ◇ z)) ◇ z", "answer": true}
+{"id": "etp_2589_4159", "eq1_id": 2589, "eq2_id": 4159, "equation1": "x = (y ◇ ((z ◇ y) ◇ y)) ◇ y", "equation2": "x ◇ y = ((y ◇ x) ◇ y) ◇ z", "answer": true}
+{"id": "etp_3141_2555", "eq1_id": 3141, "eq2_id": 2555, "equation1": "x = (((y ◇ y) ◇ x) ◇ x) ◇ z", "equation2": "x = (y ◇ ((y ◇ z) ◇ y)) ◇ y", "answer": true}
+{"id": "etp_1019_1559", "eq1_id": 1019, "eq2_id": 1559, "equation1": "x = y ◇ ((z ◇ w) ◇ (u ◇ v))", "equation2": "x = (y ◇ z) ◇ (x ◇ (y ◇ w))", "answer": true}
+{"id": "etp_1405_4682", "eq1_id": 1405, "eq2_id": 4682, "equation1": "x = y ◇ (((z ◇ w) ◇ y) ◇ x)", "equation2": "(x ◇ y) ◇ z = (y ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4352_3317", "eq1_id": 4352, "eq2_id": 3317, "equation1": "x ◇ (y ◇ y) = z ◇ (y ◇ w)", "equation2": "x ◇ y = x ◇ (y ◇ (x ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2879_4598", "eq1_id": 2879, "eq2_id": 4598, "equation1": "x = ((x ◇ (y ◇ y)) ◇ z) ◇ y", "equation2": "(x ◇ x) ◇ y = (x ◇ y) ◇ x", "answer": true}
+{"id": "etp_2339_2010", "eq1_id": 2339, "eq2_id": 2010, "equation1": "x = (y ◇ (y ◇ (y ◇ x))) ◇ z", "equation2": "x = (y ◇ (z ◇ w)) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_2302_4057", "eq1_id": 2302, "eq2_id": 4057, "equation1": "x = (y ◇ (x ◇ (y ◇ x))) ◇ z", "equation2": "x ◇ y = (z ◇ (w ◇ w)) ◇ w", "answer": true}
+{"id": "etp_2377_880", "eq1_id": 2377, "eq2_id": 880, "equation1": "x = (y ◇ (z ◇ (x ◇ w))) ◇ y", "equation2": "x = y ◇ ((x ◇ y) ◇ (x ◇ y))", "answer": true}
+{"id": "etp_584_1311", "eq1_id": 584, "eq2_id": 1311, "equation1": "x = y ◇ (z ◇ (z ◇ (w ◇ y)))", "equation2": "x = y ◇ (((x ◇ z) ◇ w) ◇ u)", "answer": true}
+{"id": "etp_2720_142", "eq1_id": 2720, "eq2_id": 142, "equation1": "x = ((y ◇ x) ◇ (z ◇ y)) ◇ x", "equation2": "x = y ◇ ((z ◇ z) ◇ x)", "answer": true}
+{"id": "etp_3833_3934", "eq1_id": 3833, "eq2_id": 3934, "equation1": "x ◇ y = (z ◇ z) ◇ (w ◇ z)", "equation2": "x ◇ y = (x ◇ (z ◇ x)) ◇ x", "answer": true}
+{"id": "etp_4333_3791", "eq1_id": 4333, "eq2_id": 3791, "equation1": "x ◇ (y ◇ x) = z ◇ (y ◇ w)", "equation2": "x ◇ y = (z ◇ x) ◇ (y ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1320_4512", "eq1_id": 1320, "eq2_id": 4512, "equation1": "x = y ◇ (((y ◇ x) ◇ z) ◇ z)", "equation2": "x ◇ (y ◇ z) = (x ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3959_3617", "eq1_id": 3959, "eq2_id": 3617, "equation1": "x ◇ y = (y ◇ (x ◇ z)) ◇ z", "equation2": "x ◇ y = z ◇ ((z ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2052_3522", "eq1_id": 2052, "eq2_id": 3522, "equation1": "x = ((x ◇ y) ◇ x) ◇ (x ◇ z)", "equation2": "x ◇ y = x ◇ ((y ◇ y) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_692_1285", "eq1_id": 692, "eq2_id": 1285, "equation1": "x = y ◇ (x ◇ ((z ◇ y) ◇ z))", "equation2": "x = y ◇ (((x ◇ y) ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1602_808", "eq1_id": 1602, "eq2_id": 808, "equation1": "x = (y ◇ z) ◇ (z ◇ (w ◇ u))", "equation2": "x = y ◇ (z ◇ ((w ◇ w) ◇ z))", "answer": true}
+{"id": "etp_4345_3575", "eq1_id": 4345, "eq2_id": 3575, "equation1": "x ◇ (y ◇ y) = y ◇ (z ◇ x)", "equation2": "x ◇ y = y ◇ ((z ◇ z) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3242_194", "eq1_id": 3242, "eq2_id": 194, "equation1": "x = (((y ◇ z) ◇ w) ◇ w) ◇ x", "equation2": "x = (y ◇ z) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_943_1934", "eq1_id": 943, "eq2_id": 1934, "equation1": "x = y ◇ ((z ◇ x) ◇ (x ◇ x))", "equation2": "x = (y ◇ (y ◇ y)) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4102_4320", "eq1_id": 4102, "eq2_id": 4320, "equation1": "x ◇ x = ((y ◇ z) ◇ x) ◇ z", "equation2": "x ◇ (y ◇ x) = y ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4494_355", "eq1_id": 4494, "eq2_id": 355, "equation1": "x ◇ (y ◇ y) = (z ◇ y) ◇ y", "equation2": "x ◇ y = z ◇ (w ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_757_1035", "eq1_id": 757, "eq2_id": 1035, "equation1": "x = y ◇ (z ◇ ((y ◇ x) ◇ x))", "equation2": "x = x ◇ ((y ◇ (x ◇ x)) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1159_391", "eq1_id": 1159, "eq2_id": 391, "equation1": "x = y ◇ ((z ◇ (x ◇ w)) ◇ y)", "equation2": "x ◇ y = (y ◇ z) ◇ y", "answer": true}
+{"id": "etp_983_2328", "eq1_id": 983, "eq2_id": 2328, "equation1": "x = y ◇ ((z ◇ z) ◇ (y ◇ z))", "equation2": "x = (y ◇ (y ◇ (x ◇ x))) ◇ y", "answer": true}
+{"id": "etp_3128_3880", "eq1_id": 3128, "eq2_id": 3880, "equation1": "x = (((y ◇ x) ◇ z) ◇ y) ◇ z", "equation2": "x ◇ x = (y ◇ (x ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4688_4362", "eq1_id": 4688, "eq2_id": 4362, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ u", "equation2": "x ◇ (y ◇ z) = y ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2172_1519", "eq1_id": 2172, "eq2_id": 1519, "equation1": "x = ((y ◇ z) ◇ x) ◇ (z ◇ w)", "equation2": "x = (y ◇ y) ◇ (x ◇ (y ◇ y))", "answer": true}
+{"id": "etp_2555_2121", "eq1_id": 2555, "eq2_id": 2121, "equation1": "x = (y ◇ ((y ◇ z) ◇ y)) ◇ y", "equation2": "x = ((y ◇ x) ◇ z) ◇ (w ◇ z)", "answer": true}
+{"id": "etp_1087_995", "eq1_id": 1087, "eq2_id": 995, "equation1": "x = y ◇ ((x ◇ (y ◇ y)) ◇ z)", "equation2": "x = y ◇ ((z ◇ w) ◇ (x ◇ y))", "answer": true}
+{"id": "etp_4281_3305", "eq1_id": 4281, "eq2_id": 3305, "equation1": "x ◇ (x ◇ x) = y ◇ (z ◇ w)", "equation2": "x ◇ y = x ◇ (x ◇ (x ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3493_4205", "eq1_id": 3493, "eq2_id": 4205, "equation1": "x ◇ x = y ◇ ((z ◇ x) ◇ z)", "equation2": "x ◇ y = ((z ◇ x) ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1595_2076", "eq1_id": 1595, "eq2_id": 2076, "equation1": "x = (y ◇ z) ◇ (z ◇ (z ◇ y))", "equation2": "x = ((x ◇ y) ◇ z) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_4258_3397", "eq1_id": 4258, "eq2_id": 3397, "equation1": "x ◇ y = ((z ◇ w) ◇ w) ◇ y", "equation2": "x ◇ y = z ◇ (y ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2812_3537", "eq1_id": 2812, "eq2_id": 3537, "equation1": "x = ((y ◇ z) ◇ (z ◇ z)) ◇ x", "equation2": "x ◇ y = x ◇ ((z ◇ z) ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_968_3752", "eq1_id": 968, "eq2_id": 3752, "equation1": "x = y ◇ ((z ◇ y) ◇ (z ◇ x))", "equation2": "x ◇ y = (y ◇ x) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4103_368", "eq1_id": 4103, "eq2_id": 368, "equation1": "x ◇ x = ((y ◇ z) ◇ x) ◇ w", "equation2": "x ◇ x = (y ◇ y) ◇ y", "answer": true}
+{"id": "etp_2552_4541", "eq1_id": 2552, "eq2_id": 4541, "equation1": "x = (y ◇ ((y ◇ z) ◇ x)) ◇ z", "equation2": "x ◇ (y ◇ z) = (z ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2551_3677", "eq1_id": 2551, "eq2_id": 3677, "equation1": "x = (y ◇ ((y ◇ z) ◇ x)) ◇ y", "equation2": "x ◇ x = (y ◇ x) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_2002_1751", "eq1_id": 2002, "eq2_id": 1751, "equation1": "x = (y ◇ (z ◇ z)) ◇ (z ◇ z)", "equation2": "x = (y ◇ y) ◇ ((z ◇ w) ◇ y)", "answer": true}
+{"id": "etp_735_3477", "eq1_id": 735, "eq2_id": 3477, "equation1": "x = y ◇ (y ◇ ((z ◇ w) ◇ x))", "equation2": "x ◇ x = y ◇ ((x ◇ z) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1070_1244", "eq1_id": 1070, "eq2_id": 1244, "equation1": "x = x ◇ ((y ◇ (z ◇ w)) ◇ w)", "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ x)", "answer": true}
+{"id": "etp_1904_3388", "eq1_id": 1904, "eq2_id": 3388, "equation1": "x = (y ◇ (x ◇ z)) ◇ (x ◇ x)", "equation2": "x ◇ y = z ◇ (x ◇ (z ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2941_4531", "eq1_id": 2941, "eq2_id": 4531, "equation1": "x = ((y ◇ (y ◇ x)) ◇ y) ◇ z", "equation2": "x ◇ (y ◇ z) = (y ◇ z) ◇ x", "answer": true}
+{"id": "etp_4390_3946", "eq1_id": 4390, "eq2_id": 3946, "equation1": "x ◇ (x ◇ x) = (y ◇ y) ◇ z", "equation2": "x ◇ y = (x ◇ (z ◇ w)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3433_3965", "eq1_id": 3433, "eq2_id": 3965, "equation1": "x ◇ y = z ◇ (w ◇ (x ◇ w))", "equation2": "x ◇ y = (y ◇ (y ◇ y)) ◇ y", "answer": true}
+{"id": "etp_2538_3684", "eq1_id": 2538, "eq2_id": 3684, "equation1": "x = (y ◇ ((y ◇ x) ◇ z)) ◇ z", "equation2": "x ◇ x = (y ◇ y) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4610_4662", "eq1_id": 4610, "eq2_id": 4662, "equation1": "(x ◇ x) ◇ y = (y ◇ z) ◇ x", "equation2": "(x ◇ y) ◇ y = (y ◇ z) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3676_3466", "eq1_id": 3676, "eq2_id": 3466, "equation1": "x ◇ x = (y ◇ x) ◇ (x ◇ z)", "equation2": "x ◇ x = x ◇ ((y ◇ y) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2003_72", "eq1_id": 2003, "eq2_id": 72, "equation1": "x = (y ◇ (z ◇ z)) ◇ (z ◇ w)", "equation2": "x = y ◇ (y ◇ (x ◇ x))", "answer": true}
+{"id": "etp_2323_4680", "eq1_id": 2323, "eq2_id": 4680, "equation1": "x = (y ◇ (x ◇ (z ◇ w))) ◇ y", "equation2": "(x ◇ y) ◇ z = (y ◇ z) ◇ w", "answer": true}
+{"id": "etp_584_4616", "eq1_id": 584, "eq2_id": 4616, "equation1": "x = y ◇ (z ◇ (z ◇ (w ◇ y)))", "equation2": "(x ◇ x) ◇ y = (z ◇ x) ◇ z", "answer": true}
+{"id": "etp_4111_4583", "eq1_id": 4111, "eq2_id": 4583, "equation1": "x ◇ x = ((y ◇ z) ◇ z) ◇ w", "equation2": "(x ◇ x) ◇ x = (x ◇ x) ◇ y", "answer": true}
+{"id": "etp_2033_4329", "eq1_id": 2033, "eq2_id": 4329, "equation1": "x = (y ◇ (z ◇ w)) ◇ (u ◇ u)", "equation2": "x ◇ (y ◇ x) = z ◇ (x ◇ w)", "answer": true}
+{"id": "etp_4372_3754", "eq1_id": 4372, "eq2_id": 3754, "equation1": "x ◇ (y ◇ z) = z ◇ (w ◇ y)", "equation2": "x ◇ y = (y ◇ x) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3240_4373", "eq1_id": 3240, "eq2_id": 4373, "equation1": "x = (((y ◇ z) ◇ w) ◇ z) ◇ w", "equation2": "x ◇ (y ◇ z) = z ◇ (w ◇ u)", "answer": true}
+{"id": "etp_1831_3203", "eq1_id": 1831, "eq2_id": 3203, "equation1": "x = (y ◇ z) ◇ ((w ◇ u) ◇ v)", "equation2": "x = (((y ◇ z) ◇ y) ◇ z) ◇ z", "answer": true}
+{"id": "etp_1800_3895", "eq1_id": 1800, "eq2_id": 3895, "equation1": "x = (y ◇ z) ◇ ((z ◇ z) ◇ w)", "equation2": "x ◇ x = (y ◇ (y ◇ z)) ◇ z", "answer": true}
+{"id": "etp_2895_1449", "eq1_id": 2895, "eq2_id": 1449, "equation1": "x = ((x ◇ (y ◇ z)) ◇ w) ◇ y", "equation2": "x = (x ◇ y) ◇ (x ◇ (z ◇ z))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_993_4345", "eq1_id": 993, "eq2_id": 4345, "equation1": "x = y ◇ ((z ◇ z) ◇ (w ◇ u))", "equation2": "x ◇ (y ◇ y) = y ◇ (z ◇ x)", "answer": true}
+{"id": "etp_2892_4477", "eq1_id": 2892, "eq2_id": 4477, "equation1": "x = ((x ◇ (y ◇ z)) ◇ z) ◇ z", "equation2": "x ◇ (y ◇ y) = (x ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4540_3837", "eq1_id": 4540, "eq2_id": 3837, "equation1": "x ◇ (y ◇ z) = (z ◇ x) ◇ x", "equation2": "x ◇ y = (z ◇ w) ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4637_4054", "eq1_id": 4637, "eq2_id": 4054, "equation1": "(x ◇ y) ◇ x = (y ◇ x) ◇ z", "equation2": "x ◇ y = (z ◇ (w ◇ w)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2104_3617", "eq1_id": 2104, "eq2_id": 3617, "equation1": "x = ((y ◇ x) ◇ y) ◇ (z ◇ y)", "equation2": "x ◇ y = z ◇ ((z ◇ x) ◇ y)", "answer": true}
+{"id": "etp_1202_3984", "eq1_id": 1202, "eq2_id": 3984, "equation1": "x = y ◇ ((z ◇ (w ◇ y)) ◇ x)", "equation2": "x ◇ y = (y ◇ (z ◇ w)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1914_3690", "eq1_id": 1914, "eq2_id": 3690, "equation1": "x = (y ◇ (x ◇ z)) ◇ (z ◇ z)", "equation2": "x ◇ x = (y ◇ y) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_1914_266", "eq1_id": 1914, "eq2_id": 266, "equation1": "x = (y ◇ (x ◇ z)) ◇ (z ◇ z)", "equation2": "x = ((x ◇ y) ◇ z) ◇ x", "answer": true}
+{"id": "etp_552_515", "eq1_id": 552, "eq2_id": 515, "equation1": "x = y ◇ (z ◇ (x ◇ (w ◇ w)))", "equation2": "x = y ◇ (y ◇ (y ◇ (y ◇ z)))", "answer": true}
+{"id": "etp_1405_1212", "eq1_id": 1405, "eq2_id": 1212, "equation1": "x = y ◇ (((z ◇ w) ◇ y) ◇ x)", "equation2": "x = y ◇ ((z ◇ (w ◇ w)) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4156_3766", "eq1_id": 4156, "eq2_id": 3766, "equation1": "x ◇ y = ((y ◇ x) ◇ x) ◇ z", "equation2": "x ◇ y = (y ◇ y) ◇ (z ◇ z)", "answer": true}
+{"id": "etp_1580_813", "eq1_id": 1580, "eq2_id": 813, "equation1": "x = (y ◇ z) ◇ (y ◇ (z ◇ w))", "equation2": "x = y ◇ (z ◇ ((w ◇ u) ◇ z))", "answer": true}
+{"id": "etp_4488_3436", "eq1_id": 4488, "eq2_id": 3436, "equation1": "x ◇ (y ◇ y) = (y ◇ z) ◇ w", "equation2": "x ◇ y = z ◇ (w ◇ (y ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3042_135", "eq1_id": 3042, "eq2_id": 135, "equation1": "x = ((y ◇ (z ◇ w)) ◇ w) ◇ w", "equation2": "x = y ◇ ((z ◇ x) ◇ y)", "answer": true}
+{"id": "etp_1449_4655", "eq1_id": 1449, "eq2_id": 4655, "equation1": "x = (x ◇ y) ◇ (x ◇ (z ◇ z))", "equation2": "(x ◇ y) ◇ y = (x ◇ z) ◇ y", "answer": true}
+{"id": "etp_2883_3738", "eq1_id": 2883, "eq2_id": 3738, "equation1": "x = ((x ◇ (y ◇ z)) ◇ x) ◇ y", "equation2": "x ◇ y = (x ◇ z) ◇ (y ◇ w)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3499_3541", "eq1_id": 3499, "eq2_id": 3541, "equation1": "x ◇ x = y ◇ ((z ◇ z) ◇ x)", "equation2": "x ◇ y = x ◇ ((z ◇ w) ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2086_1035", "eq1_id": 2086, "eq2_id": 1035, "equation1": "x = ((x ◇ y) ◇ z) ◇ (w ◇ u)", "equation2": "x = x ◇ ((y ◇ (x ◇ x)) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_972_2761", "eq1_id": 972, "eq2_id": 2761, "equation1": "x = y ◇ ((z ◇ y) ◇ (w ◇ x))", "equation2": "x = ((y ◇ y) ◇ (z ◇ z)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2120_4677", "eq1_id": 2120, "eq2_id": 4677, "equation1": "x = ((y ◇ x) ◇ z) ◇ (w ◇ y)", "equation2": "(x ◇ y) ◇ z = (y ◇ x) ◇ z", "answer": true}
+{"id": "etp_3495_3384", "eq1_id": 3495, "eq2_id": 3384, "equation1": "x ◇ x = y ◇ ((z ◇ y) ◇ x)", "equation2": "x ◇ y = z ◇ (x ◇ (y ◇ y))", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4686_3361", "eq1_id": 4686, "eq2_id": 3361, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ x", "equation2": "x ◇ y = y ◇ (y ◇ (z ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_849_1245", "eq1_id": 849, "eq2_id": 1245, "equation1": "x = x ◇ ((y ◇ y) ◇ (z ◇ y))", "equation2": "x = x ◇ (((y ◇ x) ◇ z) ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3018_4239", "eq1_id": 3018, "eq2_id": 4239, "equation1": "x = ((y ◇ (z ◇ z)) ◇ z) ◇ w", "equation2": "x ◇ y = ((z ◇ z) ◇ w) ◇ z", "answer": true}
+{"id": "etp_4561_3988", "eq1_id": 4561, "eq2_id": 3988, "equation1": "x ◇ (y ◇ z) = (w ◇ x) ◇ u", "equation2": "x ◇ y = (z ◇ (x ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_574_1998", "eq1_id": 574, "eq2_id": 1998, "equation1": "x = y ◇ (z ◇ (z ◇ (x ◇ w)))", "equation2": "x = (y ◇ (z ◇ z)) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_3386_3557", "eq1_id": 3386, "eq2_id": 3557, "equation1": "x ◇ y = z ◇ (x ◇ (y ◇ w))", "equation2": "x ◇ y = y ◇ ((y ◇ x) ◇ z)", "answer": true}
+{"id": "etp_2567_2310", "eq1_id": 2567, "eq2_id": 2310, "equation1": "x = (y ◇ ((z ◇ x) ◇ x)) ◇ x", "equation2": "x = (y ◇ (x ◇ (z ◇ x))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1168_4457", "eq1_id": 1168, "eq2_id": 4457, "equation1": "x = y ◇ ((z ◇ (y ◇ y)) ◇ y)", "equation2": "x ◇ (y ◇ x) = (z ◇ y) ◇ y", "answer": true}
+{"id": "etp_4688_4365", "eq1_id": 4688, "eq2_id": 4365, "equation1": "(x ◇ y) ◇ z = (z ◇ w) ◇ u", "equation2": "x ◇ (y ◇ z) = y ◇ (z ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_545_1912", "eq1_id": 545, "eq2_id": 1912, "equation1": "x = y ◇ (z ◇ (x ◇ (z ◇ x)))", "equation2": "x = (y ◇ (x ◇ z)) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2142_4036", "eq1_id": 2142, "eq2_id": 4036, "equation1": "x = ((y ◇ y) ◇ y) ◇ (z ◇ z)", "equation2": "x ◇ y = (z ◇ (z ◇ w)) ◇ z", "answer": true}
+{"id": "etp_3455_396", "eq1_id": 3455, "eq2_id": 396, "equation1": "x ◇ y = z ◇ (w ◇ (u ◇ v))", "equation2": "x ◇ y = (z ◇ x) ◇ z", "answer": true}
+{"id": "etp_2879_3731", "eq1_id": 2879, "eq2_id": 3731, "equation1": "x = ((x ◇ (y ◇ y)) ◇ z) ◇ y", "equation2": "x ◇ y = (x ◇ z) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_830_3317", "eq1_id": 830, "eq2_id": 3317, "equation1": "x = x ◇ ((x ◇ y) ◇ (z ◇ z))", "equation2": "x ◇ y = x ◇ (y ◇ (x ◇ z))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1613_2679", "eq1_id": 1613, "eq2_id": 2679, "equation1": "x = (y ◇ z) ◇ (w ◇ (z ◇ x))", "equation2": "x = ((x ◇ y) ◇ (z ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_769_669", "eq1_id": 769, "eq2_id": 669, "equation1": "x = y ◇ (z ◇ ((y ◇ w) ◇ x))", "equation2": "x = y ◇ (x ◇ ((x ◇ y) ◇ x))", "answer": true}
+{"id": "etp_3837_3790", "eq1_id": 3837, "eq2_id": 3790, "equation1": "x ◇ y = (z ◇ w) ◇ (x ◇ y)", "equation2": "x ◇ y = (z ◇ x) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3108_3583", "eq1_id": 3108, "eq2_id": 3583, "equation1": "x = (((y ◇ x) ◇ x) ◇ z) ◇ x", "equation2": "x ◇ y = z ◇ ((x ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_570_2316", "eq1_id": 570, "eq2_id": 2316, "equation1": "x = y ◇ (z ◇ (y ◇ (w ◇ u)))", "equation2": "x = (y ◇ (x ◇ (z ◇ y))) ◇ z", "answer": true}
+{"id": "etp_2234_279", "eq1_id": 2234, "eq2_id": 279, "equation1": "x = ((y ◇ z) ◇ w) ◇ (u ◇ z)", "equation2": "x = ((y ◇ x) ◇ z) ◇ w", "answer": true}
+{"id": "etp_2928_4424", "eq1_id": 2928, "eq2_id": 4424, "equation1": "x = ((y ◇ (x ◇ z)) ◇ z) ◇ y", "equation2": "x ◇ (x ◇ y) = (z ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_608_432", "eq1_id": 608, "eq2_id": 432, "equation1": "x = y ◇ (z ◇ (w ◇ (u ◇ x)))", "equation2": "x = x ◇ (y ◇ (x ◇ (z ◇ x)))", "answer": true}
+{"id": "etp_4455_4510", "eq1_id": 4455, "eq2_id": 4510, "equation1": "x ◇ (y ◇ x) = (z ◇ x) ◇ w", "equation2": "x ◇ (y ◇ z) = (x ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_793_3626", "eq1_id": 793, "eq2_id": 3626, "equation1": "x = y ◇ (z ◇ ((w ◇ x) ◇ z))", "equation2": "x ◇ y = z ◇ ((z ◇ z) ◇ z)", "answer": true}
+{"id": "etp_2956_2543", "eq1_id": 2956, "eq2_id": 2543, "equation1": "x = ((y ◇ (y ◇ z)) ◇ x) ◇ x", "equation2": "x = (y ◇ ((y ◇ y) ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1824_3931", "eq1_id": 1824, "eq2_id": 3931, "equation1": "x = (y ◇ z) ◇ ((w ◇ w) ◇ w)", "equation2": "x ◇ y = (x ◇ (y ◇ z)) ◇ y", "answer": true}
+{"id": "etp_3929_3320", "eq1_id": 3929, "eq2_id": 3320, "equation1": "x ◇ y = (x ◇ (y ◇ y)) ◇ z", "equation2": "x ◇ y = x ◇ (y ◇ (y ◇ z))", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1273_2053", "eq1_id": 1273, "eq2_id": 2053, "equation1": "x = x ◇ (((y ◇ z) ◇ w) ◇ w)", "equation2": "x = ((x ◇ y) ◇ x) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_4425_338", "eq1_id": 4425, "eq2_id": 338, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ z", "equation2": "x ◇ y = y ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_526_2110", "eq1_id": 526, "eq2_id": 2110, "equation1": "x = y ◇ (y ◇ (z ◇ (y ◇ z)))", "equation2": "x = ((y ◇ x) ◇ z) ◇ (x ◇ w)", "answer": true}
+{"id": "etp_2312_1917", "eq1_id": 2312, "eq2_id": 1917, "equation1": "x = (y ◇ (x ◇ (z ◇ x))) ◇ z", "equation2": "x = (y ◇ (x ◇ z)) ◇ (w ◇ y)", "answer": true}
+{"id": "etp_2560_855", "eq1_id": 2560, "eq2_id": 855, "equation1": "x = (y ◇ ((y ◇ z) ◇ z)) ◇ z", "equation2": "x = x ◇ ((y ◇ z) ◇ (x ◇ w))", "answer": true}
+{"id": "etp_1588_2785", "eq1_id": 1588, "eq2_id": 2785, "equation1": "x = (y ◇ z) ◇ (z ◇ (x ◇ z))", "equation2": "x = ((y ◇ z) ◇ (x ◇ w)) ◇ w", "answer": true}
+{"id": "etp_2023_2735", "eq1_id": 2023, "eq2_id": 2735, "equation1": "x = (y ◇ (z ◇ w)) ◇ (z ◇ u)", "equation2": "x = ((y ◇ y) ◇ (x ◇ x)) ◇ z", "answer": true}
+{"id": "etp_2386_4516", "eq1_id": 2386, "eq2_id": 4516, "equation1": "x = (y ◇ (z ◇ (y ◇ y))) ◇ y", "equation2": "x ◇ (y ◇ z) = (x ◇ z) ◇ z", "answer": true}
+{"id": "etp_671_4582", "eq1_id": 671, "eq2_id": 4582, "equation1": "x = y ◇ (x ◇ ((x ◇ y) ◇ z))", "equation2": "x ◇ (y ◇ z) = (w ◇ u) ◇ v", "answer": true}
+{"id": "etp_2377_2435", "eq1_id": 2377, "eq2_id": 2435, "equation1": "x = (y ◇ (z ◇ (x ◇ w))) ◇ y", "equation2": "x = (y ◇ (z ◇ (w ◇ u))) ◇ x", "answer": true}
+{"id": "etp_4569_3918", "eq1_id": 4569, "eq2_id": 3918, "equation1": "x ◇ (y ◇ z) = (w ◇ z) ◇ z", "equation2": "x ◇ y = (x ◇ (x ◇ y)) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3899_4452", "eq1_id": 3899, "eq2_id": 4452, "equation1": "x ◇ x = (y ◇ (z ◇ x)) ◇ z", "equation2": "x ◇ (y ◇ x) = (z ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3091_1629", "eq1_id": 3091, "eq2_id": 1629, "equation1": "x = (((x ◇ y) ◇ z) ◇ y) ◇ z", "equation2": "x = (x ◇ x) ◇ ((x ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4368_4392", "eq1_id": 4368, "eq2_id": 4392, "equation1": "x ◇ (y ◇ z) = y ◇ (w ◇ u)", "equation2": "x ◇ (x ◇ x) = (y ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_770_524", "eq1_id": 770, "eq2_id": 524, "equation1": "x = y ◇ (z ◇ ((y ◇ w) ◇ y))", "equation2": "x = y ◇ (y ◇ (z ◇ (y ◇ x)))", "answer": true}
+{"id": "etp_4417_4257", "eq1_id": 4417, "eq2_id": 4257, "equation1": "x ◇ (x ◇ y) = (z ◇ x) ◇ z", "equation2": "x ◇ y = ((z ◇ w) ◇ w) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2170_3865", "eq1_id": 2170, "eq2_id": 3865, "equation1": "x = ((y ◇ z) ◇ x) ◇ (z ◇ y)", "equation2": "x ◇ x = (x ◇ (x ◇ y)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2424_3339", "eq1_id": 2424, "eq2_id": 3339, "equation1": "x = (y ◇ (z ◇ (w ◇ y))) ◇ u", "equation2": "x ◇ y = x ◇ (z ◇ (w ◇ z))", "answer": true}
+{"id": "etp_2815_3983", "eq1_id": 2815, "eq2_id": 3983, "equation1": "x = ((y ◇ z) ◇ (z ◇ z)) ◇ w", "equation2": "x ◇ y = (y ◇ (z ◇ w)) ◇ x", "answer": true}
+{"id": "etp_4347_3484", "eq1_id": 4347, "eq2_id": 3484, "equation1": "x ◇ (y ◇ y) = y ◇ (z ◇ w)", "equation2": "x ◇ x = y ◇ ((y ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4488_3897", "eq1_id": 4488, "eq2_id": 3897, "equation1": "x ◇ (y ◇ y) = (y ◇ z) ◇ w", "equation2": "x ◇ x = (y ◇ (z ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2158_691", "eq1_id": 2158, "eq2_id": 691, "equation1": "x = ((y ◇ y) ◇ z) ◇ (w ◇ z)", "equation2": "x = y ◇ (x ◇ ((z ◇ y) ◇ y))", "answer": true}
+{"id": "etp_1351_3418", "eq1_id": 1351, "eq2_id": 3418, "equation1": "x = y ◇ (((z ◇ x) ◇ x) ◇ z)", "equation2": "x ◇ y = z ◇ (z ◇ (y ◇ y))", "answer": true}
+{"id": "etp_1556_4476", "eq1_id": 1556, "eq2_id": 4476, "equation1": "x = (y ◇ z) ◇ (x ◇ (y ◇ x))", "equation2": "x ◇ (y ◇ y) = (x ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3125_1577", "eq1_id": 3125, "eq2_id": 1577, "equation1": "x = (((y ◇ x) ◇ z) ◇ x) ◇ w", "equation2": "x = (y ◇ z) ◇ (y ◇ (z ◇ x))", "answer": true}
+{"id": "etp_4261_4367", "eq1_id": 4261, "eq2_id": 4367, "equation1": "x ◇ y = ((z ◇ w) ◇ w) ◇ u", "equation2": "x ◇ (y ◇ z) = y ◇ (w ◇ z)", "answer": true}
+{"id": "etp_1200_1066", "eq1_id": 1200, "eq2_id": 1066, "equation1": "x = y ◇ ((z ◇ (w ◇ x)) ◇ w)", "equation2": "x = x ◇ ((y ◇ (z ◇ z)) ◇ w)", "answer": true}
+{"id": "etp_4563_4445", "eq1_id": 4563, "eq2_id": 4445, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ y", "equation2": "x ◇ (y ◇ x) = (y ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3643_3360", "eq1_id": 3643, "eq2_id": 3360, "equation1": "x ◇ y = z ◇ ((w ◇ z) ◇ x)", "equation2": "x ◇ y = y ◇ (y ◇ (z ◇ z))", "answer": true}
+{"id": "etp_2608_2069", "eq1_id": 2608, "eq2_id": 2069, "equation1": "x = (y ◇ ((z ◇ z) ◇ y)) ◇ w", "equation2": "x = ((x ◇ y) ◇ y) ◇ (z ◇ w)", "answer": true}
+{"id": "etp_786_1694", "eq1_id": 786, "eq2_id": 1694, "equation1": "x = y ◇ (z ◇ ((z ◇ w) ◇ x))", "equation2": "x = (y ◇ x) ◇ ((y ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3419_3471", "eq1_id": 3419, "eq2_id": 3471, "equation1": "x ◇ y = z ◇ (z ◇ (y ◇ z))", "equation2": "x ◇ x = y ◇ ((x ◇ x) ◇ x)", "answer": true}
+{"id": "etp_2270_3258", "eq1_id": 2270, "eq2_id": 3258, "equation1": "x = (x ◇ (y ◇ (y ◇ z))) ◇ y", "equation2": "x ◇ x = x ◇ (y ◇ (x ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_769_3274", "eq1_id": 769, "eq2_id": 3274, "equation1": "x = y ◇ (z ◇ ((y ◇ w) ◇ x))", "equation2": "x ◇ x = y ◇ (x ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2045_4508", "eq1_id": 2045, "eq2_id": 4508, "equation1": "x = ((x ◇ x) ◇ y) ◇ (y ◇ z)", "equation2": "x ◇ (y ◇ z) = (x ◇ x) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1990_2225", "eq1_id": 1990, "eq2_id": 2225, "equation1": "x = (y ◇ (z ◇ y)) ◇ (w ◇ w)", "equation2": "x = ((y ◇ z) ◇ w) ◇ (z ◇ w)", "answer": true}
+{"id": "etp_2561_4439", "eq1_id": 2561, "eq2_id": 4439, "equation1": "x = (y ◇ ((y ◇ z) ◇ z)) ◇ w", "equation2": "x ◇ (y ◇ x) = (x ◇ z) ◇ y", "answer": true}
+{"id": "etp_2675_4284", "eq1_id": 2675, "eq2_id": 4284, "equation1": "x = ((x ◇ y) ◇ (y ◇ z)) ◇ x", "equation2": "x ◇ (x ◇ y) = x ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2157_2239", "eq1_id": 2157, "eq2_id": 2239, "equation1": "x = ((y ◇ y) ◇ z) ◇ (w ◇ y)", "equation2": "x = (x ◇ (x ◇ (x ◇ x))) ◇ y", "answer": true}
+{"id": "etp_1827_3927", "eq1_id": 1827, "eq2_id": 3927, "equation1": "x = (y ◇ z) ◇ ((w ◇ u) ◇ y)", "equation2": "x ◇ y = (x ◇ (y ◇ y)) ◇ x", "answer": true}
+{"id": "etp_2399_1943", "eq1_id": 2399, "eq2_id": 1943, "equation1": "x = (y ◇ (z ◇ (z ◇ x))) ◇ y", "equation2": "x = (y ◇ (y ◇ z)) ◇ (x ◇ z)", "answer": true}
+{"id": "etp_588_4027", "eq1_id": 588, "eq2_id": 4027, "equation1": "x = y ◇ (z ◇ (w ◇ (x ◇ x)))", "equation2": "x ◇ y = (z ◇ (z ◇ y)) ◇ y", "answer": true}
+{"id": "etp_544_2773", "eq1_id": 544, "eq2_id": 2773, "equation1": "x = y ◇ (z ◇ (x ◇ (y ◇ w)))", "equation2": "x = ((y ◇ z) ◇ (x ◇ x)) ◇ w", "answer": true}
+{"id": "etp_1030_435", "eq1_id": 1030, "eq2_id": 435, "equation1": "x = x ◇ ((x ◇ (y ◇ y)) ◇ z)", "equation2": "x = x ◇ (y ◇ (x ◇ (z ◇ w)))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1820_4209", "eq1_id": 1820, "eq2_id": 4209, "equation1": "x = (y ◇ z) ◇ ((w ◇ z) ◇ u)", "equation2": "x ◇ y = ((z ◇ y) ◇ x) ◇ y", "answer": true}
+{"id": "etp_4648_4317", "eq1_id": 4648, "eq2_id": 4317, "equation1": "(x ◇ y) ◇ x = (z ◇ y) ◇ w", "equation2": "x ◇ (y ◇ x) = x ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1595_570", "eq1_id": 1595, "eq2_id": 570, "equation1": "x = (y ◇ z) ◇ (z ◇ (z ◇ y))", "equation2": "x = y ◇ (z ◇ (y ◇ (w ◇ u)))", "answer": true}
+{"id": "etp_2415_2623", "eq1_id": 2415, "eq2_id": 2623, "equation1": "x = (y ◇ (z ◇ (w ◇ x))) ◇ x", "equation2": "x = (y ◇ ((z ◇ w) ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_884_946", "eq1_id": 884, "eq2_id": 946, "equation1": "x = y ◇ ((x ◇ y) ◇ (y ◇ z))", "equation2": "x = y ◇ ((z ◇ x) ◇ (x ◇ w))", "answer": true}
+{"id": "etp_3101_2444", "eq1_id": 3101, "eq2_id": 2444, "equation1": "x = (((x ◇ y) ◇ z) ◇ w) ◇ u", "equation2": "x = (x ◇ ((x ◇ x) ◇ y)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_574_3239", "eq1_id": 574, "eq2_id": 3239, "equation1": "x = y ◇ (z ◇ (z ◇ (x ◇ w)))", "equation2": "x = (((y ◇ z) ◇ w) ◇ z) ◇ z", "answer": true}
+{"id": "etp_1024_1656", "eq1_id": 1024, "eq2_id": 1656, "equation1": "x = x ◇ ((x ◇ (x ◇ y)) ◇ z)", "equation2": "x = (x ◇ y) ◇ ((y ◇ x) ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4322_4587", "eq1_id": 4322, "eq2_id": 4587, "equation1": "x ◇ (y ◇ x) = y ◇ (x ◇ z)", "equation2": "(x ◇ x) ◇ x = (y ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_425_3731", "eq1_id": 425, "eq2_id": 3731, "equation1": "x = x ◇ (x ◇ (y ◇ (z ◇ w)))", "equation2": "x ◇ y = (x ◇ z) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2058_4148", "eq1_id": 2058, "eq2_id": 4148, "equation1": "x = ((x ◇ y) ◇ x) ◇ (z ◇ z)", "equation2": "x ◇ y = ((x ◇ z) ◇ z) ◇ w", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2066_2043", "eq1_id": 2066, "eq2_id": 2043, "equation1": "x = ((x ◇ y) ◇ y) ◇ (z ◇ x)", "equation2": "x = ((x ◇ x) ◇ y) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1346_1287", "eq1_id": 1346, "eq2_id": 1287, "equation1": "x = y ◇ (((y ◇ z) ◇ w) ◇ z)", "equation2": "x = y ◇ (((x ◇ y) ◇ x) ◇ z)", "answer": true}
+{"id": "etp_2925_1543", "eq1_id": 2925, "eq2_id": 1543, "equation1": "x = ((y ◇ (x ◇ z)) ◇ y) ◇ z", "equation2": "x = (y ◇ y) ◇ (z ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_722_2016", "eq1_id": 722, "eq2_id": 2016, "equation1": "x = y ◇ (y ◇ ((y ◇ z) ◇ w))", "equation2": "x = (y ◇ (z ◇ w)) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_3141_1924", "eq1_id": 3141, "eq2_id": 1924, "equation1": "x = (((y ◇ y) ◇ x) ◇ x) ◇ z", "equation2": "x = (y ◇ (y ◇ x)) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_4538_4310", "eq1_id": 4538, "eq2_id": 4310, "equation1": "x ◇ (y ◇ z) = (y ◇ w) ◇ w", "equation2": "x ◇ (x ◇ y) = z ◇ (w ◇ y)", "answer": true}
+{"id": "etp_1484_130", "eq1_id": 1484, "eq2_id": 130, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ x))", "equation2": "x = y ◇ ((y ◇ z) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_574_765", "eq1_id": 574, "eq2_id": 765, "equation1": "x = y ◇ (z ◇ (z ◇ (x ◇ w)))", "equation2": "x = y ◇ (z ◇ ((y ◇ z) ◇ x))", "answer": true}
+{"id": "etp_2944_3756", "eq1_id": 2944, "eq2_id": 3756, "equation1": "x = ((y ◇ (y ◇ x)) ◇ z) ◇ z", "equation2": "x ◇ y = (y ◇ x) ◇ (z ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1508_1322", "eq1_id": 1508, "eq2_id": 1322, "equation1": "x = (y ◇ x) ◇ (z ◇ (z ◇ z))", "equation2": "x = y ◇ (((y ◇ y) ◇ x) ◇ x)", "answer": true}
+{"id": "etp_2042_2286", "eq1_id": 2042, "eq2_id": 2286, "equation1": "x = ((x ◇ x) ◇ y) ◇ (x ◇ z)", "equation2": "x = (x ◇ (y ◇ (z ◇ w))) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1345_825", "eq1_id": 1345, "eq2_id": 825, "equation1": "x = y ◇ (((y ◇ z) ◇ w) ◇ y)", "equation2": "x = x ◇ ((x ◇ y) ◇ (y ◇ x))", "answer": true}
+{"id": "etp_4613_3853", "eq1_id": 4613, "eq2_id": 3853, "equation1": "(x ◇ x) ◇ y = (y ◇ z) ◇ w", "equation2": "x ◇ y = (z ◇ w) ◇ (w ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4462_4540", "eq1_id": 4462, "eq2_id": 4540, "equation1": "x ◇ (y ◇ x) = (z ◇ z) ◇ z", "equation2": "x ◇ (y ◇ z) = (z ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3911_340", "eq1_id": 3911, "eq2_id": 340, "equation1": "x ◇ x = (y ◇ (z ◇ w)) ◇ z", "equation2": "x ◇ y = y ◇ (z ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2172_3542", "eq1_id": 2172, "eq2_id": 3542, "equation1": "x = ((y ◇ z) ◇ x) ◇ (z ◇ w)", "equation2": "x ◇ y = x ◇ ((z ◇ w) ◇ z)", "answer": true}
+{"id": "etp_722_731", "eq1_id": 722, "eq2_id": 731, "equation1": "x = y ◇ (y ◇ ((y ◇ z) ◇ w))", "equation2": "x = y ◇ (y ◇ ((z ◇ z) ◇ x))", "answer": true}
+{"id": "etp_730_1175", "eq1_id": 730, "eq2_id": 1175, "equation1": "x = y ◇ (y ◇ ((z ◇ y) ◇ w))", "equation2": "x = y ◇ ((z ◇ (y ◇ w)) ◇ x)", "answer": true}
+{"id": "etp_3495_4445", "eq1_id": 3495, "eq2_id": 4445, "equation1": "x ◇ x = y ◇ ((z ◇ y) ◇ x)", "equation2": "x ◇ (y ◇ x) = (y ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2953_1360", "eq1_id": 2953, "eq2_id": 1360, "equation1": "x = ((y ◇ (y ◇ y)) ◇ z) ◇ y", "equation2": "x = y ◇ (((z ◇ x) ◇ z) ◇ w)", "answer": true}
+{"id": "etp_4108_3326", "eq1_id": 4108, "eq2_id": 3326, "equation1": "x ◇ x = ((y ◇ z) ◇ z) ◇ x", "equation2": "x ◇ y = x ◇ (z ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1006_3059", "eq1_id": 1006, "eq2_id": 3059, "equation1": "x = y ◇ ((z ◇ w) ◇ (z ◇ z))", "equation2": "x = (((x ◇ x) ◇ y) ◇ y) ◇ y", "answer": true}
+{"id": "etp_4387_3844", "eq1_id": 4387, "eq2_id": 3844, "equation1": "x ◇ (x ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ y = (z ◇ w) ◇ (y ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2081_664", "eq1_id": 2081, "eq2_id": 664, "equation1": "x = ((x ◇ y) ◇ z) ◇ (z ◇ w)", "equation2": "x = x ◇ (y ◇ ((z ◇ w) ◇ w))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1005_746", "eq1_id": 1005, "eq2_id": 746, "equation1": "x = y ◇ ((z ◇ w) ◇ (z ◇ y))", "equation2": "x = y ◇ (z ◇ ((x ◇ y) ◇ z))", "answer": true}
+{"id": "etp_1904_1378", "eq1_id": 1904, "eq2_id": 1378, "equation1": "x = (y ◇ (x ◇ z)) ◇ (x ◇ x)", "equation2": "x = y ◇ (((z ◇ y) ◇ w) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2220_2913", "eq1_id": 2220, "eq2_id": 2913, "equation1": "x = ((y ◇ z) ◇ w) ◇ (y ◇ w)", "equation2": "x = ((y ◇ (x ◇ y)) ◇ y) ◇ y", "answer": true}
+{"id": "etp_4426_3748", "eq1_id": 4426, "eq2_id": 3748, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ w", "equation2": "x ◇ y = (y ◇ x) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3024_4442", "eq1_id": 3024, "eq2_id": 4442, "equation1": "x = ((y ◇ (z ◇ w)) ◇ x) ◇ x", "equation2": "x ◇ (y ◇ x) = (y ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2779_4635", "eq1_id": 2779, "eq2_id": 4635, "equation1": "x = ((y ◇ z) ◇ (x ◇ z)) ◇ y", "equation2": "(x ◇ y) ◇ x = (y ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2681_3862", "eq1_id": 2681, "eq2_id": 3862, "equation1": "x = ((x ◇ y) ◇ (z ◇ x)) ◇ z", "equation2": "x ◇ x = (x ◇ (x ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3179_305", "eq1_id": 3179, "eq2_id": 305, "equation1": "x = (((y ◇ z) ◇ x) ◇ x) ◇ w", "equation2": "x = ((y ◇ z) ◇ w) ◇ w", "answer": true}
+{"id": "etp_1830_2358", "eq1_id": 1830, "eq2_id": 2358, "equation1": "x = (y ◇ z) ◇ ((w ◇ u) ◇ u)", "equation2": "x = (y ◇ (y ◇ (z ◇ z))) ◇ w", "answer": true}
+{"id": "etp_2918_4503", "eq1_id": 2918, "eq2_id": 4503, "equation1": "x = ((y ◇ (x ◇ y)) ◇ z) ◇ w", "equation2": "x ◇ (y ◇ y) = (z ◇ w) ◇ z", "answer": true}
+{"id": "etp_699_2651", "eq1_id": 699, "eq2_id": 2651, "equation1": "x = y ◇ (x ◇ ((z ◇ w) ◇ y))", "equation2": "x = ((x ◇ x) ◇ (y ◇ x)) ◇ z", "answer": true}
+{"id": "etp_1030_4284", "eq1_id": 1030, "eq2_id": 4284, "equation1": "x = x ◇ ((x ◇ (y ◇ y)) ◇ z)", "equation2": "x ◇ (x ◇ y) = x ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2752_2709", "eq1_id": 2752, "eq2_id": 2709, "equation1": "x = ((y ◇ y) ◇ (y ◇ z)) ◇ w", "equation2": "x = ((y ◇ x) ◇ (y ◇ y)) ◇ x", "answer": true}
+{"id": "etp_1480_462", "eq1_id": 1480, "eq2_id": 462, "equation1": "x = (y ◇ x) ◇ (x ◇ (x ◇ z))", "equation2": "x = x ◇ (y ◇ (z ◇ (w ◇ u)))", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_1717_215", "eq1_id": 1717, "eq2_id": 215, "equation1": "x = (y ◇ x) ◇ ((z ◇ w) ◇ u)", "equation2": "x = (x ◇ (y ◇ z)) ◇ y", "answer": true}
+{"id": "etp_4295_3647", "eq1_id": 4295, "eq2_id": 3647, "equation1": "x ◇ (x ◇ y) = y ◇ (z ◇ x)", "equation2": "x ◇ y = z ◇ ((w ◇ z) ◇ u)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1568_3102", "eq1_id": 1568, "eq2_id": 3102, "equation1": "x = (y ◇ z) ◇ (x ◇ (w ◇ u))", "equation2": "x = (((y ◇ x) ◇ x) ◇ x) ◇ x", "answer": true}
+{"id": "etp_1989_429", "eq1_id": 1989, "eq2_id": 429, "equation1": "x = (y ◇ (z ◇ y)) ◇ (w ◇ z)", "equation2": "x = x ◇ (y ◇ (x ◇ (y ◇ x)))", "answer": true}
+{"id": "etp_4347_4506", "eq1_id": 4347, "eq2_id": 4506, "equation1": "x ◇ (y ◇ y) = y ◇ (z ◇ w)", "equation2": "x ◇ (y ◇ z) = (x ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1377_972", "eq1_id": 1377, "eq2_id": 972, "equation1": "x = y ◇ (((z ◇ y) ◇ z) ◇ w)", "equation2": "x = y ◇ ((z ◇ y) ◇ (w ◇ x))", "answer": true}
+{"id": "etp_791_2199", "eq1_id": 791, "eq2_id": 2199, "equation1": "x = y ◇ (z ◇ ((w ◇ x) ◇ x))", "equation2": "x = ((y ◇ z) ◇ z) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2793_41", "eq1_id": 2793, "eq2_id": 41, "equation1": "x = ((y ◇ z) ◇ (y ◇ y)) ◇ z", "equation2": "x ◇ x = y ◇ z", "answer": true}
+{"id": "etp_572_2789", "eq1_id": 572, "eq2_id": 2789, "equation1": "x = y ◇ (z ◇ (z ◇ (x ◇ y)))", "equation2": "x = ((y ◇ z) ◇ (y ◇ x)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1913_3256", "eq1_id": 1913, "eq2_id": 3256, "equation1": "x = (y ◇ (x ◇ z)) ◇ (z ◇ y)", "equation2": "x ◇ x = x ◇ (x ◇ (y ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2032_4551", "eq1_id": 2032, "eq2_id": 4551, "equation1": "x = (y ◇ (z ◇ w)) ◇ (u ◇ w)", "equation2": "x ◇ (y ◇ z) = (z ◇ z) ◇ w", "answer": true}
+{"id": "etp_4246_4301", "eq1_id": 4246, "eq2_id": 4301, "equation1": "x ◇ y = ((z ◇ w) ◇ x) ◇ u", "equation2": "x ◇ (x ◇ y) = z ◇ (x ◇ z)", "answer": true}
+{"id": "etp_4551_4153", "eq1_id": 4551, "eq2_id": 4153, "equation1": "x ◇ (y ◇ z) = (z ◇ z) ◇ w", "equation2": "x ◇ y = ((x ◇ z) ◇ w) ◇ u", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_481_1384", "eq1_id": 481, "eq2_id": 1384, "equation1": "x = y ◇ (x ◇ (y ◇ (z ◇ z)))", "equation2": "x = y ◇ (((z ◇ z) ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2802_3428", "eq1_id": 2802, "eq2_id": 3428, "equation1": "x = ((y ◇ z) ◇ (y ◇ w)) ◇ w", "equation2": "x ◇ y = z ◇ (z ◇ (w ◇ w))", "answer": true}
+{"id": "etp_3525_323", "eq1_id": 3525, "eq2_id": 323, "equation1": "x ◇ y = x ◇ ((y ◇ z) ◇ y)", "equation2": "x ◇ y = x ◇ (x ◇ y)", "answer": false, "filter_nontrivial_models": 11, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2397_2655", "eq1_id": 2397, "eq2_id": 2655, "equation1": "x = (y ◇ (z ◇ (y ◇ w))) ◇ u", "equation2": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ x", "answer": true}
+{"id": "etp_797_2550", "eq1_id": 797, "eq2_id": 2550, "equation1": "x = y ◇ (z ◇ ((w ◇ y) ◇ y))", "equation2": "x = (y ◇ ((y ◇ z) ◇ x)) ◇ x", "answer": true}
+{"id": "etp_518_419", "eq1_id": 518, "eq2_id": 419, "equation1": "x = y ◇ (y ◇ (y ◇ (z ◇ z)))", "equation2": "x = x ◇ (x ◇ (y ◇ (y ◇ x)))", "answer": true}
+{"id": "etp_2422_990", "eq1_id": 2422, "eq2_id": 990, "equation1": "x = (y ◇ (z ◇ (w ◇ y))) ◇ z", "equation2": "x = y ◇ ((z ◇ z) ◇ (w ◇ y))", "answer": true}
+{"id": "etp_4562_3353", "eq1_id": 4562, "eq2_id": 3353, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ x", "equation2": "x ◇ y = y ◇ (y ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4356_3396", "eq1_id": 4356, "eq2_id": 3396, "equation1": "x ◇ (y ◇ y) = z ◇ (w ◇ u)", "equation2": "x ◇ y = z ◇ (y ◇ (x ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1170_56", "eq1_id": 1170, "eq2_id": 56, "equation1": "x = y ◇ ((z ◇ (y ◇ y)) ◇ w)", "equation2": "x = x ◇ (y ◇ (y ◇ y))", "answer": true}
+{"id": "etp_2767_1836", "eq1_id": 2767, "eq2_id": 1836, "equation1": "x = ((y ◇ y) ◇ (z ◇ w)) ◇ z", "equation2": "x = (x ◇ (x ◇ x)) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_943_1125", "eq1_id": 943, "eq2_id": 1125, "equation1": "x = y ◇ ((z ◇ x) ◇ (x ◇ x))", "equation2": "x = y ◇ ((y ◇ (y ◇ z)) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_741_2781", "eq1_id": 741, "eq2_id": 2781, "equation1": "x = y ◇ (z ◇ ((x ◇ x) ◇ y))", "equation2": "x = ((y ◇ z) ◇ (x ◇ z)) ◇ w", "answer": true}
+{"id": "etp_4650_4196", "eq1_id": 4650, "eq2_id": 4196, "equation1": "(x ◇ y) ◇ x = (z ◇ w) ◇ y", "equation2": "x ◇ y = ((z ◇ x) ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4434_4128", "eq1_id": 4434, "eq2_id": 4128, "equation1": "x ◇ (y ◇ x) = (x ◇ x) ◇ z", "equation2": "x ◇ y = ((x ◇ y) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4387_4250", "eq1_id": 4387, "eq2_id": 4250, "equation1": "x ◇ (x ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ y = ((z ◇ w) ◇ y) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2094_2557", "eq1_id": 2094, "eq2_id": 2557, "equation1": "x = ((y ◇ x) ◇ x) ◇ (z ◇ y)", "equation2": "x = (y ◇ ((y ◇ z) ◇ y)) ◇ w", "answer": true}
+{"id": "etp_2251_3509", "eq1_id": 2251, "eq2_id": 3509, "equation1": "x = (x ◇ (x ◇ (y ◇ z))) ◇ z", "equation2": "x ◇ y = x ◇ ((x ◇ x) ◇ y)", "answer": true}
+{"id": "etp_912_1078", "eq1_id": 912, "eq2_id": 1078, "equation1": "x = y ◇ ((y ◇ x) ◇ (z ◇ x))", "equation2": "x = y ◇ ((x ◇ (x ◇ z)) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4549_3329", "eq1_id": 4549, "eq2_id": 3329, "equation1": "x ◇ (y ◇ z) = (z ◇ z) ◇ y", "equation2": "x ◇ y = x ◇ (z ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4604_4340", "eq1_id": 4604, "eq2_id": 4340, "equation1": "(x ◇ x) ◇ y = (x ◇ z) ◇ w", "equation2": "x ◇ (y ◇ y) = x ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4481_3453", "eq1_id": 4481, "eq2_id": 3453, "equation1": "x ◇ (y ◇ y) = (y ◇ x) ◇ z", "equation2": "x ◇ y = z ◇ (w ◇ (u ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2578_3673", "eq1_id": 2578, "eq2_id": 3673, "equation1": "x = (y ◇ ((z ◇ x) ◇ z)) ◇ w", "equation2": "x ◇ x = (x ◇ y) ◇ (z ◇ w)", "answer": true}
+{"id": "etp_1752_3880", "eq1_id": 1752, "eq2_id": 3880, "equation1": "x = (y ◇ y) ◇ ((z ◇ w) ◇ z)", "equation2": "x ◇ x = (y ◇ (x ◇ y)) ◇ x", "answer": true}
+{"id": "etp_4427_4270", "eq1_id": 4427, "eq2_id": 4270, "equation1": "x ◇ (x ◇ y) = (z ◇ w) ◇ x", "equation2": "x ◇ (x ◇ x) = x ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2716_90", "eq1_id": 2716, "eq2_id": 90, "equation1": "x = ((y ◇ x) ◇ (z ◇ x)) ◇ x", "equation2": "x = y ◇ (z ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4694_3297", "eq1_id": 4694, "eq2_id": 3297, "equation1": "(x ◇ y) ◇ z = (w ◇ u) ◇ v", "equation2": "x ◇ x = y ◇ (z ◇ (z ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2827_4111", "eq1_id": 2827, "eq2_id": 4111, "equation1": "x = ((y ◇ z) ◇ (w ◇ y)) ◇ y", "equation2": "x ◇ x = ((y ◇ z) ◇ z) ◇ w", "answer": true}
+{"id": "etp_2028_1740", "eq1_id": 2028, "eq2_id": 1740, "equation1": "x = (y ◇ (z ◇ w)) ◇ (w ◇ u)", "equation2": "x = (y ◇ y) ◇ ((z ◇ x) ◇ z)", "answer": true}
+{"id": "etp_1160_3550", "eq1_id": 1160, "eq2_id": 3550, "equation1": "x = y ◇ ((z ◇ (x ◇ w)) ◇ z)", "equation2": "x ◇ y = y ◇ ((x ◇ y) ◇ z)", "answer": true}
+{"id": "etp_3032_1627", "eq1_id": 3032, "eq2_id": 1627, "equation1": "x = ((y ◇ (z ◇ w)) ◇ y) ◇ w", "equation2": "x = (y ◇ z) ◇ (w ◇ (u ◇ u))", "answer": true}
+{"id": "etp_550_1371", "eq1_id": 550, "eq2_id": 1371, "equation1": "x = y ◇ (z ◇ (x ◇ (w ◇ y)))", "equation2": "x = y ◇ (((z ◇ y) ◇ y) ◇ y)", "answer": true}
+{"id": "etp_4523_398", "eq1_id": 4523, "eq2_id": 398, "equation1": "x ◇ (y ◇ z) = (y ◇ x) ◇ x", "equation2": "x ◇ y = (z ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4576_4666", "eq1_id": 4576, "eq2_id": 4666, "equation1": "x ◇ (y ◇ z) = (w ◇ w) ◇ u", "equation2": "(x ◇ y) ◇ y = (z ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4047_4385", "eq1_id": 4047, "eq2_id": 4385, "equation1": "x ◇ y = (z ◇ (w ◇ y)) ◇ w", "equation2": "x ◇ (x ◇ x) = (y ◇ x) ◇ x", "answer": true}
+{"id": "etp_4311_3691", "eq1_id": 4311, "eq2_id": 3691, "equation1": "x ◇ (x ◇ y) = z ◇ (w ◇ z)", "equation2": "x ◇ x = (y ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3340_4078", "eq1_id": 3340, "eq2_id": 4078, "equation1": "x ◇ y = x ◇ (z ◇ (w ◇ w))", "equation2": "x ◇ x = ((x ◇ y) ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_941_3900", "eq1_id": 941, "eq2_id": 3900, "equation1": "x = y ◇ ((y ◇ z) ◇ (w ◇ w))", "equation2": "x ◇ x = (y ◇ (z ◇ x)) ◇ w", "answer": true}
+{"id": "etp_2557_1697", "eq1_id": 2557, "eq2_id": 1697, "equation1": "x = (y ◇ ((y ◇ z) ◇ y)) ◇ w", "equation2": "x = (y ◇ x) ◇ ((y ◇ z) ◇ x)", "answer": true}
+{"id": "etp_2815_3421", "eq1_id": 2815, "eq2_id": 3421, "equation1": "x = ((y ◇ z) ◇ (z ◇ z)) ◇ w", "equation2": "x ◇ y = z ◇ (z ◇ (z ◇ x))", "answer": true}
+{"id": "etp_4496_4082", "eq1_id": 4496, "eq2_id": 4082, "equation1": "x ◇ (y ◇ y) = (z ◇ y) ◇ w", "equation2": "x ◇ x = ((y ◇ x) ◇ x) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_607_1233", "eq1_id": 607, "eq2_id": 1233, "equation1": "x = y ◇ (z ◇ (w ◇ (w ◇ u)))", "equation2": "x = x ◇ (((x ◇ y) ◇ y) ◇ z)", "answer": true}
+{"id": "etp_4683_4578", "eq1_id": 4683, "eq2_id": 4578, "equation1": "(x ◇ y) ◇ z = (y ◇ w) ◇ u", "equation2": "x ◇ (y ◇ z) = (w ◇ u) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1586_1299", "eq1_id": 1586, "eq2_id": 1299, "equation1": "x = (y ◇ z) ◇ (z ◇ (x ◇ x))", "equation2": "x = y ◇ (((x ◇ z) ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_770_2508", "eq1_id": 770, "eq2_id": 2508, "equation1": "x = y ◇ (z ◇ ((y ◇ w) ◇ y))", "equation2": "x = (y ◇ ((x ◇ y) ◇ y)) ◇ z", "answer": true}
+{"id": "etp_3879_3599", "eq1_id": 3879, "eq2_id": 3599, "equation1": "x ◇ x = (y ◇ (x ◇ x)) ◇ z", "equation2": "x ◇ y = z ◇ ((y ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2969_1223", "eq1_id": 2969, "eq2_id": 1223, "equation1": "x = ((y ◇ (y ◇ z)) ◇ w) ◇ y", "equation2": "x = x ◇ (((x ◇ x) ◇ x) ◇ x)", "answer": true}
+{"id": "etp_1175_3890", "eq1_id": 1175, "eq2_id": 3890, "equation1": "x = y ◇ ((z ◇ (y ◇ w)) ◇ x)", "equation2": "x ◇ x = (y ◇ (y ◇ y)) ◇ x", "answer": true}
+{"id": "etp_3014_69", "eq1_id": 3014, "eq2_id": 69, "equation1": "x = ((y ◇ (z ◇ z)) ◇ y) ◇ w", "equation2": "x = y ◇ (x ◇ (z ◇ y))", "answer": true}
+{"id": "etp_3879_4462", "eq1_id": 3879, "eq2_id": 4462, "equation1": "x ◇ x = (y ◇ (x ◇ x)) ◇ z", "equation2": "x ◇ (y ◇ x) = (z ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4578_3578", "eq1_id": 4578, "eq2_id": 3578, "equation1": "x ◇ (y ◇ z) = (w ◇ u) ◇ y", "equation2": "x ◇ y = y ◇ ((z ◇ w) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2719_1218", "eq1_id": 2719, "eq2_id": 1218, "equation1": "x = ((y ◇ x) ◇ (z ◇ x)) ◇ w", "equation2": "x = y ◇ ((z ◇ (w ◇ u)) ◇ y)", "answer": true}
+{"id": "etp_2732_3336", "eq1_id": 2732, "eq2_id": 3336, "equation1": "x = ((y ◇ x) ◇ (z ◇ w)) ◇ u", "equation2": "x ◇ y = x ◇ (z ◇ (z ◇ w))", "answer": true}
+{"id": "etp_4423_4025", "eq1_id": 4423, "eq2_id": 4025, "equation1": "x ◇ (x ◇ y) = (z ◇ z) ◇ x", "equation2": "x ◇ y = (z ◇ (z ◇ x)) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3691_4316", "eq1_id": 3691, "eq2_id": 4316, "equation1": "x ◇ x = (y ◇ y) ◇ (z ◇ y)", "equation2": "x ◇ (y ◇ x) = x ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3596_3645", "eq1_id": 3596, "eq2_id": 3645, "equation1": "x ◇ y = z ◇ ((x ◇ w) ◇ z)", "equation2": "x ◇ y = z ◇ ((w ◇ z) ◇ z)", "answer": true}
+{"id": "etp_2991_925", "eq1_id": 2991, "eq2_id": 925, "equation1": "x = ((y ◇ (z ◇ y)) ◇ x) ◇ y", "equation2": "x = y ◇ ((y ◇ y) ◇ (z ◇ w))", "answer": true}
+{"id": "etp_2321_82", "eq1_id": 2321, "eq2_id": 82, "equation1": "x = (y ◇ (x ◇ (z ◇ z))) ◇ w", "equation2": "x = y ◇ (z ◇ (x ◇ x))", "answer": true}
+{"id": "etp_1567_2182", "eq1_id": 1567, "eq2_id": 2182, "equation1": "x = (y ◇ z) ◇ (x ◇ (w ◇ w))", "equation2": "x = ((y ◇ z) ◇ y) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1372_3052", "eq1_id": 1372, "eq2_id": 3052, "equation1": "x = y ◇ (((z ◇ y) ◇ y) ◇ z)", "equation2": "x = (((x ◇ x) ◇ x) ◇ y) ◇ x", "answer": true}
+{"id": "etp_935_245", "eq1_id": 935, "eq2_id": 245, "equation1": "x = y ◇ ((y ◇ z) ◇ (z ◇ y))", "equation2": "x = (y ◇ (z ◇ y)) ◇ w", "answer": true}
+{"id": "etp_4565_4064", "eq1_id": 4565, "eq2_id": 4064, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ w", "equation2": "x ◇ y = (z ◇ (w ◇ u)) ◇ v", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_690_1262", "eq1_id": 690, "eq2_id": 1262, "equation1": "x = y ◇ (x ◇ ((z ◇ y) ◇ x))", "equation2": "x = x ◇ (((y ◇ z) ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1905_179", "eq1_id": 1905, "eq2_id": 179, "equation1": "x = (y ◇ (x ◇ z)) ◇ (x ◇ y)", "equation2": "x = (y ◇ y) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_922_3880", "eq1_id": 922, "eq2_id": 3880, "equation1": "x = y ◇ ((y ◇ y) ◇ (z ◇ x))", "equation2": "x ◇ x = (y ◇ (x ◇ y)) ◇ x", "answer": true}
+{"id": "etp_3899_4527", "eq1_id": 3899, "eq2_id": 4527, "equation1": "x ◇ x = (y ◇ (z ◇ x)) ◇ z", "equation2": "x ◇ (y ◇ z) = (y ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4691_3865", "eq1_id": 4691, "eq2_id": 3865, "equation1": "(x ◇ y) ◇ z = (w ◇ z) ◇ y", "equation2": "x ◇ x = (x ◇ (x ◇ y)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3904_4499", "eq1_id": 3904, "eq2_id": 4499, "equation1": "x ◇ x = (y ◇ (z ◇ y)) ◇ w", "equation2": "x ◇ (y ◇ y) = (z ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4309_3943", "eq1_id": 4309, "eq2_id": 3943, "equation1": "x ◇ (x ◇ y) = z ◇ (w ◇ x)", "equation2": "x ◇ y = (x ◇ (z ◇ z)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4438_3326", "eq1_id": 4438, "eq2_id": 3326, "equation1": "x ◇ (y ◇ x) = (x ◇ z) ◇ x", "equation2": "x ◇ y = x ◇ (z ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1299_1038", "eq1_id": 1299, "eq2_id": 1038, "equation1": "x = y ◇ (((x ◇ z) ◇ y) ◇ x)", "equation2": "x = x ◇ ((y ◇ (x ◇ y)) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2794_761", "eq1_id": 2794, "eq2_id": 761, "equation1": "x = ((y ◇ z) ◇ (y ◇ y)) ◇ w", "equation2": "x = y ◇ (z ◇ ((y ◇ y) ◇ x))", "answer": true}
+{"id": "etp_852_2285", "eq1_id": 852, "eq2_id": 2285, "equation1": "x = x ◇ ((y ◇ z) ◇ (x ◇ x))", "equation2": "x = (x ◇ (y ◇ (z ◇ w))) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_687_1125", "eq1_id": 687, "eq2_id": 1125, "equation1": "x = y ◇ (x ◇ ((z ◇ x) ◇ y))", "equation2": "x = y ◇ ((y ◇ (y ◇ z)) ◇ x)", "answer": true}
+{"id": "etp_3577_4120", "eq1_id": 3577, "eq2_id": 4120, "equation1": "x ◇ y = y ◇ ((z ◇ w) ◇ x)", "equation2": "x ◇ y = ((x ◇ x) ◇ y) ◇ x", "answer": true}
+{"id": "etp_646_3526", "eq1_id": 646, "eq2_id": 3526, "equation1": "x = x ◇ (y ◇ ((y ◇ z) ◇ y))", "equation2": "x ◇ y = x ◇ ((y ◇ z) ◇ z)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4281_4673", "eq1_id": 4281, "eq2_id": 4673, "equation1": "x ◇ (x ◇ x) = y ◇ (z ◇ w)", "equation2": "(x ◇ y) ◇ z = (x ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_927_1601", "eq1_id": 927, "eq2_id": 1601, "equation1": "x = y ◇ ((y ◇ z) ◇ (x ◇ y))", "equation2": "x = (y ◇ z) ◇ (z ◇ (w ◇ w))", "answer": true}
+{"id": "etp_1405_1755", "eq1_id": 1405, "eq2_id": 1755, "equation1": "x = y ◇ (((z ◇ w) ◇ y) ◇ x)", "equation2": "x = (y ◇ z) ◇ ((x ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_951_2029", "eq1_id": 951, "eq2_id": 2029, "equation1": "x = y ◇ ((z ◇ x) ◇ (z ◇ x))", "equation2": "x = (y ◇ (z ◇ w)) ◇ (u ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1079_4025", "eq1_id": 1079, "eq2_id": 4025, "equation1": "x = y ◇ ((x ◇ (x ◇ z)) ◇ y)", "equation2": "x ◇ y = (z ◇ (z ◇ x)) ◇ w", "answer": true}
+{"id": "etp_3698_4155", "eq1_id": 3698, "eq2_id": 4155, "equation1": "x ◇ x = (y ◇ z) ◇ (y ◇ x)", "equation2": "x ◇ y = ((y ◇ x) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3074_209", "eq1_id": 3074, "eq2_id": 209, "equation1": "x = (((x ◇ y) ◇ x) ◇ z) ◇ w", "equation2": "x = (x ◇ (y ◇ x)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2897_4433", "eq1_id": 2897, "eq2_id": 4433, "equation1": "x = ((x ◇ (y ◇ z)) ◇ w) ◇ w", "equation2": "x ◇ (y ◇ x) = (x ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3986_4269", "eq1_id": 3986, "eq2_id": 4269, "equation1": "x ◇ y = (y ◇ (z ◇ w)) ◇ w", "equation2": "x ◇ (x ◇ x) = x ◇ (y ◇ x)", "answer": true}
+{"id": "etp_4667_4324", "eq1_id": 4667, "eq2_id": 4324, "equation1": "(x ◇ y) ◇ y = (z ◇ y) ◇ w", "equation2": "x ◇ (y ◇ x) = y ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3882_3650", "eq1_id": 3882, "eq2_id": 3650, "equation1": "x ◇ x = (y ◇ (x ◇ y)) ◇ z", "equation2": "x ◇ y = z ◇ ((w ◇ w) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2321_2299", "eq1_id": 2321, "eq2_id": 2299, "equation1": "x = (y ◇ (x ◇ (z ◇ z))) ◇ w", "equation2": "x = (y ◇ (x ◇ (x ◇ z))) ◇ w", "answer": true}
+{"id": "etp_4387_3696", "eq1_id": 4387, "eq2_id": 3696, "equation1": "x ◇ (x ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ x = (y ◇ z) ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2833_456", "eq1_id": 2833, "eq2_id": 456, "equation1": "x = ((y ◇ z) ◇ (w ◇ z)) ◇ z", "equation2": "x = x ◇ (y ◇ (z ◇ (z ◇ z)))", "answer": true}
+{"id": "etp_1331_2729", "eq1_id": 1331, "eq2_id": 2729, "equation1": "x = y ◇ (((y ◇ y) ◇ z) ◇ w)", "equation2": "x = ((y ◇ x) ◇ (z ◇ w)) ◇ y", "answer": true}
+{"id": "etp_4660_4344", "eq1_id": 4660, "eq2_id": 4344, "equation1": "(x ◇ y) ◇ y = (y ◇ z) ◇ x", "equation2": "x ◇ (y ◇ y) = y ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1329_4296", "eq1_id": 1329, "eq2_id": 4296, "equation1": "x = y ◇ (((y ◇ y) ◇ z) ◇ y)", "equation2": "x ◇ (x ◇ y) = y ◇ (z ◇ y)", "answer": true}
+{"id": "etp_1081_1939", "eq1_id": 1081, "eq2_id": 1939, "equation1": "x = y ◇ ((x ◇ (x ◇ z)) ◇ w)", "equation2": "x = (y ◇ (y ◇ y)) ◇ (z ◇ z)", "answer": true}
+{"id": "etp_4637_4197", "eq1_id": 4637, "eq2_id": 4197, "equation1": "(x ◇ y) ◇ x = (y ◇ x) ◇ z", "equation2": "x ◇ y = ((z ◇ x) ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4568_3363", "eq1_id": 4568, "eq2_id": 3363, "equation1": "x ◇ (y ◇ z) = (w ◇ z) ◇ y", "equation2": "x ◇ y = y ◇ (z ◇ (x ◇ y))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3132_3034", "eq1_id": 3132, "eq2_id": 3034, "equation1": "x = (((y ◇ x) ◇ z) ◇ z) ◇ z", "equation2": "x = ((y ◇ (z ◇ w)) ◇ z) ◇ x", "answer": true}
+{"id": "etp_1483_1931", "eq1_id": 1483, "eq2_id": 1931, "equation1": "x = (y ◇ x) ◇ (x ◇ (y ◇ z))", "equation2": "x = (y ◇ (y ◇ y)) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1744_4645", "eq1_id": 1744, "eq2_id": 4645, "equation1": "x = (y ◇ y) ◇ ((z ◇ y) ◇ z)", "equation2": "(x ◇ y) ◇ x = (z ◇ y) ◇ x", "answer": true}
+{"id": "etp_4365_4560", "eq1_id": 4365, "eq2_id": 4560, "equation1": "x ◇ (y ◇ z) = y ◇ (z ◇ w)", "equation2": "x ◇ (y ◇ z) = (w ◇ x) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_627_3461", "eq1_id": 627, "eq2_id": 3461, "equation1": "x = x ◇ (x ◇ ((y ◇ z) ◇ z))", "equation2": "x ◇ x = x ◇ ((y ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4570_3729", "eq1_id": 4570, "eq2_id": 3729, "equation1": "x ◇ (y ◇ z) = (w ◇ z) ◇ w", "equation2": "x ◇ y = (x ◇ y) ◇ (z ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2406_3529", "eq1_id": 2406, "eq2_id": 3529, "equation1": "x = (y ◇ (z ◇ (z ◇ z))) ◇ x", "equation2": "x ◇ y = x ◇ ((z ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3899_3369", "eq1_id": 3899, "eq2_id": 3369, "equation1": "x ◇ x = (y ◇ (z ◇ x)) ◇ z", "equation2": "x ◇ y = y ◇ (z ◇ (y ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2184_265", "eq1_id": 2184, "eq2_id": 265, "equation1": "x = ((y ◇ z) ◇ y) ◇ (y ◇ z)", "equation2": "x = ((x ◇ y) ◇ y) ◇ z", "answer": true}
+{"id": "etp_1535_3330", "eq1_id": 1535, "eq2_id": 3330, "equation1": "x = (y ◇ y) ◇ (z ◇ (x ◇ x))", "equation2": "x ◇ y = x ◇ (z ◇ (y ◇ y))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4449_4127", "eq1_id": 4449, "eq2_id": 4127, "equation1": "x ◇ (y ◇ x) = (y ◇ z) ◇ y", "equation2": "x ◇ y = ((x ◇ y) ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4628_368", "eq1_id": 4628, "eq2_id": 368, "equation1": "(x ◇ x) ◇ y = (z ◇ w) ◇ u", "equation2": "x ◇ x = (y ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4375_4678", "eq1_id": 4375, "eq2_id": 4678, "equation1": "x ◇ (y ◇ z) = w ◇ (y ◇ u)", "equation2": "(x ◇ y) ◇ z = (y ◇ x) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2072_3070", "eq1_id": 2072, "eq2_id": 3070, "equation1": "x = ((x ◇ y) ◇ z) ◇ (x ◇ z)", "equation2": "x = (((x ◇ y) ◇ x) ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2868_1457", "eq1_id": 2868, "eq2_id": 1457, "equation1": "x = ((x ◇ (y ◇ x)) ◇ z) ◇ x", "equation2": "x = (x ◇ y) ◇ (y ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1587_2710", "eq1_id": 1587, "eq2_id": 2710, "equation1": "x = (y ◇ z) ◇ (z ◇ (x ◇ y))", "equation2": "x = ((y ◇ x) ◇ (y ◇ y)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_724_2973", "eq1_id": 724, "eq2_id": 2973, "equation1": "x = y ◇ (y ◇ ((z ◇ x) ◇ y))", "equation2": "x = ((y ◇ (z ◇ x)) ◇ x) ◇ x", "answer": true}
+{"id": "etp_690_2584", "eq1_id": 690, "eq2_id": 2584, "equation1": "x = y ◇ (x ◇ ((z ◇ y) ◇ x))", "equation2": "x = (y ◇ ((z ◇ y) ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3960_3798", "eq1_id": 3960, "eq2_id": 3798, "equation1": "x ◇ y = (y ◇ (x ◇ z)) ◇ w", "equation2": "x ◇ y = (z ◇ x) ◇ (w ◇ y)", "answer": true}
+{"id": "etp_3790_3765", "eq1_id": 3790, "eq2_id": 3765, "equation1": "x ◇ y = (z ◇ x) ◇ (y ◇ y)", "equation2": "x ◇ y = (y ◇ y) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3493_409", "eq1_id": 3493, "eq2_id": 409, "equation1": "x ◇ x = y ◇ ((z ◇ x) ◇ z)", "equation2": "x ◇ y = (z ◇ w) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2379_2629", "eq1_id": 2379, "eq2_id": 2629, "equation1": "x = (y ◇ (z ◇ (x ◇ w))) ◇ w", "equation2": "x = (y ◇ ((z ◇ w) ◇ z)) ◇ y", "answer": true}
+{"id": "etp_2612_2985", "eq1_id": 2612, "eq2_id": 2985, "equation1": "x = (y ◇ ((z ◇ z) ◇ z)) ◇ w", "equation2": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ x", "answer": true}
+{"id": "etp_1576_525", "eq1_id": 1576, "eq2_id": 525, "equation1": "x = (y ◇ z) ◇ (y ◇ (y ◇ w))", "equation2": "x = y ◇ (y ◇ (z ◇ (y ◇ y)))", "answer": true}
+{"id": "etp_1663_3515", "eq1_id": 1663, "eq2_id": 3515, "equation1": "x = (x ◇ y) ◇ ((y ◇ z) ◇ w)", "equation2": "x ◇ y = x ◇ ((x ◇ z) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3613_3634", "eq1_id": 3613, "eq2_id": 3634, "equation1": "x ◇ y = z ◇ ((y ◇ w) ◇ z)", "equation2": "x ◇ y = z ◇ ((w ◇ x) ◇ y)", "answer": true}
+{"id": "etp_912_4438", "eq1_id": 912, "eq2_id": 4438, "equation1": "x = y ◇ ((y ◇ x) ◇ (z ◇ x))", "equation2": "x ◇ (y ◇ x) = (x ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2648_99", "eq1_id": 2648, "eq2_id": 99, "equation1": "x = ((x ◇ x) ◇ (x ◇ y)) ◇ z", "equation2": "x = x ◇ ((x ◇ x) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1176_424", "eq1_id": 1176, "eq2_id": 424, "equation1": "x = y ◇ ((z ◇ (y ◇ w)) ◇ y)", "equation2": "x = x ◇ (x ◇ (y ◇ (z ◇ z)))", "answer": true}
+{"id": "etp_3589_4521", "eq1_id": 3589, "eq2_id": 4521, "equation1": "x ◇ y = z ◇ ((x ◇ y) ◇ w)", "equation2": "x ◇ (y ◇ z) = (x ◇ w) ◇ w", "answer": true}
+{"id": "etp_1338_1715", "eq1_id": 1338, "eq2_id": 1715, "equation1": "x = y ◇ (((y ◇ z) ◇ y) ◇ z)", "equation2": "x = (y ◇ x) ◇ ((z ◇ w) ◇ z)", "answer": true}
+{"id": "etp_4565_4130", "eq1_id": 4565, "eq2_id": 4130, "equation1": "x ◇ (y ◇ z) = (w ◇ y) ◇ w", "equation2": "x ◇ y = ((x ◇ y) ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1027_3313", "eq1_id": 1027, "eq2_id": 3313, "equation1": "x = x ◇ ((x ◇ (y ◇ x)) ◇ z)", "equation2": "x ◇ y = x ◇ (x ◇ (z ◇ z))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4481_4396", "eq1_id": 4481, "eq2_id": 4396, "equation1": "x ◇ (y ◇ y) = (y ◇ x) ◇ z", "equation2": "x ◇ (x ◇ y) = (x ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_685_451", "eq1_id": 685, "eq2_id": 451, "equation1": "x = y ◇ (x ◇ ((y ◇ z) ◇ w))", "equation2": "x = x ◇ (y ◇ (z ◇ (y ◇ y)))", "answer": true}
+{"id": "etp_3004_1645", "eq1_id": 3004, "eq2_id": 1645, "equation1": "x = ((y ◇ (z ◇ y)) ◇ w) ◇ z", "equation2": "x = (x ◇ y) ◇ ((x ◇ x) ◇ y)", "answer": true}
+{"id": "etp_4376_4459", "eq1_id": 4376, "eq2_id": 4459, "equation1": "x ◇ (y ◇ z) = w ◇ (z ◇ y)", "equation2": "x ◇ (y ◇ x) = (z ◇ y) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1037_4634", "eq1_id": 1037, "eq2_id": 4634, "equation1": "x = x ◇ ((y ◇ (x ◇ x)) ◇ z)", "equation2": "(x ◇ y) ◇ x = (x ◇ z) ◇ w", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4659_4071", "eq1_id": 4659, "eq2_id": 4071, "equation1": "(x ◇ y) ◇ y = (y ◇ x) ◇ z", "equation2": "x ◇ x = ((x ◇ y) ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2517_3093", "eq1_id": 2517, "eq2_id": 3093, "equation1": "x = (y ◇ ((x ◇ z) ◇ y)) ◇ x", "equation2": "x = (((x ◇ y) ◇ z) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3695_3427", "eq1_id": 3695, "eq2_id": 3427, "equation1": "x ◇ x = (y ◇ z) ◇ (x ◇ y)", "equation2": "x ◇ y = z ◇ (z ◇ (w ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2157_1449", "eq1_id": 2157, "eq2_id": 1449, "equation1": "x = ((y ◇ y) ◇ z) ◇ (w ◇ y)", "equation2": "x = (x ◇ y) ◇ (x ◇ (z ◇ z))", "answer": true}
+{"id": "etp_2114_1932", "eq1_id": 2114, "eq2_id": 1932, "equation1": "x = ((y ◇ x) ◇ z) ◇ (y ◇ w)", "equation2": "x = (y ◇ (y ◇ y)) ◇ (x ◇ y)", "answer": true}
+{"id": "etp_2750_878", "eq1_id": 2750, "eq2_id": 878, "equation1": "x = ((y ◇ y) ◇ (y ◇ z)) ◇ y", "equation2": "x = y ◇ ((x ◇ x) ◇ (z ◇ w))", "answer": true}
+{"id": "etp_1506_657", "eq1_id": 1506, "eq2_id": 657, "equation1": "x = (y ◇ x) ◇ (z ◇ (z ◇ x))", "equation2": "x = x ◇ (y ◇ ((z ◇ z) ◇ x))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4552_3311", "eq1_id": 4552, "eq2_id": 3311, "equation1": "x ◇ (y ◇ z) = (z ◇ w) ◇ x", "equation2": "x ◇ y = x ◇ (x ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1990_2897", "eq1_id": 1990, "eq2_id": 2897, "equation1": "x = (y ◇ (z ◇ y)) ◇ (w ◇ w)", "equation2": "x = ((x ◇ (y ◇ z)) ◇ w) ◇ w", "answer": true}
+{"id": "etp_2419_2990", "eq1_id": 2419, "eq2_id": 2990, "equation1": "x = (y ◇ (z ◇ (w ◇ x))) ◇ u", "equation2": "x = ((y ◇ (z ◇ y)) ◇ x) ◇ x", "answer": true}
+{"id": "etp_1419_1285", "eq1_id": 1419, "eq2_id": 1285, "equation1": "x = y ◇ (((z ◇ w) ◇ w) ◇ u)", "equation2": "x = y ◇ (((x ◇ y) ◇ x) ◇ x)", "answer": true}
+{"id": "etp_4610_3973", "eq1_id": 4610, "eq2_id": 3973, "equation1": "(x ◇ x) ◇ y = (y ◇ z) ◇ x", "equation2": "x ◇ y = (y ◇ (z ◇ x)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4536_4595", "eq1_id": 4536, "eq2_id": 4595, "equation1": "x ◇ (y ◇ z) = (y ◇ w) ◇ y", "equation2": "(x ◇ x) ◇ x = (y ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4630_3327", "eq1_id": 4630, "eq2_id": 3327, "equation1": "(x ◇ y) ◇ x = (x ◇ y) ◇ z", "equation2": "x ◇ y = x ◇ (z ◇ (x ◇ z))", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2976_4479", "eq1_id": 2976, "eq2_id": 4479, "equation1": "x = ((y ◇ (z ◇ x)) ◇ x) ◇ w", "equation2": "x ◇ (y ◇ y) = (y ◇ x) ◇ x", "answer": true}
+{"id": "etp_1034_2266", "eq1_id": 1034, "eq2_id": 2266, "equation1": "x = x ◇ ((x ◇ (y ◇ z)) ◇ w)", "equation2": "x = (x ◇ (y ◇ (y ◇ y))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1740_2511", "eq1_id": 1740, "eq2_id": 2511, "equation1": "x = (y ◇ y) ◇ ((z ◇ x) ◇ z)", "equation2": "x = (y ◇ ((x ◇ y) ◇ z)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_951_3142", "eq1_id": 951, "eq2_id": 3142, "equation1": "x = y ◇ ((z ◇ x) ◇ (z ◇ x))", "equation2": "x = (((y ◇ y) ◇ x) ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2658_4132", "eq1_id": 2658, "eq2_id": 4132, "equation1": "x = ((x ◇ x) ◇ (y ◇ z)) ◇ w", "equation2": "x ◇ y = ((x ◇ y) ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4534_4248", "eq1_id": 4534, "eq2_id": 4248, "equation1": "x ◇ (y ◇ z) = (y ◇ z) ◇ w", "equation2": "x ◇ y = ((z ◇ w) ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_945_3681", "eq1_id": 945, "eq2_id": 3681, "equation1": "x = y ◇ ((z ◇ x) ◇ (x ◇ z))", "equation2": "x ◇ x = (y ◇ x) ◇ (z ◇ y)", "answer": true}
+{"id": "etp_2188_3489", "eq1_id": 2188, "eq2_id": 3489, "equation1": "x = ((y ◇ z) ◇ y) ◇ (z ◇ z)", "equation2": "x ◇ x = y ◇ ((y ◇ z) ◇ z)", "answer": true}
+{"id": "etp_2145_4678", "eq1_id": 2145, "eq2_id": 4678, "equation1": "x = ((y ◇ y) ◇ z) ◇ (x ◇ y)", "equation2": "(x ◇ y) ◇ z = (y ◇ x) ◇ w", "answer": true}
+{"id": "etp_2375_2748", "eq1_id": 2375, "eq2_id": 2748, "equation1": "x = (y ◇ (z ◇ (x ◇ z))) ◇ w", "equation2": "x = ((y ◇ y) ◇ (y ◇ y)) ◇ z", "answer": true}
+{"id": "etp_1284_3858", "eq1_id": 1284, "eq2_id": 3858, "equation1": "x = y ◇ (((x ◇ x) ◇ z) ◇ w)", "equation2": "x ◇ y = (z ◇ w) ◇ (u ◇ z)", "answer": true}
+{"id": "etp_828_3261", "eq1_id": 828, "eq2_id": 3261, "equation1": "x = x ◇ ((x ◇ y) ◇ (z ◇ x))", "equation2": "x ◇ x = x ◇ (y ◇ (y ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_995_2128", "eq1_id": 995, "eq2_id": 2128, "equation1": "x = y ◇ ((z ◇ w) ◇ (x ◇ y))", "equation2": "x = ((y ◇ y) ◇ x) ◇ (y ◇ y)", "answer": true}
+{"id": "etp_2181_1996", "eq1_id": 2181, "eq2_id": 1996, "equation1": "x = ((y ◇ z) ◇ y) ◇ (x ◇ w)", "equation2": "x = (y ◇ (z ◇ z)) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1018_4390", "eq1_id": 1018, "eq2_id": 4390, "equation1": "x = y ◇ ((z ◇ w) ◇ (u ◇ u))", "equation2": "x ◇ (x ◇ x) = (y ◇ y) ◇ z", "answer": true}
+{"id": "etp_4463_3772", "eq1_id": 4463, "eq2_id": 3772, "equation1": "x ◇ (y ◇ x) = (z ◇ z) ◇ w", "equation2": "x ◇ y = (y ◇ z) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4114_4133", "eq1_id": 4114, "eq2_id": 4133, "equation1": "x ◇ x = ((y ◇ z) ◇ w) ◇ z", "equation2": "x ◇ y = ((x ◇ y) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_936_4384", "eq1_id": 936, "eq2_id": 4384, "equation1": "x = y ◇ ((y ◇ z) ◇ (z ◇ z))", "equation2": "x ◇ (x ◇ x) = (x ◇ y) ◇ z", "answer": true}
+{"id": "etp_1535_4564", "eq1_id": 1535, "eq2_id": 4564, "equation1": "x = (y ◇ y) ◇ (z ◇ (x ◇ x))", "equation2": "x ◇ (y ◇ z) = (w ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2604_1381", "eq1_id": 2604, "eq2_id": 1381, "equation1": "x = (y ◇ ((z ◇ z) ◇ x)) ◇ w", "equation2": "x = y ◇ (((z ◇ y) ◇ w) ◇ w)", "answer": true}
+{"id": "etp_4453_3708", "eq1_id": 4453, "eq2_id": 3708, "equation1": "x ◇ (y ◇ x) = (z ◇ x) ◇ y", "equation2": "x ◇ x = (y ◇ z) ◇ (w ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2042_160", "eq1_id": 2042, "eq2_id": 160, "equation1": "x = ((x ◇ x) ◇ y) ◇ (x ◇ z)", "equation2": "x = (x ◇ y) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1027_378", "eq1_id": 1027, "eq2_id": 378, "equation1": "x = x ◇ ((x ◇ (y ◇ x)) ◇ z)", "equation2": "x ◇ y = (x ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3503_3566", "eq1_id": 3503, "eq2_id": 3566, "equation1": "x ◇ x = y ◇ ((z ◇ w) ◇ x)", "equation2": "x ◇ y = y ◇ ((z ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_936_2843", "eq1_id": 936, "eq2_id": 2843, "equation1": "x = y ◇ ((y ◇ z) ◇ (z ◇ z))", "equation2": "x = ((y ◇ z) ◇ (w ◇ u)) ◇ z", "answer": true}
+{"id": "etp_2529_2676", "eq1_id": 2529, "eq2_id": 2676, "equation1": "x = (y ◇ ((x ◇ z) ◇ w)) ◇ u", "equation2": "x = ((x ◇ y) ◇ (y ◇ z)) ◇ y", "answer": true}
+{"id": "etp_4628_3617", "eq1_id": 4628, "eq2_id": 3617, "equation1": "(x ◇ x) ◇ y = (z ◇ w) ◇ u", "equation2": "x ◇ y = z ◇ ((z ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3615_4255", "eq1_id": 3615, "eq2_id": 4255, "equation1": "x ◇ y = z ◇ ((y ◇ w) ◇ u)", "equation2": "x ◇ y = ((z ◇ w) ◇ z) ◇ w", "answer": true}
+{"id": "etp_1956_3527", "eq1_id": 1956, "eq2_id": 3527, "equation1": "x = (y ◇ (y ◇ z)) ◇ (w ◇ w)", "equation2": "x ◇ y = x ◇ ((y ◇ z) ◇ w)", "answer": true}
+{"id": "etp_2810_2563", "eq1_id": 2810, "eq2_id": 2563, "equation1": "x = ((y ◇ z) ◇ (z ◇ y)) ◇ z", "equation2": "x = (y ◇ ((y ◇ z) ◇ w)) ◇ y", "answer": true}
+{"id": "etp_787_3628", "eq1_id": 787, "eq2_id": 3628, "equation1": "x = y ◇ (z ◇ ((z ◇ w) ◇ y))", "equation2": "x ◇ y = z ◇ ((z ◇ w) ◇ x)", "answer": true}
+{"id": "etp_4596_3964", "eq1_id": 4596, "eq2_id": 3964, "equation1": "(x ◇ x) ◇ x = (y ◇ z) ◇ w", "equation2": "x ◇ y = (y ◇ (y ◇ y)) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2711_78", "eq1_id": 2711, "eq2_id": 78, "equation1": "x = ((y ◇ x) ◇ (y ◇ y)) ◇ z", "equation2": "x = y ◇ (y ◇ (z ◇ x))", "answer": true}
+{"id": "etp_1142_1237", "eq1_id": 1142, "eq2_id": 1237, "equation1": "x = y ◇ ((y ◇ (z ◇ w)) ◇ y)", "equation2": "x = x ◇ (((x ◇ y) ◇ z) ◇ w)", "answer": true}
+{"id": "etp_4462_3267", "eq1_id": 4462, "eq2_id": 3267, "equation1": "x ◇ (y ◇ x) = (z ◇ z) ◇ z", "equation2": "x ◇ x = x ◇ (y ◇ (z ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1337_1969", "eq1_id": 1337, "eq2_id": 1969, "equation1": "x = y ◇ (((y ◇ z) ◇ y) ◇ y)", "equation2": "x = (y ◇ (z ◇ x)) ◇ (z ◇ w)", "answer": true}
+{"id": "etp_1609_952", "eq1_id": 1609, "eq2_id": 952, "equation1": "x = (y ◇ z) ◇ (w ◇ (y ◇ y))", "equation2": "x = y ◇ ((z ◇ x) ◇ (z ◇ y))", "answer": true}
+{"id": "etp_798_1352", "eq1_id": 798, "eq2_id": 1352, "equation1": "x = y ◇ (z ◇ ((w ◇ y) ◇ z))", "equation2": "x = y ◇ (((z ◇ x) ◇ x) ◇ w)", "answer": true}
+{"id": "etp_4487_4498", "eq1_id": 4487, "eq2_id": 4498, "equation1": "x ◇ (y ◇ y) = (y ◇ z) ◇ z", "equation2": "x ◇ (y ◇ y) = (z ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2935_4089", "eq1_id": 2935, "eq2_id": 4089, "equation1": "x = ((y ◇ (x ◇ z)) ◇ w) ◇ u", "equation2": "x ◇ x = ((y ◇ x) ◇ z) ◇ w", "answer": true}
+{"id": "etp_1698_4525", "eq1_id": 1698, "eq2_id": 4525, "equation1": "x = (y ◇ x) ◇ ((y ◇ z) ◇ y)", "equation2": "x ◇ (y ◇ z) = (y ◇ x) ◇ z", "answer": true}
+{"id": "etp_980_1386", "eq1_id": 980, "eq2_id": 1386, "equation1": "x = y ◇ ((z ◇ z) ◇ (x ◇ w))", "equation2": "x = y ◇ (((z ◇ z) ◇ x) ◇ w)", "answer": true}
+{"id": "etp_719_3349", "eq1_id": 719, "eq2_id": 3349, "equation1": "x = y ◇ (y ◇ ((y ◇ z) ◇ x))", "equation2": "x ◇ y = y ◇ (x ◇ (z ◇ y))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2329_1985", "eq1_id": 2329, "eq2_id": 1985, "equation1": "x = (y ◇ (y ◇ (x ◇ x))) ◇ z", "equation2": "x = (y ◇ (z ◇ y)) ◇ (z ◇ z)", "answer": true}
+{"id": "etp_938_2430", "eq1_id": 938, "eq2_id": 2430, "equation1": "x = y ◇ ((y ◇ z) ◇ (w ◇ x))", "equation2": "x = (y ◇ (z ◇ (w ◇ w))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1443_1469", "eq1_id": 1443, "eq2_id": 1469, "equation1": "x = (x ◇ y) ◇ (x ◇ (x ◇ z))", "equation2": "x = (x ◇ y) ◇ (z ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3425_3337", "eq1_id": 3425, "eq2_id": 3337, "equation1": "x ◇ y = z ◇ (z ◇ (w ◇ x))", "equation2": "x ◇ y = x ◇ (z ◇ (w ◇ x))", "answer": true}
+{"id": "etp_4349_3606", "eq1_id": 4349, "eq2_id": 3606, "equation1": "x ◇ (y ◇ y) = z ◇ (x ◇ w)", "equation2": "x ◇ y = z ◇ ((y ◇ y) ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4538_3448", "eq1_id": 4538, "eq2_id": 3448, "equation1": "x ◇ (y ◇ z) = (y ◇ w) ◇ w", "equation2": "x ◇ y = z ◇ (w ◇ (w ◇ w))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2867_4139", "eq1_id": 2867, "eq2_id": 4139, "equation1": "x = ((x ◇ (y ◇ x)) ◇ y) ◇ z", "equation2": "x ◇ y = ((x ◇ z) ◇ x) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3494_3833", "eq1_id": 3494, "eq2_id": 3833, "equation1": "x ◇ x = y ◇ ((z ◇ x) ◇ w)", "equation2": "x ◇ y = (z ◇ z) ◇ (w ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3423_3587", "eq1_id": 3423, "eq2_id": 3587, "equation1": "x ◇ y = z ◇ (z ◇ (z ◇ z))", "equation2": "x ◇ y = z ◇ ((x ◇ y) ◇ y)", "answer": true}
+{"id": "etp_556_2271", "eq1_id": 556, "eq2_id": 2271, "equation1": "x = y ◇ (z ◇ (y ◇ (x ◇ z)))", "equation2": "x = (x ◇ (y ◇ (y ◇ z))) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1298_3831", "eq1_id": 1298, "eq2_id": 3831, "equation1": "x = y ◇ (((x ◇ z) ◇ x) ◇ w)", "equation2": "x ◇ y = (z ◇ z) ◇ (w ◇ x)", "answer": true}
+{"id": "etp_1167_4104", "eq1_id": 1167, "eq2_id": 4104, "equation1": "x = y ◇ ((z ◇ (y ◇ y)) ◇ x)", "equation2": "x ◇ x = ((y ◇ z) ◇ y) ◇ x", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4387_3965", "eq1_id": 4387, "eq2_id": 3965, "equation1": "x ◇ (x ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ y = (y ◇ (y ◇ y)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3233_2342", "eq1_id": 3233, "eq2_id": 2342, "equation1": "x = (((y ◇ z) ◇ w) ◇ y) ◇ y", "equation2": "x = (y ◇ (y ◇ (y ◇ y))) ◇ z", "answer": true}
+{"id": "etp_4449_3575", "eq1_id": 4449, "eq2_id": 3575, "equation1": "x ◇ (y ◇ x) = (y ◇ z) ◇ y", "equation2": "x ◇ y = y ◇ ((z ◇ z) ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1345_4636", "eq1_id": 1345, "eq2_id": 4636, "equation1": "x = y ◇ (((y ◇ z) ◇ w) ◇ y)", "equation2": "(x ◇ y) ◇ x = (y ◇ x) ◇ y", "answer": true}
+{"id": "etp_1051_3915", "eq1_id": 1051, "eq2_id": 3915, "equation1": "x = x ◇ ((y ◇ (y ◇ z)) ◇ x)", "equation2": "x ◇ y = (x ◇ (x ◇ x)) ◇ y", "answer": false, "filter_nontrivial_models": 6, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2228_1875", "eq1_id": 2228, "eq2_id": 1875, "equation1": "x = ((y ◇ z) ◇ w) ◇ (w ◇ y)", "equation2": "x = (x ◇ (y ◇ z)) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_2439_2190", "eq1_id": 2439, "eq2_id": 2190, "equation1": "x = (y ◇ (z ◇ (w ◇ u))) ◇ u", "equation2": "x = ((y ◇ z) ◇ y) ◇ (w ◇ x)", "answer": true}
+{"id": "etp_1735_156", "eq1_id": 1735, "eq2_id": 156, "equation1": "x = (y ◇ y) ◇ ((y ◇ z) ◇ y)", "equation2": "x = (x ◇ y) ◇ (x ◇ x)", "answer": true}
+{"id": "etp_1299_2207", "eq1_id": 1299, "eq2_id": 2207, "equation1": "x = y ◇ (((x ◇ z) ◇ y) ◇ x)", "equation2": "x = ((y ◇ z) ◇ z) ◇ (w ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4448_3740", "eq1_id": 4448, "eq2_id": 3740, "equation1": "x ◇ (y ◇ x) = (y ◇ z) ◇ x", "equation2": "x ◇ y = (x ◇ z) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4450_4480", "eq1_id": 4450, "eq2_id": 4480, "equation1": "x ◇ (y ◇ x) = (y ◇ z) ◇ z", "equation2": "x ◇ (y ◇ y) = (y ◇ x) ◇ y", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2965_2066", "eq1_id": 2965, "eq2_id": 2066, "equation1": "x = ((y ◇ (y ◇ z)) ◇ z) ◇ y", "equation2": "x = ((x ◇ y) ◇ y) ◇ (z ◇ x)", "answer": true}
+{"id": "etp_1577_2090", "eq1_id": 1577, "eq2_id": 2090, "equation1": "x = (y ◇ z) ◇ (y ◇ (z ◇ x))", "equation2": "x = ((y ◇ x) ◇ x) ◇ (y ◇ x)", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_571_1167", "eq1_id": 571, "eq2_id": 1167, "equation1": "x = y ◇ (z ◇ (z ◇ (x ◇ x)))", "equation2": "x = y ◇ ((z ◇ (y ◇ y)) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4567_4327", "eq1_id": 4567, "eq2_id": 4327, "equation1": "x ◇ (y ◇ z) = (w ◇ z) ◇ x", "equation2": "x ◇ (y ◇ x) = z ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3907_3821", "eq1_id": 3907, "eq2_id": 3821, "equation1": "x ◇ x = (y ◇ (z ◇ z)) ◇ z", "equation2": "x ◇ y = (z ◇ z) ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1004_2293", "eq1_id": 1004, "eq2_id": 2293, "equation1": "x = y ◇ ((z ◇ w) ◇ (z ◇ x))", "equation2": "x = (y ◇ (x ◇ (x ◇ y))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2325_4533", "eq1_id": 2325, "eq2_id": 4533, "equation1": "x = (y ◇ (x ◇ (z ◇ w))) ◇ w", "equation2": "x ◇ (y ◇ z) = (y ◇ z) ◇ z", "answer": true}
+{"id": "etp_3007_4635", "eq1_id": 3007, "eq2_id": 4635, "equation1": "x = ((y ◇ (z ◇ z)) ◇ x) ◇ x", "equation2": "(x ◇ y) ◇ x = (y ◇ x) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2982_1949", "eq1_id": 2982, "eq2_id": 1949, "equation1": "x = ((y ◇ (z ◇ x)) ◇ z) ◇ y", "equation2": "x = (y ◇ (y ◇ z)) ◇ (z ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2117_4064", "eq1_id": 2117, "eq2_id": 4064, "equation1": "x = ((y ◇ x) ◇ z) ◇ (z ◇ z)", "equation2": "x ◇ y = (z ◇ (w ◇ u)) ◇ v", "answer": true}
+{"id": "etp_1390_59", "eq1_id": 1390, "eq2_id": 59, "equation1": "x = y ◇ (((z ◇ z) ◇ y) ◇ w)", "equation2": "x = x ◇ (y ◇ (z ◇ y))", "answer": true}
+{"id": "etp_2003_1080", "eq1_id": 2003, "eq2_id": 1080, "equation1": "x = (y ◇ (z ◇ z)) ◇ (z ◇ w)", "equation2": "x = y ◇ ((x ◇ (x ◇ z)) ◇ z)", "answer": true}
+{"id": "etp_2973_2952", "eq1_id": 2973, "eq2_id": 2952, "equation1": "x = ((y ◇ (z ◇ x)) ◇ x) ◇ x", "equation2": "x = ((y ◇ (y ◇ y)) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_594_4100", "eq1_id": 594, "eq2_id": 4100, "equation1": "x = y ◇ (z ◇ (w ◇ (y ◇ y)))", "equation2": "x ◇ x = ((y ◇ z) ◇ x) ◇ x", "answer": true}
+{"id": "etp_4088_4466", "eq1_id": 4088, "eq2_id": 4466, "equation1": "x ◇ x = ((y ◇ x) ◇ z) ◇ z", "equation2": "x ◇ (y ◇ x) = (z ◇ w) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4328_4029", "eq1_id": 4328, "eq2_id": 4029, "equation1": "x ◇ (y ◇ x) = z ◇ (x ◇ y)", "equation2": "x ◇ y = (z ◇ (z ◇ y)) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4417_3688", "eq1_id": 4417, "eq2_id": 3688, "equation1": "x ◇ (x ◇ y) = (z ◇ x) ◇ z", "equation2": "x ◇ x = (y ◇ y) ◇ (y ◇ y)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2104_928", "eq1_id": 2104, "eq2_id": 928, "equation1": "x = ((y ◇ x) ◇ y) ◇ (z ◇ y)", "equation2": "x = y ◇ ((y ◇ z) ◇ (x ◇ z))", "answer": true}
+{"id": "etp_948_1812", "eq1_id": 948, "eq2_id": 1812, "equation1": "x = y ◇ ((z ◇ x) ◇ (y ◇ y))", "equation2": "x = (y ◇ z) ◇ ((w ◇ y) ◇ y)", "answer": true}
+{"id": "etp_4505_3949", "eq1_id": 4505, "eq2_id": 3949, "equation1": "x ◇ (y ◇ y) = (z ◇ w) ◇ u", "equation2": "x ◇ y = (x ◇ (z ◇ w)) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1037_4147", "eq1_id": 1037, "eq2_id": 4147, "equation1": "x = x ◇ ((y ◇ (x ◇ x)) ◇ z)", "equation2": "x ◇ y = ((x ◇ z) ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3596_4539", "eq1_id": 3596, "eq2_id": 4539, "equation1": "x ◇ y = z ◇ ((x ◇ w) ◇ z)", "equation2": "x ◇ (y ◇ z) = (y ◇ w) ◇ u", "answer": true}
+{"id": "etp_2224_137", "eq1_id": 2224, "eq2_id": 137, "equation1": "x = ((y ◇ z) ◇ w) ◇ (z ◇ z)", "equation2": "x = y ◇ ((z ◇ x) ◇ w)", "answer": true}
+{"id": "etp_3439_3390", "eq1_id": 3439, "eq2_id": 3390, "equation1": "x ◇ y = z ◇ (w ◇ (y ◇ u))", "equation2": "x ◇ y = z ◇ (x ◇ (z ◇ w))", "answer": true}
+{"id": "etp_3708_3849", "eq1_id": 3708, "eq2_id": 3849, "equation1": "x ◇ x = (y ◇ z) ◇ (w ◇ z)", "equation2": "x ◇ y = (z ◇ w) ◇ (z ◇ w)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4356_4570", "eq1_id": 4356, "eq2_id": 4570, "equation1": "x ◇ (y ◇ y) = z ◇ (w ◇ u)", "equation2": "x ◇ (y ◇ z) = (w ◇ z) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4693_4362", "eq1_id": 4693, "eq2_id": 4362, "equation1": "(x ◇ y) ◇ z = (w ◇ u) ◇ z", "equation2": "x ◇ (y ◇ z) = y ◇ (x ◇ z)", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1550_1720", "eq1_id": 1550, "eq2_id": 1720, "equation1": "x = (y ◇ y) ◇ (z ◇ (w ◇ w))", "equation2": "x = (y ◇ y) ◇ ((x ◇ x) ◇ z)", "answer": true}
+{"id": "etp_1007_4167", "eq1_id": 1007, "eq2_id": 4167, "equation1": "x = y ◇ ((z ◇ w) ◇ (z ◇ w))", "equation2": "x ◇ y = ((y ◇ y) ◇ y) ◇ x", "answer": true}
+{"id": "etp_740_2082", "eq1_id": 740, "eq2_id": 2082, "equation1": "x = y ◇ (z ◇ ((x ◇ x) ◇ x))", "equation2": "x = ((x ◇ y) ◇ z) ◇ (w ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2485_4135", "eq1_id": 2485, "eq2_id": 4135, "equation1": "x = (x ◇ ((y ◇ z) ◇ z)) ◇ y", "equation2": "x ◇ y = ((x ◇ y) ◇ z) ◇ z", "answer": false, "filter_nontrivial_models": 5, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2896_1844", "eq1_id": 2896, "eq2_id": 1844, "equation1": "x = ((x ◇ (y ◇ z)) ◇ w) ◇ z", "equation2": "x = (x ◇ (x ◇ y)) ◇ (z ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1208_1395", "eq1_id": 1208, "eq2_id": 1395, "equation1": "x = y ◇ ((z ◇ (w ◇ z)) ◇ y)", "equation2": "x = y ◇ (((z ◇ z) ◇ w) ◇ x)", "answer": true}
+{"id": "etp_4568_3263", "eq1_id": 4568, "eq2_id": 3263, "equation1": "x ◇ (y ◇ z) = (w ◇ z) ◇ y", "equation2": "x ◇ x = x ◇ (y ◇ (y ◇ z))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2381_4018", "eq1_id": 2381, "eq2_id": 4018, "equation1": "x = (y ◇ (z ◇ (y ◇ x))) ◇ x", "equation2": "x ◇ y = (z ◇ (y ◇ w)) ◇ y", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4328_4402", "eq1_id": 4328, "eq2_id": 4402, "equation1": "x ◇ (y ◇ x) = z ◇ (x ◇ y)", "equation2": "x ◇ (x ◇ y) = (x ◇ z) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1690_4356", "eq1_id": 1690, "eq2_id": 4356, "equation1": "x = (y ◇ x) ◇ ((x ◇ z) ◇ w)", "equation2": "x ◇ (y ◇ y) = z ◇ (w ◇ u)", "answer": true}
+{"id": "etp_2582_1118", "eq1_id": 2582, "eq2_id": 1118, "equation1": "x = (y ◇ ((z ◇ x) ◇ w)) ◇ w", "equation2": "x = y ◇ ((y ◇ (x ◇ z)) ◇ w)", "answer": true}
+{"id": "etp_4354_3887", "eq1_id": 4354, "eq2_id": 3887, "equation1": "x ◇ (y ◇ y) = z ◇ (w ◇ y)", "equation2": "x ◇ x = (y ◇ (y ◇ x)) ◇ x", "answer": false, "filter_nontrivial_models": 4, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2832_3034", "eq1_id": 2832, "eq2_id": 3034, "equation1": "x = ((y ◇ z) ◇ (w ◇ z)) ◇ y", "equation2": "x = ((y ◇ (z ◇ w)) ◇ z) ◇ x", "answer": true}
+{"id": "etp_1915_1229", "eq1_id": 1915, "eq2_id": 1229, "equation1": "x = (y ◇ (x ◇ z)) ◇ (z ◇ w)", "equation2": "x = x ◇ (((x ◇ y) ◇ x) ◇ y)", "answer": true}
+{"id": "etp_1032_4471", "eq1_id": 1032, "eq2_id": 4471, "equation1": "x = x ◇ ((x ◇ (y ◇ z)) ◇ y)", "equation2": "x ◇ (y ◇ y) = (x ◇ x) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1410_16", "eq1_id": 1410, "eq2_id": 16, "equation1": "x = y ◇ (((z ◇ w) ◇ z) ◇ x)", "equation2": "x = y ◇ (y ◇ x)", "answer": true}
+{"id": "etp_1487_118", "eq1_id": 1487, "eq2_id": 118, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ w))", "equation2": "x = y ◇ ((x ◇ y) ◇ y)", "answer": false, "filter_nontrivial_models": 0, "filter_reason": "collapse_candidate"}
+{"id": "etp_1284_2137", "eq1_id": 1284, "eq2_id": 2137, "equation1": "x = y ◇ (((x ◇ x) ◇ z) ◇ w)", "equation2": "x = ((y ◇ y) ◇ y) ◇ (y ◇ x)", "answer": true}
+{"id": "etp_2086_1832", "eq1_id": 2086, "eq2_id": 1832, "equation1": "x = ((x ◇ y) ◇ z) ◇ (w ◇ u)", "equation2": "x = (x ◇ (x ◇ x)) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3063_161", "eq1_id": 3063, "eq2_id": 161, "equation1": "x = (((x ◇ x) ◇ y) ◇ z) ◇ z", "equation2": "x = (x ◇ y) ◇ (y ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1150_413", "eq1_id": 1150, "eq2_id": 413, "equation1": "x = y ◇ ((z ◇ (x ◇ y)) ◇ x)", "equation2": "x = x ◇ (x ◇ (x ◇ (y ◇ x)))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2394_2513", "eq1_id": 2394, "eq2_id": 2513, "equation1": "x = (y ◇ (z ◇ (y ◇ w))) ◇ y", "equation2": "x = (y ◇ ((x ◇ z) ◇ x)) ◇ x", "answer": true}
+{"id": "etp_885_2273", "eq1_id": 885, "eq2_id": 2273, "equation1": "x = y ◇ ((x ◇ y) ◇ (z ◇ x))", "equation2": "x = (x ◇ (y ◇ (z ◇ x))) ◇ x", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4578_3464", "eq1_id": 4578, "eq2_id": 3464, "equation1": "x ◇ (y ◇ z) = (w ◇ u) ◇ y", "equation2": "x ◇ x = x ◇ ((y ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3697_4538", "eq1_id": 3697, "eq2_id": 4538, "equation1": "x ◇ x = (y ◇ z) ◇ (x ◇ w)", "equation2": "x ◇ (y ◇ z) = (y ◇ w) ◇ w", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2017_1260", "eq1_id": 2017, "eq2_id": 1260, "equation1": "x = (y ◇ (z ◇ w)) ◇ (y ◇ w)", "equation2": "x = x ◇ (((y ◇ z) ◇ x) ◇ z)", "answer": true}
+{"id": "etp_4648_3758", "eq1_id": 4648, "eq2_id": 3758, "equation1": "(x ◇ y) ◇ x = (z ◇ y) ◇ w", "equation2": "x ◇ y = (y ◇ y) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1465_3071", "eq1_id": 1465, "eq2_id": 3071, "equation1": "x = (x ◇ y) ◇ (z ◇ (y ◇ x))", "equation2": "x = (((x ◇ y) ◇ x) ◇ z) ◇ x", "answer": false, "filter_nontrivial_models": 3, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4614_4311", "eq1_id": 4614, "eq2_id": 4311, "equation1": "(x ◇ x) ◇ y = (z ◇ x) ◇ x", "equation2": "x ◇ (x ◇ y) = z ◇ (w ◇ z)", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2609_3495", "eq1_id": 2609, "eq2_id": 3495, "equation1": "x = (y ◇ ((z ◇ z) ◇ z)) ◇ x", "equation2": "x ◇ x = y ◇ ((z ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1386_3556", "eq1_id": 1386, "eq2_id": 3556, "equation1": "x = y ◇ (((z ◇ z) ◇ x) ◇ w)", "equation2": "x ◇ y = y ◇ ((y ◇ x) ◇ y)", "answer": true}
+{"id": "etp_3708_4249", "eq1_id": 3708, "eq2_id": 4249, "equation1": "x ◇ x = (y ◇ z) ◇ (w ◇ z)", "equation2": "x ◇ y = ((z ◇ w) ◇ y) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2995_4372", "eq1_id": 2995, "eq2_id": 4372, "equation1": "x = ((y ◇ (z ◇ y)) ◇ y) ◇ y", "equation2": "x ◇ (y ◇ z) = z ◇ (w ◇ y)", "answer": true}
+{"id": "etp_1542_4657", "eq1_id": 1542, "eq2_id": 4657, "equation1": "x = (y ◇ y) ◇ (z ◇ (y ◇ w))", "equation2": "(x ◇ y) ◇ y = (x ◇ z) ◇ w", "answer": true}
+{"id": "etp_2117_756", "eq1_id": 2117, "eq2_id": 756, "equation1": "x = ((y ◇ x) ◇ z) ◇ (z ◇ z)", "equation2": "x = y ◇ (z ◇ ((x ◇ w) ◇ u))", "answer": true}
+{"id": "etp_757_537", "eq1_id": 757, "eq2_id": 537, "equation1": "x = y ◇ (z ◇ ((y ◇ x) ◇ x))", "equation2": "x = y ◇ (z ◇ (x ◇ (x ◇ x)))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2077_1630", "eq1_id": 2077, "eq2_id": 1630, "equation1": "x = ((x ◇ y) ◇ z) ◇ (y ◇ w)", "equation2": "x = (x ◇ x) ◇ ((x ◇ x) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_4387_4241", "eq1_id": 4387, "eq2_id": 4241, "equation1": "x ◇ (x ◇ x) = (y ◇ x) ◇ z", "equation2": "x ◇ y = ((z ◇ z) ◇ w) ◇ u", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2552_3116", "eq1_id": 2552, "eq2_id": 3116, "equation1": "x = (y ◇ ((y ◇ z) ◇ x)) ◇ z", "equation2": "x = (((y ◇ x) ◇ y) ◇ y) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1338_3925", "eq1_id": 1338, "eq2_id": 3925, "equation1": "x = y ◇ (((y ◇ z) ◇ y) ◇ z)", "equation2": "x ◇ y = (x ◇ (y ◇ x)) ◇ y", "answer": true}
+{"id": "etp_3173_3244", "eq1_id": 3173, "eq2_id": 3244, "equation1": "x = (((y ◇ y) ◇ z) ◇ w) ◇ z", "equation2": "x = (((y ◇ z) ◇ w) ◇ w) ◇ z", "answer": true}
+{"id": "etp_1033_3533", "eq1_id": 1033, "eq2_id": 3533, "equation1": "x = x ◇ ((x ◇ (y ◇ z)) ◇ z)", "equation2": "x ◇ y = x ◇ ((z ◇ y) ◇ y)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1235_859", "eq1_id": 1235, "eq2_id": 859, "equation1": "x = x ◇ (((x ◇ y) ◇ z) ◇ y)", "equation2": "x = x ◇ ((y ◇ z) ◇ (y ◇ w))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1556_1668", "eq1_id": 1556, "eq2_id": 1668, "equation1": "x = (y ◇ z) ◇ (x ◇ (y ◇ x))", "equation2": "x = (x ◇ y) ◇ ((z ◇ y) ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1037_3664", "eq1_id": 1037, "eq2_id": 3664, "equation1": "x = x ◇ ((y ◇ (x ◇ x)) ◇ z)", "equation2": "x ◇ x = (x ◇ y) ◇ (x ◇ x)", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_418_3257", "eq1_id": 418, "eq2_id": 3257, "equation1": "x = x ◇ (x ◇ (y ◇ (x ◇ z)))", "equation2": "x ◇ x = x ◇ (x ◇ (y ◇ z))", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_1235_2677", "eq1_id": 1235, "eq2_id": 2677, "equation1": "x = x ◇ (((x ◇ y) ◇ z) ◇ y)", "equation2": "x = ((x ◇ y) ◇ (y ◇ z)) ◇ z", "answer": false, "filter_nontrivial_models": 1, "filter_reason": "no_small_countermodel"}
+{"id": "etp_3911_3387", "eq1_id": 3911, "eq2_id": 3387, "equation1": "x ◇ x = (y ◇ (z ◇ w)) ◇ z", "equation2": "x ◇ y = z ◇ (x ◇ (z ◇ x))", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2967_1347", "eq1_id": 2967, "eq2_id": 1347, "equation1": "x = ((y ◇ (y ◇ z)) ◇ z) ◇ w", "equation2": "x = y ◇ (((y ◇ z) ◇ w) ◇ w)", "answer": true}
+{"id": "etp_4394_4007", "eq1_id": 4394, "eq2_id": 4007, "equation1": "x ◇ (x ◇ x) = (y ◇ z) ◇ w", "equation2": "x ◇ y = (z ◇ (y ◇ x)) ◇ z", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}
+{"id": "etp_2229_4392", "eq1_id": 2229, "eq2_id": 4392, "equation1": "x = ((y ◇ z) ◇ w) ◇ (w ◇ z)", "equation2": "x ◇ (x ◇ x) = (y ◇ z) ◇ y", "answer": true}
+{"id": "etp_3025_4476", "eq1_id": 3025, "eq2_id": 4476, "equation1": "x = ((y ◇ (z ◇ w)) ◇ x) ◇ y", "equation2": "x ◇ (y ◇ y) = (x ◇ z) ◇ y", "answer": true}
+{"id": "etp_3425_3689", "eq1_id": 3425, "eq2_id": 3689, "equation1": "x ◇ y = z ◇ (z ◇ (w ◇ x))", "equation2": "x ◇ x = (y ◇ y) ◇ (y ◇ z)", "answer": true}
+{"id": "etp_3561_4072", "eq1_id": 3561, "eq2_id": 4072, "equation1": "x ◇ y = y ◇ ((y ◇ z) ◇ x)", "equation2": "x ◇ x = ((x ◇ y) ◇ x) ◇ z", "answer": true}
+{"id": "etp_1726_2744", "eq1_id": 1726, "eq2_id": 2744, "equation1": "x = (y ◇ y) ◇ ((x ◇ z) ◇ z)", "equation2": "x = ((y ◇ y) ◇ (y ◇ x)) ◇ y", "answer": false, "filter_nontrivial_models": 2, "filter_reason": "no_small_countermodel"}

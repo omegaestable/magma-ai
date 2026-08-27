@@ -2,9 +2,33 @@
 
 Vendored repository: https://github.com/SAIRcompetition/equational-theories-lean-stage2
 
-Snapshot commit: `4db175c41d917ce39fc82e48c7e440e2a3fa403d`
+Snapshot commit: `13648682a5553717ea91b86513ed140b39160cf5`
 
 Vendored on: 2026-05-04 (initial snapshot `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`)
+
+Synced to upstream HEAD on: 2026-08-26 (from `4db175c4`, 4 commits ahead,
+0 behind). Upstream changed 16 files and added 5 (three size-cap answer
+fixtures, one lone-surrogate challenger answer, one Marathon size-cap
+manifest). Verbatim copies for everything except the five locally patched
+files — `judge/verify.py`, `scripts/run_harness.py`, `pipeline/proxy.py`,
+`pipeline/marathon_runner.py`, `scripts/run_marathon_harness.py` — which were
+3-way merged (`git merge-file` against the old and new upstream versions).
+Four merged clean; `pipeline/proxy.py` had two conflicts where the local
+provider-normalization patch meets upstream's new per-model allowlist
+(`_resolve_model` / `UnknownModelError`): resolved by keeping both — the
+chosen model's provider string is still routed through
+`_openrouter_provider_config`. Every documented local patch below remains
+present (patch #9's `cwd=art_dir` verified by grep after the merge).
+Notable upstream changes: Lean toolchain `v4.32.2` → **`v4.33.1`** with Mathlib
+`905b9581` → `0df444a360eaa60ab8c11dca51a86af692955474` (the kernel-soundness
+hardening release; organizers state valid certificates stay valid);
+`judge/verify.py`'s no-config fallbacks now equal the deployed
+100,000 / 20,000 / 300 (the rail-3b drift is closed at the source) and a new
+`CODE_NOT_UTF8` malformed status for lone-surrogate code; `pipeline/config.json`
+judge block **unchanged** (CI pin still valid), `llm.reasoning_effort`
+`medium` → `low` and a per-model `llm.models` allowlist (gpt-oss-120b at low,
+gemma-4-31b-it with reasoning disabled); Marathon scoring now snapshots the
+judge config and proof policy before the solver launches.
 
 Synced to upstream HEAD on: 2026-08-24. Upstream changed 16 files and added 14
 (12 challenger answers plus 2 infinite-countermodel fixtures). All were taken

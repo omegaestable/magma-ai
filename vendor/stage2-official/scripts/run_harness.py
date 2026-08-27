@@ -1765,6 +1765,55 @@ def run_pipeline_prompt_cases() -> list[dict[str, Any]]:
         "" if not diag_drift else "; ".join(diag_drift),
     )
 
+    # The evaluation pins more than one model, and `provider` /
+    # `reasoning_effort` differ per model, so they must come from the
+    # `llm.models` entry rather than the flat `llm.*` keys. The load-bearing
+    # case is gemma: it has reasoning DISABLED, so inheriting gpt-oss's
+    # `reasoning_effort` would silently turn reasoning back on for it.
+    from pipeline.proxy import _resolve_model, UnknownModelError  # noqa: PLC0415
+
+    llm_cfg = json.loads((ROOT / "pipeline" / "config.json").read_text(encoding="utf-8"))["llm"]
+    model_drift: list[str] = []
+
+    default_pick = _resolve_model(llm_cfg, None)
+    if default_pick["model"] != llm_cfg["model"]:
+        model_drift.append(f"default resolved to {default_pick['model']!r}")
+
+    listed = [e["model"] for e in llm_cfg.get("models", []) if isinstance(e, dict)]
+    if len(listed) < 2:
+        model_drift.append(f"expected the pinned allowlist to carry 2+ models, got {listed}")
+    for name in listed:
+        picked = _resolve_model(llm_cfg, name)
+        if picked["model"] != name:
+            model_drift.append(f"{name} resolved to {picked['model']!r}")
+        entry = next(e for e in llm_cfg["models"] if e.get("model") == name)
+        if picked.get("reasoning_effort") != entry.get("reasoning_effort"):
+            model_drift.append(
+                f"{name} effort {picked.get('reasoning_effort')!r} != pinned {entry.get('reasoning_effort')!r}"
+            )
+
+    try:
+        _resolve_model(llm_cfg, "definitely/not-a-pinned-model")
+        model_drift.append("an unpinned model was accepted")
+    except UnknownModelError:
+        pass
+
+    # A config predating the allowlist must keep its exact previous behavior.
+    legacy = {k: v for k, v in llm_cfg.items() if k != "models"}
+    if _resolve_model(legacy, None)["model"] != legacy["model"]:
+        model_drift.append("legacy (no `models`) config changed its default")
+    try:
+        _resolve_model(legacy, "google/gemma-4-31b-it")
+        model_drift.append("legacy config served a model it does not pin")
+    except UnknownModelError:
+        pass
+
+    _record(
+        "pipeline_llm_model_allowlist_is_per_model_and_closed",
+        not model_drift,
+        "" if not model_drift else "; ".join(model_drift),
+    )
+
     return results
 
 
@@ -2860,7 +2909,9 @@ def run_judge_internal_cases() -> list[dict[str, Any]]:
 
     try:
         from judge.verify import _parse_answer_payload
-        diamonds = "◇" * 20_000
+        # `◇` is 3 UTF-8 bytes: sized so char count stays under the cap
+        # while byte count exceeds it, at any MAX_CODE_LENGTH.
+        diamonds = "◇" * (MAX_CODE_LENGTH // 3 + 1_000)
         code = f"theorem submission : True := by trivial -- {diamonds}"
         assert len(code) < MAX_CODE_LENGTH
         assert len(code.encode("utf-8")) > MAX_CODE_LENGTH
