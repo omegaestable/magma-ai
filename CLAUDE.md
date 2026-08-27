@@ -86,11 +86,24 @@ config. Do not mirror the fallback — see rail 3b, third instance.
 
 - Sandbox per submission: `python:3.11-slim`, 2 vCPU, **2048 MB** RAM, 64 PIDs,
   `/tmp` a 64 MB tmpfs, read-only filesystem, network disabled, all capabilities
-  dropped, env allowlist `PATH`/`HOME`/`LANG`/`PYTHONDONTWRITEBYTECODE`. No
-  third-party packages. Single `solver.py`, max 500,000 bytes.
+  dropped. **stdlib plus `sympy==1.13.3`**, pinned in the official Dockerfile
+  (numpy / z3 / networkx are explicitly *not* there); the solver deliberately
+  uses neither — but "no third-party packages", which this file said until
+  2026-08-27, was wrong and forecloses a real option (diag `Rules.md` RC-09).
+  The env allowlist is also wider than the `PATH`/`HOME`/`LANG` this file used
+  to list: `pipeline/proxy.py` and `pipeline/marathon_runner.py:285-289` pass
+  `PATH`, `HOME`, `USER`, `USERPROFILE`, `LANG`, `TERM`, `TMPDIR`, `TMP`,
+  `TEMP`, `SYSTEMROOT`, `SystemRoot`, `WINDIR`, `ComSpec`, `PATHEXT`,
+  `PYTHONPATH`, `PYTHONIOENCODING`; `PYTHONDONTWRITEBYTECODE` comes from the
+  Dockerfile `ENV`, not the allowlist. Every `os.environ.get` in the solver
+  carries a default, so nothing depended on the wrong list.
+  **The submission directory must contain `solver.py` and nothing else** — see
+  the rail below.
 - Budgets: solver wall clock **3600 s per problem**; Lean judge **300 s per
-  call**; Lean code **100,000 bytes**; FALSE certificate **20,000 bytes**; LLM
-  **65,536 max output tokens** per call.
+  Lean phase, and there are two** (compile `Submission.lean`, then run
+  `Problem.lean`) — not one aggregate deadline; Lean code **100,000 UTF-8
+  bytes**; FALSE certificate **20,000 bytes**; LLM **65,536 max output tokens**
+  per call.
 - LLM: `openai/gpt-oss-120b` and `google/gemma-4-31b-it`, OpenRouter pinned to
   DeepInfra, fallback disabled, temperature 0.0, seed 0. The solver now reads
   the model from `JUDGE_MARATHON_MODEL` instead of hardcoding one.
@@ -118,6 +131,15 @@ Every number below is from the 2026-08-26/27 improvement pass
 | Offline gate | **297 passed, 2 skipped** (one pin flaps on timing under load — a third skip is that, not coverage) |
 | Packaged size | **426,613 bytes of 500,000 — 73 KB headroom** after deleting 16 live-solvable distilled entries (81 KB) and shipping five infinite/large certs |
 
+<<FINAL-NUMBERS: filled at session end>>
+
+The table above is the **2026-08-27 improvement-pass-1** state. A second
+improvement pass ran on 2026-08-27 (seven agents: `compliance-tests`,
+`false-side`, `completion`, `lean-formula`, `pacing`, `mined-laws`,
+`llm-lane`); its measured numbers replace this table at the marker above once
+the verification run completes. What shipped in it is listed in
+`stage2/docs/NEXT_SESSION_BRIEF.md`.
+
 **2026-08-26/27 session — the improvement pass.** Four mechanisms, each
 aimed at a family: the **multi-fill goal bridge** (+ bridge in the probe slot,
 node cap 200k) closes eq1 `3569`/`2854`/`1366` and both former survivors in
@@ -132,315 +154,37 @@ order-21/24/36 tables) and shipped content-keyed. Harness synced to upstream
 `13648682` (**Lean/Mathlib v4.33.1**, kernel-soundness release; judge caps
 unchanged). New rails 20–22 below.
 
-**2026-08-25 session** (`stage2/results/2026-08-25-deep-sweep-campaign.md`)
-**— the deep sweep: 130,900 unseen rows in one day, 4.9× everything the solver
-had ever been measured on, and no solver change.** Measurement and logging only,
-by instruction; fixes deferred to an improvement pass scoped from the merged
-ledgers. Results: order-4 **109,954/110,000 (99.958%)**, order-5 ≤3 vars
-**19,647/20,000 (98.24%)**, order-6 pilots 899/900 — **0 crashes, 0 oracle
-failures, 0 label mismatches anywhere**. Spotcheck 90/90, gate 270 passed.
+### Session history (collapsed 2026-08-27; the results docs are the detail)
 
-- **The order-4 frontier is four laws.** 46 misses in 110,000 rows, and eq1
-  `2923` (16), `3569` (7), `650` (5), `3983` (4) are **32 of them — 70%**. The
-  concentration has *risen* with sample size (57% at 10k → 58% at 20k → **70% at
-  110k**), which is the opposite of what sampling noise does.
-- **Order-5's frontier is a different shape entirely** — a *size/arity* wall,
-  not a family wall. Largest cluster is 4 rows of 353, but **all 353 have
-  exactly 5 operations and 352 of 353 have 3 variables**. A fix aimed at order-4
-  will not move it, and order-5 is a quarter of the score sitting 1.7 points
-  below order-4.
-- **The last unverified certificates are now judge-pinned.** 29 route families
-  emit Lean the proof kernel cannot parse; **10 had no offline *and* no judge
-  evidence** — 138 rows whose certificate text nothing checked. One cert from
-  each went to the real judge: **10/10 accepted**. Fixture 102 → 112.
-- **The wide countermodel search takes 37–76% of every unsolved order-4 row's
-  clock**, and on 4 of 5 profiled rows it hunts a witness that cannot exist (the
-  row is TRUE). Not a deadline bug — the budget is spent exactly as configured.
-  Whether the *configuration* is right is now a measurable question, because
-  `sweep_report --diagnose` produces the profile on any batch.
-- **A low variable cap collapses the TRUE base rate, measurably**: 37.10% over
-  all 22,028,942 order-≤4 pairs, **4.17%** restricted to ≤2 variables on both
-  sides. Two 200-row order-6 (≤2 var) pilots came back 200/200 FALSE for exactly
-  that reason; `filter_hard_region.py` stratifies such a draw instead (14.2%
-  survive an independent small-model refutation).
+Each row's mechanism prose lives in the linked doc, and every lesson worth
+re-learning is already a numbered rail below. Collapsed so this file stays an
+entry point rather than a changelog.
 
-**2026-08-24 session** (`stage2/results/2026-08-24-final-session-upstream-sync-and-goal-bridge.md`)
-**— the final working session: upstream re-sync, judge parity on Lean 4.32.2,
-and the completion goal bridge.** Coverage held and was proved held (0 lost /
-0 gained / 0 flips over 2,669 common rows vs the 2026-08-21 baseline). The
-headline items, each detailed in the rules-update block above and the results
-doc: the vendored harness was 16 commits stale (rail 14 — new); scoring is
-final with **Order 5 a quarter of the score** and a no-reuse guarantee;
-the judge's expanded banned-token scan is mirrored at `judge_answer_payload()`
-+ `sanitize_lean_code` + the offline oracle; **`true:completion:bridge`**
-shipped (bounded bidirectional search over every direction of the saturated
-rule set — unfailing completion's move into the goal) plus ground-unoriented
-goal rewriting, closing **6/8 order-4 frontier rows, 111/205 order-5 misses,
-and 2/5 distilled-only families**, all kernel-verified, 10/10 real-judge
-accepted; the whole certificate corpus was re-judged on the new toolchain
-(**102/102**); Solo got its first tier-ladder real-runner evidence
-(**25/25**); Marathon LLM lane now requests the deployed
-`reasoning_effort=low` and surfaces `truncated`; `SUBMISSION_NOTE.md` and
-`LICENSE` exist; `etp_1661_3524` got a decisive negative-evidence pass
-(order ≤ 4 *proven* clean, FinitePoly + polynomial families exhausted, an
-XOR-additive infinite family proven structurally unable to separate the pair).
+| Date | Headline | Results doc | Headline numbers |
+| --- | --- | --- | --- |
+| 2026-08-25 | **The deep sweep** — 130,900 unseen rows in one day (4.9x all prior measurement), measurement only, no solver change | `stage2/results/2026-08-25-deep-sweep-campaign.md` | order-4 **109,954/110,000 (99.958%)**; order-5 ≤3 var **19,647/20,000 (98.24%)**; order-6 pilots 899/900; 0 crashes / 0 oracle failures / 0 label mismatches; spotcheck 90/90; gate 270 passed. **Order-4 frontier is four laws** — eq1 `2923` (16 misses), `3569` (7), `650` (5), `3983` (4) = 32 of 46 = **70%**, concentration rising with sample size (57% at 10k, 70% at 110k). Order-5's 353 misses are a *size/arity* wall instead: all 353 at 5 operations, 352/353 at 3 variables, largest cluster 4. 10 unverified route families judge-pinned **10/10 accepted** (fixture 102 → 112). Wide countermodel search = **37–76%** of every unsolved order-4 row's clock. TRUE base rate **37.10%** over all 22,028,942 order-≤4 pairs vs **4.17%** at ≤2 variables (rail 18). |
+| 2026-08-24 | Upstream re-sync (16 commits stale), judge parity on Lean 4.32.2, the **completion goal bridge** | `stage2/results/2026-08-24-final-session-upstream-sync-and-goal-bridge.md` | 0 lost / 0 gained / 0 flips over 2,669 common rows. `true:completion:bridge` closed **6/8** order-4 frontier rows, **111/205** order-5 misses, 2/5 distilled-only families, **10/10** real-judge accepted. Whole certificate corpus re-judged on the new toolchain **102/102**. First Solo tier-ladder real-runner evidence **25/25**. Scoring became final (Order 5 = 1/4 of the score, no-reuse guarantee); judge banned-token scan hardened; `SUBMISSION_NOTE.md` + `LICENSE` shipped. `etp_1661_3524` given a decisive negative-evidence pass. Rail 14 born here. |
+| 2026-08-21 | **`true:completion`** (ordered Knuth–Bendix with proof recording) shipped as a solver route; corpus 24% faster | `stage2/results/2026-08-21-completion-engine-and-latency.md` | 0 lost / 0 gained / 0 flips over 2,669 rows. Closes **43 of 51** TRUE rows on the 20k-sample frontier **in 0.3 s total**, where ~450 s/row of deterministic search and a real `gpt-oss-120b` lemma pass had both scored 0/51. Serves **304 corpus rows** (166 join, 138 collapse), **12/12** real-judge accepted. The general collapse shape (`t = v`, `v` not occurring in `t`) is worth 12 rows over the literal `x = y` (19). `_egg_bridge_steps` found un-deadlined (rail 5f-v, fifth instance); `EGG_BRIDGE_MAX_STATES = 400` costs 0 rows. Two dead ends measured: instance-pushing the other unorientable shape = 0 rows; a `derived_rule_steps` cap cannot bind (max 619 steps over 2,737 calls). |
+| 2026-08-13 | **QA: the solver had mirrored the wrong judge caps for two weeks; CI had never been green** | `stage2/results/2026-08-13-qa-judge-caps-and-ci.md` | 1869/1869 identical vs the 08-12 audit, 0 lost / 0 gained. Real Solo `sample_20` **20/20**; real Marathon 12/12; spotcheck **90/90**. Real caps are **100,000 / 20,000 bytes / 300 s**, not 50,000 / 10,000 / 120 s (rail 3b, third instance) — settled by judging one cert twice with only the cap varying (60,015 B and 90,023 B `malformed` at 50,000, **accepted** at 100,000). `MAX_WITNESS_DECIDE_APPLICATIONS` 20,000 → 50,000; `EGG_MAX_PROOF_BYTES` 46,000 → 96,000; `LLM_HTTP_TIMEOUT_SECONDS` 75 → 300 s (75 s had aborted **225 of 446** real calls). `constraint_countermodel_wide_domain` was burning up to 1,760 s/row at `deep` on work it then discarded (rail 5f-vii). CI moved to **Python 3.11**, the 500 KB assert moved onto the built artifact, and a step now pins the solver's judge constants to `pipeline/config.json`. |
+| 2026-08-12 (s2) | **Tier inversion fixed** (more budget was losing rows) + latency | `stage2/results/2026-08-12-tier-inversion-and-latency.md` | 0 lost, **+3 gained** across three isolated audits → 2669/2669. At `deep` with a 360 s row bound `normal_0491` and `hard2_0162` were SKIP and now solve in 97.6 s / 173.9 s; `sample_20` is 20/20 at `fast` in 32 s but needed **313 s (10x)** at `deep` before the ladder fix (rail 12). Single-rule egg's 6 s probe was running **40 s at 11,346 MB RSS with zero polls**, straight through an armed memory guard — `normal_0823` **252.7 s → 1.09 s** (rail 5f-v). 34 certificates distilled; audit wall clock 980 s → 330 s. |
+| 2026-08-12 | **Corpus complete** — the last nine rows closed by ordered completion, hand-run | `stage2/results/2026-08-12-final-nine-completion.md` | official 1666 → **1669**, HF 795 → **800**. All nine judge-accepted and shipped distilled. Equality saturation could not reach any of them at any budget; completion found `hard2_0073`'s collapse in **0.0 s**. Refuted this file's own "no self-critical-pairs" impossibility claim (see the open-frontier section). |
+| 2026-08-11 | **`true:egg_ladder`** (multi-rule saturation with `have`-bound derived laws) | `stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md` | 1658 → 1666, TRUE 810 → 816, FALSE 848 → **850 (complete)**; **+9 gained, 0 lost** by row id, 0 oracle failures. `normal` and `hard1` complete. `hard1_0062` / `hard2_0123` distilled (315 s / 405 s at `standard`, judge-accepted). Rails 5f-ii / 5f-iii / 5f-iv born here. `normal_0491`'s 4510-step chain proved incompressible and ships at **4755 bytes** through the ladder instead (rail 5d-ii). |
+| 2026-08-07 | Distilled certificate library + the early egg probe | `stage2/results/2026-08-07-distilled-library-and-egg-probe.md` | +11 official rows from a 16-agent pass over the 31 real-judge misses. `DISTILLED_CERTS` content-keyed on `canonical_eq_text` (rail 5h); `egg_probe_route` (the dominant miss mode was scheduling, not math — egg lands these in 0.07–10 s but ran last); **first infinite countermodel** (`hard2_0027`, carrier `Nat`, parity model, `omega`, judge-accepted at 1268 bytes). `CONSTRAINT_MAX_NODES` raised again (rail 5f, second instance). |
+| 2026-08-01/03 | **The real-judge campaign** — two Marathon-only bugs found and fixed | `stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md` | `_mem_reclaims_left` was never reset per row, so 3 memory-guard trips anywhere in a manifest disabled every general engine for the rest of the manifest: real Marathon on `normal.jsonl` scored **287/1000** against an offline 989/1000 (rail 10). Second bug: the deterministic loop had no `try/except`, killing whole manifests silently at 283/400 and 75/200; the narrow fix was insufficient and the whole loop body is now wrapped (rail 11). Post-fix, real-judge: official `hard1` 69/69, `normal` 988/1000, `hard2` 196/200, `hard3` 396/400 — **1649/1669, 0 rejected**; HF **990/1000, 0 rejected**; a 200-row random ETP sample Marathon 199/200 + Solo 25/25. **Campaign total 2863/2894 (98.9%), 0 rejected anywhere.** |
 
-**2026-08-21 session** (`stage2/results/2026-08-21-completion-engine-and-latency.md`)
-**— ordered completion shipped as a solver route, and the corpus got 24% faster
-for it.** Acting on the 2026-08-20 measurement session, which sampled 20,000 rows
-of the full order-4 ETP matrix plus 4,000 generated order-5 pairs and
-deliberately changed nothing. Coverage held and was *proved* held: row-id diff
-vs `audit-2026-08-12-final.json` reads **0 lost, 0 gained, 0 verdict flips** over
-2,669 common rows, with 0 crashes and 0 oracle failures over 2,689 audited rows.
-
-- **`true:completion` is live**, in two slots: `completion_probe_route`
-  (unscaled 2 s, right after `egg_probe_route`) and `completion_route`
-  (tier-scaled 8 s, after the egg family). The early slot pays rather than costs
-  because completion's *loss* is cheap — it saturates in ~0 s on most rows rather
-  than spending its budget, which is not true of any search engine below it. It
-  serves **304 corpus rows** (166 join, 138 collapse) and is **12/12
-  real-judge accepted** across both certificate shapes (rail 3c).
-- **It closes 43 of the 51 TRUE rows on the 20k-sample frontier, in 0.3 s for all
-  43** — a frontier on which ~450 s of deterministic search *per row* and a real
-  `gpt-oss-120b` lemma-lane pass had both scored 0/51. The port's three
-  differences from the dev tool are each worth rows: the collapse fix (31), goal
-  skolemisation (3), per-work-unit deadline polling (rails 5f-iv/5f-v).
-- **The collapse the dev tool's README flagged was narrower than the real one.**
-  It looked for `x = y`; the general shape is any derived `t = v` with `v` not
-  occurring in `t`, which says every carrier element equals that one instance of
-  `t`. `x = y` alone closes 19 frontier rows and the general shape is what **12
-  more** were sitting on. Same fact, invisible if you search for the literal
-  two-variable equation.
-- **The single-rule egg extraction had no deadline at all** — fifth instance of
-  rail 5f-v. `_egg_bridge_steps` is O(states²) with neither a deadline nor a state
-  cap while `_egg_bridge_steps_multi` has had both since it was written, with a
-  comment spelling out the cost; `explain` took no `deadline` while
-  `explain_multi` did. Invisible while every corpus was order-4; the order-5
-  sample is the first thing to feed it long chains over big terms, and 9 of its
-  205 skip rows overran a 300 s row budget, one by 11.8x. Both now match their
-  twins, and the audit diff says the caps cost 0 rows.
-- **Two dead ends measured and written down** so they are not re-run: pushing
-  variable-for-variable instances of the *other* unorientable shape closes 0 rows
-  (`subsumed()` discards each one precisely because it is an instance of the still
-  active parent), and a cap on `derived_rule_steps` cannot bind — measured max is
-  **619 steps per call** over 2,737 calls, so the 5 GB `NEXT_SESSION_BRIEF` §2.4
-  attributes to it is really the caller's `chain_trans`-concatenated proof
-  strings. Rail 5f-vi again: the named function was not the growing one.
-
-**2026-08-13 session** (`stage2/results/2026-08-13-qa-judge-caps-and-ci.md`)
-**— the solver had been mirroring the wrong judge limits for two weeks, and CI
-had never been green.** Coverage was held constant and *proved* constant: an
-isolated audit diffed by row id against `audit-2026-08-12-final.json` reads
-**1869/1869 identical, 0 lost, 0 gained**, with 5 TRUE closure-engine reshuffles
-and no FALSE witness changed. Real-runner evidence the same day: official Solo
-runner on `sample_20` **20/20, 0 failed**, every row accepted on its first judge
-call; Marathon 12/12 on the packaged artifact; spotcheck **90/90, 0 mistakes**.
-Everything below is a limits/plumbing correction, taken with the offline gate
-green. Evidence sits in the code it fixed: the comment block at
-`stage2/solver/solver.py` L136-155, `vendor/stage2-official/pipeline/config.json`,
-and `.github/workflows/gate.yml`.
-
-- **The judge's real caps are 100,000 / 20,000 bytes and a 300 s Lean timeout**,
-  not 50,000 / 10,000 / 120 s. Settled by experiment, not argument (rail 3b, third
-  instance): one certificate judged twice with only the configured cap varying —
-  60,015 B and 90,023 B are `malformed`/`CODE_TOO_LONG` at 50,000 and **accepted**
-  at 100,000. `JUDGE_MAX_CODE_LENGTH`, `JUDGE_MAX_FALSE_CERT_BYTES`,
-  `EGG_MAX_PROOF_BYTES` (46,000 → 96,000) and the tests' copies of the same two
-  constants are corrected. The whole 46–96 KB egg band had been discarded for
-  nothing.
-- **`MAX_WITNESS_DECIDE_APPLICATIONS` 20,000 → 50,000**, re-derived against the
-  real 300 s timeout it was always meant to protect (rail 3b-ii). Anything else
-  calibrated against 120 s deserves the same re-derivation.
-- **The LLM lane's HTTP timeout was aborting half its own calls**:
-  `LLM_HTTP_TIMEOUT_SECONDS` 75 s → 300 s (75 s cut **225 of 446** logged real
-  calls, and an abort still spends the tokens and loses the row). Solo's reserves
-  follow the real judge call: `SOLO_FALLBACK_RESERVE_SECONDS` 90 → 310,
-  `SOLO_LLM_ROUND_MIN_SECONDS` 150 → 620. `LLM_CONFIG["model"]` now honours
-  `JUDGE_MARATHON_MODEL` (it was hardcoded, which made a documented organizer knob
-  unreachable and `google/gemma-4-31b-it` unusable).
-- **`constraint_countermodel_wide_domain` was burning up to 1,760 s per row at
-  `deep` on work it would then discard** — cost gate after the search instead of
-  before it. New rail 5f-vii.
-- **Two packaging hazards, both latent, both fixed.** `minify_submission.py`'s
-  line transforms were rewriting the *contents* of multi-line string literals;
-  `DISTILLED_CERTS` stores every certificate as triple-quoted Lean, so one cert
-  with a trailing space would have failed the parse-tree check and bricked the
-  packager. And `package_solver.ps1` wiped `stage2/submissions/` *before* running
-  the minifier (a failure left no artifact, and none in git either — it is
-  gitignored) and left an oversized artifact in place while claiming to refuse to
-  package. It now builds to a temp file and swaps in only after the size check.
-- **CI was red on two steps and had never run the solver on the interpreter that
-  grades it.** Python 3.12 → **3.11** (the sandbox is `python:3.11-slim`); the
-  500 KB assertion moved off `stage2/solver/solver.py` (the **source**, 529,700
-  bytes at HEAD and legitimately over the cap because it carries the comments) and
-  onto a built artifact; `ruff.toml`'s `exclude` → `extend-exclude`, which had been
-  replacing ruff's defaults so it walked into `.git/` and reported 443 invalid-syntax
-  errors from a pasted error log saved there. **New CI step: the solver's judge-limit
-  constants must equal `pipeline/config.json`**, so this drift cannot recur silently.
-
-**2026-08-12 session 2** (`stage2/results/2026-08-12-tier-inversion-and-latency.md`)
-— goal was efficiency without losing coverage, and both halves of that were met
-by **row-id diff across three isolated audits: 0 lost, +3 gained**:
-
-- **The tier inversion is fixed** (rail 12). We audit at `fast` and deploy at
-  `standard`/`deep`, and more budget was making the solver *worse*: at `deep`
-  with a 360 s row bound, `normal_0491` and `hard2_0162` were SKIP and now solve
-  in 97.6 s / 173.9 s. `solve_problem` walks the tier ladder instead of jumping.
-- **Marathon now bounds each row** (rail 13) — it previously bounded only the sum.
-- **The single-rule egg engine never got the deadline fix its twin got**
-  (rail 5f-v). Its 6 s probe budget was running **40 s at 11 GB RSS with zero
-  polls**, straight through an armed memory guard. `normal_0823`: **252.7 s →
-  1.09 s**, and a dozen `normal` rows moved from `derived_cp_closure` to the
-  cheaper `egg_collapse` the probe was built to find.
-- **34 certificates distilled**, all judge-accepted, taking the slow tail to O(1).
-- **The last three open rows closed** by reusing the ordered-completion pipeline
-  from the final nine — unchanged, no tuning, each joining in under 0.2 s.
-
-**Timing caveat, stated so nobody over-reads the wall-clock rows.** Part of this
-session's later measurement ran against heavy unrelated CPU load on the same
-machine (another project's search jobs, several at 1,000+ CPU-seconds, box at
-90%). The **coverage** numbers are unaffected — 0 mismatches over thousands of
-rows does not come and go with load, which is rail 5e's own lesson — but the
-speedup figures are **lower bounds on the improvement, not precise
-measurements**. The trustworthy timing evidence is the isolated single-row
-before/after probes (`normal_0491`, `hard2_0162`, `normal_0823`) and the
-packaged-artifact latency row above. **Check what else is on the machine before
-quoting a wall clock.**
-
-**2026-08-11 session** (`stage2/results/2026-08-11-lemma-ladder-and-starved-search-fixes.md`):
-`1658 → 1666`, TRUE `810 → 816`, FALSE `848 → 850`, diffed by row id across two
-isolated audits: **+9 gained, 0 lost**, 0 oracle failures, 0 crashes.
-
-- `true:egg_ladder` (new engine, multi-rule saturation with `have`-bound derived
-  laws) closed `normal_0090`, `normal_0491`, `hard2_0162`, `hard3_0135`,
-  `hard3_0204`, `hard3_0266`.
-- `hard2_0092` was a named witness two guards had been hiding.
-- `hard1_0062` and `hard2_0123` are **distilled**: both solve at `standard`
-  (315 s / 405 s, judge-accepted), and content-keying them makes that result cost
-  a dict probe at every tier. `hard2_0123`'s 405 s was more than a whole
-  problem's average Marathon budget.
-- **FALSE is complete at 850/850**, and `normal` and `hard1` are both complete.
-
-**2026-08-12 session** (`stage2/results/2026-08-12-final-nine-completion.md`):
-the last nine rows closed — official `1666 → 1669`, HF `795 → 800`. All nine
-were derived by **ordered completion (Knuth-Bendix) with proof recording**, run
-by hand per row, then judge-accepted and shipped as distilled certificates.
-Equality saturation could not reach any of them at any budget; completion found
-`hard2_0073`'s collapse in 0.0 s. The "no self-critical-pairs" claim that made
-this family look structurally hopeless was **wrong** — see the open-frontier
-section.
-
-**2026-08-07 session** (`stage2/results/2026-08-07-distilled-library-and-egg-probe.md`):
-+11 official rows from a 16-agent discovery pass over the 31 real-judge misses
-of the 08-01/03 campaign. Three shipped mechanisms, all content-keyed:
-
-- **`DISTILLED_CERTS`** — 20 judge-accepted certificates keyed by *canonical
-  equation text* (`canonical_eq_text`), looked up O(1) after the singleton
-  recogniser. Certificates are complete Lean files and alpha-invariant, so a
-  key hit transfers across notation and set: verified emitting the same cert
-  for the HF `*` spelling of an official `◇` row. Never keyed by row id
-  (rail 9). Most entries came from **ETP's own implication chains** — the
-  frontier is overwhelmingly collapse-shaped (`eq1 ⇒ x = y`, goal downstream),
-  the rest are projection/rotation ladders transcribed from teorth Vampire
-  proofs.
-- **`egg_probe_route`** — a small *unscaled* early egg probe (collapse 6 s,
-  row/column-constancy 2 s) placed first among the general engines. The
-  campaign's dominant miss mode was scheduling, not math: egg lands these rows
-  in 0.07–10 s but ran last, after the tier-scaled closure engines had eaten
-  the per-row clock at `standard`/`deep`. Free gates keep it ~free elsewhere.
-- **First infinite countermodel** (`hard2_0027`): carrier `Nat`,
-  `op a b = if b % 2 = a % 2 then b + 1 else b - 1`, eq1 by parity (`omega`
-  passes the allowlist), eq2 false at (0,1,0). Judge-accepted, 1268 bytes.
-  `hard2_0093` got an order-6 *finite* witness (`S6B`) from ETP's FinitePoly
-  refutation database — both FALSE holdouts are closed.
-
-**The 1650 that stood here from 2026-07-29 was never measured.** The last full
-audit before this one read 1647; the doc then added +3 for `hard2_0082`,
-`hard3_0131` and `hard3_0271`, each verified individually, and wrote the sum as
-if it were a measurement. This run — the first full audit since — reads 1647
-again, with `hard3_0131` and `hard3_0271` landing as predicted and `hard2_0082`
-not. Per-set: `normal` 996, `hard1` 68, `hard2` 189, `hard3` 394.
-
-Treat the per-set movement (`hard2` 191→189, `hard3` 392→394) as scheduling, not
-coverage: both `hard2_0082` (74.1 s standalone, `true:egg_bootstrap`) and
-`hard2_0001` (1.3 s standalone, `false:dual:...:witness:S5B`) solve fine on a
-quiet machine and miss under 16-way parallelism, `hard2_0001` because the cheap
-witness portfolio runs on a 2 s budget that contention alone can exhaust. This
-audit was **not** run on an idle machine, so its timing-derived numbers carry
-less weight than the soundness ones beside them; a genuinely isolated re-run is
-still owed. Nothing above depends on timing: 0 mismatches over 1863 rows does
-not come and go with load.
-
-The 2026-07-29 audit behind the previous baseline was itself confirmed clean and
-isolated: **row-for-row identical** to the pre-node-cap-fix run — 0 lost, 0
-gained, 0 oracle failures. An earlier contaminated run (an unrelated diagnostic
-audit accidentally overlapping it) showed 16 spurious "losses", all
-budget-marginal `egg_*`/`lemma_chain` routes; reproduced each in isolation and
-confirmed they solve identically — pure CPU-contention noise from testing
-methodology, not a code regression. **Lesson: never run two `audit_corpus.py`
-sweeps concurrently on the same machine** — the `fast`-tier headline number
-is only trustworthy from an isolated run, and killing a sweep does not
-necessarily kill its worker pool.
-
-**Effort tier matters and is easy to conflate.** `egg_priority_bootstrap`
-solves three TRUE rows (`hard2_0082`, `hard3_0131`, `hard3_0271`) at `fast`
-given the machine to itself — `hard2_0082` needs 74 s of it, which 16-way
-parallelism does not give, so it is *not* in the 1647 above. Two more rows
-(`hard1_0062`, `hard2_0123`, ~75 s each) are real, judge-accepted (4.7 s /
-5.3 s) fixes from the node-cap bug below, but need `standard` effort's scaled
-budget (45 s × 7.5 = 337.5 s) to finish within the wide constraint tier — they
-do **not** appear in the `fast`-tier count either, only in Solo/Marathon or a
-`--effort standard` sweep.
-
-Root cause of the constraint fix: `CONSTRAINT_MAX_NODES = 60000` was cutting
-`_cp_search` off *before* the time deadline that already bounds it correctly —
-both rows needed ~140K search nodes. Raised to 3,000,000 (a pure safety net
-now; the wall-clock deadline is the real stopping criterion).
-
-The ranges are not vagueness — they are the measured run-to-run noise band on
-identical code. Solved totals swing by up to ±7 because the FALSE search and the
-general closure engines race a wall clock. **Diff by row id, never by total.**
-
-This is **offline** evidence (proof kernel + finite-model oracles) — an upper
-bound on judge acceptance, except for the 34 certificates with real judge
-evidence. A cloud judge sweep is still owed before promotion.
-
-**2026-08-01/03: that cloud-judge sweep started, found two Marathon-only bugs,
-and both are now real-judge confirmed fixed on all nine official + HF sets
-plus a random ETP sample — the whole planned real-run campaign is complete.**
-A real-judge, real-key Solo/Marathon run found the first bug this table cannot
-see, because `audit_corpus.py` never arms the memory guard: `_mem_reclaims_left`
-(a module-level global) was never reset per-problem inside `run_marathon()`,
-so 3 memory-guard trips anywhere in a manifest permanently disabled every
-general engine for every remaining problem. Real Marathon on `normal.jsonl`
-scored 287/1000 against this table's 989/1000 before the fix; real Solo on the
-same rows was clean throughout. A second bug surfaced fixing the first: the
-Marathon deterministic loop called `solve_problem()` with zero exception
-handling, so one bad row could silently kill the entire multi-hour process —
-a `hard3.jsonl` rerun crashed at 283/400 with no traceback anywhere, and a
-narrow fix (wrapping only the `solve_problem()` call) turned out incomplete —
-`evaluation_extra_hard.jsonl` crashed the same way at 75/200 under it. Widened
-to wrap the entire per-problem loop body (cache clear, memory-guard reset,
-solve, answer append, bookkeeping); the rerun completed clean. **Real-judge
-confirmed on all four official sets**: `hard1.jsonl` 69/69, `normal.jsonl`
-988/1000 (12 not_attempted), `hard2.jsonl` 196/200 (4 not_attempted),
-`hard3.jsonl` 396/400 (4 not_attempted) — **0 rejected across all 1669 rows**,
-total 1649/1669 (98.8%), matching this table's offline ceiling for the first
-time via the real judge. **And on all five HF mirror sets**: `hf_hard`
-200/200, `evaluation_normal` 198/200, `evaluation_hard` 197/200,
-`evaluation_extra_hard` 200/200, `evaluation_order5` 195/200 — total 990/1000
-(99.0%), 0 rejected. **And on a 200-row random sample of the full ETP outcome
-matrix** (never tuned against): Marathon 199/200, Solo 25/25, 0 rejected.
-**Campaign grand total: 2863/2894 real-judge rows (98.9%), 0 rejected
-anywhere.** Detail: rails 10-11 below and
-`stage2/results/2026-08-01-real-judge-broad-runs-and-marathon-memory-guard-bug.md`.
+Two standing caveats that survive the collapse. **Solved totals carry a ±7
+run-to-run noise band** because the FALSE search and the general closure engines
+race a wall clock — diff by row id, never by total (rail 2). And every number
+here that is not marked *real-judge* is **offline** evidence (proof kernel +
+finite-model oracles), which is an upper bound on judge acceptance.
 
 Regenerate everything with the four commands below.
 
 ## The four commands
 
 ```powershell
-# 1. Correctness gate (~14 s on -n auto, 260 tests, measured 2026-08-24).
+# 1. Correctness gate (~14 s on -n auto, 297 passed / 2 skipped, 2026-08-27).
+#    Compare the SKIP count too, not just the pass count (rail 16).
 #    Run before AND after any solver change.
 .\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
@@ -588,7 +332,8 @@ on the artifact, then pins the solver's judge-limit constants to
    order.** `table_is_renderable()` measures the rendered cert against the judge's
    FALSE cap, and `witness_decide_is_affordable()` bounds
    `n ** variables` — exhaustive `decide` means order 25 with a 3-variable goal
-   is 15,625 applications (30.2 s of the judge's 300 s) while order 13 with 5
+   is 15,625 applications (30.2 s of the judge's 300 s **per phase**, rail 24)
+   while order 13 with 5
    variables is 371,293. **`MAX_WITNESS_ORDER = 25` used to be where the two
    limits met; at the real caps it no longer is** (corrected 2026-08-13, rail 3b
    third instance). Measured against the true 19,500-byte FALSE budget, the
@@ -968,6 +713,155 @@ on the artifact, then pins the solver's judge-limit constants to
     became a 40 s miss. Record the load next to every coverage number, and
     treat any audit that overlapped other work as timing-only evidence.
 
+Rails 23–33 were all measured on 2026-08-27 (improvement pass 2). Each cites
+the diagnosis file that carries the raw numbers, under
+`stage2/results/2026-08-27-improvement-pass-2.md`.
+
+23. **`stage2/submissions/` must contain `solver.py` and nothing else — a stray
+    `__pycache__` makes the official runner reject the *whole* submission, with
+    no per-problem verdict and nothing that looks like a solver bug.**
+    Measured: the organizers' own validator,
+    `pipeline.proxy._validate_submission_layout(Path('stage2/submissions'))`,
+    returned `submission must contain only solver.py; found extra entries:
+    ['__pycache__']` against our directory mid-session — a
+    `solver.cpython-311.pyc` created *after* the last package build by some tool
+    importing the artifact. `pipeline/marathon_runner.py:166-168` enforces the
+    identical rule; in Solo, `run_solver` returns `{solved: False}` with one
+    error log line before the process even starts, so every problem scores 0.
+    The packager and the pre-upload checklist now both validate the directory.
+    Generalisable: **importing the artifact is a write to the submission
+    directory.** (diag `Rules.md` RC-01.)
+24. **The 300 s Lean timeout is per phase, and the `decide` is not re-executed
+    in phase 2.** `judge/verify.py` runs Lean twice — `proc_compile` (:797)
+    compiles `Submission.lean` to a `.olean`, `proc` (:852) runs `Problem.lean`
+    which imports it — each with its own `timeout=lean_timeout_seconds`.
+    Measured phase-1/phase-2 seconds on identical certs: n=36 formula
+    20.03/2.19; n=50 (125,000 apps) 108.14/13.38; n=60 (216,000) 121.38/8.46;
+    `Fin 64` XOR (262,144) 193.47/1.60; order-25 table 52.65/2.01. Phase 2 is
+    1.6–19.7 s and *uncorrelated* with phase-1 cost — it is Mathlib import
+    overhead, because the kernel loads a trusted olean. So the full 300 s is
+    available to the decide in phase 1; do **not** halve the decide budget on
+    the reasonable-sounding, false theory that the term is checked twice. The
+    code cap is **UTF-8 bytes**, not characters (upstream `817a4653`).
+    (diag `Lean.md` LEAN-09, `Rules.md` RC-10.)
+25. **The judge's declaration allowlist is NON-TRANSITIVE.** `Inspect.lean`
+    computes `getUsedConstantsAsSet` for exactly two targets — `submission` and
+    the nonce theorem — and `pipeline/proxy.py:30-49` applies
+    `allowed_declaration_prefixes` only to that union. Axioms *are* transitive
+    (`Lean.collectAxioms`); declarations are not. Measured: an accepted cert
+    whose `submission.op` uses `if`/`ite`/`+`/`-`/`%` (none allowlisted) and
+    whose `submission.lhs` is closed by `omega` reports only
+    `{And, And.intro, Exists, Exists.intro, Nat, Magma, Goal, submission.*}`.
+    So **put anything you like behind `def submission.<name>` / `theorem
+    submission.<name> ... := by <any tactic>`** and keep the top-level
+    `submission` term a two-line combinator. Two riders. (a) `omega` does *not*
+    normalise `Nat.add b 1` — it treats it as an opaque atom `b.add 1` — so
+    writing helpers in allowlist-flavoured spelling actively breaks the proof;
+    use ordinary `+`/`-`/`%` inside helpers. (b) This means the historical
+    grind record (34 accepted / 433 incorrect) was Lean failing to find a proof,
+    not a policy rejection — do not re-read rail 3 as "grind is banned".
+    (diag `Lean.md` LEAN-03.)
+26. **The FALSE decide-cost axis is `work = applications x n^2` for table
+    renderings, and just `applications` for formula renderings.**
+    `witness_decide_is_affordable` bounds only `n ** variables`, ignoring that
+    `List.getD` costs O(n) per lookup (O(n^2) per application) and that
+    `finOpTable` re-parses the whole table string per application. Measured on
+    the real judge (4.33.1): an order-30 `List.getD` table with a 3-variable
+    eq1 is 27,000 applications (passes the 50,000 gate) and 2,747 B (passes
+    `table_is_renderable`) and comes back `incorrect / LEAN_REJECTED`,
+    "(deterministic) timeout at whnf, maximum number of heartbeats (200000)",
+    after 26.7 s — the counter is deterministic, so it reproduces on the
+    organizers' machine. Fitting accepted/rejected to `applications * n * n`:
+    0.37M (n=13) accepted, 3.2M (n=20) accepted, 9.77M (n=25) accepted at
+    52.6 s, 24.3M (n=30) **rejected**. Formula renderings pay only the
+    applications: n=60 (216,000 apps, 381 B) accepted in 121 s, `Fin 64` XOR
+    (262,144 apps) accepted in 193 s. Corollary already used: prefer a
+    closed-form arithmetic magma over a table when one exists.
+    (diag `Lean.md` LEAN-01, LEAN-02.)
+27. **The judge's equation grammar allows any `[A-Za-z0-9]` identifier — never
+    assume single-letter lowercase variables.** `verify.py:547`'s
+    `_EQUATION_TEXT_RE` is `^[\sa-zA-Z0-9◇=()]+$` and the text is interpolated
+    verbatim into Lean; only `_equation_def`'s *docstring* says "single
+    lowercase letters". Measured against the packaged artifact under 3.11:
+    `x1 = y1 ◇ x1`, `X = Y ◇ X` and `x0 ◇ x1 = x1 ◇ x0` all raised
+    `ValueError: cannot parse term`. In Marathon that path is
+    `skip:parse_error` → `solve:crash` → no output line → `not_attempted` for
+    **every** row. Low probability (every public set is single-letter) but it
+    is the one input-shape assumption whose violation costs the entire
+    submission. (diag `Rules.md` RC-02.)
+28. **A wall-clock deadline set *before* a `for size in sizes:` loop is one
+    deadline for the whole loop — the loop body for `sizes[1:]` can never
+    run.** Seventh instance of the rail-5f-iii family.
+    `local_model_counterexample` set `deadline` at solver.py:8396, before the
+    `for n in sizes:` at :8406, and the inner `while time.monotonic() <
+    deadline:` only ever exits on expiry — so `LOCAL_MODEL_SIZES[1:]` and the
+    `standard`/`deep` `sizes + (6,)` escalation were dead code for months.
+    Measured on `order5_11497_52058`, one process, identical seed:
+    `sizes=(4,5)` at 6 s → None; at 30 s → None; `(4,5,6,7)` at 30 s → None;
+    **`(6,)` at 30 s → `false:local_model6` in 5.3 s**. Same shape in the cheap
+    constraint schedule `(8, 9, 6, 4, 10)` under one 3 s deadline: 0/47 fresh
+    order-5 misses, where a per-order schedule finds 3/47. **Grep for a
+    deadline computed outside the loop it is meant to bound.**
+    (diag `Generalizability.md` F2, F3.)
+29. **Marathon used ~2% of its clock, so surplus budget is real and a second,
+    deeper pass is where it goes.** The 1000-row hard Marathon spent **5,048 s
+    of 300,000 s** and 10.8k of 32.8M tokens. The LLM lane's utilisation is
+    1.3% (2026-07-31, N=1000) and 0.03% (2026-08-27), because the lane walks
+    `unresolved` once with a monotonically increasing index under a flat 64-call
+    cap that ignores N. Wall clock has never been the binding constraint in
+    Marathon; the row budget is (rail 13). (diag `LLM.md` LLM-2.)
+30. **The LLM lane's verdict is set by prompt framing, not by mathematics — so
+    choose the direction from solver evidence, never from the model.**
+    Measured: four TRUE-framed protocols over 37 rows returned
+    **148/148 `verdict:"true"`** and proposed 0 tables, including on 4 rows with
+    z3/FP-verified countermodels at order 7–8; a "your job is to REFUTE" prompt
+    still returned 24/24 TRUE; a FALSE-only protocol returned **24/24 FALSE**
+    with **0 valid tables** (22 `table_not_counterexample`), even on 10 positive
+    controls whose witnesses the solver ships at orders 3–11. The steering
+    target is not arbitrary: every LLM row the real judge has ever accepted came
+    from `llm:false:table`. Gate a FALSE round on
+    `hypothesis_models_seen() > 0 and not constraint_search_exhausted()`
+    (rail 5), and do not build a FALSE-table protocol or a table-repair loop for
+    the hard frontier — measured recall 0. (diag `LLM.md` LLM-3, LLM-5.)
+31. **The Marathon LLM helper silently drops `provider` and `reasoning` when
+    the base URL is the local proxy.** `marathon_llm.call_llm` attaches
+    `extra_body["provider"]` / `["reasoning"]` only when
+    `_is_openrouter_base_url(base_url)` (hostname must equal `openrouter.ai`);
+    in production `OPENAI_BASE_URL` is `http://127.0.0.1:<port>/v1`
+    (`marathon_runner.py:306`), so both fields are stripped before the request
+    leaves the solver — even though `marathon_proxy.py:606` would have
+    forwarded them. So `gpt-oss-120b` runs at the provider's default reasoning
+    effort with unpinned routing, and any comment claiming "the proxy forwards
+    whatever the solver requests" is false for the production path. Keep
+    `reasoning_effort` at `low` anyway: medium costs **2.8x tokens and 7x wall**
+    (5,598 vs 1,969 tokens/call, p50 126.0 s vs 17.4 s, max 344.5 s — past
+    `LLM_HTTP_TIMEOUT_SECONDS = 300`, and an aborted call still bills) for the
+    **same 2 of 37** settled rows. (diag `Rules.md` RC-04, `LLM.md` LLM-7.)
+32. **`NARROW_GRIND_TRUE_SHAPES` is dead on the private set by construction.**
+    Nine pasted `(eq1_text, eq2_text)` pairs keyed on `equation_shape_key`, i.e.
+    the parsed structure with the *original* variable names, so not even a
+    renaming matches — and the no-reuse guarantee says no evaluation problem is
+    reused from any public set. 602 bytes, kept because rail 1 says never delete
+    a route to de-bloat and this one cannot subtract, but **do not count it as
+    live coverage when reading route ledgers**. If the shapes are ever worth
+    something, key them on `canonical_law_key` the way the law families were
+    generalised. (diag `Rules.md` RC-08.)
+33. **Sibling of rail 18: every order-5 sweep on record was `--max-variables 3`,
+    and that is 43% of the population.** `vendor/stage2-official/examples/
+    problems/eq_size5.txt` holds 62,576 laws with variable counts 1..7 =
+    97 / 4,937 / 21,956 / 24,547 / 9,565 / 1,408 / 66, so **56.9% have ≥ 4
+    variables** and 63.9% have a bare-variable side. The only local proxy for
+    the private Order-5 category, `data/hf_cache/evaluation_order5.jsonl`, is
+    200 rows, all 5 operations, **50% with ≥ 4 variables**, and exactly
+    **100 TRUE / 100 FALSE** (so is `hard2.jsonl`) — while every sweep draw is
+    uniform over the catalog, whose TRUE fraction is far below 50%. So the
+    98.24% order-5 figure and the 1.76% miss rate describe the ≤3-variable,
+    uniform-label half only. **Label any number from a stratified batch with its
+    stratum**, and sweep the ≥4-variable half before sizing any order-5 lever.
+    A 250-row ≥4-variable batch is staged at
+    `stage2/experiments/order5-ge4var-250-2026-08-27.jsonl` (seed 20260827).
+    (diag `Solver.md` O5-8.)
+
 ## Environment gotchas that will bite you
 
 - **UTF-8.** Printing `◇` crashes with `UnicodeEncodeError` on Windows cp1252.
@@ -1009,8 +903,8 @@ Roughly 3–8 s per row warm. **The deployed judge limits come from
 
 | Limit | Deployed value | Mirrored in the solver as |
 | --- | --- | --- |
-| Lean timeout | **300 s** per call | — |
-| Any certificate | **100,000 bytes** | `JUDGE_MAX_CODE_LENGTH` |
+| Lean timeout | **300 s per Lean phase** — compiling `Submission.lean` and running `Problem.lean` each get their own clock (rail 24); the judge's own `JudgeProblem.lean` compile is a third, untimed call | — |
+| Any certificate | **100,000 UTF-8 bytes** | `JUDGE_MAX_CODE_LENGTH` |
 | FALSE certificate | **20,000 bytes** | `JUDGE_MAX_FALSE_CERT_BYTES` |
 | Solver wall clock | 3600 s per problem | — |
 | LLM output | 65,536 tokens per call | — |
@@ -1026,6 +920,18 @@ carried them as "judge hard limits" from 2026-07-29 to 2026-08-13 and the solver
 mirrored them; see rail 3b, third instance, for how that was settled and what it
 cost. `judge_rows.py` now sets the production values in its environment, so local
 judging matches deployment instead of measuring the fallback against itself.
+As of upstream `817a4653` those module constants were themselves raised to
+100,000 / 20,000 / 300, so the divergence is gone from the current snapshot —
+but keep `local_runner_env.judge_cap_env()`, which *reads* `config.json` rather
+than copying it (rail 3b-iv).
+
+Three judging entry points, all in `stage2/experiments/`:
+
+| Tool | Use it for |
+| --- | --- |
+| `judge_rows.py --ids <row ids>` / `--problems <jsonl>` | judge rows the solver solves live, from the main tree (needs `vendor/stage2-official/.lake`) |
+| `judge_cert_text.py --in <certs.jsonl> --out <judged.jsonl>` | judge certificate *text* you already have — rows `{id, equation1, equation2, eq1_id, eq2_id, verdict, code}`. This is the one to use from a worktree with no Lean build; it applies the deployed caps and prints `accepted N/M`. |
+| `judge_rows.py --write-fixture` / `--append-fixture` | pin accepted certs. **`--write-fixture` REPLACES the file** (rail 16) — append unless you mean to. |
 
 ## How the solver is organised
 
@@ -1132,7 +1038,8 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
-| **Next session plan (200k unseen order-4 sweep, staged and ready)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
+| **Next session plan (the deep sweeps)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
+| **Exact commands for the deep sweeps** | **`stage2/docs/DEEP_SWEEP_RUNBOOK.md`** |
 | Deep-sweep campaign log + ranked levers | `stage2/results/2026-08-25-deep-sweep-campaign.md` |
 | Deep-sweep design, cost model, per-batch protocol | `stage2/docs/DEEP_SWEEP_ROADMAP.md` |
 | Latest session detail, ranked next levers | `stage2/docs/LATEST_HANDOFF.md` |
@@ -1173,9 +1080,21 @@ which is not what sampling noise does. Every miss has a 4-operation hypothesis
 and 38 of 46 have 3 variables. `3569` is `x ◇ y = y ◇ ((z ◇ y) ◇ x)`, already
 known open; `2923` is `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x`, the `x = F(x, y, z)` shape
 ordered completion closed for `hard2_0073`, failing here against 16 goals.
-The FALSE side is now characterised rather than anecdotal: **6 misses in
-110,000** (`etp_481_3050`, `etp_481_2132`, `etp_2162_3877`, `etp_2531_23`,
-`etp_898_4270`, `etp_2316_4656`) — `481` twice.
+The FALSE side is now characterised rather than anecdotal: **4 misses in
+110,000** (`etp_481_3050`, `etp_481_2132`, `etp_2162_3877`, `etp_2531_23`) —
+`481` twice. The "6" that stood here until 2026-08-27 counted `etp_898_4270`
+and `etp_2316_4656`, both of which the 2026-08-27 `FP_WITNESS_TABLES` now
+closes as `false:witness:FP6` in 0.09 s (z3 independently confirms both FALSE
+at order 8); they are golden-pinned so the FP library's win cannot silently
+regress. On the four survivors z3 is unsat at n=5,6,7 (`etp_481_2132` also at
+n=8) and times out above that, the whole FP library (1,048 tables) misses all
+four, and an infinite-carrier certificate is a measured **NO-GO offline**: the
+teorth cache names the refuting entries (`rw481.Facts`,
+`equational_theories/Confluence3.lean:66`, `finite: false`) but stores no Lean
+source, and there is no ETP Lean source in the repo. A future session *with
+network* should fetch `Confluence3.lean` and transcribe the `rw481`
+construction; everything else about these rows is diagnosed to a dead end.
+(diag `Generalizability.md` F7, F8.)
 
 **Order-5's frontier is a completely different shape, and this is the more
 important half.** 353 misses in 20,000 rows, largest cluster **4**, so there is
@@ -1355,3 +1274,28 @@ Also refuted in the second pass, so nobody spends a session on them again:
    new engine needs the room, and this was the last engine session. If a
    future change needs bytes, the scoped procedure in
    `NEXT_SESSION_BRIEF` §3.3 still applies.
+
+**Dead ends measured on 2026-08-27 — do not re-run any of these.** Each is a
+negative result with the numbers behind it; the pointer is the diagnosis file
+summarised in `stage2/results/2026-08-27-improvement-pass-2.md`.
+
+| Idea | Result | Source |
+| --- | --- | --- |
+| Widen `FP_WITNESS_TABLES` from the rest of teorth's FinitePoly library for order-5 coverage | Spent. Greedy set-cover over the **full 1,048-table** library plus the 10 z3 tables against the 353 held-out order-5 misses selects 3 z3 tables + **2** teorth tables covering **1 row each** | `Generalizability.md` F6 |
+| A random Latin-square / quasigroup witness generator | **800** random Latin squares of orders 8 and 9 satisfy **0** of the 280 distinct order-5 hypotheses among the held-out misses (positive control: the 13 known tables cover 111/353). The witnesses are very special quasigroups | `Generalizability.md` F6 |
+| A dedicated FALSE-table LLM protocol or table-repair loop for the hard frontier | 24/24 rows claimed FALSE, **0 valid tables**, including 10 positive controls with shipped witnesses at orders 3–11 | `LLM.md` LLM-5 |
+| `reasoning_effort=medium` | 2.8x tokens, 7x wall, **the same 2 of 37** rows settled; p90/max latency breaches the 300 s HTTP timeout | `LLM.md` LLM-7 |
+| Bigger completion pair-weight caps, iterative deepening, pick-given-ratio / variable-weighted selection, axiom-only or weight-restricted superposition, non-ground unorientable rewriting, the `_kbo_gt` size short-circuit | **Eleven strategies converge on the same 6 of 40** collapse candidates (portfolio union = 6; a mirrored-KBO tie-break — a genuinely different reduction ordering — finds *exactly the same six*). Every win lands in ≤ 2.6 s; 60 s buys nothing over 20 s while 33/40 stay open. The only untried structural idea with upside is a much faster core (term interning + discrimination-tree indexing, ~15 → 1000+ equations/s), which is a large rewrite of repo-wide primitives | `Solver.md` O5-6 |
+| An LLM lane or mined-law pass on the order-5 collapse bucket | 6 protocols x 20 rows = 120 calls, **0 settled**; the 31 mined laws over 80 order-5 misses = **0/80** in 1199 s. `lemma_survives_models` rejects nothing when eq1 has no small non-trivial model, so every law burns its full budget (~60 s CPU/row vs ~6 s on order-4) | `LLM.md` LLM-8 |
+| An infinite-carrier / confluence certificate for the order-4 FALSE residue (eq1 `481`, `2531`, `1661`, `1486`) | **NO-GO offline.** The teorth cache stores entry names and file:line only, no Lean source; there is no ETP Lean anywhere in the repo and the sandbox has no network | `Generalizability.md` F8 |
+
+One free signal found while measuring the above: when
+`_completion_prove_once` **saturates with `n_dropped_size == 0`**, the resulting
+terminating ground-confluent system whose normal forms are not all identified
+*is* a model of eq1 with ≥ 2 elements — so eq1 does not force triviality and the
+row cannot be TRUE-by-collapse. `order5_22455_53402` is provably in that state,
+which means the z3-derived "collapse_candidate" tag is not always right. Read
+such a saturation as "saturated under *this* ordering" (`order5_12073_57821`
+saturates under a mirrored KBO but not the standard one) and route the row to
+the FALSE/infinite-countermodel queue rather than spending more TRUE budget on
+it. (diag `Solver.md` O5-7.)

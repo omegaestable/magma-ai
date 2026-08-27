@@ -1,7 +1,9 @@
 # Playground Preflight
 
 Updated: 2026-05-30; budget and packaging notes amended 2026-08-13; submission
-note and upstream-sync items added 2026-08-24.
+note and upstream-sync items added 2026-08-24; the submission-layout check
+hardened 2026-08-27 after the organizers' own validator rejected our directory
+over a stray `__pycache__` (`CLAUDE.md` rail 23).
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -32,7 +34,7 @@ It must satisfy the official submission contract:
     `judge_answer_payload()` and the offline oracle both enforce the exact
     judge list, so a green gate + audit covers this.
 
-Packaged size: see `CLAUDE.md` for the current figure (`466,320` bytes on 2026-08-21; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
+Packaged size: see `CLAUDE.md`'s measured-state table for the current figure (`466,320` bytes on 2026-08-21; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
 
 Current TRUE boundary rails:
 
@@ -217,6 +219,22 @@ Get-ChildItem -Force stage2\submissions
 Keep the package command after Python syntax/smoke commands. Running
 `py_compile`, `compileall`, or tests against the generated submission path can
 create `__pycache__`, and the official runner rejects extra submission entries.
+**Anything that *imports* the artifact writes into that directory** — this is
+not hypothetical: on 2026-08-27
+`pipeline.proxy._validate_submission_layout(Path('stage2/submissions'))`
+returned `submission must contain only solver.py; found extra entries:
+['__pycache__']` against a directory that had been clean at build time. Re-run
+the layout check immediately before upload, whatever else has happened since:
+
+```powershell
+cd vendor\stage2-official
+..\..\.venv\Scripts\python.exe -c "from pathlib import Path; import pipeline.proxy as p; print(p._validate_submission_layout(Path(r'..\..\stage2\submissions')))"
+```
+
+It prints `None` when the layout is valid and the error string otherwise
+(verified 2026-08-27). The failure mode is silent and total: in Solo, `run_solver` returns
+`{solved: False}` with one error log line before the process starts, so every
+problem scores 0 and nothing looks like a solver bug.
 
 Then run official smokes from `vendor/stage2-official/`:
 

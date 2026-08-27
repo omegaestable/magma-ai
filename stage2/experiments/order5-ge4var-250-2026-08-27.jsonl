@@ -1,0 +1,250 @@
+{"id": "order5v4_60701_18648", "eq1_id": 60701, "eq2_id": 18648, "equation1": "(x * y) * z = (w * x) * (w * u)", "equation2": "x = (y * z) * (w * ((z * z) * x))"}
+{"id": "order5v4_28720_47384", "eq1_id": 28720, "eq2_id": 47384, "equation1": "x = (((y * x) * z) * w) * (w * w)", "equation2": "x * y = (z * y) * ((x * z) * w)"}
+{"id": "order5v4_321_58729", "eq1_id": 321, "eq2_id": 58729, "equation1": "x * x = y * (z * w)", "equation2": "(x * y) * z = x * (y * (w * w))"}
+{"id": "order5v4_44349_6338", "eq1_id": 44349, "eq2_id": 6338, "equation1": "x * x = y * ((z * (w * z)) * z)", "equation2": "x = y * (z * (w * ((y * x) * u)))"}
+{"id": "order5v4_47350_59931", "eq1_id": 47350, "eq2_id": 59931, "equation1": "x * y = (z * x) * ((w * x) * w)", "equation2": "(x * y) * z = w * ((u * w) * u)"}
+{"id": "order5v4_30820_22249", "eq1_id": 30820, "eq2_id": 22249, "equation1": "x = (y * (z * ((z * y) * w))) * u", "equation2": "x = (x * (x * x)) * ((y * z) * w)"}
+{"id": "order5v4_29126_21191", "eq1_id": 29126, "eq2_id": 21191, "equation1": "x = (((y * z) * w) * x) * (w * y)", "equation2": "x = (y * z) * (((z * w) * x) * x)"}
+{"id": "order5v4_5395_26492", "eq1_id": 5395, "eq2_id": 26492, "equation1": "x = y * (z * (z * (z * (y * w))))", "equation2": "x = (y * ((z * w) * x)) * (z * w)"}
+{"id": "order5v4_8123_6908", "eq1_id": 8123, "eq2_id": 6908, "equation1": "x = y * (z * ((w * (z * y)) * u))", "equation2": "x = y * (y * ((z * y) * (w * z)))"}
+{"id": "order5v4_53526_22954", "eq1_id": 53526, "eq2_id": 22954, "equation1": "x * y = (((z * y) * x) * w) * z", "equation2": "x = (y * (z * z)) * ((w * y) * u)"}
+{"id": "order5v4_49288_61698", "eq1_id": 49288, "eq2_id": 61698, "equation1": "x * y = ((z * w) * x) * (y * z)", "equation2": "(x * y) * z = (w * (u * v)) * v"}
+{"id": "order5v4_62495_48632", "eq1_id": 62495, "eq2_id": 48632, "equation1": "(x * y) * z = ((w * z) * y) * z", "equation2": "x * x = ((y * x) * z) * (w * w)"}
+{"id": "order5v4_6572_35461", "eq1_id": 6572, "eq2_id": 35461, "equation1": "x = x * (y * ((y * z) * (w * z)))", "equation2": "x = ((x * (y * x)) * (y * z)) * w"}
+{"id": "order5v4_50385_33292", "eq1_id": 50385, "eq2_id": 33292, "equation1": "x * x = (y * ((x * z) * w)) * z", "equation2": "x = (y * (((z * x) * y) * z)) * w"}
+{"id": "order5v4_20313_1816", "eq1_id": 20313, "eq2_id": 1816, "equation1": "x = (y * z) * ((z * (z * w)) * u)", "equation2": "x = (y * z) * ((w * z) * x)"}
+{"id": "order5v4_38876_22184", "eq1_id": 38876, "eq2_id": 22184, "equation1": "x = ((y * ((z * w) * u)) * z) * w", "equation2": "x = (y * (z * w)) * (w * (z * z))"}
+{"id": "order5v4_50721_16018", "eq1_id": 50721, "eq2_id": 16018, "equation1": "x * y = (y * ((y * z) * z)) * w", "equation2": "x = y * (((z * (w * z)) * z) * y)"}
+{"id": "order5v4_40612_12517", "eq1_id": 40612, "eq2_id": 12517, "equation1": "x = (((y * (z * w)) * w) * u) * w", "equation2": "x = y * (((z * w) * z) * (w * w))"}
+{"id": "order5v4_53585_45007", "eq1_id": 53585, "eq2_id": 45007, "equation1": "x * y = (((z * y) * w) * u) * z", "equation2": "x * y = z * ((w * (u * y)) * y)"}
+{"id": "order5v4_27735_57962", "eq1_id": 27735, "eq2_id": 57962, "equation1": "x = ((y * (x * x)) * z) * (w * w)", "equation2": "x * (y * z) = ((y * w) * z) * u"}
+{"id": "order5v4_7817_56274", "eq1_id": 7817, "eq2_id": 56274, "equation1": "x = y * (y * ((z * (w * z)) * z))", "equation2": "x * (y * z) = (z * w) * (x * w)"}
+{"id": "order5v4_49652_23572", "eq1_id": 49652, "eq2_id": 23572, "equation1": "x * y = (x * (x * (z * y))) * w", "equation2": "x = ((y * y) * z) * (y * (w * w))"}
+{"id": "order5v4_55585_45665", "eq1_id": 55585, "eq2_id": 45665, "equation1": "x * (x * x) = (y * x) * (z * w)", "equation2": "x * y = z * (((y * z) * w) * x)"}
+{"id": "order5v4_52556_48238", "eq1_id": 52556, "eq2_id": 48238, "equation1": "x * y = ((y * (z * w)) * u) * u", "equation2": "x * y = (z * (x * w)) * (z * u)"}
+{"id": "order5v4_17990_28257", "eq1_id": 17990, "eq2_id": 28257, "equation1": "x = (x * y) * (z * ((x * w) * z))", "equation2": "x = ((y * (z * w)) * x) * (u * u)"}
+{"id": "order5v4_752_40559", "eq1_id": 752, "eq2_id": 40559, "equation1": "x = y * (z * ((x * w) * x))", "equation2": "x = (((y * (z * w)) * y) * u) * z"}
+{"id": "order5v4_28138_30860", "eq1_id": 28138, "eq2_id": 30860, "equation1": "x = ((y * (z * y)) * w) * (y * w)", "equation2": "x = (y * (z * ((z * w) * u))) * z"}
+{"id": "order5v4_53497_36430", "eq1_id": 53497, "eq2_id": 36430, "equation1": "x * y = (((z * x) * w) * z) * y", "equation2": "x = (((x * y) * z) * (z * x)) * w"}
+{"id": "order5v4_23043_54299", "eq1_id": 23043, "eq2_id": 54299, "equation1": "x = (y * (z * w)) * ((z * u) * x)", "equation2": "x * (y * y) = z * (w * (z * w))"}
+{"id": "order5v4_26586_56984", "eq1_id": 26586, "eq2_id": 56984, "equation1": "x = (y * ((z * w) * u)) * (x * w)", "equation2": "x * (y * z) = (x * (z * y)) * w"}
+{"id": "order5v4_12451_51349", "eq1_id": 12451, "eq2_id": 51349, "equation1": "x = y * (((z * w) * x) * (x * u))", "equation2": "x * x = ((y * z) * (z * w)) * y"}
+{"id": "order5v4_60588_56863", "eq1_id": 60588, "eq2_id": 56863, "equation1": "(x * y) * z = (y * w) * (y * u)", "equation2": "x * (y * y) = (y * (z * w)) * z"}
+{"id": "order5v4_62441_53790", "eq1_id": 62441, "eq2_id": 53790, "equation1": "(x * y) * z = ((w * x) * y) * x", "equation2": "x * y = (((z * w) * u) * w) * z"}
+{"id": "order5v4_61574_23920", "eq1_id": 61574, "eq2_id": 23920, "equation1": "(x * y) * z = (w * (x * w)) * x", "equation2": "x = ((y * z) * w) * (z * (u * x))"}
+{"id": "order5v4_30850_14254", "eq1_id": 30850, "eq2_id": 14254, "equation1": "x = (y * (z * ((z * w) * z))) * z", "equation2": "x = y * ((z * ((w * z) * x)) * y)"}
+{"id": "order5v4_50956_58670", "eq1_id": 50956, "eq2_id": 58670, "equation1": "x * y = (z * ((y * w) * u)) * u", "equation2": "(x * y) * y = z * (z * (w * u))"}
+{"id": "order5v4_54906_32083", "eq1_id": 54906, "eq2_id": 32083, "equation1": "x * (y * x) = x * ((y * z) * w)", "equation2": "x = (x * ((y * (z * w)) * u)) * u"}
+{"id": "order5v4_58391_6051", "eq1_id": 58391, "eq2_id": 6051, "equation1": "(x * x) * y = z * (w * (u * z))", "equation2": "x = y * (y * (z * ((w * x) * x)))"}
+{"id": "order5v4_6634_5714", "eq1_id": 6634, "eq2_id": 5714, "equation1": "x = x * (y * ((z * w) * (y * w)))", "equation2": "x = x * (y * (z * ((x * w) * u)))"}
+{"id": "order5v4_33370_22536", "eq1_id": 33370, "eq2_id": 22536, "equation1": "x = (y * (((z * y) * y) * w)) * x", "equation2": "x = (y * (x * z)) * ((y * y) * w)"}
+{"id": "order5v4_18439_25202", "eq1_id": 18439, "eq2_id": 25202, "equation1": "x = (y * z) * (y * ((x * y) * w))", "equation2": "x = (y * (x * (z * w))) * (y * w)"}
+{"id": "order5v4_44101_9721", "eq1_id": 44101, "eq2_id": 9721, "equation1": "x * y = z * ((w * w) * (x * u))", "equation2": "x = y * ((z * y) * (w * (y * w)))"}
+{"id": "order5v4_18529_31784", "eq1_id": 18529, "eq2_id": 31784, "equation1": "x = (y * z) * (z * ((y * x) * w))", "equation2": "x = (y * ((z * w) * (y * w))) * z"}
+{"id": "order5v4_58485_50226", "eq1_id": 58485, "eq2_id": 50226, "equation1": "(x * y) * x = z * (x * (w * u))", "equation2": "x * y = (z * (w * (z * w))) * y"}
+{"id": "order5v4_27915_53165", "eq1_id": 27915, "eq2_id": 53165, "equation1": "x = ((y * (y * y)) * z) * (y * w)", "equation2": "x * y = (((x * x) * z) * w) * x"}
+{"id": "order5v4_48257_36984", "eq1_id": 48257, "eq2_id": 36984, "equation1": "x * y = (z * (y * x)) * (y * w)", "equation2": "x = (((y * z) * z) * (w * y)) * z"}
+{"id": "order5v4_13659_3853", "eq1_id": 13659, "eq2_id": 3853, "equation1": "x = x * ((y * ((z * w) * w)) * z)", "equation2": "x * y = (z * w) * (w * z)"}
+{"id": "order5v4_40068_12531", "eq1_id": 40068, "eq2_id": 12531, "equation1": "x = (((y * (x * z)) * x) * w) * u", "equation2": "x = y * (((z * w) * w) * (y * y))"}
+{"id": "order5v4_6758_51251", "eq1_id": 6758, "eq2_id": 51251, "equation1": "x = y * (x * ((z * y) * (w * w)))", "equation2": "x * x = ((y * x) * (z * x)) * w"}
+{"id": "order5v4_57510_27977", "eq1_id": 57510, "eq2_id": 27977, "equation1": "x * (x * y) = ((z * w) * w) * w", "equation2": "x = ((y * (y * z)) * w) * (x * y)"}
+{"id": "order5v4_14039_55026", "eq1_id": 14039, "eq2_id": 55026, "equation1": "x = y * ((z * ((x * w) * w)) * w)", "equation2": "x * (y * x) = z * ((w * z) * u)"}
+{"id": "order5v4_9893_53464", "eq1_id": 9893, "eq2_id": 53464, "equation1": "x = y * ((z * w) * (z * (u * v)))", "equation2": "x * y = (((z * x) * y) * w) * x"}
+{"id": "order5v4_61170_11667", "eq1_id": 61170, "eq2_id": 11667, "equation1": "(x * y) * x = (z * (w * w)) * u", "equation2": "x = y * ((z * (w * w)) * (w * u))"}
+{"id": "order5v4_37434_42816", "eq1_id": 37434, "eq2_id": 42816, "equation1": "x = ((y * (x * (z * x))) * w) * y", "equation2": "x * y = y * (y * ((y * z) * w))"}
+{"id": "order5v4_30257_26957", "eq1_id": 30257, "eq2_id": 26957, "equation1": "x = (x * (y * ((z * x) * x))) * w", "equation2": "x = ((y * x) * (z * w)) * (y * u)"}
+{"id": "order5v4_17129_57507", "eq1_id": 17129, "eq2_id": 57507, "equation1": "x = (x * y) * (z * (y * (w * y)))", "equation2": "x * (x * y) = ((z * w) * w) * x"}
+{"id": "order5v4_48734_24914", "eq1_id": 48734, "eq2_id": 24914, "equation1": "x * x = ((y * z) * w) * (z * z)", "equation2": "x = (x * (x * (y * z))) * (w * y)"}
+{"id": "order5v4_27461_30971", "eq1_id": 27461, "eq2_id": 30971, "equation1": "x = ((y * z) * (w * u)) * (x * y)", "equation2": "x = (y * (z * ((w * u) * x))) * w"}
+{"id": "order5v4_26332_36560", "eq1_id": 26332, "eq2_id": 36560, "equation1": "x = (y * ((z * y) * x)) * (y * w)", "equation2": "x = (((y * x) * z) * (x * w)) * u"}
+{"id": "order5v4_14331_56402", "eq1_id": 14331, "eq2_id": 56402, "equation1": "x = y * ((z * ((w * u) * u)) * z)", "equation2": "x * (y * z) = (w * u) * (x * y)"}
+{"id": "order5v4_26540_12528", "eq1_id": 26540, "eq2_id": 12528, "equation1": "x = (y * ((z * w) * z)) * (y * u)", "equation2": "x = y * (((z * w) * w) * (x * w))"}
+{"id": "order5v4_37142_3628", "eq1_id": 37142, "eq2_id": 3628, "equation1": "x = (((y * z) * w) * (u * v)) * v", "equation2": "x * y = z * ((z * w) * x)"}
+{"id": "order5v4_54194_22905", "eq1_id": 54194, "eq2_id": 22905, "equation1": "x * (y * y) = x * (z * (w * y))", "equation2": "x = (y * (z * z)) * ((x * z) * w)"}
+{"id": "order5v4_6801_36594", "eq1_id": 6801, "eq2_id": 36594, "equation1": "x = y * (x * ((z * w) * (u * u)))", "equation2": "x = (((y * x) * z) * (z * w)) * u"}
+{"id": "order5v4_48687_53659", "eq1_id": 48687, "eq2_id": 53659, "equation1": "x * x = ((y * z) * x) * (w * u)", "equation2": "x * y = (((z * z) * w) * w) * u"}
+{"id": "order5v4_10132_1704", "eq1_id": 10132, "eq2_id": 1704, "equation1": "x = x * ((y * z) * ((z * w) * w))", "equation2": "x = (y * x) * ((z * x) * w)"}
+{"id": "order5v4_60126_19601", "eq1_id": 60126, "eq2_id": 19601, "equation1": "(x * x) * y = (z * w) * (x * w)", "equation2": "x = (y * z) * ((w * u) * (v * u))"}
+{"id": "order5v4_2798_23893", "eq1_id": 2798, "eq2_id": 23893, "equation1": "x = ((y * z) * (y * z)) * w", "equation2": "x = ((y * z) * w) * (y * (w * u))"}
+{"id": "order5v4_10610_41279", "eq1_id": 10610, "eq2_id": 41279, "equation1": "x = y * ((z * y) * ((w * u) * x))", "equation2": "x = ((((y * z) * y) * z) * z) * w"}
+{"id": "order5v4_21551_2211", "eq1_id": 21551, "eq2_id": 2211, "equation1": "x = (x * (y * z)) * (w * (w * y))", "equation2": "x = ((y * z) * z) * (w * u)"}
+{"id": "order5v4_5446_58098", "eq1_id": 5446, "eq2_id": 58098, "equation1": "x = y * (z * (w * (x * (w * x))))", "equation2": "x * (y * z) = ((w * y) * u) * y"}
+{"id": "order5v4_62236_40102", "eq1_id": 62236, "eq2_id": 40102, "equation1": "(x * y) * z = ((x * y) * w) * z", "equation2": "x = (((y * (x * z)) * z) * w) * u"}
+{"id": "order5v4_27411_58728", "eq1_id": 27411, "eq2_id": 58728, "equation1": "x = ((y * z) * (w * z)) * (x * w)", "equation2": "(x * y) * z = x * (y * (w * z))"}
+{"id": "order5v4_53086_6416", "eq1_id": 53086, "eq2_id": 6416, "equation1": "x * x = (((y * z) * y) * w) * y", "equation2": "x = y * (z * (w * ((u * x) * u)))"}
+{"id": "order5v4_33964_20158", "eq1_id": 33964, "eq2_id": 20158, "equation1": "x = ((y * x) * (z * (w * x))) * x", "equation2": "x = (y * z) * ((x * (z * w)) * w)"}
+{"id": "order5v4_34512_35258", "eq1_id": 34512, "eq2_id": 35258, "equation1": "x = ((y * z) * (w * (u * v))) * r", "equation2": "x = ((y * z) * ((w * x) * y)) * u"}
+{"id": "order5v4_22145_17536", "eq1_id": 22145, "eq2_id": 17536, "equation1": "x = (y * (z * w)) * (y * (u * v))", "equation2": "x = (y * z) * (x * (w * (y * z)))"}
+{"id": "order5v4_50778_28912", "eq1_id": 50778, "eq2_id": 28912, "equation1": "x * y = (y * ((z * w) * x)) * x", "equation2": "x = (((y * z) * x) * y) * (w * u)"}
+{"id": "order5v4_40823_22865", "eq1_id": 40823, "eq2_id": 22865, "equation1": "x = ((((x * y) * z) * z) * z) * w", "equation2": "x = (y * (z * y)) * ((z * w) * z)"}
+{"id": "order5v4_17682_61841", "eq1_id": 17682, "eq2_id": 61841, "equation1": "x = (y * z) * (z * (z * (w * u)))", "equation2": "(x * x) * y = ((z * x) * w) * w"}
+{"id": "order5v4_55423_57225", "eq1_id": 55423, "eq2_id": 57225, "equation1": "x * (y * z) = w * ((x * x) * w)", "equation2": "x * (y * z) = (w * (y * u)) * v"}
+{"id": "order5v4_12092_33633", "eq1_id": 12092, "eq2_id": 33633, "equation1": "x = y * (((y * x) * z) * (y * w))", "equation2": "x = (y * (((z * w) * u) * v)) * u"}
+{"id": "order5v4_51945_52186", "eq1_id": 51945, "eq2_id": 52186, "equation1": "x * y = ((z * w) * (y * y)) * z", "equation2": "x * x = ((y * (z * x)) * y) * w"}
+{"id": "order5v4_11031_11615", "eq1_id": 11031, "eq2_id": 11615, "equation1": "x = x * ((y * (z * w)) * (u * x))", "equation2": "x = y * ((z * (w * y)) * (w * u))"}
+{"id": "order5v4_44901_13788", "eq1_id": 44901, "eq2_id": 13788, "equation1": "x * y = z * ((w * (x * y)) * x)", "equation2": "x = y * ((x * ((z * z) * w)) * x)"}
+{"id": "order5v4_41461_4880", "eq1_id": 41461, "eq2_id": 4880, "equation1": "x = ((((y * z) * w) * z) * u) * y", "equation2": "x = x * (y * (z * (w * (y * w))))"}
+{"id": "order5v4_23670_3643", "eq1_id": 23670, "eq2_id": 3643, "equation1": "x = ((y * z) * x) * (w * (x * z))", "equation2": "x * y = z * ((w * z) * x)"}
+{"id": "order5v4_41792_31859", "eq1_id": 41792, "eq2_id": 31859, "equation1": "x * y = x * (y * (z * (x * w)))", "equation2": "x = (y * ((z * w) * (u * z))) * z"}
+{"id": "order5v4_21298_20420", "eq1_id": 21298, "eq2_id": 20420, "equation1": "x = (y * z) * (((w * w) * x) * w)", "equation2": "x = (y * z) * ((w * (w * x)) * z)"}
+{"id": "order5v4_12512_16838", "eq1_id": 12512, "eq2_id": 16838, "equation1": "x = y * (((z * w) * z) * (z * w))", "equation2": "x = y * ((((z * w) * x) * y) * y)"}
+{"id": "order5v4_34493_56331", "eq1_id": 34493, "eq2_id": 56331, "equation1": "x = ((y * z) * (w * (u * z))) * v", "equation2": "x * (y * z) = (w * y) * (y * w)"}
+{"id": "order5v4_55030_19463", "eq1_id": 55030, "eq2_id": 19463, "equation1": "x * (y * x) = z * ((w * w) * w)", "equation2": "x = (y * z) * ((w * x) * (x * x))"}
+{"id": "order5v4_36589_59198", "eq1_id": 36589, "eq2_id": 59198, "equation1": "x = (((y * x) * z) * (z * z)) * w", "equation2": "(x * x) * y = z * ((x * x) * w)"}
+{"id": "order5v4_12477_46966", "eq1_id": 12477, "eq2_id": 46966, "equation1": "x = y * (((z * w) * y) * (x * u))", "equation2": "x * x = (y * z) * ((z * w) * w)"}
+{"id": "order5v4_3378_49621", "eq1_id": 3378, "eq2_id": 49621, "equation1": "x * y = y * (z * (w * u))", "equation2": "x * x = (y * (z * (w * u))) * z"}
+{"id": "order5v4_41553_12511", "eq1_id": 41553, "eq2_id": 12511, "equation1": "x * x = x * (y * (x * (z * w)))", "equation2": "x = y * (((z * w) * z) * (z * z))"}
+{"id": "order5v4_22024_26742", "eq1_id": 22024, "eq2_id": 26742, "equation1": "x = (y * (z * z)) * (x * (y * w))", "equation2": "x = ((x * y) * (y * z)) * (w * y)"}
+{"id": "order5v4_59944_17149", "eq1_id": 59944, "eq2_id": 17149, "equation1": "(x * y) * z = w * ((u * v) * v)", "equation2": "x = (x * y) * (z * (z * (w * u)))"}
+{"id": "order5v4_13944_9811", "eq1_id": 13944, "eq2_id": 9811, "equation1": "x = y * ((y * ((z * w) * x)) * x)", "equation2": "x = y * ((z * z) * (w * (u * y)))"}
+{"id": "order5v4_30311_24510", "eq1_id": 30311, "eq2_id": 24510, "equation1": "x = (x * (y * ((z * w) * y))) * y", "equation2": "x = ((y * z) * x) * ((x * w) * u)"}
+{"id": "order5v4_24834_2488", "eq1_id": 24834, "eq2_id": 2488, "equation1": "x = ((y * z) * w) * ((u * x) * v)", "equation2": "x = (x * ((y * z) * w)) * x"}
+{"id": "order5v4_34013_13455", "eq1_id": 34013, "eq2_id": 13455, "equation1": "x = ((y * y) * (x * (z * x))) * w", "equation2": "x = y * ((z * (w * (u * u))) * w)"}
+{"id": "order5v4_28903_28361", "eq1_id": 28903, "eq2_id": 28361, "equation1": "x = (((y * z) * x) * y) * (y * w)", "equation2": "x = ((y * (z * w)) * u) * (u * x)"}
+{"id": "order5v4_51082_17477", "eq1_id": 51082, "eq2_id": 17477, "equation1": "x * y = (z * ((w * y) * u)) * y", "equation2": "x = (y * y) * (z * (w * (u * v)))"}
+{"id": "order5v4_26576_35301", "eq1_id": 26576, "eq2_id": 35301, "equation1": "x = (y * ((z * w) * w)) * (w * u)", "equation2": "x = ((y * z) * ((w * z) * x)) * x"}
+{"id": "order5v4_58179_6203", "eq1_id": 58179, "eq2_id": 6203, "equation1": "x * (y * z) = ((w * u) * u) * x", "equation2": "x = y * (z * (y * ((z * w) * w)))"}
+{"id": "order5v4_36744_49974", "eq1_id": 36744, "eq2_id": 49974, "equation1": "x = (((y * y) * z) * (z * w)) * w", "equation2": "x * y = (z * (x * (z * w))) * y"}
+{"id": "order5v4_61839_30989", "eq1_id": 61839, "eq2_id": 30989, "equation1": "(x * x) * y = ((z * x) * w) * y", "equation2": "x = (y * (z * ((w * u) * w))) * w"}
+{"id": "order5v4_37977_6309", "eq1_id": 37977, "eq2_id": 6309, "equation1": "x = ((y * (z * (w * w))) * w) * u", "equation2": "x = y * (z * (w * ((x * x) * y)))"}
+{"id": "order5v4_36317_2177", "eq1_id": 36317, "eq2_id": 2177, "equation1": "x = (((x * x) * y) * (z * w)) * w", "equation2": "x = ((y * z) * x) * (w * u)"}
+{"id": "order5v4_57223_19431", "eq1_id": 57223, "eq2_id": 19431, "equation1": "x * (y * z) = (w * (y * u)) * w", "equation2": "x = (y * z) * ((z * z) * (z * w))"}
+{"id": "order5v4_43274_50052", "eq1_id": 43274, "eq2_id": 50052, "equation1": "x * y = z * (w * ((u * u) * u))", "equation2": "x * y = (z * (y * (z * w))) * z"}
+{"id": "order5v4_19523_17714", "eq1_id": 19523, "eq2_id": 17714, "equation1": "x = (y * z) * ((w * z) * (y * w))", "equation2": "x = (y * z) * (w * (x * (y * x)))"}
+{"id": "order5v4_24050_59784", "eq1_id": 24050, "eq2_id": 59784, "equation1": "x = ((x * y) * x) * ((x * z) * w)", "equation2": "(x * y) * z = z * ((w * y) * x)"}
+{"id": "order5v4_6279_35477", "eq1_id": 6279, "eq2_id": 35477, "equation1": "x = y * (z * (z * ((z * w) * z)))", "equation2": "x = ((x * (y * x)) * (z * w)) * w"}
+{"id": "order5v4_408_38648", "eq1_id": 408, "eq2_id": 38648, "equation1": "x * y = (z * w) * z", "equation2": "x = ((y * ((z * y) * z)) * z) * w"}
+{"id": "order5v4_35571_25063", "eq1_id": 35571, "eq2_id": 25063, "equation1": "x = ((x * (y * z)) * (w * x)) * u", "equation2": "x = (x * (y * (z * w))) * (u * x)"}
+{"id": "order5v4_35506_18599", "eq1_id": 35506, "eq2_id": 18599, "equation1": "x = ((x * (y * y)) * (z * y)) * w", "equation2": "x = (y * z) * (w * ((x * z) * w))"}
+{"id": "order5v4_3303_7253", "eq1_id": 3303, "eq2_id": 7253, "equation1": "x * x = y * (z * (w * w))", "equation2": "x = y * (z * ((w * z) * (w * y)))"}
+{"id": "order5v4_26541_21326", "eq1_id": 26541, "eq2_id": 21326, "equation1": "x = (y * ((z * w) * z)) * (z * x)", "equation2": "x = (y * z) * (((w * u) * x) * v)"}
+{"id": "order5v4_42158_40066", "eq1_id": 42158, "eq2_id": 40066, "equation1": "x * y = z * (y * (z * (w * y)))", "equation2": "x = (((y * (x * z)) * x) * w) * z"}
+{"id": "order5v4_62044_14137", "eq1_id": 62044, "eq2_id": 14137, "equation1": "(x * y) * x = ((z * w) * w) * y", "equation2": "x = y * ((z * ((z * x) * w)) * y)"}
+{"id": "order5v4_251_58033", "eq1_id": 251, "eq2_id": 58033, "equation1": "x = (y * (z * w)) * y", "equation2": "x * (y * z) = ((z * w) * y) * w"}
+{"id": "order5v4_14230_61325", "eq1_id": 14230, "eq2_id": 61325, "equation1": "x = y * ((z * ((w * y) * x)) * w)", "equation2": "(x * y) * y = (z * (w * u)) * w"}
+{"id": "order5v4_44019_54759", "eq1_id": 44019, "eq2_id": 54759, "equation1": "x * y = z * ((w * x) * (x * x))", "equation2": "x * (x * y) = x * ((z * x) * w)"}
+{"id": "order5v4_46466_22756", "eq1_id": 46466, "eq2_id": 22756, "equation1": "x * y = (z * x) * (z * (w * y))", "equation2": "x = (y * (z * x)) * ((x * w) * u)"}
+{"id": "order5v4_29407_54977", "eq1_id": 29407, "eq2_id": 54977, "equation1": "x = (x * (y * (z * (y * w)))) * y", "equation2": "x * (y * x) = z * ((x * w) * u)"}
+{"id": "order5v4_14285_27819", "eq1_id": 14285, "eq2_id": 27819, "equation1": "x = y * ((z * ((w * w) * y)) * y)", "equation2": "x = ((y * (x * z)) * z) * (z * w)"}
+{"id": "order5v4_54473_48885", "eq1_id": 54473, "eq2_id": 48885, "equation1": "x * (y * z) = z * (x * (y * w))", "equation2": "x * y = ((x * z) * w) * (z * z)"}
+{"id": "order5v4_23951_7193", "eq1_id": 23951, "eq2_id": 7193, "equation1": "x = ((y * z) * w) * (w * (u * v))", "equation2": "x = y * (z * ((w * x) * (y * w)))"}
+{"id": "order5v4_31508_4151", "eq1_id": 31508, "eq2_id": 4151, "equation1": "x = (y * ((y * z) * (w * u))) * u", "equation2": "x * y = ((x * z) * w) * z"}
+{"id": "order5v4_47805_28863", "eq1_id": 47805, "eq2_id": 28863, "equation1": "x * x = (y * (z * x)) * (z * w)", "equation2": "x = (((y * y) * z) * w) * (z * x)"}
+{"id": "order5v4_18558_48898", "eq1_id": 18558, "eq2_id": 48898, "equation1": "x = (y * z) * (z * ((z * w) * w))", "equation2": "x * y = ((x * z) * w) * (u * v)"}
+{"id": "order5v4_5496_41431", "eq1_id": 5496, "eq2_id": 41431, "equation1": "x = y * (z * (w * (z * (z * w))))", "equation2": "x = ((((y * z) * w) * y) * w) * z"}
+{"id": "order5v4_59632_21646", "eq1_id": 59632, "eq2_id": 21646, "equation1": "(x * y) * z = x * ((w * y) * z)", "equation2": "x = (y * (x * z)) * (x * (z * w))"}
+{"id": "order5v4_50643_24745", "eq1_id": 50643, "eq2_id": 24745, "equation1": "x * y = (x * ((z * w) * w)) * y", "equation2": "x = ((y * z) * w) * ((x * u) * x)"}
+{"id": "order5v4_31617_56341", "eq1_id": 31617, "eq2_id": 56341, "equation1": "x = (y * ((z * y) * (y * w))) * y", "equation2": "x * (y * z) = (w * y) * (w * w)"}
+{"id": "order5v4_51160_20031", "eq1_id": 51160, "eq2_id": 20031, "equation1": "x * y = (z * ((w * u) * w)) * w", "equation2": "x = (y * y) * ((y * (z * w)) * u)"}
+{"id": "order5v4_22804_37772", "eq1_id": 22804, "eq2_id": 37772, "equation1": "x = (y * (z * x)) * ((w * z) * w)", "equation2": "x = ((y * (z * (y * z))) * w) * x"}
+{"id": "order5v4_26339_59571", "eq1_id": 26339, "eq2_id": 59571, "equation1": "x = (y * ((z * y) * x)) * (w * z)", "equation2": "(x * y) * y = z * ((w * u) * w)"}
+{"id": "order5v4_49382_8393", "eq1_id": 49382, "eq2_id": 8393, "equation1": "x * y = ((z * w) * w) * (u * w)", "equation2": "x = x * (y * (((z * w) * z) * w))"}
+{"id": "order5v4_48500_55504", "eq1_id": 48500, "eq2_id": 55504, "equation1": "x * y = (z * (w * w)) * (w * w)", "equation2": "x * (y * z) = w * ((w * y) * y)"}
+{"id": "order5v4_44953_35440", "eq1_id": 44953, "eq2_id": 35440, "equation1": "x * y = z * ((w * (z * y)) * x)", "equation2": "x = ((x * (x * y)) * (z * w)) * w"}
+{"id": "order5v4_25731_48437", "eq1_id": 25731, "eq2_id": 48437, "equation1": "x = (y * (z * (w * u))) * (u * y)", "equation2": "x * y = (z * (w * y)) * (y * z)"}
+{"id": "order5v4_5619_49412", "eq1_id": 5619, "eq2_id": 49412, "equation1": "x = x * (x * (y * ((z * w) * x)))", "equation2": "x * y = ((z * w) * u) * (u * w)"}
+{"id": "order5v4_42454_49234", "eq1_id": 42454, "eq2_id": 49234, "equation1": "x * x = x * (y * ((z * w) * y))", "equation2": "x * y = ((z * z) * y) * (w * y)"}
+{"id": "order5v4_8830_18566", "eq1_id": 8830, "eq2_id": 18566, "equation1": "x = y * (z * (((y * z) * z) * w))", "equation2": "x = (y * z) * (z * ((w * y) * y))"}
+{"id": "order5v4_55742_57873", "eq1_id": 55742, "eq2_id": 57873, "equation1": "x * (x * y) = (z * w) * (x * u)", "equation2": "x * (y * z) = ((x * w) * x) * z"}
+{"id": "order5v4_30047_11587", "eq1_id": 30047, "eq2_id": 11587, "equation1": "x = (y * (z * (w * (z * y)))) * w", "equation2": "x = y * ((z * (w * x)) * (w * z))"}
+{"id": "order5v4_51948_30040", "eq1_id": 51948, "eq2_id": 30040, "equation1": "x * y = ((z * w) * (y * z)) * x", "equation2": "x = (y * (z * (w * (z * x)))) * y"}
+{"id": "order5v4_13433_36837", "eq1_id": 13433, "eq2_id": 36837, "equation1": "x = y * ((z * (w * (u * x))) * v)", "equation2": "x = (((y * z) * x) * (w * z)) * u"}
+{"id": "order5v4_32956_1667", "eq1_id": 32956, "eq2_id": 1667, "equation1": "x = (x * (((y * z) * w) * u)) * x", "equation2": "x = (x * y) * ((z * x) * w)"}
+{"id": "order5v4_48152_16964", "eq1_id": 48152, "eq2_id": 16964, "equation1": "x * y = (y * (z * w)) * (y * x)", "equation2": "x = y * ((((z * w) * u) * u) * u)"}
+{"id": "order5v4_56561_6487", "eq1_id": 56561, "eq2_id": 6487, "equation1": "x * (x * y) = (y * (z * w)) * z", "equation2": "x = x * (x * ((y * z) * (x * w)))"}
+{"id": "order5v4_5509_40089", "eq1_id": 5509, "eq2_id": 40089, "equation1": "x = y * (z * (w * (w * (x * x))))", "equation2": "x = (((y * (x * z)) * z) * x) * w"}
+{"id": "order5v4_36222_5839", "eq1_id": 36222, "eq2_id": 5839, "equation1": "x = ((y * (z * w)) * (w * w)) * w", "equation2": "x = y * (x * (y * ((z * y) * w)))"}
+{"id": "order5v4_36914_45786", "eq1_id": 36914, "eq2_id": 45786, "equation1": "x = (((y * z) * y) * (w * z)) * u", "equation2": "x * y = z * (((w * x) * z) * w)"}
+{"id": "order5v4_54672_32843", "eq1_id": 54672, "eq2_id": 32843, "equation1": "x * (y * z) = w * (u * (u * y))", "equation2": "x = (x * (((y * x) * z) * w)) * x"}
+{"id": "order5v4_29235_51415", "eq1_id": 29235, "eq2_id": 51415, "equation1": "x = (((y * z) * w) * u) * (w * w)", "equation2": "x * y = ((x * x) * (z * w)) * u"}
+{"id": "order5v4_58489_17975", "eq1_id": 58489, "eq2_id": 17975, "equation1": "(x * y) * x = z * (y * (x * w))", "equation2": "x = (x * y) * (y * ((z * w) * u))"}
+{"id": "order5v4_40339_23409", "eq1_id": 40339, "eq2_id": 23409, "equation1": "x = (((y * (z * x)) * w) * y) * w", "equation2": "x = ((y * x) * z) * (y * (x * w))"}
+{"id": "order5v4_14831_28092", "eq1_id": 14831, "eq2_id": 28092, "equation1": "x = y * (((y * z) * (w * z)) * x)", "equation2": "x = ((y * (z * y)) * x) * (w * y)"}
+{"id": "order5v4_2768_13489", "eq1_id": 2768, "eq2_id": 13489, "equation1": "x = ((y * y) * (z * w)) * w", "equation2": "x = x * ((x * ((y * x) * z)) * w)"}
+{"id": "order5v4_12824_37758", "eq1_id": 12824, "eq2_id": 37758, "equation1": "x = y * ((x * (x * (z * w))) * y)", "equation2": "x = ((y * (z * (y * y))) * w) * w"}
+{"id": "order5v4_45158_39897", "eq1_id": 45158, "eq2_id": 39897, "equation1": "x * x = y * (((y * z) * w) * x)", "equation2": "x = (((x * (y * y)) * z) * w) * y"}
+{"id": "order5v4_37493_47191", "eq1_id": 37493, "eq2_id": 47191, "equation1": "x = ((y * (x * (z * w))) * u) * y", "equation2": "x * y = (y * y) * ((x * z) * w)"}
+{"id": "order5v4_2828_59019", "eq1_id": 2828, "eq2_id": 59019, "equation1": "x = ((y * z) * (w * y)) * z", "equation2": "(x * y) * z = w * (w * (z * w))"}
+{"id": "order5v4_17481_50792", "eq1_id": 17481, "eq2_id": 50792, "equation1": "x = (y * z) * (x * (x * (x * w)))", "equation2": "x * y = (y * ((z * w) * z)) * u"}
+{"id": "order5v4_37481_58021", "eq1_id": 37481, "eq2_id": 58021, "equation1": "x = ((y * (x * (z * w))) * y) * u", "equation2": "x * (y * z) = ((z * z) * w) * y"}
+{"id": "order5v4_30874_34266", "eq1_id": 30874, "eq2_id": 34266, "equation1": "x = (y * (z * ((w * x) * z))) * x", "equation2": "x = ((y * z) * (y * (z * w))) * z"}
+{"id": "order5v4_36497_445", "eq1_id": 36497, "eq2_id": 445, "equation1": "x = (((y * x) * x) * (z * y)) * w", "equation2": "x = x * (y * (y * (z * w)))"}
+{"id": "order5v4_9724_44822", "eq1_id": 9724, "eq2_id": 44822, "equation1": "x = y * ((z * y) * (w * (z * y)))", "equation2": "x * y = z * ((z * (x * x)) * w)"}
+{"id": "order5v4_47065_57250", "eq1_id": 47065, "eq2_id": 57250, "equation1": "x * y = (x * y) * ((z * w) * z)", "equation2": "x * (y * z) = (w * (z * u)) * u"}
+{"id": "order5v4_42655_43825", "eq1_id": 42655, "eq2_id": 43825, "equation1": "x * y = x * (y * ((x * z) * w))", "equation2": "x * y = z * ((x * z) * (x * w))"}
+{"id": "order5v4_8696_17404", "eq1_id": 8696, "eq2_id": 17404, "equation1": "x = y * (y * (((z * w) * z) * u))", "equation2": "x = (y * y) * (z * (x * (x * w)))"}
+{"id": "order5v4_28882_15143", "eq1_id": 28882, "eq2_id": 15143, "equation1": "x = (((y * z) * x) * x) * (x * w)", "equation2": "x = y * (((z * w) * (z * z)) * w)"}
+{"id": "order5v4_37922_61175", "eq1_id": 37922, "eq2_id": 61175, "equation1": "x = ((y * (z * (w * y))) * w) * y", "equation2": "(x * y) * x = (z * (w * u)) * u"}
+{"id": "order5v4_44938_39228", "eq1_id": 44938, "eq2_id": 39228, "equation1": "x * y = z * ((w * (y * w)) * y)", "equation2": "x = (((y * x) * (z * w)) * x) * z"}
+{"id": "order5v4_56044_23917", "eq1_id": 56044, "eq2_id": 23917, "equation1": "x * (y * y) = (z * w) * (x * u)", "equation2": "x = ((y * z) * w) * (z * (w * z))"}
+{"id": "order5v4_9052_16447", "eq1_id": 9052, "eq2_id": 16447, "equation1": "x = y * (z * (((w * u) * y) * w))", "equation2": "x = y * ((((x * z) * w) * u) * w)"}
+{"id": "order5v4_41990_51030", "eq1_id": 41990, "eq2_id": 51030, "equation1": "x * y = y * (z * (y * (w * u)))", "equation2": "x * y = (z * ((z * w) * u)) * y"}
+{"id": "order5v4_51966_51468", "eq1_id": 51966, "eq2_id": 51468, "equation1": "x * y = ((z * w) * (z * x)) * z", "equation2": "x * y = ((x * z) * (x * w)) * w"}
+{"id": "order5v4_42569_40543", "eq1_id": 42569, "eq2_id": 40543, "equation1": "x * x = y * (z * ((z * x) * w))", "equation2": "x = (((y * (z * w)) * y) * y) * y"}
+{"id": "order5v4_4650_47113", "eq1_id": 4650, "eq2_id": 47113, "equation1": "(x * y) * x = (z * w) * y", "equation2": "x * y = (x * z) * ((z * z) * w)"}
+{"id": "order5v4_42098_47638", "eq1_id": 42098, "eq2_id": 47638, "equation1": "x * y = z * (x * (w * (z * w)))", "equation2": "x * y = (z * w) * ((u * y) * y)"}
+{"id": "order5v4_11462_8988", "eq1_id": 11462, "eq2_id": 8988, "equation1": "x = y * ((z * (y * z)) * (w * x))", "equation2": "x = y * (z * (((w * y) * u) * w))"}
+{"id": "order5v4_60748_51343", "eq1_id": 60748, "eq2_id": 51343, "equation1": "(x * y) * z = (w * z) * (z * u)", "equation2": "x * x = ((y * z) * (z * y)) * w"}
+{"id": "order5v4_33572_3248", "eq1_id": 33572, "eq2_id": 3248, "equation1": "x = (y * (((z * w) * z) * u)) * v", "equation2": "x = (((y * z) * w) * u) * y"}
+{"id": "order5v4_45743_38799", "eq1_id": 45743, "eq2_id": 38799, "equation1": "x * y = z * (((z * z) * w) * y)", "equation2": "x = ((y * ((z * w) * y)) * w) * y"}
+{"id": "order5v4_61784_29129", "eq1_id": 61784, "eq2_id": 29129, "equation1": "(x * x) * y = ((x * z) * w) * x", "equation2": "x = (((y * z) * w) * x) * (w * u)"}
+{"id": "order5v4_4377_5301", "eq1_id": 4377, "eq2_id": 5301, "equation1": "x * (y * z) = w * (z * u)", "equation2": "x = y * (z * (y * (y * (y * w))))"}
+{"id": "order5v4_16040_20803", "eq1_id": 16040, "eq2_id": 20803, "equation1": "x = y * (((z * (w * w)) * y) * z)", "equation2": "x = (y * x) * (((z * z) * z) * w)"}
+{"id": "order5v4_53504_20905", "eq1_id": 53504, "eq2_id": 20905, "equation1": "x * y = (((z * x) * w) * w) * w", "equation2": "x = (y * y) * (((y * z) * w) * y)"}
+{"id": "order5v4_35704_58674", "eq1_id": 35704, "eq2_id": 58674, "equation1": "x = ((y * (x * z)) * (z * x)) * w", "equation2": "(x * y) * y = z * (w * (x * w))"}
+{"id": "order5v4_8049_6020", "eq1_id": 8049, "eq2_id": 6020, "equation1": "x = y * (z * ((z * (w * z)) * w))", "equation2": "x = y * (y * (z * ((y * x) * w)))"}
+{"id": "order5v4_26453_40731", "eq1_id": 26453, "eq2_id": 40731, "equation1": "x = (y * ((z * z) * w)) * (x * x)", "equation2": "x = ((((x * y) * x) * z) * y) * w"}
+{"id": "order5v4_19376_11608", "eq1_id": 19376, "eq2_id": 11608, "equation1": "x = (y * z) * ((y * w) * (w * y))", "equation2": "x = y * ((z * (w * y)) * (z * z))"}
+{"id": "order5v4_5897_57759", "eq1_id": 5897, "eq2_id": 57759, "equation1": "x = y * (x * (z * ((z * w) * z)))", "equation2": "x * (y * y) = ((z * x) * w) * u"}
+{"id": "order5v4_23909_36350", "eq1_id": 23909, "eq2_id": 36350, "equation1": "x = ((y * z) * w) * (z * (y * u))", "equation2": "x = (((x * y) * x) * (z * z)) * w"}
+{"id": "order5v4_15558_34417", "eq1_id": 15558, "eq2_id": 34417, "equation1": "x = y * (((x * (z * w)) * z) * y)", "equation2": "x = ((y * z) * (w * (y * w))) * u"}
+{"id": "order5v4_23413_55669", "eq1_id": 23413, "eq2_id": 55669, "equation1": "x = ((y * x) * z) * (y * (y * w))", "equation2": "x * (x * y) = (y * y) * (z * w)"}
+{"id": "order5v4_60543_25704", "eq1_id": 60543, "eq2_id": 25704, "equation1": "(x * y) * z = (y * x) * (w * w)", "equation2": "x = (y * (z * (w * w))) * (u * u)"}
+{"id": "order5v4_26953_31130", "eq1_id": 26953, "eq2_id": 31130, "equation1": "x = ((y * x) * (z * w)) * (y * x)", "equation2": "x = (x * ((y * y) * (z * w))) * u"}
+{"id": "order5v4_42865_6661", "eq1_id": 42865, "eq2_id": 6661, "equation1": "x * y = y * (z * ((y * w) * z))", "equation2": "x = y * (x * ((x * x) * (z * w)))"}
+{"id": "order5v4_45608_14528", "eq1_id": 45608, "eq2_id": 14528, "equation1": "x * y = z * (((x * w) * w) * x)", "equation2": "x = x * (((y * z) * (w * y)) * u)"}
+{"id": "order5v4_50725_59721", "eq1_id": 50725, "eq2_id": 59721, "equation1": "x * y = (y * ((y * z) * w)) * w", "equation2": "(x * y) * z = y * ((w * w) * u)"}
+{"id": "order5v4_7269_46636", "eq1_id": 7269, "eq2_id": 46636, "equation1": "x = y * (z * ((w * w) * (y * y)))", "equation2": "x * y = (z * z) * (w * (z * z))"}
+{"id": "order5v4_5712_1600", "eq1_id": 5712, "eq2_id": 1600, "equation1": "x = x * (y * (z * ((x * w) * z)))", "equation2": "x = (y * z) * (z * (w * z))"}
+{"id": "order5v4_55515_5656", "eq1_id": 55515, "eq2_id": 5656, "equation1": "x * (y * z) = w * ((w * w) * z)", "equation2": "x = x * (y * (x * ((z * w) * x)))"}
+{"id": "order5v4_22015_28563", "eq1_id": 22015, "eq2_id": 28563, "equation1": "x = (y * (z * y)) * (w * (u * u))", "equation2": "x = (((x * y) * z) * w) * (z * z)"}
+{"id": "order5v4_2839_16653", "eq1_id": 2839, "eq2_id": 16653, "equation1": "x = ((y * z) * (w * w)) * w", "equation2": "x = y * ((((z * x) * w) * x) * y)"}
+{"id": "order5v4_305_58085", "eq1_id": 305, "eq2_id": 58085, "equation1": "x = ((y * z) * w) * w", "equation2": "x * (y * z) = ((w * y) * y) * w"}
+{"id": "order5v4_45875_49392", "eq1_id": 45875, "eq2_id": 49392, "equation1": "x * y = z * (((w * w) * u) * u)", "equation2": "x * y = ((z * w) * u) * (y * y)"}
+{"id": "order5v4_5752_20170", "eq1_id": 5752, "eq2_id": 20170, "equation1": "x = x * (y * (z * ((w * x) * w)))", "equation2": "x = (y * z) * ((x * (w * z)) * x)"}
+{"id": "order5v4_665_7397", "eq1_id": 665, "eq2_id": 7397, "equation1": "x = x * (y * ((z * w) * u))", "equation2": "x = x * (y * ((x * (y * z)) * w))"}
+{"id": "order5v4_38355_37816", "eq1_id": 38355, "eq2_id": 37816, "equation1": "x = ((y * ((x * z) * w)) * y) * y", "equation2": "x = ((y * (z * (z * x))) * w) * y"}
+{"id": "order5v4_20253_24540", "eq1_id": 20253, "eq2_id": 24540, "equation1": "x = (y * z) * ((y * (w * w)) * y)", "equation2": "x = ((y * z) * x) * ((z * w) * x)"}
+{"id": "order5v4_39555_48825", "eq1_id": 39555, "eq2_id": 48825, "equation1": "x = (((y * z) * (y * w)) * u) * u", "equation2": "x * y = ((x * z) * x) * (x * w)"}
+{"id": "order5v4_43608_46889", "eq1_id": 43608, "eq2_id": 46889, "equation1": "x * y = x * ((z * z) * (w * z))", "equation2": "x * x = (y * y) * ((x * z) * w)"}
+{"id": "order5v4_49520_40105", "eq1_id": 49520, "eq2_id": 40105, "equation1": "x * x = (y * (y * (x * z))) * w", "equation2": "x = (((y * (x * z)) * w) * x) * z"}
+{"id": "order5v4_44985_17925", "eq1_id": 44985, "eq2_id": 17925, "equation1": "x * y = z * ((w * (w * z)) * y)", "equation2": "x = (x * y) * (x * ((z * x) * w))"}
+{"id": "order5v4_31787_39019", "eq1_id": 31787, "eq2_id": 39019, "equation1": "x = (y * ((z * w) * (y * u))) * x", "equation2": "x = (((x * y) * (y * z)) * w) * x"}
+{"id": "order5v4_33395_21225", "eq1_id": 33395, "eq2_id": 21225, "equation1": "x = (y * (((z * y) * w) * x)) * w", "equation2": "x = (y * z) * (((w * x) * y) * w)"}
+{"id": "order5v4_22048_24769", "eq1_id": 22048, "eq2_id": 24769, "equation1": "x = (y * (z * z)) * (y * (w * z))", "equation2": "x = ((y * z) * w) * ((y * w) * w)"}
+{"id": "order5v4_25670_60565", "eq1_id": 25670, "eq2_id": 60565, "equation1": "x = (y * (z * (w * z))) * (w * y)", "equation2": "(x * y) * z = (y * z) * (x * w)"}
+{"id": "order5v4_5878_49595", "eq1_id": 5878, "eq2_id": 49595, "equation1": "x = y * (x * (z * ((y * w) * x)))", "equation2": "x * x = (y * (z * (z * w))) * y"}
+{"id": "order5v4_41382_28335", "eq1_id": 41382, "eq2_id": 28335, "equation1": "x = ((((y * z) * z) * w) * u) * x", "equation2": "x = ((y * (z * w)) * w) * (u * u)"}
+{"id": "order5v4_1395_37852", "eq1_id": 1395, "eq2_id": 37852, "equation1": "x = y * (((z * z) * w) * x)", "equation2": "x = ((y * (z * (z * z))) * w) * w"}
+{"id": "order5v4_15138_51448", "eq1_id": 15138, "eq2_id": 51448, "equation1": "x = y * (((z * w) * (z * y)) * w)", "equation2": "x * y = ((x * y) * (z * w)) * x"}
+{"id": "order5v4_10593_18268", "eq1_id": 10593, "eq2_id": 18268, "equation1": "x = y * ((z * y) * ((w * x) * w))", "equation2": "x = (y * y) * (y * ((z * y) * w))"}
+{"id": "order5v4_38708_52907", "eq1_id": 38708, "eq2_id": 52907, "equation1": "x = ((y * ((z * z) * y)) * z) * w", "equation2": "x * y = ((z * (w * u)) * z) * z"}
+{"id": "order5v4_35733_24027", "eq1_id": 35733, "eq2_id": 24027, "equation1": "x = ((y * (x * z)) * (w * w)) * x", "equation2": "x = ((x * x) * y) * ((z * x) * w)"}
+{"id": "order5v4_15902_61237", "eq1_id": 15902, "eq2_id": 61237, "equation1": "x = y * (((z * (z * y)) * y) * w)", "equation2": "(x * y) * y = (y * (z * x)) * w"}
+{"id": "order5v4_31480_52020", "eq1_id": 31480, "eq2_id": 52020, "equation1": "x = (y * ((y * z) * (z * w))) * y", "equation2": "x * y = ((z * w) * (u * x)) * u"}
+{"id": "order5v4_20811_8311", "eq1_id": 20811, "eq2_id": 8311, "equation1": "x = (y * x) * (((z * w) * x) * z)", "equation2": "x = x * (y * (((y * y) * z) * w))"}
+{"id": "order5v4_14307_23023", "eq1_id": 14307, "eq2_id": 23023, "equation1": "x = y * ((z * ((w * u) * x)) * z)", "equation2": "x = (y * (z * w)) * ((z * x) * x)"}
+{"id": "order5v4_50475_19540", "eq1_id": 50475, "eq2_id": 19540, "equation1": "x * x = (y * ((z * z) * w)) * u", "equation2": "x = (y * z) * ((w * z) * (u * v))"}
+{"id": "order5v4_32713_42008", "eq1_id": 32713, "eq2_id": 42008, "equation1": "x = (y * ((z * (w * w)) * w)) * z", "equation2": "x * y = y * (z * (w * (x * x)))"}
+{"id": "order5v4_10773_15054", "eq1_id": 10773, "eq2_id": 15054, "equation1": "x = y * ((z * w) * ((w * x) * z))", "equation2": "x = y * (((z * z) * (w * x)) * z)"}
+{"id": "order5v4_37006_59740", "eq1_id": 37006, "eq2_id": 59740, "equation1": "x = (((y * z) * w) * (x * x)) * w", "equation2": "(x * y) * z = z * ((x * w) * x)"}
+{"id": "order5v4_32783_14333", "eq1_id": 32783, "eq2_id": 14333, "equation1": "x = (x * (((x * y) * x) * z)) * w", "equation2": "x = y * ((z * ((w * u) * u)) * u)"}
+{"id": "order5v4_19472_9076", "eq1_id": 19472, "eq2_id": 9076, "equation1": "x = (y * z) * ((w * x) * (y * u))", "equation2": "x = y * (z * (((w * u) * v) * w))"}
+{"id": "order5v4_20787_54674", "eq1_id": 20787, "eq2_id": 54674, "equation1": "x = (y * x) * (((z * y) * w) * x)", "equation2": "x * (y * z) = w * (u * (u * w))"}
+{"id": "order5v4_16665_29943", "eq1_id": 16665, "eq2_id": 29943, "equation1": "x = y * ((((z * x) * w) * z) * w)", "equation2": "x = (y * (z * (z * (y * w)))) * u"}
+{"id": "order5v4_13190_19518", "eq1_id": 13190, "eq2_id": 19518, "equation1": "x = y * ((z * (y * (y * x))) * w)", "equation2": "x = (y * z) * ((w * z) * (x * w))"}
+{"id": "order5v4_34961_59906", "eq1_id": 34961, "eq2_id": 59906, "equation1": "x = ((y * y) * ((z * y) * x)) * w", "equation2": "(x * y) * z = w * ((w * u) * w)"}
+{"id": "order5v4_59824_55720", "eq1_id": 59824, "eq2_id": 55720, "equation1": "(x * y) * z = w * ((x * w) * u)", "equation2": "x * (x * y) = (z * y) * (w * u)"}
+{"id": "order5v4_32675_13300", "eq1_id": 32675, "eq2_id": 13300, "equation1": "x = (y * ((z * (w * z)) * y)) * x", "equation2": "x = y * ((z * (z * (w * x))) * z)"}
+{"id": "order5v4_58807_60407", "eq1_id": 58807, "eq2_id": 60407, "equation1": "(x * y) * z = y * (y * (w * u))", "equation2": "(x * y) * y = (z * y) * (w * u)"}
+{"id": "order5v4_28561_61376", "eq1_id": 28561, "eq2_id": 61376, "equation1": "x = (((x * y) * z) * w) * (z * x)", "equation2": "(x * y) * z = (x * (z * w)) * z"}

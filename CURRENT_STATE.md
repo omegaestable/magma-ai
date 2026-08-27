@@ -7,93 +7,30 @@ the operational detail that does not belong in the entry point (effort tiers,
 deployed budgets, artifact inventory) and a dated index into `stage2/results/`,
 which is the evidence.
 
-Last updated: **2026-08-24** — the final working session. Upstream re-synced
-(16 commits: final scoring with Order 5 as ¼ of the score, hardened judge,
-Lean 4.32.2); judge parity re-established (**102/102 pinned certs re-accepted
-on the new toolchain**); the completion **goal bridge** shipped
-(`true:completion:bridge`, 10/10 judge-accepted), closing 6/8 of the order-4
-frontier and 111/205 of the order-5 sample misses; Solo got its first
-tier-ladder real-runner evidence (25/25). Coverage held (0 lost / 0 gained /
-0 flips by row id vs 2026-08-21). Full detail:
-`stage2/results/2026-08-24-final-session-upstream-sync-and-goal-bridge.md`.
+Last updated: **2026-08-27** — improvement pass 2 (seven parallel agents:
+`compliance-tests`, `false-side`, `completion`, `lean-formula`, `pacing`,
+`mined-laws`, `llm-lane`). What shipped and the ranked levers are in
+`stage2/docs/NEXT_SESSION_BRIEF.md`; the deep-sweep commands are in
+`stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
 
 ---
 
 ## Status at a glance
 
-| | |
-| --- | --- |
-| Official sets, `fast` tier | **1669 / 1669** (TRUE 819/819, FALSE 850/850) — audit 2026-08-24 |
-| HF mirror sets | **800 / 800** |
-| `sample_200` (ETP sample, disjoint from `normal`) | **200 / 200** |
-| Distinct local rows | **2669 / 2669** — see the double-count note |
-| Order-5 generated 4,000-row sample, end-to-end | **3,920 / 4,000 (98.0%)** — was 94.9% on 2026-08-20; **Order 5 is ¼ of the final score** |
-| Oracle failures / crashes / label mismatches | 0 / 0 / 0 |
-| Open mathematical frontier | **none locally**; outside the corpus: **2 order-4 TRUE rows + 1 FALSE row** in 20,000 sampled (was 8+1 before the 2026-08-24 goal bridge), plus 80 diffuse order-5 skips and 3 named distilled-only TRUE families |
-| Judge parity | **Lean 4.32.2 / Mathlib v4.32.2** (upstream `4db175c4`): fixture **102/102 re-accepted**, bridge certs **10/10**, Solo smoke clean |
-| Packaged artifact | **472,522 of 500,000 bytes** (27,478 free, 5.5%), final build 2026-08-24 |
+**Headline numbers live in `CLAUDE.md`'s *Current measured state* table and
+nowhere else** — this file used to carry a copy and it went stale within a day,
+three times running. Read them there; read the per-session evidence in
+`stage2/results/`.
 
-Measured by a `fast`-tier audit on 2026-08-21 —
-`stage2/results/audit-2026-08-21-completion.json` and
-`...-completion-hf.json` — diffed by row id against the 2026-08-12 baseline
-(`audit-2026-08-12-final.json` + `audit-2026-08-12-postfix-fast-hf.json`):
-**0 lost, 0 gained, 0 verdict flips** over 2,669 common rows. Narrative:
-`stage2/results/2026-08-21-completion-engine-and-latency.md`.
+What this file still owns, below: effort tiers and the ladder, the deployed
+budgets and sandbox, the artifact inventory, the operational notes, and a dated
+index into `stage2/results/`.
 
-**Do not add those three lines together.** 1669 + 800 + 200 = **2669 distinct
-rows**. The "2689" that circulated was that sum plus `sample_20`, whose 20 rows
-are a strict subset of `normal` and so are already counted in the official 1669.
-The HF mirrors do *not* overlap the official sets (intersection 0, by id and by
-canonical content). Quote the three numbers separately.
-
-Per-set, from `audit-2026-08-21-completion.json` (`fast`, 16 workers; `seconds`
-is that set's wall clock, and the four official sets sum to the 250 s headline).
-The 2026-08-12 figure is in the last column for comparison — read it as a
-good-faith comparison, not a lab measurement, since that run carried its own
-load caveat:
-
-| Set | Solved | TRUE | FALSE | Skip | Crash | Oracle fail | Seconds | (was) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `normal` | 1000/1000 | 500 | 500 | 0 | 0 | 0 | 98.1 | 106.4 |
-| `hard1` | 69/69 | 24 | 45 | 0 | 0 | 0 | 21.2 | 28.7 |
-| `hard2` | 200/200 | 100 | 100 | 0 | 0 | 0 | 65.7 | 95.6 |
-| `hard3` | 400/400 | 195 | 205 | 0 | 0 | 0 | 64.9 | 99.4 |
-| **official** | **1669/1669** | **819** | **850** | **0** | **0** | **0** | **249.9** | **330.1** |
-| `sample_200` | 200/200 | 100 | 100 | 0 | 0 | 0 | 22.3 | 71.5 |
-| `sample_20` | 20/20 | 10 | 10 | 0 | 0 | 0 | 26.3 | 30.8 |
-
-HF, same run: `hf_evaluation_normal` 39.8 s, `hf_evaluation_hard` 25.6 s,
-`hf_evaluation_extra_hard` 25.1 s, `hf_evaluation_order5` **73.4 s** (was 162.9),
-200/200 each — **163.9 s total, was 344 s**.
-
-`true:completion` serves **304** of these rows (166 `join`, 138 `collapse`).
-
-HF mirrors are 200/200 on each of `hf_evaluation_normal`, `hf_evaluation_hard`,
-`hf_evaluation_extra_hard`, `hf_evaluation_order5` — 800/800, 0 oracle failures.
-Wall clocks for that run carry the load caveat in `CLAUDE.md`; treat them as
-lower bounds on the speedup, not measurements.
-
-> The 2026-08-13 note that once stood here — "an audit is running and its result
-> is not included, so coverage is a prediction" — is **discharged**. Two full
-> audits have landed since (2026-08-13 limits, 2026-08-21 completion) and both
-> read row-for-row identical to the 2026-08-12 baseline.
-
-### Evidence base, in one paragraph
-
-The audit numbers are **offline** evidence (independent proof kernel +
-finite-model oracles) and therefore an upper bound on judge acceptance. Against
-that, all on the **v4.32.2 judge** as of 2026-08-24: **102 certificates
-byte-pinned in `stage2/fixtures/judge_verified_certs.jsonl`, all 102 accepted
-in the same-day re-judge sweep and re-checked by the gate**; the new
-`true:completion:bridge` shape **10/10 accepted**; **real Solo 25/25 on
-`hard2` — the first end-to-end tier-ladder evidence** (it runs `deep`, three
-passes; ~5–8 s/row, 0 LLM calls). Earlier real-runner evidence: Marathon
-`hard3` 400/400 + fresh ETP-200 200/200 (2026-08-21, 0 rejected, 0 LLM
-calls); the 2026-08-01/03 campaign's 2863/2894, 0 rejected. **Real Marathon
-2026-08-24, on the final artifact: 1,000 fresh unseen ETP rows (seed
-`20260824`) — 1,000/1,000 accepted, 0 rejected, 0 `not_attempted`, 0 tokens,
-~1.2 s/row of solver time; and 200 order-5 rows — 193/200 accepted, 0
-rejected, 7 `not_attempted` from the known order-5 tail.**
+Two counting rules that keep being got wrong. **Do not add the set totals
+together**: official + HF + `sample_200` = 2669 *distinct* rows; the "2689" that
+circulated was that sum plus `sample_20`, whose 20 rows are a strict subset of
+`normal`. And **diff by row id, never by total** (rail 2) — solved totals carry
+a ±7 run-to-run noise band.
 
 ---
 
@@ -299,26 +236,25 @@ list; the route inventory is `stage2/docs/solver-route-ledger.md` and
 
 ## What is still open
 
-No open mathematical frontier locally, and every prior evidence item is
-discharged. What remains before the deadline, ranked:
+Ranked, as of 2026-08-27. The full list with numbers is
+`stage2/docs/NEXT_SESSION_BRIEF.md`; the commands are
+`stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
 
-1. **Upload.** Package is built (472,504 B), the submission note exists
-   (`stage2/solver/SUBMISSION_NOTE.md` — submit it alongside `solver.py`), and
-   `stage2/docs/playground-preflight.md` is current. Nothing in this repo
-   changes further unless a deep sweep finds something.
-2. **Deep sweeps** (the declared remaining activity): a `--effort standard
-   --row-budget 540` and a `--effort deep --row-budget 1980` audit pass
-   (rail 12 — measure at the tier you ship, with deployment's bound), a
-   multi-hour order-5..9 constraint run on `etp_1661_3524`, and optionally a
-   larger order-5 generated sample.
-3. **The 3 remaining unseen-frontier TRUE rows** (2 order-4 + the order-5
-   tail): the named untried idea is seeding completion with goal-subterm
-   instances (egg_ladder-style). The 3 distilled-only TRUE families
-   (`e2923_e1623`, `e1517_e735`, `e3067_e3082`) are the same signal in
-   another form.
+1. **Upload.** Run `stage2/docs/playground-preflight.md` end to end. Two things
+   it now checks that it did not before: the submission directory contains
+   `solver.py` **and nothing else** (a stray `__pycache__` makes the official
+   runner reject the whole submission — rail 23), and `SUBMISSION_NOTE.md` lists
+   every generated payload the artifact ships.
+2. **Deep sweeps** — the declared remaining activity. Order-4 at scale, order-5
+   at **≥ 4 variables** (43% of the population and never swept — rail 33), and
+   the `--effort standard --row-budget 540` / `--effort deep --row-budget 1980`
+   passes that measure the tiers we actually ship (rail 12).
+3. **The z3 witness harvest**, which is the only measured-productive source of
+   new order-5 FALSE coverage (teorth's FinitePoly remainder is spent and random
+   Latin squares score 0 — see the dead-ends table in `CLAUDE.md`).
 4. **Step-count budgets instead of wall clock** — still the most valuable
-   *structural* item (five instances of the same bug class), but it is a
-   refactor, not a pre-deadline change.
+   *structural* item (seven instances of the same bug class now, rail 28), but
+   it is a refactor, not a pre-deadline change.
 
 ---
 
@@ -327,20 +263,34 @@ discharged. What remains before the deadline, ranked:
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit
   `4db175c41d917ce39fc82e48c7e440e2a3fa403d` (synced 2026-08-24; 10 local
   Windows patches documented in its `UPSTREAM.md`).
-- Active solver source: `stage2/solver/solver.py` (~9.1k lines, single file by
+- Active solver source: `stage2/solver/solver.py` (~11.5k lines, single file by
   contract). Over the 500 KB cap **by design** — it carries comments and
   docstrings that the packager strips.
 - Packaged submission: `stage2/submissions/solver.py`, gitignored build output.
   Build with `stage2/solver/package_solver.ps1` (re-runs the gate and refuses to
-  package on failure).
+  package on failure). **That directory must hold `solver.py` and nothing else**
+  — importing the artifact writes a `__pycache__` into it and the official
+  runner then rejects the whole submission (rail 23).
 - Judge-accepted certificate fixture: `stage2/fixtures/judge_verified_certs.jsonl`
-  (**102 entries, all accepted on the v4.32.2 judge 2026-08-24**, all
-  re-checked by the gate).
+  (all entries real-judge accepted and re-checked by the gate; count and
+  toolchain in `CLAUDE.md`). Append with `judge_rows.py --append-fixture` —
+  `--write-fixture` **replaces** the file (rail 16), and after any change
+  compare the gate's SKIP count, not just its pass count.
 - Submission note (submit alongside `solver.py`): `stage2/solver/SUBMISSION_NOTE.md`.
 - Spot-check failure fixture: `stage2/fixtures/spotcheck_failures.jsonl`
   (auto-pinned, replayed forever by `test_spotcheck_regressions.py`).
-- Real-judge wrapper: `stage2/experiments/judge_rows.py` (works on Windows via
-  `elan`; ~3-8 s per row warm).
+- Real-judge wrappers: `stage2/experiments/judge_rows.py` (solves rows live and
+  judges them; works on Windows via `elan`, ~3-8 s per row warm; takes `--ids`
+  or `--problems <jsonl>`) and `stage2/experiments/judge_cert_text.py`, which
+  judges certificate **text** you already have — a jsonl of
+  `{id, equation1, equation2, eq1_id, eq2_id, verdict, code}` in, a judged
+  jsonl out, deployed caps applied, `accepted N/M` printed. Use the second one
+  from a git worktree, which has no `.lake` build of its own.
+- Real-runner batch wrappers, now tracked in the repo:
+  `stage2/experiments/run_marathon_batch.py` and
+  `stage2/experiments/run_solo_batch.py` (they import `local_runner_env` for the
+  deployed judge caps — rail 3b-iv — and prepend `~\.elan\bin` themselves,
+  which a detached process needs).
 - Distillation tool: `stage2/experiments/distill_certs.py`.
 - Corpus audit: `stage2/experiments/audit_corpus.py`; golden regeneration:
   `stage2/experiments/make_golden.py`; accuracy loop:
@@ -411,6 +361,9 @@ not here.
 
 | Date | What it was | Evidence |
 | --- | --- | --- |
+| 2026-08-27 | Improvement pass 2, seven agents: submission-layout + input-grammar compliance, the z3-harvested order-5 witness library and the FALSE-search deadline fixes, completion unfailing-inference work, formula-rendered witnesses + the mechanised infinite-ℕ route, Marathon/Solo pacing, LLM-mined rung laws, and the LLM-lane measurement that retired several protocols | `2026-08-27-improvement-pass-2.md` |
+| 2026-08-26/27 | Improvement pass 1: multi-fill goal bridge, `COMPLETION_BUDGET` 8 → 90, `FP_WITNESS_TABLES`, `false:formula:WCG5`; organizer stress test 200/200; 1000-row hard Marathon 999/1000 | `2026-08-26-improvement-pass.md` |
+| 2026-08-25 | The deep sweep: 130,900 unseen rows, no solver change. Order-4 frontier is four laws (70% of 46 misses in 110k); order-5 is a size/arity wall instead | `2026-08-25-deep-sweep-campaign.md` |
 | 2026-08-24 | Final session: upstream re-sync (final scoring, hardened judge, Lean 4.32.2 — rail 14), judge parity 102/102, `true:completion:bridge` (6/8 order-4 frontier + 111/205 order-5, 10/10 judge-accepted), first Solo tier-ladder evidence 25/25, submission note + LICENSE | `2026-08-24-final-session-upstream-sync-and-goal-bridge.md` |
 | 2026-08-21 | `true:completion` shipped (ordered KB completion); corpus audit −24%; 600/600 real Marathon | `2026-08-21-completion-engine-and-latency.md` |
 | 2026-08-13 | Judge limits were configuration, not judge properties: caps doubled, LLM/Solo timeouts recalibrated, minifier made string-aware, packager made atomic, CI rebuilt on py3.11 and now checks the **artifact** | this file; `CLAUDE.md` |

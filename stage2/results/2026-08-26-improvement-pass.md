@@ -38,8 +38,11 @@ certificate-builder change judge-verified (rail 3c); diff by row id (rail 2).
    loaded box an hour later and 60–72 s after the closure/egg engines have run
    (not GC: tested). The unclamped ×22 deep scaling would have handed
    completion the whole Solo row ahead of the wide countermodel tiers.
-4. **`FP_WITNESS_TABLES`** — 113 teorth FinitePoly tables (orders 3–11, ~11 KB)
-   selected by greedy set-cover (`select_witness_library.py`) over 480 hard
+4. **`FP_WITNESS_TABLES`** — 113 teorth FinitePoly tables (orders 3–11, ~11 KB).
+   Provenance chain, end to end: `teorth_finitepoly_library.py` extracts the
+   1,048-table FinitePoly library to
+   `stage2/results/teorth-finitepoly-library.jsonl`, and
+   `select_witness_library.py` runs greedy set-cover over it against 480 hard
    FALSE rows the old named tables miss (disjoint from the held-out test
    batch): covers 421/436 at ~1.5 ms per row. Tested last in the portfolio so
    every golden route pin holds (first: 5 pins broke; after families: 1).

@@ -51,8 +51,10 @@ topics; none is required reading to make a solver change.
 
 ### Benchmark numbers live in one place
 
-Current measured state is in **`CLAUDE.md`**. Regenerate it with
-`stage2/experiments/audit_corpus.py --all` (and `--hf`).
+Current measured state is in **`CLAUDE.md`** — its measured-state table, which
+is the only copy; every other doc points at it. Regenerate with
+`stage2/experiments/audit_corpus.py --all` (and `--hf`). Deep-sweep commands:
+`stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
 
 This section used to carry `1201/1669` and a `138939`-byte package as the
 "latest snapshot". Both were stale by a wide margin — the real figures on

@@ -1,4 +1,86 @@
-# Latest handoff — 2026-08-27 (improvement pass)
+# Latest handoff — 2026-08-27 (improvement pass 2)
+
+Read `CLAUDE.md` first, then `stage2/docs/NEXT_SESSION_BRIEF.md` (what to do
+next) and `stage2/docs/DEEP_SWEEP_RUNBOOK.md` (the exact commands). Session
+evidence: `stage2/results/2026-08-27-improvement-pass-2.md`.
+
+**Headline numbers: `<<FINAL-NUMBERS: filled at session end>>`.** Until the
+verification run lands, quote pass 1's table in `CLAUDE.md` and say which pass
+it is from. Never write a predicted number as a measured one.
+
+## What this pass was
+
+A seven-agent diagnosis-then-implementation pass over the whole system —
+rules/compliance, the FALSE side, the completion engine, Lean certificate
+rendering, runner pacing, LLM-mined laws, and the LLM lane itself — with a
+separate agent for documentation and rails. Branches `impl/<key>`; the agent
+table is in `NEXT_SESSION_BRIEF.md` §2.
+
+## The findings that changed how we think, not just what we ship
+
+1. **The 300 s Lean timeout is per phase, and there are two phases.**
+   `verify.py` compiles `Submission.lean` and then runs `Problem.lean`, each
+   with its own clock; phase 2 loads a trusted `.olean`, so the `decide` term is
+   not re-evaluated. Measured phase-1/phase-2 seconds on identical certs: n=50
+   108.14/13.38, n=60 121.38/8.46, `Fin 64` XOR 193.47/1.60 — phase 2 is
+   uncorrelated with phase-1 cost. So the decide budget was never being halved
+   by a second kernel check. Rail 24.
+2. **The judge's declaration allowlist is non-transitive.** Only the direct
+   constants of `submission` and the nonce theorem are reported, so anything
+   behind `def submission.<name>` may use any tactic or notation — an accepted
+   certificate uses `ite`, `+`, `-`, `%` and `omega` inside helpers. Corollary
+   learned the expensive way: `omega` does **not** normalise `Nat.add b 1`, so
+   allowlist-flavoured spelling breaks the proof; write `+`/`-`/`%`. Rail 25.
+3. **The FALSE `decide` cost axis was wrong.** Cost is `applications × n²` for
+   table renderings — an order-30 table passed both existing gates and came back
+   `LEAN_REJECTED` on heartbeats — while a formula rendering pays only the
+   applications and reaches order 60. Rail 26.
+4. **A deadline set before a `for size in sizes:` loop is one deadline for the
+   whole loop.** `local_model_counterexample`'s sizes 5+ and the cheap
+   constraint schedule's orders 6/4/10 had therefore never run. Seventh instance
+   of the same bug class. Rail 28.
+5. **The LLM's verdict follows the prompt, not the mathematics** — 148/148 TRUE
+   under TRUE-framed prompts (including four provably FALSE rows), 24/24 FALSE
+   under a FALSE-framed one, 0 valid tables either way. Choose the direction
+   from solver evidence. Rail 30.
+6. **Half the order-5 population has never been swept.** 56.9% of the catalog
+   has ≥ 4 variables; every sweep ran at `--max-variables 3`. Rail 33, and
+   §3.1 of the brief.
+7. **`stage2/submissions/` must contain `solver.py` and nothing else** — the
+   organizers' own validator rejected our directory mid-session over a
+   `__pycache__` that an import had created. Rail 23.
+
+## Docs and tooling changes in this pass
+
+- `CLAUDE.md`: session narratives older than 2026-08-26 collapsed into a
+  history table (every number preserved there or in the linked results doc);
+  rails 23–33 added; the deployed-numbers block corrected (sympy 1.13.3 is in
+  the sandbox, the env allowlist is wider than we recorded, the code cap is
+  UTF-8 bytes, the Lean timeout is per phase); a dead-ends table added; the
+  order-4 FALSE residue corrected from 6 misses to 4.
+- `README.md`: the "Scoring is TBD" claim dropped (scoring has been final since
+  the 2026-08-20/21 upstream commits), the metrics table replaced by a pointer
+  to `CLAUDE.md` so it cannot drift again, the engine list corrected
+  (`completion_probe` / `completion` / the bridge), sandbox packages and env
+  allowlist corrected.
+- `CURRENT_STATE.md`, `stage2/tests/README.md`: stale headline numbers replaced
+  by pointers to `CLAUDE.md`; fixture and skip-count rules restated where the
+  people who edit fixtures actually look.
+- `stage2/docs/DEEP_SWEEP_RUNBOOK.md`: **new** — every deep-sweep command,
+  `--help`-verified, plus the kill-everything recipe and a per-batch checklist.
+- `stage2/experiments/run_marathon_batch.py` and `run_solo_batch.py`: copied out
+  of gitignored `tmp_stage2_smoke/real-run-tools/` and now tracked, with
+  `REPO_ROOT` derived from `__file__` (originals left in place).
+  `stage2/experiments/judge_cert_text.py` is also now tracked — it judges
+  certificate *text*, which is what a git worktree with no `.lake` build needs.
+- `stage2/experiments/sample_order5_pairs.py`: `--min-variables` /
+  `--goal-min-variables`, so the ≥4-variable stratum is addressable.
+- `vendor/stage2-official/UPSTREAM.md`: snapshot commit `817a4653` (docs-only:
+  per-phase Lean timeout, bytes/characters fix; no local patch impact).
+
+---
+
+# Handoff — 2026-08-26/27 (improvement pass 1)
 
 Read `CLAUDE.md` first, then `stage2/results/2026-08-26-improvement-pass.md`
 (the session record) and `stage2/docs/NEXT_SESSION_BRIEF.md` (ranked levers).

@@ -22,7 +22,7 @@ One file: `stage2/submissions/solver.py`.
 | Constraint | Value |
 | --- | --- |
 | Size | ≤ 500,000 bytes |
-| Dependencies | Python standard library only — no third-party packages, no repo-local imports |
+| Dependencies | Python standard library only, by choice — no repo-local imports. (The sandbox also pins `sympy==1.13.3`; we use it nowhere.) |
 | Network | none directly (the organizer proxy is the only channel) |
 | Secrets | none inherited |
 
@@ -32,7 +32,9 @@ It emits two kinds of certificate:
 - **FALSE** — a magma satisfying `equation1` but not `equation2`. The goal shape
   is `∃ (G : Type) (_ : Magma G), EquationLHS G ∧ ¬ EquationRHS G`, with **no**
   `Finite`/`Fintype` constraint. We ship finite witnesses (a Cayley table plus
-  `decideFin!`) almost everywhere; infinite carriers are legal and used once.
+  `decideFin!`) almost everywhere; **infinite carriers are legal and used** —
+  10 rows ship as distilled infinite-ℕ certificates plus a mechanised route for
+  the parity family (2026-08-27).
 
 The artifact is a build output (`stage2/submissions/*.py` is gitignored). Build
 it with `stage2/solver/package_solver.ps1`, which runs the offline gate first and
@@ -58,8 +60,18 @@ carrying generated data payloads ships a plain-text methodology note
 ### Sandbox, per submission
 
 `python:3.11-slim` · 2 vCPU · 2048 MB RAM · 64 PIDs · `/tmp` a 64 MB tmpfs ·
-read-only filesystem · all capabilities dropped · env allowlist
-`PATH`/`HOME`/`LANG`/`PYTHONDONTWRITEBYTECODE`.
+read-only filesystem · network disabled · all capabilities dropped.
+
+**Packages: the stdlib plus `sympy==1.13.3`**, pinned in the official
+Dockerfile (numpy, z3 and networkx are explicitly *not* available). This solver
+uses neither, deliberately — but "stdlib only" was wrong as a statement of the
+environment and forecloses a real option.
+
+The env allowlist is wider than `PATH`/`HOME`/`LANG`: `pipeline/proxy.py` and
+`pipeline/marathon_runner.py` pass `PATH`, `HOME`, `USER`, `USERPROFILE`,
+`LANG`, `TERM`, `TMPDIR`, `TMP`, `TEMP`, `SYSTEMROOT`, `SystemRoot`, `WINDIR`,
+`ComSpec`, `PATHEXT`, `PYTHONPATH`, `PYTHONIOENCODING`;
+`PYTHONDONTWRITEBYTECODE` comes from the Dockerfile `ENV`.
 
 The 2048 MB ceiling is load-bearing, not decorative: deep-tier closure engines
 have been measured at 5–17 GB RSS and were OOM-killed in the sandbox before a
@@ -83,8 +95,8 @@ channel.
 | --- | --- | --- |
 | Solver wall clock, per problem | 3600 s | `config.json` `solver.timeout_seconds` |
 | Marathon, per problem on average | ~300 s (5 min) | organizer clarification 2026-07-31; `scripts/run_marathon.py` uses a 600 s reference → 30,000 s at N=100 |
-| Lean judge, per call | **300 s** | `config.json` `judge.lean_timeout_seconds` |
-| Lean code, per call | **100,000 bytes** | `config.json` `judge.max_code_length` |
+| Lean judge, **per Lean phase** | **300 s**, applied independently to compiling `Submission.lean` and to running `Problem.lean` — not one aggregate deadline (the judge's own `JudgeProblem.lean` compile is a third, untimed call) | `config.json` `judge.lean_timeout_seconds`; `rules/evaluation.md` |
+| Lean code, per call | **100,000 UTF-8 bytes** | `config.json` `judge.max_code_length` |
 | FALSE certificate, per call | **20,000 bytes** | `config.json` `judge.max_false_cert_bytes` |
 | LLM max output tokens, per call | 65,536 | `config.json` `llm.max_output_tokens` |
 
@@ -117,9 +129,12 @@ Two places, both verified against the snapshot rather than assumed:
    *fallback* defaults for direct invocation with no config. Those are not the
    deployed limits — see below.
 
-`rules/evaluation.md` still marks **Scoring** as TBD. We have not tried to
-predict it; the working assumption is the stated baseline intent, that higher
-accepted counts are better.
+**Scoring is final** as of the 2026-08-20/21 upstream commits (synced here
+2026-08-24): four equal-weight categories — Normal, Hard, Extra Hard and
+**Order 5** — `accepted` = 1 point, anything else 0, no partial credit and no
+wrong-answer penalty, plus a guarantee that no evaluation problem is reused from
+Stage 1 or any public selected problem set. The "Scoring is TBD" claim that
+stood here until 2026-08-27 was stale. See `CLAUDE.md`, *Official rules*.
 
 ### The judge-limit correction (settled by experiment, 2026-08-13)
 
@@ -151,7 +166,13 @@ down.
 
 ## Architecture
 
-`stage2/solver/solver.py` — 11,011 lines (2026-08-21), single file by contract.
+`stage2/solver/solver.py` — ~11.5k lines, single file by contract. The 500 KB
+cap applies to the **built artifact**, never to this source, which legitimately
+exceeds it because it carries the comments the packager strips.
+
+**The submission directory must contain `solver.py` and nothing else** — a stray
+`__pycache__` makes the official runner reject the whole submission before any
+problem is attempted. The packager validates it (`CLAUDE.md` rail 23).
 
 **Route ordering is load-bearing.** `solve_problem()` dispatches through a fixed
 cheap-to-expensive order, so rows that a syntactic route can claim never pay for
@@ -162,18 +183,28 @@ nothing earlier claimed.
   `law_matcher(pattern, args, ...)` table row; the law text in the row is the
   same string the certificate emits, so the two cannot drift. This replaced 37
   bespoke matchers, proved equivalent over the entire real input domain first.
-- **TRUE engines**, in order: `egg_probe`, `equational_closure`,
-  `deep_absorption_closure`, `derived_cp_closure`, `projection_bootstrap`,
-  `lemma_bootstrap`, `lemma_chain_bootstrap`, `egg_closure`, `egg_collapse`,
-  `egg_priority_bootstrap`, `egg_bootstrap`, `egg_ladder`, then a demoted
-  `narrow_grind`. `egg_ladder` is the only one that reasons with more than one
-  law at a time: it derives a small law from eq1, binds it with `have`, and
-  saturates again with that law in scope.
+- **TRUE engines**, in order: `egg_probe`, **`completion_probe`**,
+  `equational_closure`, `deep_absorption_closure`, `derived_cp_closure`,
+  `projection_bootstrap`, `lemma_bootstrap`, `lemma_chain_bootstrap`,
+  `egg_closure`, `egg_collapse`, `egg_priority_bootstrap`, `egg_bootstrap`,
+  `egg_ladder`, **`completion`**, then a demoted `narrow_grind`. `egg_ladder` is
+  the only one that reasons with more than one law at a time: it derives a small
+  law from eq1, binds it with `have`, and saturates again with that law in
+  scope. **`completion`** is ordered (unfailing) Knuth–Bendix completion with
+  proof recording — the only engine that derives *new* rules by superposition
+  and then rewrites with them — and it carries the post-saturation
+  **`completion:bridge`**, a bounded bidirectional search over every direction
+  of the saturated rule set, in both its probe and its main slot. Its probe slot
+  sits second because its *loss* is cheap: it saturates in ~0 s rather than
+  spending the budget.
 - **FALSE search**: named compact witnesses → structured/affine/quadratic
-  families → bounded `Fin 2..3` enumeration → a cheap Mace4-style constraint
-  propagation tier → [TRUE engines] → randomized `Fin 4..6` repair search → a
-  wide constraint tier. Witness order is bounded by rendered bytes and `decide`
-  cost (`n ** variables`), not by carrier size as such.
+  families → the teorth-derived `FP_WITNESS_TABLES` → bounded `Fin 2..3`
+  enumeration → a cheap Mace4-style constraint propagation tier → [TRUE engines]
+  → randomized `Fin 4..6` repair search → a wide constraint tier. Witness order
+  is bounded by rendered bytes and `decide` cost, not by carrier size as such —
+  and the `decide` cost of a *table* rendering is `applications × n²`, while a
+  closed-form arithmetic or bitwise rendering pays only the applications
+  (`CLAUDE.md` rail 26).
 - **`DISTILLED_CERTS`** maps *canonical equation text* — renaming-invariant, so
   one entry covers the official row, its `*`-notation mirror, and any future
   sample of the same implication — to a judge-accepted certificate. It is keyed
@@ -255,56 +286,16 @@ check reads the parsed Python table, blind to the emitted text.
 
 ## Current measured state
 
-Every number carries its date. Coverage figures are from a **fresh isolated
-audit** at `fast` tier; see the caveat below before quoting any wall clock.
+Numbers live in **one place so they cannot drift**: the *Current measured state*
+table in `CLAUDE.md`, with the per-session detail in `stage2/results/`. This
+README deliberately does not duplicate them.
 
-| Metric | Value | Measured |
-| --- | --- | --- |
-| Official sets (`normal`+`hard1`+`hard2`+`hard3`) | **1669 / 1669** | 2026-08-24 |
-| Official TRUE / FALSE | **819 / 819** and **850 / 850** | 2026-08-24 |
-| HF mirror sets | **800 / 800** | 2026-08-24 |
-| `sample_200` (an ETP sample disjoint from `normal`) | **200 / 200** | 2026-08-24 |
-| Distinct rows solved | **2669** | 2026-08-24 |
-| Oracle failures / crashes / label mismatches | **0 / 0 / 0** | 2026-08-24 |
-| Row-id diff vs the 2026-08-21 baseline | **0 lost, 0 gained, 0 verdict flips** | 2026-08-24 |
-| Unseen order-4 ETP, 20,000-row sample | **19,997 of 20,000 covered** — the 52-row frontier fell to 9 (completion, 08-21) and then to **3** (the goal bridge, 08-24): 2 TRUE + 1 FALSE open | 2026-08-24 |
-| Order-5 generated 4,000-row sample, end-to-end | **3,920 / 4,000 (98.0%)** — Order 5 is ¼ of the final score | 2026-08-24 |
-| Judge parity on Lean 4.32.2 | fixture re-judge **102/102 accepted**; new `completion:bridge` shape **10/10 accepted** | 2026-08-24 |
-| Real Solo (first tier-ladder evidence) | **25/25 solved, 0 failed, 0 LLM calls** on the final artifact | 2026-08-24 |
-| Real Marathon, 1,000 fresh unseen ETP rows | **1,000/1,000 accepted, 0 rejected, 0 not attempted, 0 tokens** (~1.2 s/row of solver time) | 2026-08-24 |
-| Real Marathon, 200 order-5 rows | **193/200 accepted, 0 rejected**, 7 not attempted (the known order-5 tail) | 2026-08-24 |
-| Offline gate | 260 passed, 2 skipped (`-n auto`) | 2026-08-24 |
-| Packaged artifact | **472,522 of 500,000 bytes** (27,478 free, 5.5%) | 2026-08-24 |
-| Solver source | 11,217 lines | 2026-08-24 |
-
-State the corpus as its constituent sets — official 1669/1669, HF mirrors
-800/800, `sample_200` 200/200, **2669 distinct rows**. An earlier headline in
-this repo reported 2689: that sum also counted `sample_20`, whose 20 rows are a
-strict subset of `normal` and so are already inside the official 1669. The HF
-mirrors do not overlap the official sets at all (intersection 0). Corrected
-2026-08-13.
-
-**Real-judge evidence** — the only evidence that is not an upper bound:
-
-| Run | Result | Date |
-| --- | --- | --- |
-| Certificates byte-pinned in `stage2/fixtures/judge_verified_certs.jsonl`, all re-checked by the gate | **102 — every one re-accepted by the Lean 4.32.2 judge** | 2026-08-24 |
-| New `true:completion:bridge` certificate shape | **10/10 accepted** (order-4 frontier, order-5, distilled-family pairs) | 2026-08-24 |
-| Real Solo, 25 `hard2` rows on the final artifact | **25/25 solved, 0 failed, 0 LLM calls** — first tier-ladder end-to-end evidence | 2026-08-24 |
-| Real Marathon on `hard3.jsonl` + 200 fresh ETP rows | 400/400 + 200/200 accepted, 0 rejected, 0 LLM calls | 2026-08-21 |
-| Earlier broad campaign across all 4 official + 5 HF sets + a 200-row ETP sample | 2863/2894 accepted, **0 rejected anywhere** | 2026-08-01/03 |
-| Standing spotcheck loop across 9 sources | 100% accuracy, 100% coverage, 0 mistakes (latest batch 90/90) | 2026-08-24 |
-
-**Timing caveat.** Part of the 2026-08-12 measurement ran against heavy
-unrelated CPU load on the same machine. The *coverage* numbers are unaffected —
-0 mismatches over thousands of rows does not come and go with load — but the
-speedup figures from that session are **lower bounds, not precise
-measurements**. Check what else is running on the box before quoting a wall
-clock.
-
-**Known gap — closed 2026-08-24.** Solo's tier ladder now has end-to-end
-real-runner evidence (25/25 on `hard2`, above); the paragraph that stood here
-tracked its absence.
+Two framing notes that outlive any particular number. State the corpus as its
+constituent sets — official, HF mirrors, `sample_200` — never as a single sum;
+an earlier headline of 2689 double-counted `sample_20`, whose rows are a strict
+subset of `normal` (corrected 2026-08-13). And check what else is running on the
+box before quoting a wall clock: coverage numbers do not come and go with load,
+but timing numbers do (`CLAUDE.md` rails 5e, 19, 22).
 
 ---
 

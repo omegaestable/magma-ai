@@ -2,7 +2,7 @@
 
 Vendored repository: https://github.com/SAIRcompetition/equational-theories-lean-stage2
 
-Snapshot commit: `13648682a5553717ea91b86513ed140b39160cf5`
+Snapshot commit: `817a4653bf762584931d49c6714c9fcfab7df66a` (docs-only sync 2026-08-27 on top of `13648682a5553717ea91b86513ed140b39160cf5`: README.md, docs/marathon_mode.md, rules/evaluation.md — the 300 s Lean timeout is per Lean phase, code cap is UTF-8 bytes; no local patch touched)
 
 Vendored on: 2026-05-04 (initial snapshot `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`)
 
