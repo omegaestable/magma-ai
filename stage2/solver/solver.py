@@ -851,7 +851,15 @@ def judge_answer_payload(answer: dict[str, Any]) -> dict[str, str] | None:
     code = answer.get("code")
     if verdict not in VALID_VERDICTS or not isinstance(code, str):
         return None
-    code_bytes = len(code.encode("utf-8"))
+    try:
+        code_bytes = len(code.encode("utf-8"))
+    except UnicodeEncodeError:
+        # LEAN-07. `json.loads` happily produces lone surrogates from a
+        # "\ud83d" escape, and LLM output is a real path into this function.
+        # The judge answers that with `CODE_NOT_UTF8`; a filter whose entire
+        # job is to fail closed must return None, not raise.
+        log_stderr({"route": "output:code_not_utf8"})
+        return None
     if code_bytes > MAX_LEAN_CODE_BYTES:
         return None
     if verdict == "false" and code_bytes > MAX_FALSE_CERT_BYTES:
@@ -894,6 +902,12 @@ def strip_outer_parens(text: str) -> str:
     return s
 
 
+# Variable names the judge's equation grammar allows. `_EQUATION_TEXT_RE`
+# (vendor/stage2-official/judge/verify.py) is ^[\sa-zA-Z0-9◇=()]+$,
+# so an identifier is any run of letters and digits starting with a letter.
+VARIABLE_TOKEN_RE = r"\b([A-Za-z][A-Za-z0-9]*)\b"
+
+
 def parse_term(text: str, variables: set[str]) -> Term:
     s = strip_outer_parens(text)
     depth = 0
@@ -907,9 +921,57 @@ def parse_term(text: str, variables: set[str]) -> Term:
             last_op = idx
     if last_op >= 0:
         return ("op", parse_term(s[:last_op], variables), parse_term(s[last_op + 1 :], variables))
-    if len(s) == 1 and s in variables:
+    # RC-02: not `len(s) == 1`. The judge's equation grammar is
+    # ^[\sa-zA-Z0-9◇=()]+$ (`_EQUATION_TEXT_RE` in
+    # vendor/stage2-official/judge/verify.py), so `x1` and `X` are inside the
+    # character class even though every public set uses single lowercase
+    # letters, and a one-character check made them a ValueError.
+    #
+    # Measured against the real judge 2026-08-27, and the answer is narrower
+    # than the grammar: `_equation_def` builds the goal's binders with the
+    # very same word-bounded single-letter scan, so `x1 = y1 ◇ x1` yields NO
+    # binders and the judge's own JudgeProblem.lean fails to compile
+    # ("unexpected token ','" -- `infra_error`, 0/6 on a probe batch). A digit-
+    # or uppercase-spelled row is therefore unjudgeable for everyone, not a row
+    # we could win by parsing it. Kept anyway because it costs two characters
+    # and turns a raise into a contained attempt. The reachable half of this
+    # is `RESERVED_LEAN_NAMES` below -- see the judge evidence there.
+    if s in variables:
         return ("var", s)
     raise ValueError(f"cannot parse term: {text!r}")
+
+
+# Identifiers our own certificate skeletons bind, plus the Lean keywords a
+# binder may not be named. `submission_certificate` opens with `intro G _ h`,
+# so a problem variable spelled `h` shadows the hypothesis and every `h a b`
+# application below it becomes an element applied to elements.
+#
+# This is reachable, unlike the digit/uppercase spellings above: `h` is a
+# single lowercase letter, so the judge's own binder scan accepts it and the
+# problem compiles. Settled on the real judge 2026-08-27 with the pair
+# `h = g ◇ (h ◇ g)` => `h = g ◇ ((g ◇ (h ◇ g)) ◇ g)`, one variable
+# renamed and nothing else: the verbatim-name certificate (`intro h g`) is
+# `incorrect`/LEAN_REJECTED and the renamed one (`intro q0 q1`) is **accepted**
+# in 4.6 s (pinned as `rc02_h_renamed` in judge_verified_certs.jsonl).
+# Renaming is free: the goal's binder names are chosen by our own `intro`, so
+# alpha-renaming the parsed equation cannot change which proposition is proved.
+RESERVED_LEAN_NAMES = frozenset({
+    "G", "h", "M", "R", "m", "t", "Goal", "Magma", "Fin", "Nat", "List", "Type",
+    "Prop", "Sort", "submission", "op", "fun", "let", "have", "by", "at", "in",
+    "do", "if", "then", "else", "from", "show", "this", "match", "with", "def",
+    "theorem", "exact", "intro", "refine", "open", "import", "deriving",
+    "instance", "where", "rfl", "true", "false",
+})
+
+
+def safe_variable_names(variables: list[str]) -> dict[str, str] | None:
+    """`None` when every name is already safe, else a rename of *all* of them.
+
+    All-or-nothing, so a renamed name cannot collide with a kept one.
+    """
+    if not any(var in RESERVED_LEAN_NAMES for var in variables):
+        return None
+    return {var: f"q{index}" for index, var in enumerate(variables)}
 
 
 def parse_equation(text: str) -> dict[str, Any]:
@@ -917,20 +979,31 @@ def parse_equation(text: str) -> dict[str, Any]:
         raise ValueError(f"cannot parse equation: {text!r}")
     variables = []
     seen: set[str] = set()
-    for var in re.findall(r"\b([a-z])\b", text):
+    for var in re.findall(VARIABLE_TOKEN_RE, text):
         if var not in seen:
             seen.add(var)
             variables.append(var)
     lhs_text, rhs_text = text.split("=", 1)
     lhs_text = lhs_text.strip()
     rhs_text = rhs_text.strip()
+    rename = safe_variable_names(variables)
+    if rename is not None:
+        # One pass, so a renamed name can never be re-renamed by a later entry
+        # (nothing stops a problem from also calling a variable `q0`).
+        def swap_name(match: re.Match) -> str:
+            return rename.get(match.group(0), match.group(0))
+
+        lhs_text = re.sub(VARIABLE_TOKEN_RE, swap_name, lhs_text)
+        rhs_text = re.sub(VARIABLE_TOKEN_RE, swap_name, rhs_text)
+        variables = [rename[var] for var in variables]
+        seen = set(variables)
     return {
         "variables": variables,
         "lhs": parse_term(lhs_text, seen),
         "rhs": parse_term(rhs_text, seen),
         "lhs_text": lhs_text,
         "rhs_text": rhs_text,
-        "text": text.strip(),
+        "text": f"{lhs_text} = {rhs_text}" if rename is not None else text.strip(),
     }
 
 
@@ -10318,9 +10391,16 @@ def extract_json_object(text: str) -> dict[str, Any] | None:
 def sanitize_lean_code(code: str, *, verdict: str) -> bool:
     if not isinstance(code, str) or not code.strip():
         return False
-    if len(code.encode("utf-8")) > MAX_LEAN_CODE_BYTES:
+    try:
+        code_bytes = len(code.encode("utf-8"))
+    except UnicodeEncodeError:
+        # LEAN-07: a lone surrogate out of `json.loads` of LLM output. The
+        # judge returns CODE_NOT_UTF8 for it; this pre-filter answers False
+        # rather than raising out of a function that only ever says yes or no.
         return False
-    if verdict == "false" and len(code.encode("utf-8")) > MAX_FALSE_CERT_BYTES:
+    if code_bytes > MAX_LEAN_CODE_BYTES:
+        return False
+    if verdict == "false" and code_bytes > MAX_FALSE_CERT_BYTES:
         return False
     if BANNED_LEAN_RE.search(code):
         return False
@@ -11009,22 +11089,18 @@ def run_solo() -> int:
             'route': 'skip:deterministic',
             'reason': 'No deterministic certificate available; escalating through proxy LLM.',
         })
-        # Insurance: bank one judged verdict now, so that even a wall-clock
-        # kill mid-LLM-round leaves the run with a real judge status instead
-        # of a harness ERROR. Cheap (the reflexive cert fails Lean fast), and
-        # a later accepted certificate still wins because the proxy keeps the
-        # first accepted answer.
-        insurance = make_true_answer(problem, fallback_true_certificate())
-        insurance_key = (str(insurance.get("verdict")), str(insurance.get("code")))
-        attempted.add(insurance_key)
-        insurance_response = judge_via_solo_proxy(insurance)
-        if insurance_response:
-            log_progress({
-                'judge_status': insurance_response.get('status'),
-                'route': 'fallback:insurance_reflexive',
-            })
-            if insurance_response.get("status") == "accepted":
-                return 0
+        # SOLO-4 (2026-08-27): the insurance reflexive judge call that used to
+        # sit here is gone. It sent `exact h`, which can only typecheck when
+        # eq1 and eq2 are definitionally equal - a case `is_reflexive_problem`
+        # already serves - so it was measured `incorrect` on every row it was
+        # tried on (1.0-2.8 s of real Lean each). `pipeline/runner.py` scores
+        # only `solved`, which `proxy.py` sets on `accepted` alone, so a banked
+        # non-accepted status is worth exactly what no answer is worth. Its
+        # real cost was the prompt: `proxy.py` renders every judge attempt into
+        # {history.attempts} with up to 600 chars of Lean stderr, so round 0 -
+        # the most valuable prompt of the row - opened with a guaranteed-failing
+        # attempt and its type-mismatch error. The speculative grind fallback at
+        # the end of this function is the one that can actually be accepted.
 
     # The LLM phase may use the whole remaining clock (minus the reserve);
     # engines invoked while parsing chain candidates stay clamped to it.
@@ -11078,6 +11154,18 @@ def run_solo() -> int:
         answer = dict(candidate["answer"])
         key = (str(answer.get("verdict")), str(answer.get("code")))
         if key in attempted:
+            # SOLO-3: no judge call happens here, so the proxy's judge_log does
+            # not grow either and {history.attempts} is unchanged - with
+            # temperature 0.0 / seed 0 the next prompt would be byte-identical
+            # and every remaining round a guaranteed repeat (measured: 5 llm
+            # calls, feedback empty in all 5). Mirror the parse-reject branch
+            # above and tell the model what happened.
+            feedback = (
+                "That exact certificate was already submitted and judged. Do "
+                "not repeat it: change the rewrite chain, change key_terms, or "
+                "switch to a different proof_kind (lemma instead of "
+                "guided_chain, or a false verdict with a Cayley table)."
+            )
             log_progress({'route': 'llm:duplicate', 'round': round_idx})
             continue
         attempted.add(key)

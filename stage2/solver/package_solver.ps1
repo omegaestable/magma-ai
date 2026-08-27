@@ -85,6 +85,44 @@ try {
         throw ("Submission directory $outDir contains entries besides ${expected}: " +
                ($strays.Name -join ', ') + ". The official Solo runner rejects these.")
     }
+
+    # RC-01. The check above is ours; this one is the organizer's. Both
+    # `pipeline/proxy.py::_validate_submission_layout` and
+    # `pipeline/marathon_runner.py` refuse to run a submission directory holding
+    # anything besides a regular `solver.py` -- Solo returns `solved: False` for
+    # every problem with one error line and no per-problem verdicts, which does
+    # not look like a layout failure at all. A stray `__pycache__` was found
+    # sitting in `stage2/submissions/` on 2026-08-27, created after the previous
+    # build by a tool that imported the artifact. So run the real validator,
+    # not a hand-rolled approximation of it, and run it *after* the cleanup
+    # above. PYTHONDONTWRITEBYTECODE keeps this very step from re-creating one.
+    if ($expected -eq "solver.py" -and (Test-Path "vendor/stage2-official/pipeline/proxy.py")) {
+        $env:PYTHONDONTWRITEBYTECODE = "1"
+        $validator = @"
+import sys
+from pathlib import Path
+sys.dont_write_bytecode = True
+sys.path.insert(0, r"vendor/stage2-official")
+from pipeline.proxy import _validate_submission_layout
+problem = _validate_submission_layout(Path(sys.argv[1]))
+if problem is not None:
+    raise SystemExit("official layout validator rejected the submission: " + problem)
+print("official layout validator: OK")
+"@
+        $validatorPath = Join-Path ([System.IO.Path]::GetTempPath()) ("validate-layout-" + [guid]::NewGuid().ToString("N") + ".py")
+        try {
+            Set-Content -Path $validatorPath -Value $validator -Encoding UTF8
+            & $python $validatorPath $outDir
+            if ($LASTEXITCODE -ne 0) {
+                throw "Official submission-layout validator failed for $outDir; refusing to package."
+            }
+        }
+        finally {
+            if (Test-Path $validatorPath) { Remove-Item -Force $validatorPath }
+            $pycacheAfter = Join-Path $outDir "__pycache__"
+            if (Test-Path $pycacheAfter) { Remove-Item -Recurse -Force $pycacheAfter }
+        }
+    }
 }
 finally {
     if (Test-Path $staging) { Remove-Item -Force $staging }
