@@ -21,8 +21,26 @@ extend-exclude = [
 ]
 
 [lint]
-# Default rule set (E, F) is the right level for this repo: it catches real bugs
-# (undefined names, unused imports) without fighting the house style.
+# E4/E7/E9 + F is the right level for this repo: it catches real bugs (undefined
+# names, unused imports) without fighting the house style.
+#
+# `select` is **explicit on purpose**, and it spells out ruff's historical
+# default rather than a tidier-looking `["E", "F"]`. Two things to know:
+#
+#  1. This block used to say "the default rule set (E, F)" and select nothing,
+#     which made the linted rule set a property of whichever ruff
+#     `requirements-dev.txt` happened to resolve. ruff 0.16 widened its defaults
+#     (I, UP, B, SIM, RUF, DTZ, FURB, ...) and CI — pinned only at `ruff>=0.4` —
+#     went from clean to 250+ findings across ~30 rules on a push that touched
+#     none of them. Same shape as rail 3b: a limit owned outside the repo has to
+#     be mirrored explicitly or an upstream default silently redefines it.
+#  2. Bare `"E"` is **not** what the default was. It adds pycodestyle E1/E2/E3/E5,
+#     including `E501` line-too-long, which this repo has never satisfied (651
+#     findings, almost all E501 in archived theory tooling). `line-length` below
+#     still feeds the formatter and any rule that reads it; it is not a lint gate.
+#
+# Found 2026-08-26.
+select = ["E4", "E7", "E9", "F"]
 ignore = [
     # `l` reads as "line" or "left" throughout the data/theory tooling. It is a
     # readability preference, not a bug class, and renaming ~8 comprehension
