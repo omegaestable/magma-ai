@@ -173,10 +173,34 @@ LARGE_LINEAR_SIZES = (11, 13, 16, 17, 19, 23, 25)
 AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
 STRUCTURED_MAX_N = 7
-LOCAL_MODEL_SIZES = (4, 5)
+# Every size here gets its OWN slice of the budget (see
+# `local_model_counterexample`). Until 2026-08-27 a single deadline was armed
+# before the `for n in sizes` loop and the inner restart-loop could only exit on
+# it, so `sizes[1:]` was unreachable code — sixth instance of rail 5f-iii (one
+# shared clock starves whatever runs last). Measured on order5_11497_52058, one
+# process, same seed: sizes=(4, 5) @6 s -> None, sizes=(4, 5) @30 s -> None,
+# sizes=(4, 5, 6, 7) @30 s -> None, but sizes=(6,) @30 s -> a witness in 5.3 s.
+# Widened to (4, 5, 6, 7) once the slice fix made 6 and 7 reachable at all; the
+# TOTAL budget deliberately did not move, because the total is what bounds the
+# cost on TRUE rows.
+LOCAL_MODEL_SIZES = (4, 5, 6, 7)
 LOCAL_MODEL_TIME_BUDGET = 6.0
+# Fixed (tier-unscaled) budget for the early probe slot in `solve_problem_pass`.
+LOCAL_MODEL_PROBE_SIZES = (4, 5)
+LOCAL_MODEL_PROBE_BUDGET = 1.5
 LOCAL_MODEL_MAX_FLIPS = 4000
 LOCAL_MODEL_NOISE = 0.25
+# Per-size cost bound, in `n ** variables` hypothesis instances. The repair
+# search materialises every instance of eq1 and eq2 for a size BEFORE it can
+# poll a deadline, and re-scores all of them for each of the `n` candidate
+# values of a flipped cell — so the sizes the 2026-08-27 slice fix newly made
+# reachable are also the first ones that can blow up on a wide row (8**6 =
+# 262,144 environments against 4**6 = 4,096 for the only size the old shared
+# deadline ever reached). Same shape as rail 5f-ii: bound the instance count
+# and skip only the sizes that exceed it. Skipping is safe here because this
+# search never sets `_CONSTRAINT_EXHAUSTED`, so it cannot license a speculative
+# TRUE (rail 5).
+LOCAL_MODEL_MAX_INSTANCES = 20_000
 REWRITE_CHAIN_MAX_DEPTH = 2
 ABSORPTION_CHAIN_MAX_DEPTH = 3
 ABSORPTION_POOL_LIMIT = 10
@@ -628,6 +652,59 @@ FP_WITNESS_TABLES = (
     ("FP110", [[1, 5, 5, 1, 1, 1, 5, 5], [2, 0, 0, 2, 2, 2, 0, 0], [3, 1, 1, 3, 3, 3, 1, 1], [4, 2, 2, 4, 4, 4, 2, 2], [7, 3, 3, 7, 7, 7, 3, 3], [0, 6, 6, 0, 0, 0, 6, 6], [5, 7, 7, 5, 5, 5, 7, 7], [6, 4, 4, 6, 6, 6, 4, 4]]),
     ("FP111", [[2, 1, 2, 2, 4, 2, 6, 4, 8, 2, 2], [3, 5, 9, 3, 5, 5, 5, 3, 9, 9, 9], [0, 6, 6, 3, 4, 5, 6, 7, 6, 9, 9], [4, 1, 2, 2, 4, 2, 6, 4, 8, 2, 2], [0, 8, 2, 3, 8, 5, 8, 5, 8, 9, 10], [10, 1, 2, 9, 4, 9, 6, 4, 8, 9, 10], [0, 8, 2, 3, 5, 5, 5, 5, 8, 9, 10], [10, 8, 2, 9, 8, 2, 8, 8, 8, 9, 10], [0, 6, 9, 3, 4, 5, 6, 7, 9, 9, 9], [7, 1, 2, 7, 4, 5, 6, 7, 8, 4, 2], [7, 6, 6, 7, 4, 5, 6, 7, 6, 4, 6]]),
     ("FP112", [[2, 3, 0, 4, 0, 10, 0, 10, 0, 7, 7], [1, 5, 6, 1, 8, 1, 8, 8, 6, 1, 6], [2, 9, 6, 2, 2, 2, 2, 2, 9, 2, 6], [2, 3, 3, 2, 3, 9, 3, 9, 3, 7, 7], [4, 5, 4, 4, 8, 4, 5, 8, 4, 4, 4], [2, 5, 5, 2, 5, 9, 5, 2, 5, 5, 5], [6, 5, 6, 6, 8, 6, 5, 8, 6, 6, 6], [4, 3, 7, 4, 5, 4, 5, 8, 7, 7, 7], [8, 9, 6, 8, 8, 8, 8, 8, 9, 8, 6], [2, 9, 9, 2, 9, 9, 9, 9, 9, 4, 4], [2, 9, 9, 2, 10, 10, 10, 10, 9, 2, 6]]),
+)
+
+
+O5_WITNESS_TABLES = (
+    # Order-5 witness library, harvested offline with z3 (2026-08-27) over the
+    # order-5 rows the shipped portfolio misses, then cut down by greedy
+    # set-cover (`stage2/experiments/witness_library_eval.py`). Provenance and
+    # evidence, so nobody has to re-derive it:
+    #   * z3 countermodel search at orders 5..9 over 157 order-5 misses from two
+    #     disjoint samples; every table re-checked with `witness_check`,
+    #     `table_is_renderable` and `witness_decide_is_affordable`.
+    #   * Held-out validation (tables harvested from the 2026-08-27 sample,
+    #     targets the disjoint 2026-08-25 20k sweep failures): 3 tables / 513 B
+    #     refute 57 of 351 (16.2%), spanning 42 distinct eq1 and 57 distinct eq2
+    #     — breadth, not one repeated hypothesis. The combined 13-table cut
+    #     covers 122 of 398 misses (30.7%), and all 122 (table, row) claims were
+    #     re-verified independently by `stage2/tests/oracles.equation_holds`,
+    #     which shares no code with this file.
+    #   * Real Lean judge (4.33.1, deployed caps): 3 of 3 accepted — order-8
+    #     tables at 426 B in 7.7-8.6 s, an order-9 table at 462 B in 10.7 s.
+    # Two doors closed while building it, so they are not re-opened: the other
+    # 935 teorth FinitePoly tables add 2 rows in 351 (order 5 is exhausted
+    # there), and 800 random Latin squares of orders 8 and 9 satisfy 0 of the
+    # 280 distinct order-5 hypotheses — the witnesses are very special
+    # quasigroups no live generator reaches, which is why this ships as data.
+    # Scanned LAST in the portfolio, after FP_WITNESS_TABLES, so no route above
+    # can lose a golden pin to it. ~3 us per (row, table).
+    ("O5W1", [[0, 6, 3, 5, 7, 4, 2, 1], [4, 1, 7, 2, 3, 0, 5, 6], [1, 4, 2, 7, 5, 6, 3, 0], [6, 0, 5, 3, 2, 1, 7, 4], [3, 5, 0, 6, 4, 7, 1, 2], [2, 7, 1, 4, 6, 5, 0, 3], [7, 2, 4, 1, 0, 3, 6, 5], [5, 3, 6, 0, 1, 2, 4, 7]]),
+    ("O5W2", [[0, 4, 1, 6, 7, 3, 2, 5], [5, 1, 4, 7, 6, 2, 3, 0], [7, 3, 2, 5, 0, 4, 1, 6], [1, 5, 0, 3, 2, 6, 7, 4], [3, 7, 6, 1, 4, 0, 5, 2], [2, 6, 7, 4, 1, 5, 0, 3], [4, 0, 5, 2, 3, 7, 6, 1], [6, 2, 3, 0, 5, 1, 4, 7]]),
+    ("O5W3", [[0, 3, 4, 7, 5, 8, 1, 6, 2], [2, 1, 7, 6, 0, 3, 8, 4, 5], [3, 6, 2, 5, 8, 7, 4, 0, 1], [4, 2, 8, 3, 6, 0, 5, 1, 7], [7, 5, 3, 1, 4, 2, 0, 8, 6], [6, 0, 1, 8, 7, 5, 2, 3, 4], [8, 7, 0, 2, 1, 4, 6, 5, 3], [5, 8, 6, 4, 2, 1, 3, 7, 0], [1, 4, 5, 0, 3, 6, 7, 2, 8]]),
+    ("O5W4", [[5, 7, 4, 0, 1, 8, 6, 3, 2], [6, 3, 7, 2, 5, 0, 1, 4, 8], [3, 2, 0, 6, 7, 5, 4, 8, 1], [1, 4, 3, 8, 6, 2, 5, 7, 0], [7, 0, 8, 5, 4, 1, 3, 2, 6], [4, 8, 2, 1, 3, 6, 7, 0, 5], [0, 5, 1, 7, 8, 4, 2, 6, 3], [2, 6, 5, 3, 0, 7, 8, 1, 4], [8, 1, 6, 4, 2, 3, 0, 5, 7]]),
+    ("O5W5", [[0, 2, 5, 8, 7, 3, 1, 6, 4], [4, 0, 6, 3, 8, 7, 5, 1, 2], [7, 3, 0, 6, 5, 1, 2, 4, 8], [1, 6, 3, 0, 2, 4, 8, 7, 5], [5, 1, 7, 4, 0, 2, 3, 8, 6], [6, 5, 8, 2, 4, 0, 7, 3, 1], [8, 7, 4, 1, 6, 5, 0, 2, 3], [3, 8, 2, 5, 1, 6, 4, 0, 7], [2, 4, 1, 7, 3, 8, 6, 5, 0]]),
+    ("O5W6", [[0, 2, 4, 8, 7, 6, 3, 5, 1], [6, 0, 1, 5, 4, 2, 8, 3, 7], [3, 5, 0, 1, 2, 8, 4, 7, 6], [7, 1, 5, 0, 8, 4, 2, 6, 3], [8, 3, 6, 7, 0, 5, 1, 4, 2], [2, 6, 7, 3, 1, 0, 5, 8, 4], [4, 7, 3, 6, 5, 1, 0, 2, 8], [1, 4, 8, 2, 3, 7, 6, 0, 5], [5, 8, 2, 4, 6, 3, 7, 1, 0]]),
+    ("O5W7", [[3, 7, 0, 6, 2, 4, 1, 5, 8], [5, 4, 2, 0, 6, 1, 7, 8, 3], [2, 8, 7, 1, 4, 3, 5, 6, 0], [8, 1, 6, 2, 0, 7, 4, 3, 5], [1, 2, 3, 8, 5, 6, 0, 7, 4], [0, 5, 1, 4, 7, 8, 3, 2, 6], [4, 0, 8, 5, 3, 2, 6, 1, 7], [6, 3, 4, 7, 1, 5, 8, 0, 2], [7, 6, 5, 3, 8, 0, 2, 4, 1]]),
+    ("O5W8", [[7, 5, 1, 0, 2, 3, 6, 8, 4], [3, 4, 5, 6, 0, 8, 2, 7, 1], [2, 8, 3, 1, 4, 0, 5, 6, 7], [8, 1, 4, 2, 6, 7, 0, 3, 5], [0, 7, 8, 5, 1, 6, 4, 2, 3], [1, 2, 6, 8, 3, 5, 7, 4, 0], [4, 6, 0, 3, 7, 1, 8, 5, 2], [6, 3, 7, 4, 5, 2, 1, 0, 8], [5, 0, 2, 7, 8, 4, 3, 1, 6]]),
+    ("O5W9", [[0, 3, 1, 4, 2], [0, 1, 3, 2, 4], [0, 4, 2, 3, 1], [0, 4, 2, 3, 1], [0, 1, 3, 2, 4]]),
+    ("O5W10", [[1, 2, 4, 3, 0], [0, 4, 3, 1, 2], [2, 2, 2, 2, 2], [3, 2, 0, 1, 2], [0, 4, 1, 2, 3]]),
+    ("O5W11", [[1, 3, 4, 5, 4, 0], [5, 1, 3, 0, 3, 4], [0, 5, 1, 2, 1, 3], [3, 4, 0, 1, 0, 5], [0, 5, 1, 4, 1, 3], [4, 0, 5, 3, 5, 1]]),
+    ("O5W12", [[0, 1, 2, 3, 4, 0, 6, 7], [4, 5, 3, 1, 6, 4, 1, 0], [6, 2, 5, 2, 1, 3, 2, 1], [6, 3, 4, 5, 3, 6, 4, 2], [3, 4, 5, 1, 0, 3, 4, 2], [5, 1, 2, 3, 4, 5, 6, 7], [1, 3, 4, 6, 6, 1, 0, 4], [4, 2, 6, 7, 1, 2, 7, 5]]),
+    ("O5W13", [[0, 3, 5, 2, 7, 8, 4, 1, 6], [5, 8, 7, 3, 0, 2, 1, 6, 4], [6, 0, 4, 7, 1, 5, 8, 2, 3], [8, 4, 2, 6, 3, 1, 7, 0, 5], [3, 6, 8, 1, 2, 4, 5, 7, 0], [4, 5, 1, 0, 6, 7, 2, 3, 8], [1, 7, 6, 5, 4, 0, 3, 8, 2], [2, 1, 3, 4, 8, 6, 0, 5, 7], [7, 2, 0, 8, 5, 3, 6, 4, 1]]),
+    # Second cut, same day: a longer z3 run over the 353 held-out misses of the
+    # 2026-08-25 20k sweep (orders 7/8/9, 60 s per order) plus the first run's
+    # raw output, greedy-covered against BOTH miss files with the 13 above
+    # already counted as shipped. These four are every remaining table that
+    # refutes >= 2 rows: +18 rows for 676 bytes. The 1-row tables were left out
+    # deliberately — a table that refutes exactly one known row is a row id in
+    # disguise (rail 9) and its bytes buy nothing on unseen data. The harvest
+    # was still running when this shipped (153 of 353 rows), so the curve is
+    # not spent: more z3 hours give more tables of the same shape.
+    ("O5W14", [[0, 2, 6, 8, 7, 3, 5, 1, 4], [6, 1, 4, 7, 3, 8, 2, 5, 0], [5, 3, 2, 4, 0, 6, 7, 8, 1], [4, 5, 0, 3, 8, 7, 1, 2, 6], [1, 7, 5, 6, 4, 0, 8, 3, 2], [8, 0, 7, 2, 1, 5, 4, 6, 3], [3, 4, 8, 5, 2, 1, 6, 0, 7], [2, 8, 1, 0, 6, 4, 3, 7, 5], [7, 6, 3, 1, 5, 2, 0, 4, 8]]),
+    ("O5W15", [[0, 5, 3, 6, 1, 2, 7, 4], [5, 0, 6, 3, 7, 4, 1, 2], [3, 6, 0, 5, 2, 1, 4, 7], [6, 3, 5, 0, 4, 7, 2, 1], [1, 7, 2, 4, 0, 3, 5, 6], [2, 4, 1, 7, 3, 0, 6, 5], [7, 1, 4, 2, 5, 6, 0, 3], [4, 2, 7, 1, 6, 5, 3, 0]]),
+    ("O5W16", [[0, 7, 4, 8, 1, 6, 3, 5, 2], [6, 1, 0, 5, 2, 4, 8, 3, 7], [7, 8, 2, 0, 5, 1, 4, 6, 3], [4, 2, 6, 3, 7, 0, 5, 8, 1], [5, 6, 8, 1, 4, 3, 7, 2, 0], [8, 0, 3, 7, 6, 5, 2, 1, 4], [2, 3, 1, 4, 8, 7, 6, 0, 5], [3, 4, 5, 2, 0, 8, 1, 7, 6], [1, 5, 7, 6, 3, 2, 0, 4, 8]]),
+    ("O5W17", [[0, 6, 5, 4, 3, 2, 1], [6, 1, 4, 5, 2, 3, 0], [5, 4, 2, 6, 1, 0, 3], [4, 5, 6, 3, 0, 1, 2], [3, 2, 1, 0, 4, 6, 5], [2, 3, 0, 1, 6, 5, 4], [1, 0, 3, 2, 5, 4, 6]]),
 )
 
 
@@ -7873,7 +7950,7 @@ def _false_witness_portfolio(
 
     # Last in the portfolio so every route above keeps its golden pin; these
     # only ever claim a row that enumeration could not refute.
-    for name, table in FP_WITNESS_TABLES:
+    for name, table in FP_WITNESS_TABLES + O5_WITNESS_TABLES:
         if deadline_expired(deadline):
             return None
         if witness_check(eq1, eq2, table):
@@ -8036,8 +8113,24 @@ LEGACY_MAX_WITNESS_ORDER = 10
 # fallback. See `witness_decide_is_affordable`.
 MAX_WITNESS_DECIDE_APPLICATIONS = 50_000
 
-CONSTRAINT_ORDERS = (8, 9, 6, 4, 10)
+# Cheap tier. 8 and 9 stay first: they are what the order-4 corpus is tuned on
+# (a 5,000-row order-5 batch reads `false:constraint_fin8` 7, `fin9` 2, `fin6` 1),
+# so demoting them risks losing rows. What was wrong was the CLOCK, not the
+# order: until 2026-08-27 the whole schedule shared one 3 s deadline, and 8 and 9
+# consumed it, so 6/4/10 were never reached. Measured on the 47 fresh order-5
+# misses, one process, effort fast: shipped (8, 9, 6, 4, 10) shared 3 s -> 0/47;
+# (4, 5, 6, 7, 8, 9) shared 3 s -> 2/47; (4, 5, 6, 7) per_order at 1 s/order ->
+# 3/47. 5 and 7 were absent from the cheap tuple entirely while z3 places 3 of 10
+# fresh witnesses at orders 5 and 6. Now every order gets its own slice.
+CONSTRAINT_ORDERS = (8, 9, 6, 5, 4, 7, 10)
+# The shared-deadline default, kept for direct callers that pass `per_order=False`
+# (the tests do). The cheap tier in `solve_problem_pass` does NOT use it — see
+# CONSTRAINT_CHEAP_PER_ORDER_BUDGET.
 CONSTRAINT_TIME_BUDGET = 3.0
+# Per-order slice for the cheap tier. 7 orders x 0.8 s = 5.6 s worst case, paid
+# only by a row the entire witness portfolio has already missed; measured actual
+# cost is well under the budget because most orders resolve or exhaust early.
+CONSTRAINT_CHEAP_PER_ORDER_BUDGET = 0.8
 # Pure safety net, not the real stopping criterion — every node already checks
 # the wall-clock deadline (`time.monotonic() >= deadline`), which is the correct
 # thing to bound a search on. Was 60000, which fires *before* that deadline and
@@ -8259,6 +8352,13 @@ def constraint_countermodel(
         table = _cp_search(eq1, eq2, n, deadline, budget)
         if budget[0] <= 0:
             complete = False  # node cap hit: this order was not settled
+        if (table is None and deadline is not None
+                and time.monotonic() >= deadline):
+            # Clock, not exhaustion. Under a SHARED deadline the next iteration
+            # caught this; under `per_order=True` every order is handed a fresh
+            # deadline, so without this check a timed-out order would read as
+            # searched and could license a speculative TRUE (rails 5, 5f-ii).
+            complete = False
         if table is None:
             continue
         note_hypothesis_model()
@@ -8385,6 +8485,7 @@ def local_model_counterexample(
     max_flips: int = LOCAL_MODEL_MAX_FLIPS,
     noise: float = LOCAL_MODEL_NOISE,
     seed: int = 0,
+    unscaled: bool = False,
 ) -> tuple[int, list[list[int]], str] | None:
     """Randomized repair search for a finite magma separating eq1 from eq2.
 
@@ -8392,18 +8493,45 @@ def local_model_counterexample(
     bounded enumeration, and duals have all missed. Every candidate is
     re-checked by `table_is_counterexample`, so this can only ever return a
     genuine witness.
+
+    Each size in `sizes` gets its own slice of the budget. It used to share one
+    deadline with every other size, and since the inner restart loop only ever
+    exits on that deadline, no size but the first was ever searched — rail
+    5f-iii, sixth instance (see LOCAL_MODEL_SIZES for the measurement).
+
+    `unscaled=True` skips the effort-tier multiplier and the non-fast size
+    escalation, which is what the early probe slot wants: a fixed cheap attempt
+    whose cost does not grow with the tier (rail 12).
     """
-    deadline = local_deadline(_eff_time(time_budget))
     rng = random.Random(seed)
     lhs1, rhs1 = eq1["lhs"], eq1["rhs"]
     lhs2, rhs2 = eq2["lhs"], eq2["rhs"]
-    if _EFFORT != "fast":
+    flip_cap = max_flips
+    if _EFFORT != "fast" and not unscaled:
         # Frequent restarts beat long walks on these laws (sweep evidence),
-        # and the extra size only pays once there is clock to spend.
-        sizes = sizes + (6,)
-        max_flips = 800
+        # and the extra size only pays once there is clock to spend. 6 and 7
+        # are in the base tuple since 2026-08-27, so the escalation reaches 8.
+        sizes = sizes + (8,)
+        # The 800-flip restart policy was measured on sizes 4 and 5 — the only
+        # sizes this search could actually reach before the slice fix. At 6 and
+        # above the opposite holds: order5_11497_52058 at n=6 with a 9 s slice
+        # and seed 0 MISSES at 800 flips and finds the witness in 3.15 s at
+        # 4,000. So the short walk stays where it was measured and the newly
+        # reachable sizes keep the long one.
+        flip_cap = 800
 
+    widest = max(len(eq1["variables"]), len(eq2["variables"]), 1)
+    sizes = tuple(n for n in sizes if n ** widest <= LOCAL_MODEL_MAX_INSTANCES)
+    if not sizes:
+        return None
+    total = time_budget if unscaled else _eff_time(time_budget)
+    per_size = total / len(sizes)
     for n in sizes:
+        # Own slice per size, still clamped to the global hard deadline by
+        # `local_deadline`. The TOTAL is unchanged from the shared-deadline
+        # version, so this cannot cost a TRUE row more clock than before.
+        deadline = local_deadline(per_size)
+        flips = flip_cap if n <= 5 else max_flips
         envs1 = _lm_envs(eq1, n)
         envs2 = _lm_envs(eq2, n)
 
@@ -8417,7 +8545,7 @@ def local_model_counterexample(
 
         while time.monotonic() < deadline:
             table = [[rng.randrange(n) for _ in range(n)] for _ in range(n)]
-            for _ in range(max_flips):
+            for _ in range(flips):
                 if time.monotonic() >= deadline:
                     break
                 bad = bad_envs(table)
@@ -10133,11 +10261,31 @@ def solve_problem_pass(
     # with the other last-resort search because when it succeeds it succeeds in
     # milliseconds (4 of 6 known-FALSE misses in ~0.05 s), and a FALSE row that
     # falls through to the general TRUE engines pays for all of them first.
+    # `per_order=True` since 2026-08-27: under the old shared 3 s deadline orders
+    # 6/4/10 were never reached at all (see CONSTRAINT_ORDERS).
     if _engine_gate():
         return None
-    constrained = constraint_countermodel(eq1, eq2)
+    constrained = constraint_countermodel(
+        eq1, eq2, per_order=True,
+        time_budget=CONSTRAINT_CHEAP_PER_ORDER_BUDGET)
     if constrained is not None:
         return false_record(*constrained)
+
+    # Randomized repair search, UNSCALED early probe — the local-model twin of
+    # `egg_probe_route`/`completion_probe_route`: cheap win early, full attempt
+    # late. The tier-scaled call below the TRUE engines stays exactly where it
+    # was. Measured 2026-08-27 on order5_39558_13136 (an order-4 witness): this
+    # search finds it in 0.1-0.3 s, and the full `solve_problem` took 262.9 s to
+    # reach the late slot, which a 60 s row budget — let alone Marathon's ~300 s
+    # fair share — simply loses. Only rows the whole witness portfolio and the
+    # cheap constraint tier already missed ever reach here.
+    if _engine_gate():
+        return None
+    probe = local_model_counterexample(
+        eq1, eq2, sizes=LOCAL_MODEL_PROBE_SIZES,
+        time_budget=LOCAL_MODEL_PROBE_BUDGET, unscaled=True)
+    if probe is not None:
+        return false_record(*probe)
 
     # General TRUE engines. Each is expensive, so `_engine_gate()` is checked
     # before every one: it enforces the global hard deadline and the memory
