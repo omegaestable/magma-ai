@@ -294,11 +294,19 @@ class ProofKernel:
 # Certificate-level checks
 # ---------------------------------------------------------------------------
 
+# Binder names in an emitted certificate. Not `[a-z]`: the judge's equation
+# grammar (`^[\sa-zA-Z0-9◇=()]+$`) lets a problem variable be spelled
+# `x1` or `X`, and the solver introduces those names verbatim (RC-02), so a
+# single-letter binder class here would classify a legal certificate as
+# "other" and silently check nothing.
+_BINDER = r"[A-Za-z][A-Za-z0-9]*"
+_BINDERS = rf"{_BINDER}(?: {_BINDER})*"
+
 _EXACT_CERT_RE = re.compile(
     r"\Aimport JudgeProblem\n\n"
     r"def submission : Goal := by\n"
     r"  intro G _ h\n"
-    r"(?:  intro ([a-z](?: [a-z])*)\n)?"
+    rf"(?:  intro ({_BINDERS})\n)?"
     r"  exact (.+)\n\Z",
     re.DOTALL,
 )
@@ -310,7 +318,7 @@ _SINGLETON_CERT_RE = re.compile(
     r"  have hall : ∀ a b : G, a = b := by\n"
     r"    intro a b\n"
     r"    exact ([^\n]+)\n"
-    r"(?:  intro (?:[a-z](?: [a-z])*)\n)?"
+    rf"(?:  intro (?:{_BINDERS})\n)?"
     r"  exact hall _ _\n\Z",
 )
 
@@ -318,10 +326,10 @@ _LEMMA_CERT_RE = re.compile(
     r"\Aimport JudgeProblem\n\n"
     r"def submission : Goal := by\n"
     r"  intro G _ h\n"
-    r"  have hlem : ∀ ([a-z](?: [a-z])*) : G, ([^\n]+) := by\n"
-    r"    intro (?:[a-z](?: [a-z])*)\n"
+    rf"  have hlem : ∀ ({_BINDERS}) : G, ([^\n]+) := by\n"
+    rf"    intro (?:{_BINDERS})\n"
     r"    exact ([^\n]+)\n"
-    r"(?:  intro ([a-z](?: [a-z])*)\n)?"
+    rf"(?:  intro ({_BINDERS})\n)?"
     r"  exact (.+)\n\Z",
     re.DOTALL,
 )
@@ -354,12 +362,12 @@ MAX_WITNESS_DECIDE_APPLICATIONS = 50_000
 _LEMMA_CHAIN_HEAD = "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n"
 
 _HAVE_BLOCK_RE = re.compile(
-    r"\A  have (hlem\d*) : ∀ ([a-z](?: [a-z])*) : G, ([^\n]+) := by\n"
-    r"    intro ([a-z](?: [a-z])*)\n"
+    rf"\A  have (hlem\d*) : ∀ ({_BINDERS}) : G, ([^\n]+) := by\n"
+    rf"    intro ({_BINDERS})\n"
     r"    exact ([^\n]+)\n")
 
 _LEMMA_CHAIN_TAIL_RE = re.compile(
-    r"\A(?:  intro ([a-z](?: [a-z])*)\n)?  exact (.+)\n\Z", re.DOTALL)
+    rf"\A(?:  intro ({_BINDERS})\n)?  exact (.+)\n\Z", re.DOTALL)
 
 
 def _parse_lemma_chain(code: str):

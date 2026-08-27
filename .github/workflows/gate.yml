@@ -113,3 +113,90 @@ jobs:
           print("solver judge limits match config.json:",
                 {k: found[k] for k in expected})
           PY
+
+      # RC-06 / TEST-3. The banned-token list is hand-copied into three files
+      # and the judge scans raw certificate text - comments included - before
+      # Lean ever runs. The 2026-08-21 upstream hardening added 12 tokens in one
+      # commit; a repeat after the next sync would reject every certificate
+      # while every offline check stayed green (rail 14).
+      #
+      # RC-05. The dependency policy is the one acceptance gate with no offline
+      # model at all, and deliberately so: the report is over the elaborated
+      # term, not the source text, so a syntactic approximation would fail
+      # closed on valid certificates (rail 4). Pinning the vendored policy is
+      # the safe half - an upstream change to it surfaces as a red build rather
+      # than as unexplained `incomplete_proof` verdicts.
+      - name: Judge banned tokens and proof policy match the vendored judge
+        run: |
+          python - <<'PY'
+          import ast, pathlib
+
+          def module_assign(path, name):
+              tree = ast.parse(pathlib.Path(path).read_text(encoding="utf-8"))
+              for node in tree.body:
+                  if isinstance(node, ast.Assign) and any(
+                          isinstance(t, ast.Name) and t.id == name for t in node.targets):
+                      return ast.literal_eval(node.value)
+              raise SystemExit(f"{name} not found in {path}")
+
+          official = set(module_assign(
+              "vendor/stage2-official/judge/verify.py", "BANNED_PROOF_TOKENS"))
+          copies = {
+              "stage2/solver/solver.py": "JUDGE_BANNED_TOKENS",
+              "stage2/tests/oracles.py": "_JUDGE_BANNED_TOKENS",
+          }
+          problems = []
+          for path, name in copies.items():
+              mirror = set(module_assign(path, name))
+              if mirror != official:
+                  problems.append(
+                      f"{path}:{name} missing {sorted(official - mirror)} "
+                      f"extra {sorted(mirror - official)}")
+          if problems:
+              raise SystemExit(
+                  "banned-token list drifted from vendor/stage2-official/judge/"
+                  "verify.py:\n  " + "\n  ".join(problems))
+          print(f"banned-token list matches in all three copies ({len(official)} tokens)")
+
+          # The proof policy the deployed proxy passes to the judge. Recorded
+          # 2026-08-27 against vendored proxy.py; if this fails, read the
+          # upstream diff before touching the numbers (rail 14).
+          policy = module_assign("vendor/stage2-official/pipeline/proxy.py",
+                                 "DEFAULT_PROOF_POLICY")
+          expected_axioms = ["Classical.choice", "Quot.sound", "propext"]
+          expected_declarations = ["letFun"]
+          expected_prefix_count = 59
+          expected_prefix_digest = sorted([
+              "And.", "Bool.", "Classical.", "Decidable.", "Eq.",
+              "EquationLHS", "EquationRHS", "Goal", "Exists.", "False.",
+              "Fin.", "Fintype.", "Function.", "HEq.", "Iff.", "Init.", "Int.",
+              "Lean.", "List.", "Magma.", "Mathlib.", "MemoFinOp.", "Nat.",
+              "Nonempty.", "Not.", "NthRewrites.", "OfNat.", "Option.", "Or.",
+              "Prod.", "PUnit.", "RewriteCombinations.", "RewriteGoal.",
+              "RewriteHypothesis.", "RewriteHypothesisAndGoal.",
+              "SimpleRewrites.", "Std.", "Subgraph.", "Subtype.", "Sum.",
+              "Trans.", "True.", "Unit.", "JudgeDecide.", "JudgeFinOp.",
+              "JudgeMagma.", "inst", "of_decide_", "submission.", "congrArg",
+              "congr_arg", "eq_self", "of_eq_true", "id", "eq_comm", "eq_mp",
+              "eq_mpr", "rfl", "absurd",
+          ])
+          drift = []
+          if sorted(policy["allowed_axioms"]) != expected_axioms:
+              drift.append(f"allowed_axioms = {sorted(policy['allowed_axioms'])}")
+          if sorted(policy["allowed_declarations"]) != expected_declarations:
+              drift.append(
+                  f"allowed_declarations = {sorted(policy['allowed_declarations'])}")
+          prefixes = sorted(policy["allowed_declaration_prefixes"])
+          if len(prefixes) != expected_prefix_count or prefixes != expected_prefix_digest:
+              drift.append(
+                  f"allowed_declaration_prefixes ({len(prefixes)} entries): "
+                  f"removed {sorted(set(expected_prefix_digest) - set(prefixes))}, "
+                  f"added {sorted(set(prefixes) - set(expected_prefix_digest))}")
+          if drift:
+              raise SystemExit(
+                  "pipeline/proxy.py DEFAULT_PROOF_POLICY changed upstream - every "
+                  "shipped certificate shape needs re-checking against it before "
+                  "this pin is updated:\n  " + "\n  ".join(drift))
+          print(f"proof policy unchanged: 3 axioms, 1 declaration, "
+                f"{len(prefixes)} prefixes")
+          PY

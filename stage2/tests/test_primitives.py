@@ -385,18 +385,36 @@ def test_congr_arg_certificate_actually_uses_congr_arg(solver):
     assert "congrArg" in code
 
 
-@pytest.mark.parametrize("case", sorted(REAL_CERT_CASES))
-@pytest.mark.parametrize("mutate", [
-    pytest.param(lambda c: c.replace("h ", "h y ", 1), id="extra_hypothesis_arg"),
-    pytest.param(lambda c: c.replace(".symm", "", 1), id="drop_a_symm"),
-    pytest.param(lambda c: c.replace(".trans", ".symm", 1), id="trans_to_symm"),
-    pytest.param(lambda c: c.replace("fun t => ", "fun t => t ◇ ", 1), id="corrupt_congr_context"),
-])
+# Each mutation is paired with the cases whose certificate it actually bites.
+# `corrupt_congr_context` needs a `congrArg`, which the flat trans/symm chain
+# does not have -- and this used to be a `pytest.skip` inside the test, i.e. a
+# parametrisation that contributed no coverage while reading as one (rail 16).
+# Pairing them here makes the gap explicit in the collected test ids instead.
+CERT_MUTATIONS = [
+    ("extra_hypothesis_arg", lambda c: c.replace("h ", "h y ", 1),
+     ("trans_chain", "congr_arg")),
+    ("drop_a_symm", lambda c: c.replace(".symm", "", 1),
+     ("trans_chain", "congr_arg")),
+    ("trans_to_symm", lambda c: c.replace(".trans", ".symm", 1),
+     ("trans_chain", "congr_arg")),
+    ("corrupt_congr_context", lambda c: c.replace("fun t => ", "fun t => t ◇ ", 1),
+     ("congr_arg",)),
+]
+
+
+@pytest.mark.parametrize(
+    "case,mutate",
+    [pytest.param(case, mutate, id=f"{name}-{case}")
+     for name, mutate, cases in CERT_MUTATIONS for case in cases],
+)
 def test_oracle_rejects_mutated_certificates(solver, case, mutate):
     eq1, eq2, code = _real_true_certificate(solver, case)
     mutated = mutate(code)
-    if mutated == code:
-        pytest.skip("mutation did not apply to this certificate")
+    # Not a skip: a mutation that does not apply proves nothing and would read
+    # as coverage in the gate's pass count.
+    assert mutated != code, (
+        f"mutation no longer applies to the {case} certificate -- the engine "
+        "changed shape, so re-pair the mutation rather than skipping it")
     with pytest.raises(OracleError):
         oracles.check_true_exact_certificate(mutated, eq1, eq2)
 
