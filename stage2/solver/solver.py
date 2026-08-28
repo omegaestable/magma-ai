@@ -11247,6 +11247,25 @@ def solve_problem_pass(
     if counterexample is not None:
         return false_record(*counterexample)
 
+    # The two UNSCALED TRUE probes run BEFORE the cheap constraint tier
+    # (2026-08-27, perf diagnosis SP-2 variant A). A kernel-checked TRUE proof
+    # makes the countermodel search provably pointless, and these two are the
+    # cheapest things in the file that can produce one: measured over three
+    # independent samples, the cheap constraint tier was 44.7-49.9% of ALL
+    # solver wall-clock and it was being spent on rows that turn out TRUE (it
+    # wins 212 rows in 510,000 unseen order-4 rows, 0.04%). Moving the probes
+    # ahead of it took 300 uniform order-4 rows from 456.2 s to 234.2 s with
+    # 0 lost / 0 gained / 0 verdict flips / 0 route changes. Egg first, then
+    # completion, exactly the order they had inside the engine list, so no
+    # row changes route. The speculative-TRUE evidence globals are only read
+    # on rows that stay unsolved, where the constraint tier still runs.
+    for probe_route in (egg_probe_route, completion_probe_route):
+        if _engine_gate():
+            return None
+        found = probe_route(eq1, eq2)
+        if found is not None and not route_excluded(str(found[0])):
+            return true_record(*found)
+
     # Constraint-propagation witness search, cheap tier. Placed here rather than
     # with the other last-resort search because when it succeeds it succeeds in
     # milliseconds (4 of 6 known-FALSE misses in ~0.05 s), and a FALSE row that
@@ -11277,6 +11296,29 @@ def solve_problem_pass(
     if probe is not None:
         return false_record(*probe)
 
+    # Linear models over Z_n for n > 10. Cheap (a few thousand candidate tables,
+    # each abandoned at the first assignment that violates eq1). `hard2_0051`
+    # is the motivating row: its smallest countermodel is
+    # `x ◇ y = 7x + 7y (mod 13)`, which no other route can reach. Until
+    # 2026-08-27 this scan sat BEHIND every TRUE engine (perf diagnosis SP-3):
+    # a ~0.4 s no-hit scan placed after ~250 s of TRUE search, so the 104 rows
+    # per 530k it wins cost 20,459 s, and 2 of the 353 order-5 misses had a z11
+    # witness it finds in 0.07 s but never reached. Every uniform order-4 row
+    # with a large-linear witness is already claimed by `find_counterexample`
+    # above (61/61 measured), so this placement flips no route.
+    if _engine_gate():
+        return None
+    for index, (route, table) in enumerate(large_linear_family_tables(eq1, eq2)):
+        # Re-gate periodically rather than per candidate: `_engine_gate` reads
+        # RSS, and there are a few thousand candidates here. 32 rather than 128
+        # since the orders reach 47: one candidate's `equation_holds` is
+        # `n ** variables` assignments, so the work between two polls has to be
+        # counted at the *largest* order in the tuple, not the smallest.
+        if index % 32 == 0 and _engine_gate():
+            return None
+        if witness_check(eq1, eq2, table):
+            return false_record(len(table), table, route)
+
     # General TRUE engines. Each is expensive, so `_engine_gate()` is checked
     # before every one: it enforces the global hard deadline and the memory
     # guard modelling the 2048 MB sandbox (deep-tier closures were measured at
@@ -11286,18 +11328,9 @@ def solve_problem_pass(
     # which case `deep_absorption_closure` gets the first attempt. That single
     # conditional is why this block is a sequence rather than a flat table.
     closure_first = not absorption_hypothesis(eq1)
-    engines: list[Any] = [
-        # Early fixed-budget egg probe: rescues collapse-family rows the
-        # tier-scaled closure engines below would otherwise starve (the
-        # dominant deep-tier miss mode of the 2026-08 real-judge campaign).
-        # Free gates make it near-zero cost when the pivot is impossible.
-        egg_probe_route,
-        # Ordered completion, unscaled probe. Sits this early because its win
-        # is fast (every row it closed on the 20k ETP sample landed in under
-        # 0.4 s) and its loss is *cheap* — it saturates rather than spending
-        # the clock, unlike every search engine below it.
-        completion_probe_route,
-    ]
+    # `egg_probe_route` and `completion_probe_route` used to open this list;
+    # since 2026-08-27 they run above, ahead of the cheap constraint tier.
+    engines: list[Any] = []
     if closure_first:
         engines.append(equational_closure_route)
     engines.append(deep_absorption_closure_route)
@@ -11356,24 +11389,6 @@ def solve_problem_pass(
     late = local_model_counterexample(eq1, eq2)
     if late is not None:
         return false_record(*late)
-
-    # Linear models over Z_n for n > 10. Cheap (a few thousand candidate tables,
-    # each abandoned at the first assignment that violates eq1), and placed here
-    # because it is the first route that can claim a witness above the old
-    # order-10 ceiling. `hard2_0051` is the motivating row: its smallest
-    # countermodel is `x ◇ y = 7x + 7y (mod 13)`, which no other route can reach.
-    if _engine_gate():
-        return None
-    for index, (route, table) in enumerate(large_linear_family_tables(eq1, eq2)):
-        # Re-gate periodically rather than per candidate: `_engine_gate` reads
-        # RSS, and there are a few thousand candidates here. 32 rather than 128
-        # since the orders reach 47: one candidate's `equation_holds` is
-        # `n ** variables` assignments, so the work between two polls has to be
-        # counted at the *largest* order in the tuple, not the smallest.
-        if index % 32 == 0 and _engine_gate():
-            return None
-        if witness_check(eq1, eq2, table):
-            return false_record(len(table), table, route)
 
     # Widest witness tier, reached only on a row nothing else claimed. Orders
     # beyond the cheap schedule and a much larger budget: the alternative for
@@ -12145,17 +12160,11 @@ def solver_analysis(problem: dict[str, Any], *,
     return "\n".join(cues)
 
 
-# Per-row evidence from the deterministic FALSE search, id -> (models_seen,
-# constraint_search_exhausted). `hypothesis_models_seen()` and
-# `constraint_search_exhausted()` are module-level state describing the LAST
-# search, so the only place the numbers exist per row is the deterministic loop
-# that ran it; it records them here and the LLM lane reads them back. Defaults
-# defensively to empty: an unrecorded row is `(-1, False)` = unknown, which
-# takes the derivation direction, so nothing depends on the recording having
-# happened.
-_MARATHON_ROW_EVIDENCE: dict[str, tuple[int, bool]] = {}
-
-
+# `_MARATHON_ROW_EVIDENCE` (id -> (models_seen, constraint_search_exhausted))
+# is defined next to `note_marathon_row_evidence`, which the deterministic
+# Marathon loops fill after every unsolved row; the LLM lane reads it back
+# through this getter. An unrecorded row is `(-1, False)` = unknown, which
+# takes the derivation direction, so nothing depends on the recording.
 def marathon_row_evidence(problem: dict[str, Any]) -> tuple[int, bool]:
     evidence = _MARATHON_ROW_EVIDENCE.get(str(problem.get("id")))
     if not isinstance(evidence, tuple) or len(evidence) != 2:
