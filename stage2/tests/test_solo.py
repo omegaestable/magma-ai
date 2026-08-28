@@ -132,7 +132,7 @@ def test_the_environment_variable_is_used_when_the_message_carries_no_budget(sol
 def _unsolvable(solver, monkeypatch, *, models_seen=0):
     """Make the deterministic pass return nothing, cheaply and deterministically."""
     monkeypatch.setattr(solver, "solve_problem", lambda *a, **k: None)
-    monkeypatch.setattr(solver, "solver_analysis", lambda problem: "scripted analysis")
+    monkeypatch.setattr(solver, "solver_analysis", lambda problem, **kwargs: "scripted analysis")
     monkeypatch.setattr(solver, "hypothesis_models_seen", lambda: models_seen)
 
 

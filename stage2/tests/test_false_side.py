@@ -48,6 +48,7 @@ O5_SOURCES = [
     ("O5W15", "x = (y * (x * (z * z))) * (x * y)", "x = (y * ((y * z) * z)) * (y * z)"),
     ("O5W16", "x = (y * z) * ((x * (z * x)) * y)", "(x * y) * z = (x * (x * x)) * z"),
     ("O5W17", "x = (y * y) * (z * (z * (x * y)))", "x = y * (((x * (y * z)) * y) * z)"),
+    ("O5W18", "x = x * ((y * ((y * y) * x)) * z)", "x * y = (x * y) * ((z * x) * x)"),
 ]
 
 # Rows whose FALSE witness the fixed schedules must find. Sources: the 47 misses

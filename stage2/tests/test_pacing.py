@@ -393,8 +393,10 @@ def test_solo_overtime_completion_runs_exactly_once_on_an_unsolved_row(
     assert seen[0]["escalate"] is True
     assert seen[0]["time_budget"] == pytest.approx(
         solver.SOLO_OVERTIME_MAX_SECONDS, abs=5.0)
-    # Judge calls: the insurance reflexive cert, then the overtime certificate.
-    assert len(proxy.judge_calls) == 2
+    # Judge calls: exactly the overtime certificate. (The insurance reflexive
+    # judge call that used to precede it was deleted the same day, SOLO-4; the
+    # final grind fallback emits the same text and is deduped by `attempted`.)
+    assert len(proxy.judge_calls) == 1
     for body in proxy.judge_calls:
         assert set(body) == {"call", "verdict", "code"}   # rail 8
 

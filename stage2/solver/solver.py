@@ -875,8 +875,10 @@ FP_WITNESS_TABLES = (
 O5_WITNESS_TABLES = (
     # Order-5 witness library, harvested offline with z3 (2026-08-27) over the
     # order-5 rows the shipped portfolio misses, then cut down by greedy
-    # set-cover (`stage2/experiments/witness_library_eval.py`). Provenance and
-    # evidence, so nobody has to re-derive it:
+    # set-cover (`stage2/experiments/witness_library_eval.py`). 18 tables /
+    # 4,090 source bytes, refuting 134 of the 353 held-out 2026-08-25 sweep
+    # failures (38.0%) and 145 of the 400 rows in both order-5 miss files.
+    # Provenance and evidence, so nobody has to re-derive it:
     #   * z3 countermodel search at orders 5..9 over 157 order-5 misses from two
     #     disjoint samples; every table re-checked with `witness_check`,
     #     `table_is_renderable` and `witness_decide_is_affordable`.
@@ -922,6 +924,20 @@ O5_WITNESS_TABLES = (
     ("O5W15", [[0, 5, 3, 6, 1, 2, 7, 4], [5, 0, 6, 3, 7, 4, 1, 2], [3, 6, 0, 5, 2, 1, 4, 7], [6, 3, 5, 0, 4, 7, 2, 1], [1, 7, 2, 4, 0, 3, 5, 6], [2, 4, 1, 7, 3, 0, 6, 5], [7, 1, 4, 2, 5, 6, 0, 3], [4, 2, 7, 1, 6, 5, 3, 0]]),
     ("O5W16", [[0, 7, 4, 8, 1, 6, 3, 5, 2], [6, 1, 0, 5, 2, 4, 8, 3, 7], [7, 8, 2, 0, 5, 1, 4, 6, 3], [4, 2, 6, 3, 7, 0, 5, 8, 1], [5, 6, 8, 1, 4, 3, 7, 2, 0], [8, 0, 3, 7, 6, 5, 2, 1, 4], [2, 3, 1, 4, 8, 7, 6, 0, 5], [3, 4, 5, 2, 0, 8, 1, 7, 6], [1, 5, 7, 6, 3, 2, 0, 4, 8]]),
     ("O5W17", [[0, 6, 5, 4, 3, 2, 1], [6, 1, 4, 5, 2, 3, 0], [5, 4, 2, 6, 1, 0, 3], [4, 5, 6, 3, 0, 1, 2], [3, 2, 1, 0, 4, 6, 5], [2, 3, 0, 1, 6, 5, 4], [1, 0, 3, 2, 5, 4, 6]]),
+    # Third cut, same day, and it closes the harvest: the z3 run finished
+    # (353/353 rows, 118 FALSE at orders 7/8/9) and the greedy was re-run over
+    # the FULL pool — 154 distinct tables from all four harvest files —
+    # against both miss files with the 17 above counted as already shipped.
+    # Marginal yield: only 14 of the 258 still-open rows are coverable at all,
+    # and 13 of those 14 want a table to themselves, so this is the single
+    # remaining table refuting >= 2 (3 rows, 3 distinct eq1, 178 source bytes,
+    # judge-accepted twice at 427 B in 4.9 s / 6.1 s on Lean 4.33.1).
+    # That retires the "more z3 hours give more tables" note above: the 17
+    # tables already refute ~141 of the ~155 rows this z3 configuration can
+    # crack, i.e. the library generalises over the harvest faster than the
+    # harvest grows it. A further run would have to reach orders the search
+    # does not (10+) or a different search — not more rows at 7/8/9.
+    ("O5W18", [[6, 3, 0, 0, 0, 0, 3], [1, 4, 1, 1, 3, 3, 1], [3, 2, 0, 2, 2, 2, 3], [3, 3, 3, 3, 3, 3, 3], [4, 4, 3, 4, 5, 3, 4], [3, 5, 3, 5, 5, 2, 5], [6, 3, 6, 6, 3, 6, 1]]),
 )
 
 
@@ -12185,15 +12201,15 @@ def llm_row_is_order5_shaped(problem: dict[str, Any]) -> bool:
         eq1 = parse_equation(str(problem["equation1"]))
     except (KeyError, ValueError):
         return False
-    return len(eq1["variables"]) == 3 and _term_op_count(eq1) == 5
+    return len(eq1["variables"]) == 3 and _equation_op_count(eq1) == 5
 
 
-def _term_op_count(eq: dict[str, Any]) -> int:
-    def count(term: Term) -> int:
-        if term[0] == "var":
-            return 0
-        return 1 + count(term[1]) + count(term[2])
-    return count(eq["lhs"]) + count(eq["rhs"])
+def _equation_op_count(eq: dict[str, Any]) -> int:
+    # Operation count of a parsed EQUATION (both sides). `_term_op_count`
+    # (defined with the mined-law gate) counts one TERM; the two shared a name
+    # on their respective branches and the later definition silently replaced
+    # the earlier one at import (2026-08-27 merge).
+    return _term_op_count(eq["lhs"]) + _term_op_count(eq["rhs"])
 
 
 def llm_row_direction(problem: dict[str, Any]) -> str:
