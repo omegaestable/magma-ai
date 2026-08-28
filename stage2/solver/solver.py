@@ -248,8 +248,35 @@ LLM_MAX_ROUNDS = 6
 # spent, candidate never judged. 310 = one judge call plus margin; 620 = one LLM
 # call plus one judge call plus margin.
 SOLO_FALLBACK_RESERVE_SECONDS = 310.0
-SOLO_DETERMINISTIC_SHARE = 0.55
+# 0.55 until 2026-08-27, when it was measured to be a real cap on deterministic
+# effort rather than a ceiling nothing reaches. `solo_det_share_probe.py 900 6 2`
+# on 6 order-5 sweep misses + 2 order-4 ledger misses: **7 of 8 unsolved rows
+# consumed 100% of the 900 s deadline** (900.0-922.1 s) — the pass does not
+# self-terminate. So 0.55 withheld 1,310 s of a 3,600 s budget from a lane that
+# is provably clock-bound, and handed it to the LLM lane, which is **0 accepted
+# across 433 real calls / ~820k tokens**. 0.85 = 3,060 s deterministic; what is
+# left still funds the overtime completion slot below, and one LLM round only
+# when the deterministic pass finished early (which is exactly the case where
+# the row was easy). Trading clock from a 0/433 lane to the lane that closed
+# `etp_2923_156` by `completion:join` at 235.5 s is positive in expectation.
+SOLO_DETERMINISTIC_SHARE = 0.85
 SOLO_LLM_ROUND_MIN_SECONDS = 620.0
+# Overtime slot (SOLO-1/SOLO-2): one escalated `completion_prove` call on a row
+# every engine already failed, run after the deterministic pass and before the
+# LLM rounds. Capped at 900 s because `COMPLETION_ROUTE_MAX_SECONDS` clamps the
+# in-pass completion call to 300 s regardless of tier, so Solo's 3,600 s is
+# unreachable for the one engine measured to be budget-bound: NEXT_SESSION_BRIEF
+# §1 records 22/40 sampled order-5 collapse rows still budget-bound at 120 s.
+# Purely additive — it cannot displace an engine, because it only runs where
+# every engine returned None.
+SOLO_OVERTIME_MAX_SECONDS = 900.0
+# Below this, do not bother leaving the LLM lane its round minimum: a sliver
+# that cannot start a round is worth more to completion than to nobody.
+SOLO_OVERTIME_MIN_SECONDS = 30.0
+# One second deterministic attempt after the judge REJECTED the first
+# certificate (SOLO-5). Solo's judge channel is unlimited and an accepted answer
+# can never be un-accepted, so the only cost is clock; this bounds it.
+SOLO_RETRY_MAX_SECONDS = 600.0
 MARATHON_LLM_MAX_CALLS = 64
 MARATHON_LLM_BATCH_SIZE = 8
 MARATHON_REF_SECONDS_DEFAULT = 600.0
@@ -269,6 +296,31 @@ MARATHON_ROW_BORROW = 3.0
 # are microseconds), so this costs nothing on a real manifest and converts the
 # pathological case from "tail unattempted" into "tail gets its cheap routes".
 MARATHON_ROW_MIN_SECONDS = 1.0
+# ---- Marathon second deterministic pass (2026-08-27) ----
+# The deterministic pass uses ~2% of the Marathon clock: the 1000-row stratified
+# hard batch spent **5,048 s of 300,000 s** and the LLM lane spent 10.8k tokens
+# for 0 accepts. `MARATHON_DETERMINISTIC_SHARE` caps the pass at 0.6 of the run,
+# but nothing reaches that cap because the pass is bounded per row
+# (`marathon_row_budget`) and the cheap majority hands its share straight back.
+# So after pass 1 there is almost always a whole run's worth of clock left and
+# nothing spending it. Pass 2 re-attempts only the rows pass 1 could not close,
+# one effort tier higher, with a per-row slice big enough to matter: the
+# measured evidence is that the deep deterministic pass is clock-bound (7/8
+# frontier rows burn 100% of a 900 s deadline) and that `completion:join` closed
+# `etp_2923_156` at 235.5 s — i.e. rows do fall when given minutes instead of
+# seconds.
+MARATHON_SECOND_PASS_ROW_MAX = 900.0
+# Fraction of the usable (post-reserve) clock pass 2 may commit. The remainder
+# is slack against the same geometric-decay starvation `MARATHON_ROW_BORROW`
+# exists for: a row that overshoots its slice must not eat the tail's.
+MARATHON_SECOND_PASS_SHARE = 0.8
+# What pass 2 leaves for the LLM lane behind it. 20% of the remaining clock,
+# floored at two batch-widths of the 600 s HTTP timeout so a lane that IS
+# enabled can always make a few real calls, and never more than half of what is
+# left so a short run still gets a second pass. Zero when the lane cannot run
+# at all (no token budget or no proxy library).
+MARATHON_LLM_TIME_RESERVE_SHARE = 0.2
+MARATHON_LLM_TIME_RESERVE_MIN_SECONDS = 1200.0
 LLM_MAX_TABLE_N = 8
 LLM_MAX_OUTPUT_TOKENS = 16384
 # 75.0 until 2026-08-13, which aborted *half* of all real calls this repo has
@@ -279,10 +331,16 @@ LLM_MAX_OUTPUT_TOKENS = 16384
 # the proxy is still inside `forward_upstream` (600 s), finishes the generation
 # and settles the real usage -- so the tokens are spent, the row is lost for
 # good (`index` has already advanced), and nothing is logged. The official
-# defaults this overrides are 600 s (marathon_llm.py) and 300 s (Solo proxy);
-# 300 matches Solo. Safe at any size because `marathon_llm_attempt` clamps it to
-# `deadline - started - 5.0`, so it can never outrun the run deadline.
-LLM_HTTP_TIMEOUT_SECONDS = 300.0
+# defaults this overrides are 600 s (marathon_llm.py) and 300 s (Solo proxy).
+# 600.0 since 2026-08-27 (RC-04): 300 was HALF the marathon proxy's own
+# `request_timeout_seconds = 600.0` (marathon_proxy.py:193), and the proxy bills
+# the full pessimistic reservation on the exception path
+# (`billing_floor = reservation`), so a client-side abort at 300 s spends every
+# reserved token and returns nothing. Matching the proxy means the only timeout
+# that can fire is the one whose budget we already paid for. Safe at any size
+# because `marathon_llm_attempt` clamps it to `deadline - started - 5.0`, so it
+# can never outrun the run deadline.
+LLM_HTTP_TIMEOUT_SECONDS = 600.0
 
 EFFORT_TIERS = {
     #        time x   frontier x  fills x   pool +   depth +
@@ -404,12 +462,28 @@ LLM_CONFIG = {
     "max_output_tokens": LLM_MAX_OUTPUT_TOKENS,
     "temperature": 0.0,
     # The official evaluation spec pins gpt-oss-120b at reasoning_effort=low
-    # (rules/evaluation.md, final config 2026-08-21). The Marathon proxy
+    # (rules/evaluation.md, final config 2026-08-21), and reasoning tokens bill
+    # against the same N x 32768 budget the answer needs — the proxy's own
+    # comments record high-effort runaway generation on this exact model (840 s
+    # of trickled tokens past a 300 s budget), so requesting above the deployed
+    # level would be pure downside.
+    #
+    # CORRECTED 2026-08-27 (RC-04): this field, and `provider` above it, never
+    # reach OpenRouter on the production path. `marathon_llm.call_llm` attaches
+    # `extra_body["provider"]` / `extra_body["reasoning"]` only when
+    # `_is_openrouter_base_url(base_url)` is true (vendor
+    # pipeline/marathon_llm.py:189-196, matcher at :99-105 requires hostname ==
+    # openrouter.ai), and in deployment `OPENAI_BASE_URL` is the LOCAL proxy
+    # (`http://127.0.0.1:<port>/v1`, marathon_runner.py:306). So the guard is
+    # false and the organizer helper strips both fields before the request
+    # leaves us. The marathon proxy itself WOULD forward them
+    # (marathon_proxy.py:606 lifts provider/reasoning/transforms/models/route
+    # into extra_body) — the block is the helper's, not the proxy's. Keep the
+    # values: they are correct, they are logged in `llm:batch_start`, and they
+    # become live the moment the helper's guard or the base URL changes. What
+    # is NOT true is the sentence that used to stand here ("the Marathon proxy
     # forwards whatever the solver requests, so this value is what DeepInfra
-    # actually runs — and reasoning tokens bill against the same N x 32768
-    # budget the answer needs. The proxy's own comments record high-effort
-    # runaway generation on this exact model (840 s of trickled tokens past a
-    # 300 s budget), so requesting above the deployed level is pure downside.
+    # actually runs"); do not build a decision on it.
     "reasoning_effort": os.environ.get("JUDGE_MARATHON_REASONING_EFFORT", "low"),
     "use_seed": True,
     "seed": 0,
@@ -1211,6 +1285,54 @@ def witness_decide_is_affordable(
     return n ** max(1, widest) <= MAX_WITNESS_DECIDE_APPLICATIONS
 
 
+# ---- Solo second-attempt state (SOLO-5) ----
+# Solo's judge channel is unlimited and an earlier `accepted` can never be
+# undone (`proxy.py` sets `solved` only on `accepted` and never clears it), so a
+# second certificate for a row whose first one was REJECTED is free in the
+# scoring sense. What was missing was any way to ask the solver for a
+# *different* answer: `solve_problem` returns the first route that certifies and
+# has no memory of what already failed. These two sets are that memory. They are
+# process-local and Solo runs one problem per subprocess, so no reset is needed
+# between rows; `reset_solo_retry_state()` exists for the tests and for anything
+# that ever reuses a process.
+_REJECTED_WITNESS_TABLES: set[tuple[tuple[int, ...], ...]] = set()
+_EXCLUDED_ROUTES: set[str] = set()
+
+
+def _witness_table_key(table: list[list[int]]) -> tuple[tuple[int, ...], ...]:
+    return tuple(tuple(row) for row in table)
+
+
+def note_rejected_witness_table(table: list[list[int]]) -> None:
+    """Bar one exact Cayley table from every witness gate for this process."""
+    _REJECTED_WITNESS_TABLES.add(_witness_table_key(table))
+
+
+def witness_table_rejected(table: list[list[int]]) -> bool:
+    # The `if not _REJECTED_WITNESS_TABLES` guard is load-bearing: both witness
+    # gates run on every candidate table of every family, and the set is empty
+    # on every row except a Solo retry, so the common path pays one truth test
+    # and never builds a key.
+    if not _REJECTED_WITNESS_TABLES:
+        return False
+    return _witness_table_key(table) in _REJECTED_WITNESS_TABLES
+
+
+def exclude_route(route: str) -> None:
+    """Bar one route label from `solve_problem_pass` for this process."""
+    if route:
+        _EXCLUDED_ROUTES.add(route)
+
+
+def route_excluded(route: str) -> bool:
+    return bool(_EXCLUDED_ROUTES) and route in _EXCLUDED_ROUTES
+
+
+def reset_solo_retry_state() -> None:
+    _REJECTED_WITNESS_TABLES.clear()
+    _EXCLUDED_ROUTES.clear()
+
+
 def table_is_counterexample(
     eq1: dict[str, Any],
     eq2: dict[str, Any],
@@ -1221,6 +1343,8 @@ def table_is_counterexample(
     measure it, and this runs on every candidate table of every family, so the
     cheap refutation has to come first: only a genuine counterexample is ever
     rendered."""
+    if witness_table_rejected(table):
+        return False
     if not equation_holds(eq1, table) or equation_holds(eq2, table):
         return False
     return (
@@ -1273,6 +1397,12 @@ def witness_check(
     if not equation_holds(eq1, table):
         return False
     note_hypothesis_model()
+    # After the bookkeeping, deliberately: a table barred by a Solo retry is
+    # still a model of the hypothesis, and `hypothesis_models_seen()` gates the
+    # speculative-TRUE fallback (rail 5). Dropping it from the count would let a
+    # rejection quietly turn evidence into no-evidence.
+    if witness_table_rejected(table):
+        return False
     if equation_holds(eq2, table):
         return False
     return (
@@ -10086,6 +10216,11 @@ def solve_problem_pass(
                                         equations=(eq1, eq2)),
             "route": route,
             "priority": problem_priority(problem, eq1, eq2),
+            # Carried so a REJECTED witness can be barred by value on a Solo
+            # retry (SOLO-5). Consumers read `answer`/`route`/`priority` only,
+            # so the extra keys are inert everywhere else.
+            "order": n,
+            "table": table,
         }
 
     # Two pre-checks that do not take (eq1, eq2): reflexive reads the problem's
@@ -10104,6 +10239,13 @@ def solve_problem_pass(
     # Lean files and alpha-invariant, so a canonical-pair hit is exact. Fails
     # open: a miss costs two dict probes and every other route still runs.
     distilled = DISTILLED_CERTS.get((canonical_eq_text(eq1), canonical_eq_text(eq2)))
+    # `route_excluded` is empty on every row except a Solo retry of a REJECTED
+    # certificate, where the point is to reach a DIFFERENT route (SOLO-5). It is
+    # checked at the three places that can offer an alternative — the distilled
+    # library, the syntactic route table and the engine list — so an excluded
+    # route falls through to the next candidate instead of ending the pass.
+    if distilled is not None and route_excluded(f"{distilled[0]}:distilled:{distilled[1]}"):
+        distilled = None
     if distilled is not None:
         verdict, name, code = distilled
         if verdict == "true":
@@ -10120,7 +10262,7 @@ def solve_problem_pass(
 
     for route_fn in TRUE_ROUTES:
         found = route_fn(eq1, eq2)
-        if found is not None:
+        if found is not None and not route_excluded(str(found[0])):
             return true_record(*found)
 
     if _engine_gate():
@@ -10207,7 +10349,7 @@ def solve_problem_pass(
         if _engine_gate():
             return None
         found = engine(eq1, eq2)
-        if found is not None:
+        if found is not None and not route_excluded(str(found[0])):
             return true_record(*found)
 
     # Last resort: the row is unresolved either way, so a randomized model
@@ -10776,7 +10918,19 @@ def llm_middle_term_hints(eq1: dict[str, Any], eq2: dict[str, Any], *, limit: in
     return hints[:limit]
 
 
-def solver_analysis(problem: dict[str, Any]) -> str:
+def solver_analysis(problem: dict[str, Any], *,
+                    rejected_verdict: str | None = None) -> str:
+    """Row briefing for the LLM lane.
+
+    `rejected_verdict` is the verdict of a certificate the judge has ALREADY
+    rejected for this row (SOLO-5). It exists to suppress one specific
+    falsehood: the closing cue below tells the model the row "escaped
+    deterministic finite-countermodel search ... so it is very likely TRUE",
+    which is exactly backwards when the search DID find a countermodel and the
+    judge rejected its rendering (the known failure modes are the FALSE byte cap
+    and `decide`/`maxRecDepth` cost, rails 3b-ii / 3b-iii, neither of which says
+    anything about the mathematics).
+    """
     try:
         eq1 = parse_equation(str(problem["equation1"]))
         eq2 = parse_equation(str(problem["equation2"]))
@@ -10816,7 +10970,12 @@ def solver_analysis(problem: dict[str, Any]) -> str:
     cues.append('Use {"proof_kind":"guided_chain"} when an adjacent chain edge needs more than one direct rewrite.')
     cues.append("If the chain needs a derived fact, include a lemmas array explaining it, but keep the chain terms concrete.")
     cues.append("Prefer the guided_chain: give intermediate terms and let the solver build the Lean proof; a raw Lean file is only a fallback.")
-    cues.append("This row escaped deterministic finite-countermodel search, which is thorough but NOT exhaustive, so it is very likely TRUE — build a proof. Claim FALSE only with a concrete Cayley table you have actually verified; the solver re-checks it.")
+    if str(rejected_verdict or "").lower() == "false":
+        cues.append("A FALSE certificate for this row was already submitted and REJECTED by the judge. The deterministic search DID find a finite countermodel, so do NOT assume this row is TRUE - the rejection is about the certificate, not the mathematics. Prefer a SMALLER Cayley table (fewer elements, fewer decide applications); a TRUE proof is the less likely answer here.")
+    elif str(rejected_verdict or "").lower() == "true":
+        cues.append("A TRUE certificate for this row was already submitted and REJECTED by the judge, so that proof does not typecheck. Either repair the chain or claim FALSE with a concrete Cayley table you have actually verified; the solver re-checks it.")
+    else:
+        cues.append("This row escaped deterministic finite-countermodel search, which is thorough but NOT exhaustive, so it is very likely TRUE — build a proof. Claim FALSE only with a concrete Cayley table you have actually verified; the solver re-checks it.")
     return "\n".join(cues)
 
 
@@ -10950,6 +11109,90 @@ def marathon_allow_raw_true() -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "debug"}
 
 
+def solo_overtime_budget(full_deadline: float, now: float) -> float:
+    """Clock for the overtime completion slot (SOLO-1/SOLO-2).
+
+    Everything left before the fallback reserve, minus one LLM round's minimum
+    so a lane that can still run is not silently cut off -- but only while that
+    subtraction leaves something worth spending. At the shipped
+    `SOLO_DETERMINISTIC_SHARE = 0.85` the deterministic pass ends with ~230 s to
+    the reserve, which cannot start an LLM round at all
+    (`SOLO_LLM_ROUND_MIN_SECONDS = 620`), so the whole sliver goes to completion:
+    a lane measured at 0 accepted over 433 real calls has no claim on time it
+    provably cannot use.
+    """
+    left = max(0.0, full_deadline - now)
+    if left > SOLO_LLM_ROUND_MIN_SECONDS + SOLO_OVERTIME_MIN_SECONDS:
+        left -= SOLO_LLM_ROUND_MIN_SECONDS
+    return min(SOLO_OVERTIME_MAX_SECONDS, left)
+
+
+def solo_overtime_completion(problem: dict[str, Any],
+                             time_budget: float) -> dict[str, Any] | None:
+    """One escalated completion run on a row every engine already failed.
+
+    `completion_route` clamps its in-pass call to `COMPLETION_ROUTE_MAX_SECONDS`
+    (300 s) whatever the tier, so Solo's 3,600 s budget is unreachable for the
+    one engine measured to be budget-bound: `etp_2923_156` closes by
+    `completion:join` at 235.5 s, and NEXT_SESSION_BRIEF section 1 records 22 of
+    40 sampled order-5 collapse rows still budget-bound at 120 s. This is purely
+    additive -- it cannot displace an engine, because it runs only where every
+    engine returned None -- and it emits the same `lemma_chain`-shaped
+    certificate `completion_route` does, through the same `make_true_answer`
+    path `solve_problem_pass` uses, so there is no new certificate shape and no
+    new oracle surface.
+    """
+    if time_budget <= 0.0:
+        return None
+    try:
+        eq1 = parse_equation(str(problem["equation1"]))
+        eq2 = parse_equation(str(problem["equation2"]))
+    except (KeyError, ValueError):
+        return None
+    # The deterministic pass may have spent the row's memory-reclaim budget; a
+    # zeroed counter fails `_engine_gate`/`deadline_expired` closed and this slot
+    # would bail on entry with no log naming the cause (rail 10's shape).
+    reset_memory_reclaims()
+    try:
+        found = completion_prove(eq1, eq2, time_budget=time_budget, escalate=True)
+    except Exception as exc:  # noqa: BLE001 - overtime must never kill the row
+        log_stderr({"route": "overtime:crash",
+                    "error": f"{type(exc).__name__}: {exc}"})
+        return None
+    if found is None:
+        return None
+    route, code = found
+    return {"answer": make_true_answer(problem, code),
+            "route": f"overtime:{route}"}
+
+
+def solo_retry_record(problem: dict[str, Any],
+                      rejected: dict[str, Any]) -> dict[str, Any] | None:
+    """One more deterministic answer, in a shape the judge has not refused.
+
+    SOLO-5: `run_solo` judged exactly one deterministic certificate and fell
+    straight through to the LLM lane on a rejection, although the proxy imposes
+    no limit on judge calls and an earlier `accepted` can never be undone -- so a
+    second attempt is free in the scoring sense. The exclusion is by *value* for
+    a FALSE table (the known rejection modes are the byte cap and `decide` cost,
+    rails 3b-ii/3b-iii, so a different, usually smaller, table from the same
+    portfolio is exactly what is wanted) and by *route* otherwise.
+    """
+    verdict = str(rejected.get("answer", {}).get("verdict", ""))
+    route = str(rejected.get("route", ""))
+    table = rejected.get("table")
+    if verdict == "false" and isinstance(table, list) and table:
+        note_rejected_witness_table(table)
+    else:
+        exclude_route(route)
+    try:
+        return solve_problem(problem)
+    except Exception as exc:  # noqa: BLE001 - a crash must never eat the run
+        log_stderr({"route": "retry:crash",
+                    "error": f"{type(exc).__name__}: {exc}"})
+        return None
+
+
 def run_solo() -> int:
     payload = load_json_line(sys.stdin)
     if not payload:
@@ -10994,6 +11237,7 @@ def run_solo() -> int:
     except Exception as exc:  # noqa: BLE001 - a crash must never eat the run
         log_stderr({"route": "solve:crash", "error": f"{type(exc).__name__}: {exc}"})
         solved = None
+    rejected_verdict: str | None = None
     if solved is not None:
         answer = dict(solved["answer"])
         attempted.add((str(answer.get("verdict")), str(answer.get("code"))))
@@ -11002,8 +11246,36 @@ def run_solo() -> int:
             log_progress({'judge_status': response.get('status'), 'route': solved['route']})
             if response.get("status") == "accepted":
                 return 0
+            # SOLO-5: one retry in a different shape. Judge calls are unlimited
+            # and a rejected answer scores exactly what no answer scores, so the
+            # only cost is clock -- and a row that produced a certificate almost
+            # always produced it in well under a second, which is why this slot
+            # is affordable at all.
+            rejected_verdict = str(answer.get("verdict"))
+            retry_budget = min(SOLO_RETRY_MAX_SECONDS,
+                               max(0.0, full_deadline - time.monotonic()))
+            if retry_budget > 0.0:
+                set_hard_deadline(time.monotonic() + retry_budget)
+                reset_memory_reclaims()
+                retry = solo_retry_record(problem, solved)
+                set_hard_deadline(det_deadline)
+                if retry is not None:
+                    retry_answer = dict(retry["answer"])
+                    retry_key = (str(retry_answer.get("verdict")),
+                                 str(retry_answer.get("code")))
+                    if retry_key not in attempted:
+                        attempted.add(retry_key)
+                        retry_response = judge_via_solo_proxy(retry_answer)
+                        if retry_response:
+                            log_progress({
+                                'judge_status': retry_response.get('status'),
+                                'route': f"retry:{retry['route']}",
+                            })
+                            if retry_response.get("status") == "accepted":
+                                return 0
+                            rejected_verdict = str(retry_answer.get("verdict"))
 
-    analysis = solver_analysis(problem)
+    analysis = solver_analysis(problem, rejected_verdict=rejected_verdict)
     if solved is None:
         log_progress({
             'route': 'skip:deterministic',
@@ -11029,6 +11301,48 @@ def run_solo() -> int:
     # The LLM phase may use the whole remaining clock (minus the reserve);
     # engines invoked while parsing chain candidates stay clamped to it.
     set_hard_deadline(full_deadline)
+
+    # ---- Overtime completion slot (SOLO-1 / SOLO-2), 2026-08-27 ----
+    # Runs only where the whole deterministic pass returned None, after every
+    # engine and before the LLM lane. Two measurements put it here. (1) The deep
+    # deterministic pass is CLOCK-bound, not saturated: 7 of 8 known-miss rows
+    # consumed 100% of a 900 s deadline and never self-terminated, so more clock
+    # is the lever. (2) `COMPLETION_ROUTE_MAX_SECONDS = 300` clamps the in-pass
+    # completion call at every tier, so nothing in the pass can spend Solo's
+    # budget on the one engine that is budget-bound -- and `etp_2923_156` closes
+    # by `completion:join` at 235.5 s, i.e. inside a slot this size.
+    if solved is None:
+        overtime_budget = solo_overtime_budget(full_deadline, time.monotonic())
+        log_stderr({
+            "route": "overtime:start",
+            "budget_seconds": round(overtime_budget, 1),
+            "models_seen": hypothesis_models_seen(),
+            "constraint_search_exhausted": constraint_search_exhausted(),
+        })
+        overtime = solo_overtime_completion(problem, overtime_budget)
+        if overtime is not None:
+            overtime_answer = dict(overtime["answer"])
+            overtime_key = (str(overtime_answer.get("verdict")),
+                            str(overtime_answer.get("code")))
+            if overtime_key not in attempted:
+                attempted.add(overtime_key)
+                overtime_response = judge_via_solo_proxy(overtime_answer)
+                if overtime_response:
+                    log_progress({
+                        'judge_status': overtime_response.get('status'),
+                        'route': overtime['route'],
+                    })
+                    if overtime_response.get("status") == "accepted":
+                        return 0
+                    # The model is about to be told what the solver knows; a
+                    # certificate the judge has already refused belongs in that
+                    # briefing (SOLO-5's second half).
+                    analysis = solver_analysis(problem, rejected_verdict="true")
+        # `solo_overtime_completion` and the judge call above both ran under the
+        # LLM phase's deadline; restore it in case an engine inside completion
+        # narrowed anything (it cannot today, but the LLM lane below depends on
+        # this bound being live -- rail 13's `finally`).
+        set_hard_deadline(full_deadline)
 
     feedback = ""
     for round_idx in range(solo_llm_rounds()):
@@ -11197,6 +11511,87 @@ def marathon_row_budget(remaining: float, rows_not_yet_attempted: int) -> float:
     return min(remaining, max(budget, MARATHON_ROW_MIN_SECONDS))
 
 
+# What the FALSE search established on each Marathon row the deterministic
+# passes could not close, keyed by problem id:
+# `(hypothesis_models_seen(), constraint_search_exhausted())`.
+#
+# Two consumers, both of which must read it defensively with `.get(pid, (0,
+# False))` -- a row that crashed before the FALSE portfolio ran leaves no entry
+# at all. (1) The speculative fallback at the end of `run_marathon` (RC-07),
+# which is only worth making where TRUE is still open: `models_seen == 0` means
+# the search refuted nothing and proved nothing, and a `verdict: "true"` there
+# is a coin flip (rail 5, and the seven `Eq168` playground rows that returned
+# TRUE INCORRECT). (2) The LLM lane's direction selection.
+#
+# Process-lifetime, deliberately: Marathon is one process for the whole
+# manifest and the entries are per row, so nothing accumulates across rows the
+# way rail 10's reclaim counter did.
+_MARATHON_ROW_EVIDENCE: dict[str, tuple[int, bool]] = {}
+
+
+def note_marathon_row_evidence(problem_id: str) -> tuple[int, bool]:
+    """Snapshot the FALSE-search evidence globals for one unsolved row.
+
+    Called immediately after `solve_problem` returns, which is the only moment
+    the globals describe this row: `solve_problem` resets them on entry.
+    """
+    evidence = (hypothesis_models_seen(), constraint_search_exhausted())
+    _MARATHON_ROW_EVIDENCE[problem_id] = evidence
+    return evidence
+
+
+def marathon_llm_time_reserve(remaining: float, llm_enabled: bool) -> float:
+    """Clock the second deterministic pass must leave for the LLM lane.
+
+    Zero when the lane cannot run at all, so a token-budget-0 run spends its
+    whole clock on search. Otherwise a share of what is left, floored at two
+    batch-widths of the 600 s HTTP timeout so the lane can always make a few
+    real calls, and capped at half the remaining clock so a short run still gets
+    a second pass at all.
+    """
+    remaining = max(0.0, remaining)
+    if not llm_enabled or remaining <= 0.0:
+        return 0.0
+    return min(0.5 * remaining,
+               max(MARATHON_LLM_TIME_RESERVE_MIN_SECONDS,
+                   MARATHON_LLM_TIME_RESERVE_SHARE * remaining))
+
+
+def marathon_second_pass_row_budget(remaining: float, unresolved_count: int,
+                                    llm_reserve: float) -> float:
+    """Per-row slice for the Marathon second deterministic pass.
+
+    The LLM reserve comes off the top; `MARATHON_SECOND_PASS_SHARE` of what is
+    left is divided among the rows still unsolved, capped at
+    `MARATHON_SECOND_PASS_ROW_MAX`. The share below 1.0 is the same starvation
+    guard `MARATHON_ROW_BORROW` exists for -- engines overshoot their local
+    budgets by design (see `hard_deadline_expired`), so the pass must not commit
+    every second it has.
+    """
+    usable = max(0.0, remaining - max(0.0, llm_reserve))
+    if unresolved_count <= 0 or usable <= 0.0:
+        return 0.0
+    return min(MARATHON_SECOND_PASS_ROW_MAX,
+               MARATHON_SECOND_PASS_SHARE * usable / unresolved_count)
+
+
+def marathon_second_pass_tier(base_tier: str, row_budget: float) -> str:
+    """Effort tier for the second pass: one step above the first, or `deep`.
+
+    `effort_for_seconds` calls anything at or above 240 s `deep`, and a second
+    pass whose per-row slice reaches that has earned the same treatment. Below
+    it, one rung up the ladder -- `solve_problem` still walks
+    `effort_ladder_to`, so the cheap tiers are re-run first and the tier
+    inversion of rail 12 cannot come back through this door.
+    """
+    if row_budget >= 240.0:
+        return "deep"
+    if base_tier not in EFFORT_LADDER:
+        return base_tier
+    index = EFFORT_LADDER.index(base_tier)
+    return EFFORT_LADDER[min(index + 1, len(EFFORT_LADDER) - 1)]
+
+
 def marathon_per_problem_budget(total_budget: float, problem_count: int, ref_seconds: float) -> float:
     """Wall-clock the FALSE portfolio may spend on one problem.
 
@@ -11292,6 +11687,12 @@ def run_marathon() -> int:
                 reset_memory_reclaims()
                 answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
                 if answer_record is None:
+                    # The FALSE-search evidence globals describe THIS row only
+                    # until the next `solve_problem` resets them, so snapshot
+                    # them here or lose them. Read back by the second pass, by
+                    # the LLM lane's direction selection, and by the speculative
+                    # fallback at the end of the run.
+                    note_marathon_row_evidence(str(problem.get("id")))
                     continue
                 if not append_answer(output_path, answer_record["answer"]):
                     continue
@@ -11330,6 +11731,113 @@ def run_marathon() -> int:
         # that scored 287/1000 in the 08-01 campaign, and equally invisible to
         # `audit_corpus.py`, which never arms the guard.
         reset_memory_reclaims()
+
+    # ---- Second deterministic pass (2026-08-27) --------------------------
+    # The first pass is bounded per row by `marathon_row_budget` and the cheap
+    # majority hands its share straight back, so the pass finishes long before
+    # `MARATHON_DETERMINISTIC_SHARE` binds: the 1000-row stratified hard batch
+    # used **5,048 s of 300,000 s** -- about 2% -- and the LLM lane behind it
+    # spent 10.8k tokens for 0 accepts. That left ~98% of a Marathon budget
+    # unspent on a solver whose remaining misses are, measurably, clock-bound
+    # (7 of 8 frontier rows burn 100% of a 900 s deadline without
+    # self-terminating; `etp_2923_156` closes by `completion:join` at 235.5 s).
+    #
+    # So: re-attempt only what pass 1 could not close, one effort tier higher,
+    # with a per-row slice sized from the clock that is actually left. Pass 1 is
+    # untouched -- same budget, same tier, same order -- so nothing it solves
+    # can be lost here, and a row solved in pass 1 is never re-attempted.
+    second_pass_submitted = 0
+    llm_lane_possible = bool(budget_tokens != 0
+                             and os.environ.get("JUDGE_MARATHON_LIB_DIR"))
+    unresolved_rows = [
+        (priority, problem) for priority, problem in prioritized
+        if str(problem.get("id")) not in solved_ids
+    ]
+    # Hardest last: `prioritized` is cheapest-first, so reversing gives the rows
+    # most likely to need the whole slice the first look at a clock nothing else
+    # is competing for. Every row gets its own bound either way.
+    unresolved_rows.reverse()
+    if unresolved_rows:
+        remaining_clock = max(0.0, deadline - 20.0 - time.monotonic())
+        llm_reserve = marathon_llm_time_reserve(remaining_clock, llm_lane_possible)
+        second_row_budget = marathon_second_pass_row_budget(
+            remaining_clock, len(unresolved_rows), llm_reserve)
+        second_tier = marathon_second_pass_tier(effort_tier(), second_row_budget)
+        log_stderr({
+            "route": f"second_pass:{second_tier}",
+            "event": "start",
+            "unresolved": len(unresolved_rows),
+            "remaining_seconds": round(remaining_clock, 1),
+            "llm_reserve_seconds": round(llm_reserve, 1),
+            "row_budget_seconds": round(second_row_budget, 1),
+            "first_pass_tier": effort_tier(),
+        })
+        if second_row_budget > MARATHON_ROW_MIN_SECONDS:
+            first_pass_tier = effort_tier()
+            second_pass_stop = time.monotonic() + max(
+                0.0, remaining_clock - llm_reserve)
+            set_effort(second_tier)
+            try:
+                for _priority, problem in unresolved_rows:
+                    if time.monotonic() + 5.0 >= second_pass_stop:
+                        break
+                    pid = str(problem.get("id"))
+                    row_budget = min(
+                        second_row_budget,
+                        max(0.0, second_pass_stop - time.monotonic()))
+                    if row_budget <= MARATHON_ROW_MIN_SECONDS:
+                        break
+                    set_hard_deadline(time.monotonic() + row_budget)
+                    # Rail 11: the whole per-row body, not just the call that
+                    # looks risky. Rail 10: the reclaim counter only ever
+                    # decrements, so it is reset here exactly as pass 1 does.
+                    try:
+                        clear_term_caches()
+                        reset_memory_reclaims()
+                        answer_record = solve_problem(
+                            problem, false_time_budget=per_problem_budget)
+                        if answer_record is None:
+                            note_marathon_row_evidence(pid)
+                            continue
+                        if not append_answer(output_path, answer_record["answer"]):
+                            continue
+                        route = str(answer_record["route"])
+                        route_counts[f"second_pass:{second_tier}"] = (
+                            route_counts.get(f"second_pass:{second_tier}", 0) + 1)
+                        solved += 1
+                        deterministic_submitted += 1
+                        second_pass_submitted += 1
+                        solved_ids.add(pid)
+                        log_stderr({
+                            "route": f"second_pass:{second_tier}",
+                            "id": pid,
+                            "solved_route": route,
+                            "row_budget_seconds": round(row_budget, 1),
+                        })
+                    except Exception as exc:  # noqa: BLE001 - one bad row must not kill the manifest
+                        log_stderr({
+                            "route": "solve:crash",
+                            "pass": "second",
+                            "id": pid,
+                            "error": f"{type(exc).__name__}: {exc}",
+                        })
+                        continue
+            finally:
+                # Same three restorations pass 1 makes, for the same reasons: a
+                # stale per-row deadline would turn every LLM candidate into
+                # `lemma_not_derivable_from_hypothesis` (rail 13), a zeroed
+                # reclaim counter would fail every engine closed (rail 10), and
+                # a raised tier would silently re-scale the LLM lane's engines.
+                set_effort(first_pass_tier)
+                set_hard_deadline(deadline - 20.0)
+                reset_memory_reclaims()
+        log_stderr({
+            "route": f"second_pass:{second_tier}",
+            "event": "done",
+            "submitted": second_pass_submitted,
+            "unresolved_after": len(prioritized) - len(solved_ids),
+        })
+    # ---- end second deterministic pass -----------------------------------
 
     llm_calls = 0
     call_llm, tokens_used, budget_remaining = load_marathon_llm()
@@ -11479,9 +11987,70 @@ def run_marathon() -> int:
                         }
                     )
 
+    # ---- RC-07: bank a speculative answer on rows nothing solved ---------
+    # A wrong answer and a missing answer score identically -- rules
+    # /evaluation.md scores `accepted` = 1 and "rejected or timed out" = 0, and
+    # `marathon_score._load_last_writes` maps a missing id to `not_attempted`,
+    # also 0. Marathon has no judge channel, so this costs one `append_answer`
+    # per skipped row and no run time at all; the certificate is graded offline
+    # after the run. Solo has banked exactly this attempt for months.
+    #
+    # Two guards. (1) `solved_ids` -- the scorer keeps the LAST write for an id,
+    # so a speculative line after a real answer would DESTROY it. Nothing here
+    # runs for a row that produced any answer, in either deterministic pass or
+    # in the LLM lane, and this block runs last so `solved_ids` is complete.
+    # (2) `models_seen > 0` -- the same gate Solo uses. If the FALSE search
+    # never found a single model of the hypothesis it refuted nothing and proved
+    # nothing, and a speculative `true` there is a coin flip with no evidence
+    # behind it (rail 5; seven `Eq168` playground rows returned TRUE INCORRECT
+    # exactly this way).
+    speculative_submitted = 0
+    speculative_skipped_no_evidence = 0
+    for _priority, problem in prioritized:
+        pid = str(problem.get("id"))
+        if pid in solved_ids:
+            continue
+        models_seen, exhausted = _MARATHON_ROW_EVIDENCE.get(pid, (0, False))
+        if models_seen <= 0:
+            speculative_skipped_no_evidence += 1
+            continue
+        try:
+            code = grind_true_certificate(
+                parse_equation(str(problem["equation2"]))["variables"])
+            speculative = make_true_answer(problem, code)
+            if not append_answer(output_path, speculative):
+                continue
+        except Exception as exc:  # noqa: BLE001 - a bad row must not kill the tail
+            log_stderr({
+                "route": "fallback:marathon_grind",
+                "id": pid,
+                "error": f"{type(exc).__name__}: {exc}",
+            })
+            continue
+        route_counts["fallback:marathon_grind"] = (
+            route_counts.get("fallback:marathon_grind", 0) + 1)
+        speculative_submitted += 1
+        solved_ids.add(pid)
+        log_stderr({
+            "route": "fallback:marathon_grind",
+            "id": pid,
+            "models_seen": models_seen,
+            "constraint_search_exhausted": exhausted,
+        })
+    if speculative_submitted or speculative_skipped_no_evidence:
+        log_stderr({
+            "route": "fallback:marathon_grind",
+            "event": "done",
+            "submitted": speculative_submitted,
+            "skipped_no_model_evidence": speculative_skipped_no_evidence,
+        })
+    # ---- end speculative fallback ----------------------------------------
+
     log_route_count_chunks(route_counts)
     log_stderr(
         {
+            "speculative_submitted": speculative_submitted,
+            "second_pass_submitted": second_pass_submitted,
             "submitted_deterministic": deterministic_submitted,
             "submitted_total": solved,
             "llm_calls": llm_calls,
