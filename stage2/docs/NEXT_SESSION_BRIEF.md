@@ -57,23 +57,29 @@ Documentation, rails and this handover: `impl/docs`.
 
 ## 3. What to do next, ranked
 
-### 3.1 Sweep the half of order-5 nobody has measured
+### 3.1 Sweep the order-5 population that actually carries the loss
 
-**The single largest unknown.** Every order-5 sweep on record ran at
-`--max-variables 3`, but **56.9%** of `eq_size5.txt`'s 62,576 laws have ≥ 4
-variables, and the only local proxy for the private Order-5 category
-(`data/hf_cache/evaluation_order5.jsonl`) is 50% ≥ 4 variables and exactly
-100 TRUE / 100 FALSE, against a uniform catalog draw whose TRUE fraction is far
-lower. Order 5 is **a quarter of the final score**.
+**Measured 2026-08-27 evening** (`stage2/results/2026-08-27-population-calibration.md`),
+so this is no longer an unknown:
 
-A 250-row batch is already generated:
-`stage2/experiments/order5-ge4var-250-2026-08-27.jsonl` (seed 20260827; tracked
-in the repo since 2026-08-27 — eq1 variable counts 4:175, 5:65, 6:9, 7:1). Audit
-it first — `audit_corpus.py --file <it> --effort fast --row-budget 60 --workers 3`
-on an idle box — and report its skip rate **next to** the ≤3-var 1.76%. If it is
-materially higher, that is a bigger lever than anything else in this file; if it
-is lower, the collapse work is correctly sized as marginal. Then draw a larger
-batch with the new `sample_order5_pairs.py --min-variables 4`.
+- The ≥ 4-variable half of order 5 is **250/250** at `--row-budget 300`
+  (`stage2/experiments/order5-ge4var-250-2026-08-27.jsonl`, stratified). Order-5
+  difficulty **peaks at exactly 3 variables**: skip rate by eq1 variables over
+  the 20k ≤3-var sweep is 0.00% (1) → 0.03% (2) → **2.15% (3)** → 0.00% (≥4).
+- The public Order-5 mirror is **100% bare-variable-side on both equations**;
+  the hardest slice in the data is `eq1 bare ∧ eq2 bare ∧ 3 vars` = **3.17%**
+  (213/6,718). Reweighting the measured rates onto the mirror's shape projects
+  ~**1.32%** = ~2.6 of 200 Order-5 rows, against 0.01–0.12 per 200 for each
+  order-4 category (official hard1–3 project 1.14× the uniform miss rate, HF
+  extra_hard 0.16×). About 95% of the remaining expected loss sits in one
+  narrow population.
+
+**So the next batch to draw is order-5, exactly 3 variables, bare variable on
+both sides** — `sample_order5_pairs.py --min-variables 3 --max-variables 3` and
+filter both sides to the `x = F(...)` shape (add a `--bare-both` flag or filter
+the jsonl; document which). Audit it at `--row-budget 300` (Marathon's fair
+share), 16 workers on an idle box, diff by row id, and feed the misses to the
+z3 harvest (§3.3) and the collapse escalation. Report it as **stratified**.
 
 ### 3.2 Order-4 at scale, and at the tiers we ship
 
