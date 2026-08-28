@@ -1,0 +1,245 @@
+{
+  "sets": {
+    "order5_40": {
+      "summary": {
+        "problems": 40,
+        "solved": 2,
+        "skipped": 38,
+        "crashes": 0,
+        "true": 1,
+        "false": 1,
+        "oracle_failures": 0,
+        "seconds": 1687.6,
+        "routes": {
+          "true:completion:bridge": 1,
+          "false:witness:FP38": 1
+        },
+        "cert_shapes": {
+          "lemma_chain": 1
+        }
+      },
+      "rows": [
+        {
+          "id": "order5_17591_11190",
+          "status": "skip",
+          "seconds": 120.005
+        },
+        {
+          "id": "order5_46513_41697",
+          "status": "solved",
+          "seconds": 3.659,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 5465,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "order5_26001_177",
+          "status": "skip",
+          "seconds": 119.989
+        },
+        {
+          "id": "order5_33998_41648",
+          "status": "skip",
+          "seconds": 119.424
+        },
+        {
+          "id": "order5_19421_37804",
+          "status": "skip",
+          "seconds": 120.003
+        },
+        {
+          "id": "order5_7588_47925",
+          "status": "skip",
+          "seconds": 119.321
+        },
+        {
+          "id": "order5_9337_40285",
+          "status": "skip",
+          "seconds": 119.24
+        },
+        {
+          "id": "order5_31288_1096",
+          "status": "skip",
+          "seconds": 119.653
+        },
+        {
+          "id": "order5_27755_52999",
+          "status": "skip",
+          "seconds": 120.014
+        },
+        {
+          "id": "order5_37372_32780",
+          "status": "skip",
+          "seconds": 119.463
+        },
+        {
+          "id": "order5_40951_13987",
+          "status": "skip",
+          "seconds": 119.375
+        },
+        {
+          "id": "order5_28619_35053",
+          "status": "skip",
+          "seconds": 119.556
+        },
+        {
+          "id": "order5_25414_37207",
+          "status": "skip",
+          "seconds": 119.538
+        },
+        {
+          "id": "order5_22455_53402",
+          "status": "skip",
+          "seconds": 119.363
+        },
+        {
+          "id": "order5_8794_25249",
+          "status": "skip",
+          "seconds": 119.478
+        },
+        {
+          "id": "order5_22455_48079",
+          "status": "skip",
+          "seconds": 119.379
+        },
+        {
+          "id": "order5_13849_50906",
+          "status": "skip",
+          "seconds": 119.482
+        },
+        {
+          "id": "order5_24606_59110",
+          "status": "skip",
+          "seconds": 119.659
+        },
+        {
+          "id": "order5_36812_4856",
+          "status": "skip",
+          "seconds": 119.243
+        },
+        {
+          "id": "order5_13572_19735",
+          "status": "skip",
+          "seconds": 119.263
+        },
+        {
+          "id": "order5_13599_54689",
+          "status": "skip",
+          "seconds": 119.524
+        },
+        {
+          "id": "order5_45434_45443",
+          "status": "skip",
+          "seconds": 119.476
+        },
+        {
+          "id": "order5_32395_25778",
+          "status": "skip",
+          "seconds": 119.184
+        },
+        {
+          "id": "order5_18399_29663",
+          "status": "skip",
+          "seconds": 119.255
+        },
+        {
+          "id": "order5_39561_8027",
+          "status": "skip",
+          "seconds": 119.49
+        },
+        {
+          "id": "order5_12329_7539",
+          "status": "skip",
+          "seconds": 119.452
+        },
+        {
+          "id": "order5_20068_9143",
+          "status": "skip",
+          "seconds": 119.327
+        },
+        {
+          "id": "order5_36524_53150",
+          "status": "skip",
+          "seconds": 119.326
+        },
+        {
+          "id": "order5_7588_32874",
+          "status": "skip",
+          "seconds": 119.447
+        },
+        {
+          "id": "order5_20144_61330",
+          "status": "skip",
+          "seconds": 119.281
+        },
+        {
+          "id": "order5_27959_6680",
+          "status": "skip",
+          "seconds": 119.233
+        },
+        {
+          "id": "order5_20928_13634",
+          "status": "skip",
+          "seconds": 119.359
+        },
+        {
+          "id": "order5_26105_33379",
+          "status": "skip",
+          "seconds": 119.369
+        },
+        {
+          "id": "order5_14083_44255",
+          "status": "skip",
+          "seconds": 119.395
+        },
+        {
+          "id": "order5_17437_12657",
+          "status": "skip",
+          "seconds": 119.286
+        },
+        {
+          "id": "order5_20562_18003",
+          "status": "skip",
+          "seconds": 119.415
+        },
+        {
+          "id": "order5_7555_2538",
+          "status": "skip",
+          "seconds": 119.216
+        },
+        {
+          "id": "order5_19110_19915",
+          "status": "skip",
+          "seconds": 119.344
+        },
+        {
+          "id": "order5_13020_58273",
+          "status": "solved",
+          "seconds": 0.342,
+          "verdict": "false",
+          "route": "false:witness:FP38",
+          "code_bytes": 337,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "order5_42813_61257",
+          "status": "skip",
+          "seconds": 119.993
+        }
+      ]
+    }
+  }
+}

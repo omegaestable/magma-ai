@@ -1,0 +1,642 @@
+{
+  "sets": {
+    "residual51": {
+      "summary": {
+        "problems": 51,
+        "solved": 31,
+        "skipped": 20,
+        "crashes": 0,
+        "true": 26,
+        "false": 5,
+        "oracle_failures": 0,
+        "seconds": 3482.8,
+        "routes": {
+          "true:egg_ladder:product_constant:h2": 8,
+          "true:completion:join": 7,
+          "true:egg_ladder:product_constant:h1": 6,
+          "true:egg_ladder:goal:h1": 3,
+          "true:egg_ladder:right_col_constant:h2": 1,
+          "false:distilled:inf_e1979_e1668": 1,
+          "false:distilled:inf_e1979_e1742": 1,
+          "false:distilled:inf_e476_e4065": 1,
+          "true:egg_closure": 1,
+          "false:distilled:inf_e1133_e1167": 1,
+          "false:distilled:inf_e1133_e1912": 1
+        },
+        "cert_shapes": {
+          "lemma_chain": 25,
+          "exact_expr": 1
+        }
+      },
+      "rows": [
+        {
+          "id": "etp_481_3050",
+          "status": "skip",
+          "seconds": 260.149
+        },
+        {
+          "id": "etp_3051_3054",
+          "status": "skip",
+          "seconds": 312.126
+        },
+        {
+          "id": "etp_4453_4652",
+          "status": "solved",
+          "seconds": 100.31,
+          "verdict": "true",
+          "route": "true:egg_ladder:goal:h1",
+          "code_bytes": 7457,
+          "cert_shape": "lemma_chain",
+          "battery": 21,
+          "nontrivial_models": 20,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_2531_23",
+          "status": "skip",
+          "seconds": 346.668
+        },
+        {
+          "id": "etp_3983_3800",
+          "status": "solved",
+          "seconds": 118.786,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54917,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3051_4676",
+          "status": "skip",
+          "seconds": 207.274
+        },
+        {
+          "id": "etp_3983_3963",
+          "status": "solved",
+          "seconds": 99.328,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54915,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_481_2132",
+          "status": "skip",
+          "seconds": 304.89
+        },
+        {
+          "id": "etp_3983_3997",
+          "status": "solved",
+          "seconds": 125.47,
+          "verdict": "true",
+          "route": "true:egg_ladder:right_col_constant:h2",
+          "code_bytes": 11044,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_469_583",
+          "status": "solved",
+          "seconds": 96.359,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 4472,
+          "cert_shape": "lemma_chain",
+          "battery": 36,
+          "nontrivial_models": 35,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3051_3070",
+          "status": "skip",
+          "seconds": 309.814
+        },
+        {
+          "id": "etp_3983_4028",
+          "status": "solved",
+          "seconds": 102.975,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54915,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_1979_1668",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:distilled:inf_e1979_e1668",
+          "code_bytes": 2581,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "etp_463_491",
+          "status": "skip",
+          "seconds": 316.007
+        },
+        {
+          "id": "etp_3983_3443",
+          "status": "solved",
+          "seconds": 93.855,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54917,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_765_4622",
+          "status": "skip",
+          "seconds": 397.011
+        },
+        {
+          "id": "etp_463_370",
+          "status": "skip",
+          "seconds": 322.145
+        },
+        {
+          "id": "etp_3983_4113",
+          "status": "solved",
+          "seconds": 111.62,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54917,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3983_3986",
+          "status": "solved",
+          "seconds": 86.892,
+          "verdict": "true",
+          "route": "true:egg_ladder:goal:h1",
+          "code_bytes": 66243,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3051_3080",
+          "status": "skip",
+          "seconds": 292.975
+        },
+        {
+          "id": "etp_2531_99",
+          "status": "skip",
+          "seconds": 344.992
+        },
+        {
+          "id": "etp_2923_1207",
+          "status": "solved",
+          "seconds": 225.079,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 6546,
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3983_4223",
+          "status": "solved",
+          "seconds": 83.0,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h1",
+          "code_bytes": 17003,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3983_4058",
+          "status": "solved",
+          "seconds": 82.368,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h1",
+          "code_bytes": 17005,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_1979_1742",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:distilled:inf_e1979_e1742",
+          "code_bytes": 2581,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "etp_3051_3510",
+          "status": "skip",
+          "seconds": 300.597
+        },
+        {
+          "id": "etp_2923_2638",
+          "status": "solved",
+          "seconds": 254.097,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 6504,
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_4457_4393",
+          "status": "skip",
+          "seconds": 418.181
+        },
+        {
+          "id": "etp_3067_4656",
+          "status": "solved",
+          "seconds": 114.897,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 3746,
+          "cert_shape": "lemma_chain",
+          "battery": 36,
+          "nontrivial_models": 35,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_2789_3297",
+          "status": "skip",
+          "seconds": 339.143
+        },
+        {
+          "id": "etp_3983_3580",
+          "status": "solved",
+          "seconds": 101.383,
+          "verdict": "true",
+          "route": "true:egg_ladder:goal:h1",
+          "code_bytes": 3795,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_650_2464",
+          "status": "solved",
+          "seconds": 225.26,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 6544,
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_476_4065",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:distilled:inf_e476_e4065",
+          "code_bytes": 3902,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "etp_2923_537",
+          "status": "solved",
+          "seconds": 184.214,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 6606,
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3051_3460",
+          "status": "skip",
+          "seconds": 332.326
+        },
+        {
+          "id": "etp_481_3056",
+          "status": "skip",
+          "seconds": 274.798
+        },
+        {
+          "id": "etp_3983_4626",
+          "status": "solved",
+          "seconds": 83.393,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h1",
+          "code_bytes": 17003,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3983_357",
+          "status": "solved",
+          "seconds": 101.485,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54909,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_463_4070",
+          "status": "skip",
+          "seconds": 312.035
+        },
+        {
+          "id": "etp_4465_4468",
+          "status": "solved",
+          "seconds": 14.657,
+          "verdict": "true",
+          "route": "true:egg_closure",
+          "code_bytes": 376,
+          "cert_shape": "exact_expr",
+          "battery": 21,
+          "nontrivial_models": 20,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3067_3056",
+          "status": "solved",
+          "seconds": 103.75,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 3706,
+          "cert_shape": "lemma_chain",
+          "battery": 36,
+          "nontrivial_models": 35,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_1133_1167",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:distilled:inf_e1133_e1167",
+          "code_bytes": 2581,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "etp_3983_4181",
+          "status": "solved",
+          "seconds": 109.274,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54917,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_1740_1113",
+          "status": "skip",
+          "seconds": 300.043
+        },
+        {
+          "id": "etp_3983_4563",
+          "status": "solved",
+          "seconds": 109.682,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h2",
+          "code_bytes": 54917,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3577_4256",
+          "status": "skip",
+          "seconds": 382.755
+        },
+        {
+          "id": "etp_463_4040",
+          "status": "skip",
+          "seconds": 352.119
+        },
+        {
+          "id": "etp_3983_4250",
+          "status": "solved",
+          "seconds": 82.332,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h1",
+          "code_bytes": 17003,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3983_3859",
+          "status": "solved",
+          "seconds": 82.823,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h1",
+          "code_bytes": 17005,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_3983_4338",
+          "status": "solved",
+          "seconds": 82.472,
+          "verdict": "true",
+          "route": "true:egg_ladder:product_constant:h1",
+          "code_bytes": 17005,
+          "cert_shape": "lemma_chain",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "etp_1133_1912",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:distilled:inf_e1133_e1912",
+          "code_bytes": 2581,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        }
+      ]
+    }
+  }
+}
