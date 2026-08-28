@@ -1,0 +1,83 @@
+[marathon] proxy listening at http://127.0.0.1:61162/v1
+[marathon] launch solver=submissions manifest=pacing-30row-manifest.jsonl budget=9000s/0tok
+[marathon:stderr] {"route":"second_pass:deep","event":"start","unresolved":6,"remaining_seconds":3580.0,"llm_reserve_seconds":0.0,"row_budget_seconds":477.3,"first_pass_tier":"standard"}
+[marathon:stderr] {"route":"second_pass:deep","event":"done","submitted":0,"unresolved_after":6}
+[marathon:stderr] {"route": "llm:disabled", "reason": "zero_token_budget", "unresolved": 6, "budget_tokens": 0}
+[marathon:stderr] {"route":"fallback:marathon_grind","id":"etp_3051_4676","models_seen":47819,"constraint_search_exhausted":false}
+[marathon:stderr] {"route":"fallback:marathon_grind","id":"etp_3983_3997","models_seen":493,"constraint_search_exhausted":true}
+[marathon:stderr] {"route":"fallback:marathon_grind","id":"etp_3051_3054","models_seen":60707,"constraint_search_exhausted":true}
+[marathon:stderr] {"route":"fallback:marathon_grind","id":"etp_481_2132","models_seen":4222,"constraint_search_exhausted":true}
+[marathon:stderr] {"route":"fallback:marathon_grind","id":"etp_2531_23","models_seen":13,"constraint_search_exhausted":true}
+[marathon:stderr] {"route":"fallback:marathon_grind","id":"etp_481_3050","models_seen":5197,"constraint_search_exhausted":true}
+[marathon:stderr] {"route":"fallback:marathon_grind","event":"done","submitted":6,"skipped_no_model_evidence":0}
+[marathon:stderr] {"route":"route_counts","routes":{"fallback:marathon_grind":6,"false:spine:leftsucc:z2":1,"false:spine:rightsucc:z3":4,"false:witness:S5C":3,"false:witness:Z3B":2,"true:absorption_closure":1,"true:bridge:11":1,"true:completion:bridge":1,"true:completion:join":1,"true:constancy:11":1,"true:derived_cp_closure":1,"true:egg_ladder:product_constant:h0":2,"true:projection:right":1,"true:repeat_tail_absorption":1,"true:sandwich_left_projection":1,"true:singleton":1,"true:universal_identity:left":1,"true:universal_identity:right":1}}
+[marathon:stderr] {"speculative_submitted":6,"second_pass_submitted":0,"submitted_deterministic":24,"submitted_total":24,"llm_calls":0,"budget_seconds":9000.0,"budget_tokens":0,"reference_seconds_per_problem":600.0,"per_problem_false_budget":15.0,"route_kind_count":18,"route_count_total":30}
+[marathon] exit rc=0 wall=8265.5s sigterm=False sigkill=False
+[score] judge caps: max_code_length=100000 max_false_cert_bytes=20000 lean_timeout_seconds=300
+[score] hard3_0001: ACCEPTED
+[score] hard3_0002: ACCEPTED
+[score] hard3_0003: ACCEPTED
+[score] hard3_0004: ACCEPTED
+[score] hard3_0005: ACCEPTED
+[score] hard3_0006: ACCEPTED
+[score] hard3_0007: ACCEPTED
+[score] hard3_0008: ACCEPTED
+[score] hard3_0009: ACCEPTED
+[score] hard3_0010: ACCEPTED
+[score] hard3_0011: ACCEPTED
+[score] hard3_0012: ACCEPTED
+[score] hard3_0013: ACCEPTED
+[score] hard3_0014: ACCEPTED
+[score] hard3_0015: ACCEPTED
+[score] hard3_0016: ACCEPTED
+[score] hard3_0017: ACCEPTED
+[score] hard3_0018: ACCEPTED
+[score] hard3_0019: ACCEPTED
+[score] hard3_0020: ACCEPTED
+[score] etp_481_3050: INCORRECT — Submission.lean:7:2: error: `grind` failed
+case grind
+G : Type
+inst : Magma G
+h : EquationLHS G
+x : G
+h_1 : ¬x = (((x ◇ 
+[score] etp_3051_3054: INCORRECT — Submission.lean:7:2: error: `grind` failed
+case grind
+G : Type
+inst : Magma G
+h : EquationLHS G
+x y z : G
+h_1 : ¬x = (((
+[score] etp_4453_4652: ACCEPTED
+[score] etp_2531_23: INCORRECT — Submission.lean:7:2: error: `grind` failed
+case grind
+G : Type
+inst : Magma G
+h : EquationLHS G
+x : G
+h_1 : ¬x = (x ◇ x)
+[score] etp_3983_3800: ACCEPTED
+[score] etp_3051_4676: INCORRECT — Submission.lean:7:2: error: `grind` failed
+case grind
+G : Type
+inst : Magma G
+h : EquationLHS G
+x y z w u : G
+h_1 : ¬(x 
+[score] etp_3983_3963: ACCEPTED
+[score] etp_481_2132: INCORRECT — Submission.lean:7:2: error: `grind` failed
+case grind
+G : Type
+inst : Magma G
+h : EquationLHS G
+x y z : G
+h_1 : ¬x = ((y
+[score] etp_3983_3997: INCORRECT — Submission.lean:7:2: error: `grind` failed
+case grind
+G : Type
+inst : Magma G
+h : EquationLHS G
+x y z : G
+h_1 : ¬x ◇ y =
+[score] etp_469_583: ACCEPTED
+[score] score=24/30 attempted=30 not_attempted=0 by_status={'accepted': 24, 'incorrect': 6}

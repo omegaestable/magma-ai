@@ -1,0 +1,26 @@
+Marathon Run
+  Solver:       C:\Users\nacho\Documents\GitHub\magma-ai\.claude\worktrees\impl-pacing\stage2\submissions
+  Manifest:     C:\Users\nacho\Documents\GitHub\magma-ai\.claude\worktrees\impl-pacing\stage2\results\pacing-30row-manifest.jsonl (N=30)
+  Budget:       9000s wall, 0 tokens (30 × 300s / 30 × 32768tok)
+  Run dir:      C:\Users\nacho\Documents\GitHub\magma-ai\.claude\worktrees\impl-pacing\stage2\results\pacing-marathon-30
+
+Solver exited rc=0 wall=8265.5s sigterm=False sigkill=False
+  (stderr tail in C:\Users\nacho\Documents\GitHub\magma-ai\.claude\worktrees\impl-pacing\stage2\results\pacing-marathon-30\run.log)
+Traceback (most recent call last):
+  File "C:\Users\nacho\Documents\GitHub\magma-ai\vendor\stage2-official\scripts\run_marathon.py", line 189, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\nacho\Documents\GitHub\magma-ai\vendor\stage2-official\scripts\run_marathon.py", line 162, in main
+    paths["summary"].write_text(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        json.dumps(summary.to_dict(), indent=2, ensure_ascii=False)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\python314\Lib\pathlib\__init__.py", line 810, in write_text
+    return f.write(data)
+           ~~~~~~~^^^^^^
+  File "c:\python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u25c7' in position 3294: character maps to <undefined>
