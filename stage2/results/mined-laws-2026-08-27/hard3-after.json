@@ -1,0 +1,6477 @@
+{
+  "sets": {
+    "hard3": {
+      "summary": {
+        "problems": 400,
+        "solved": 400,
+        "skipped": 0,
+        "crashes": 0,
+        "true": 195,
+        "false": 205,
+        "oracle_failures": 0,
+        "seconds": 177.8,
+        "routes": {
+          "true:completion:join": 85,
+          "false:spine:rightsucc:z3": 37,
+          "false:spine:leftsucc:z3": 32,
+          "true:completion:bridge": 27,
+          "false:witness:S5C": 18,
+          "false:enum_fin3": 15,
+          "true:universal_identity:right": 13,
+          "false:witness:Z3B": 12,
+          "false:witness:S4C": 12,
+          "true:constancy:00": 9,
+          "false:witness:T3L": 9,
+          "true:egg_bootstrap:right_col_constant": 8,
+          "true:universal_identity:left": 7,
+          "true:absorption_context_bridge": 7,
+          "false:spine:rightsucc:z4": 7,
+          "false:linear:z4:2,3": 7,
+          "false:linear:z4:2,1": 6,
+          "false:linear:z4:1,2": 6,
+          "true:egg_bootstrap:left_row_constant": 5,
+          "false:witness:S4B": 5,
+          "false:witness:S4D": 5,
+          "true:equational_closure": 5,
+          "false:witness:S4F": 4,
+          "false:spine:leftsucc:z4": 4,
+          "true:constancy:11": 3,
+          "true:derived_cp_closure": 3,
+          "false:linear:z4:1,1": 2,
+          "true:nested_left_projection": 2,
+          "true:c9_e1072_collapse:true:rewrite": 2,
+          "false:linear:z4:3,2": 2,
+          "true:left_row_constancy": 2,
+          "true:projection:right": 1,
+          "true:absorption_closure": 1,
+          "true:singleton": 1,
+          "true:bridge:11": 1,
+          "false:spine:leftsucc:z2": 1,
+          "true:sandwich_left_projection": 1,
+          "true:repeat_tail_absorption": 1,
+          "false:witness:Z3A": 1,
+          "false:witness:NAND": 1,
+          "false:affine:z4:2,1,1": 1,
+          "false:linear:z5:2,1": 1,
+          "false:dual:false:witness:FP38": 1,
+          "true:right_projection_collapse:tail_square": 1,
+          "true:rewrite": 1,
+          "false:linear:z5:2,2": 1,
+          "false:dual:false:witness:S6A": 1,
+          "true:distilled:e1057_e1454": 1,
+          "false:linear:z5:1,3": 1,
+          "false:witness:S4G": 1,
+          "false:affine:z4:1,2,1": 1,
+          "true:distilled:e1506_e359": 1,
+          "false:witness:S6B": 1,
+          "false:affine:z4:2,3,1": 1,
+          "false:witness:S5A": 1,
+          "true:distilled:e1695_e680": 1,
+          "true:distilled:e1874_e3524": 1,
+          "true:distilled:e2042_e2692": 1,
+          "true:distilled:e2575_e2227": 1,
+          "false:linear:z9:3,7": 1,
+          "false:linear:z9:1,3": 1,
+          "true:distilled:e2923_e1623": 1,
+          "false:distilled:e2998_e3870": 1,
+          "true:right_projection_collapse:nested_tail": 1,
+          "false:witness:IMP": 1,
+          "true:distilled:e3349_e4682": 1,
+          "false:witness:S4E": 1,
+          "false:linear:z4:2,2": 1,
+          "false:witness:S5D": 1,
+          "false:witness:T3R": 1
+        },
+        "cert_shapes": {
+          "exact_expr": 65,
+          "lemma_chain": 103,
+          "singleton": 1,
+          "other": 9,
+          "lemma": 17
+        }
+      },
+      "rows": [
+        {
+          "id": "hard3_0001",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:projection:right",
+          "code_bytes": 199,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0002",
+          "status": "solved",
+          "seconds": 0.011,
+          "verdict": "true",
+          "route": "true:absorption_closure",
+          "code_bytes": 354,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 9,
+          "nontrivial_models": 8,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0003",
+          "status": "solved",
+          "seconds": 3.44,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 444,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0004",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:singleton",
+          "code_bytes": 194,
+          "label": "true",
+          "cert_shape": "singleton",
+          "battery": 1,
+          "nontrivial_models": 0,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "collapse_kernel_verified",
+            "model_check_vacuous"
+          ]
+        },
+        {
+          "id": "hard3_0005",
+          "status": "solved",
+          "seconds": 0.002,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 429,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0006",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:bridge:11",
+          "code_bytes": 130,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0007",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z2",
+          "code_bytes": 265,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0008",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:11",
+          "code_bytes": 166,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0009",
+          "status": "solved",
+          "seconds": 0.051,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0010",
+          "status": "solved",
+          "seconds": 0.008,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0011",
+          "status": "solved",
+          "seconds": 0.065,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0012",
+          "status": "solved",
+          "seconds": 0.012,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0013",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0014",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:sandwich_left_projection",
+          "code_bytes": 571,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0015",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 494,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0016",
+          "status": "solved",
+          "seconds": 0.012,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0017",
+          "status": "solved",
+          "seconds": 0.011,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0018",
+          "status": "solved",
+          "seconds": 0.026,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0019",
+          "status": "solved",
+          "seconds": 0.053,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0020",
+          "status": "solved",
+          "seconds": 0.002,
+          "verdict": "true",
+          "route": "true:repeat_tail_absorption",
+          "code_bytes": 220,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0021",
+          "status": "solved",
+          "seconds": 0.017,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0022",
+          "status": "solved",
+          "seconds": 0.065,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0023",
+          "status": "solved",
+          "seconds": 0.008,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 170,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 37,
+          "nontrivial_models": 36,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0024",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 542,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0025",
+          "status": "solved",
+          "seconds": 0.017,
+          "verdict": "false",
+          "route": "false:witness:S4F",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0026",
+          "status": "solved",
+          "seconds": 0.027,
+          "verdict": "false",
+          "route": "false:witness:Z3A",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0027",
+          "status": "solved",
+          "seconds": 3.279,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 438,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0028",
+          "status": "solved",
+          "seconds": 3.73,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 450,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0029",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:linear:z4:2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0030",
+          "status": "solved",
+          "seconds": 3.34,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:left_row_constant",
+          "code_bytes": 1027,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0031",
+          "status": "solved",
+          "seconds": 0.021,
+          "verdict": "false",
+          "route": "false:witness:NAND",
+          "code_bytes": 265,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0032",
+          "status": "solved",
+          "seconds": 0.053,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0033",
+          "status": "solved",
+          "seconds": 3.399,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 590,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0034",
+          "status": "solved",
+          "seconds": 3.34,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 486,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0035",
+          "status": "solved",
+          "seconds": 0.069,
+          "verdict": "false",
+          "route": "false:affine:z4:2,1,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0036",
+          "status": "solved",
+          "seconds": 3.221,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 431,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0037",
+          "status": "solved",
+          "seconds": 0.012,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0038",
+          "status": "solved",
+          "seconds": 3.335,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:left_row_constant",
+          "code_bytes": 417,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0039",
+          "status": "solved",
+          "seconds": 0.023,
+          "verdict": "false",
+          "route": "false:linear:z5:2,1",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0040",
+          "status": "solved",
+          "seconds": 0.412,
+          "verdict": "false",
+          "route": "false:dual:false:witness:FP38",
+          "code_bytes": 337,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0041",
+          "status": "solved",
+          "seconds": 0.011,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0042",
+          "status": "solved",
+          "seconds": 0.024,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0043",
+          "status": "solved",
+          "seconds": 3.353,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 470,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0044",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0045",
+          "status": "solved",
+          "seconds": 0.014,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0046",
+          "status": "solved",
+          "seconds": 3.292,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 289,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0047",
+          "status": "solved",
+          "seconds": 0.01,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 202,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0048",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:right_projection_collapse:tail_square",
+          "code_bytes": 1020,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0049",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 996,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0050",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0051",
+          "status": "solved",
+          "seconds": 3.286,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 289,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0052",
+          "status": "solved",
+          "seconds": 3.473,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 314,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0053",
+          "status": "solved",
+          "seconds": 3.501,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 245,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0054",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 174,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0055",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0056",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0057",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0058",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:rewrite",
+          "code_bytes": 91,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 19,
+          "nontrivial_models": 18,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0059",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0060",
+          "status": "solved",
+          "seconds": 2.289,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 309,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0061",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 152,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0062",
+          "status": "solved",
+          "seconds": 0.009,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0063",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0064",
+          "status": "solved",
+          "seconds": 0.069,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0065",
+          "status": "solved",
+          "seconds": 0.17,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0066",
+          "status": "solved",
+          "seconds": 3.522,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 324,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0067",
+          "status": "solved",
+          "seconds": 0.294,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 206,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0068",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 457,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0069",
+          "status": "solved",
+          "seconds": 0.065,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0070",
+          "status": "solved",
+          "seconds": 0.061,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0071",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0072",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "false",
+          "route": "false:linear:z4:1,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0073",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0074",
+          "status": "solved",
+          "seconds": 0.027,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0075",
+          "status": "solved",
+          "seconds": 0.069,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0076",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0077",
+          "status": "solved",
+          "seconds": 3.575,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 507,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 36,
+          "nontrivial_models": 35,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0078",
+          "status": "solved",
+          "seconds": 0.07,
+          "verdict": "false",
+          "route": "false:linear:z5:2,2",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0079",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0080",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0081",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0082",
+          "status": "solved",
+          "seconds": 0.062,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0083",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0084",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0085",
+          "status": "solved",
+          "seconds": 3.335,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 358,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0086",
+          "status": "solved",
+          "seconds": 0.23,
+          "verdict": "false",
+          "route": "false:dual:false:witness:S6A",
+          "code_bytes": 337,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0087",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:nested_left_projection",
+          "code_bytes": 1037,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0088",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:nested_left_projection",
+          "code_bytes": 991,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0089",
+          "status": "solved",
+          "seconds": 5.496,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 331,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0090",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 830,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0091",
+          "status": "solved",
+          "seconds": 0.002,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0092",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0093",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "false",
+          "route": "false:linear:z4:1,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0094",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0095",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0096",
+          "status": "solved",
+          "seconds": 0.08,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0097",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0098",
+          "status": "solved",
+          "seconds": 0.065,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0099",
+          "status": "solved",
+          "seconds": 0.071,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0100",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0101",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0102",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0103",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0104",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0105",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0106",
+          "status": "solved",
+          "seconds": 3.704,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 2326,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0107",
+          "status": "solved",
+          "seconds": 3.468,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 799,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0108",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0109",
+          "status": "solved",
+          "seconds": 0.006,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 1484,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0110",
+          "status": "solved",
+          "seconds": 0.07,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0111",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0112",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "false",
+          "route": "false:witness:S4F",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0113",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0114",
+          "status": "solved",
+          "seconds": 4.874,
+          "verdict": "true",
+          "route": "true:derived_cp_closure",
+          "code_bytes": 438,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0115",
+          "status": "solved",
+          "seconds": 3.357,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 623,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0116",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0117",
+          "status": "solved",
+          "seconds": 5.367,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 317,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0118",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0119",
+          "status": "solved",
+          "seconds": 0.071,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0120",
+          "status": "solved",
+          "seconds": 0.07,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0121",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0122",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0123",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0124",
+          "status": "solved",
+          "seconds": 3.022,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 351,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0125",
+          "status": "solved",
+          "seconds": 0.008,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0126",
+          "status": "solved",
+          "seconds": 0.008,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0127",
+          "status": "solved",
+          "seconds": 3.759,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 340,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0128",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0129",
+          "status": "solved",
+          "seconds": 0.05,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0130",
+          "status": "solved",
+          "seconds": 0.163,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0131",
+          "status": "solved",
+          "seconds": 3.378,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 1417,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0132",
+          "status": "solved",
+          "seconds": 0.122,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0133",
+          "status": "solved",
+          "seconds": 3.814,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 549,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0134",
+          "status": "solved",
+          "seconds": 5.331,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 515,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0135",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e1057_e1454",
+          "code_bytes": 455,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0136",
+          "status": "solved",
+          "seconds": 5.573,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 323,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0137",
+          "status": "solved",
+          "seconds": 0.002,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 718,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0138",
+          "status": "solved",
+          "seconds": 0.007,
+          "verdict": "true",
+          "route": "true:universal_identity:left",
+          "code_bytes": 1484,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0139",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:c9_e1072_collapse:true:rewrite",
+          "code_bytes": 350,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0140",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:c9_e1072_collapse:true:rewrite",
+          "code_bytes": 358,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0141",
+          "status": "solved",
+          "seconds": 0.013,
+          "verdict": "false",
+          "route": "false:linear:z4:2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0142",
+          "status": "solved",
+          "seconds": 0.011,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 186,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0143",
+          "status": "solved",
+          "seconds": 0.071,
+          "verdict": "false",
+          "route": "false:linear:z4:2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0144",
+          "status": "solved",
+          "seconds": 3.744,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 515,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0145",
+          "status": "solved",
+          "seconds": 3.377,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 1298,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 32,
+          "nontrivial_models": 31,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0146",
+          "status": "solved",
+          "seconds": 0.066,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0147",
+          "status": "solved",
+          "seconds": 3.918,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 359,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0148",
+          "status": "solved",
+          "seconds": 4.007,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 329,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0149",
+          "status": "solved",
+          "seconds": 0.015,
+          "verdict": "false",
+          "route": "false:witness:S4F",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0150",
+          "status": "solved",
+          "seconds": 0.113,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0151",
+          "status": "solved",
+          "seconds": 0.114,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0152",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "false",
+          "route": "false:linear:z5:1,3",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0153",
+          "status": "solved",
+          "seconds": 0.104,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0154",
+          "status": "solved",
+          "seconds": 3.435,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 311,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0155",
+          "status": "solved",
+          "seconds": 3.769,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 545,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0156",
+          "status": "solved",
+          "seconds": 3.422,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 327,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0157",
+          "status": "solved",
+          "seconds": 3.454,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 335,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0158",
+          "status": "solved",
+          "seconds": 3.454,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 614,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0159",
+          "status": "solved",
+          "seconds": 0.073,
+          "verdict": "false",
+          "route": "false:witness:S4G",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0160",
+          "status": "solved",
+          "seconds": 3.493,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 585,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0161",
+          "status": "solved",
+          "seconds": 0.058,
+          "verdict": "false",
+          "route": "false:affine:z4:1,2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0162",
+          "status": "solved",
+          "seconds": 3.392,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 728,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0163",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0164",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0165",
+          "status": "solved",
+          "seconds": 0.243,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0166",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0167",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0168",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e1506_e359",
+          "code_bytes": 864,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 11,
+          "nontrivial_models": 10,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0169",
+          "status": "solved",
+          "seconds": 0.059,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0170",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0171",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0172",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0173",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0174",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0175",
+          "status": "solved",
+          "seconds": 0.069,
+          "verdict": "false",
+          "route": "false:witness:S6B",
+          "code_bytes": 337,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0176",
+          "status": "solved",
+          "seconds": 3.36,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 1840,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 9,
+          "nontrivial_models": 8,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0177",
+          "status": "solved",
+          "seconds": 0.063,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0178",
+          "status": "solved",
+          "seconds": 0.06,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0179",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0180",
+          "status": "solved",
+          "seconds": 0.019,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0181",
+          "status": "solved",
+          "seconds": 0.32,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0182",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:spine:rightsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0183",
+          "status": "solved",
+          "seconds": 3.434,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 527,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0184",
+          "status": "solved",
+          "seconds": 0.071,
+          "verdict": "false",
+          "route": "false:linear:z4:1,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0185",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:linear:z4:1,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0186",
+          "status": "solved",
+          "seconds": 0.06,
+          "verdict": "false",
+          "route": "false:linear:z4:1,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0187",
+          "status": "solved",
+          "seconds": 3.771,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 808,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0188",
+          "status": "solved",
+          "seconds": 5.968,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 541,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0189",
+          "status": "solved",
+          "seconds": 0.009,
+          "verdict": "false",
+          "route": "false:affine:z4:2,3,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0190",
+          "status": "solved",
+          "seconds": 0.017,
+          "verdict": "false",
+          "route": "false:witness:S5A",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0191",
+          "status": "solved",
+          "seconds": 0.231,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0192",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e1695_e680",
+          "code_bytes": 1812,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 37,
+          "nontrivial_models": 36,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0193",
+          "status": "solved",
+          "seconds": 3.417,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 961,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 32,
+          "nontrivial_models": 31,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0194",
+          "status": "solved",
+          "seconds": 3.493,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 730,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0195",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:linear:z4:2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0196",
+          "status": "solved",
+          "seconds": 3.927,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 744,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0197",
+          "status": "solved",
+          "seconds": 4.161,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 604,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0198",
+          "status": "solved",
+          "seconds": 4.018,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 353,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0199",
+          "status": "solved",
+          "seconds": 3.451,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 811,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0200",
+          "status": "solved",
+          "seconds": 0.358,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0201",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:linear:z4:1,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0202",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e1874_e3524",
+          "code_bytes": 596,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 29,
+          "nontrivial_models": 28,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0203",
+          "status": "solved",
+          "seconds": 3.91,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 711,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0204",
+          "status": "solved",
+          "seconds": 3.423,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 822,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0205",
+          "status": "solved",
+          "seconds": 5.445,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 770,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0206",
+          "status": "solved",
+          "seconds": 0.017,
+          "verdict": "false",
+          "route": "false:witness:S4F",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0207",
+          "status": "solved",
+          "seconds": 3.404,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 920,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 32,
+          "nontrivial_models": 31,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0208",
+          "status": "solved",
+          "seconds": 5.475,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 1414,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0209",
+          "status": "solved",
+          "seconds": 3.798,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 604,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0210",
+          "status": "solved",
+          "seconds": 4.166,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 626,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0211",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:linear:z4:2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0212",
+          "status": "solved",
+          "seconds": 0.183,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 190,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0213",
+          "status": "solved",
+          "seconds": 4.623,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 427,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0214",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e2042_e2692",
+          "code_bytes": 2130,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0215",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0216",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0217",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0218",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0219",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0220",
+          "status": "solved",
+          "seconds": 0.259,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0221",
+          "status": "solved",
+          "seconds": 3.38,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 383,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0222",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0223",
+          "status": "solved",
+          "seconds": 0.269,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0224",
+          "status": "solved",
+          "seconds": 0.282,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0225",
+          "status": "solved",
+          "seconds": 0.305,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0226",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0227",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0228",
+          "status": "solved",
+          "seconds": 0.009,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0229",
+          "status": "solved",
+          "seconds": 0.144,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0230",
+          "status": "solved",
+          "seconds": 3.732,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 4781,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0231",
+          "status": "solved",
+          "seconds": 3.355,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 785,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 9,
+          "nontrivial_models": 8,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0232",
+          "status": "solved",
+          "seconds": 3.374,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 2076,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 9,
+          "nontrivial_models": 8,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0233",
+          "status": "solved",
+          "seconds": 3.845,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 829,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0234",
+          "status": "solved",
+          "seconds": 0.064,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0235",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0236",
+          "status": "solved",
+          "seconds": 0.065,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0237",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0238",
+          "status": "solved",
+          "seconds": 3.424,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 543,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0239",
+          "status": "solved",
+          "seconds": 0.227,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 206,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0240",
+          "status": "solved",
+          "seconds": 4.061,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 319,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0241",
+          "status": "solved",
+          "seconds": 0.303,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0242",
+          "status": "solved",
+          "seconds": 0.314,
+          "verdict": "false",
+          "route": "false:witness:S4C",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0243",
+          "status": "solved",
+          "seconds": 4.234,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 762,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0244",
+          "status": "solved",
+          "seconds": 3.935,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 534,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0245",
+          "status": "solved",
+          "seconds": 4.018,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 550,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0246",
+          "status": "solved",
+          "seconds": 4.314,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:left_row_constant",
+          "code_bytes": 686,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0247",
+          "status": "solved",
+          "seconds": 3.725,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 321,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0248",
+          "status": "solved",
+          "seconds": 0.013,
+          "verdict": "false",
+          "route": "false:linear:z4:1,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0249",
+          "status": "solved",
+          "seconds": 4.048,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 333,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0250",
+          "status": "solved",
+          "seconds": 5.778,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 593,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0251",
+          "status": "solved",
+          "seconds": 3.371,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 365,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0252",
+          "status": "solved",
+          "seconds": 3.748,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 369,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0253",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:linear:z4:1,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0254",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0255",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 1354,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0256",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 487,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0257",
+          "status": "solved",
+          "seconds": 3.867,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 333,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 11,
+          "nontrivial_models": 10,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0258",
+          "status": "solved",
+          "seconds": 3.46,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 566,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0259",
+          "status": "solved",
+          "seconds": 3.419,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 513,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0260",
+          "status": "solved",
+          "seconds": 3.724,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 515,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0261",
+          "status": "solved",
+          "seconds": 3.871,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 313,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0262",
+          "status": "solved",
+          "seconds": 4.023,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 596,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0263",
+          "status": "solved",
+          "seconds": 0.01,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0264",
+          "status": "solved",
+          "seconds": 0.059,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0265",
+          "status": "solved",
+          "seconds": 3.366,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 1157,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 32,
+          "nontrivial_models": 31,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0266",
+          "status": "solved",
+          "seconds": 3.448,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 1419,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0267",
+          "status": "solved",
+          "seconds": 3.881,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 311,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0268",
+          "status": "solved",
+          "seconds": 3.576,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 305,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0269",
+          "status": "solved",
+          "seconds": 0.006,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 782,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0270",
+          "status": "solved",
+          "seconds": 0.065,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0271",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e2575_e2227",
+          "code_bytes": 2266,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0272",
+          "status": "solved",
+          "seconds": 3.561,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 532,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0273",
+          "status": "solved",
+          "seconds": 3.643,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 559,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0274",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0275",
+          "status": "solved",
+          "seconds": 0.017,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0276",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0277",
+          "status": "solved",
+          "seconds": 0.017,
+          "verdict": "false",
+          "route": "false:linear:z4:3,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0278",
+          "status": "solved",
+          "seconds": 4.13,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:left_row_constant",
+          "code_bytes": 296,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0279",
+          "status": "solved",
+          "seconds": 5.709,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 347,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0280",
+          "status": "solved",
+          "seconds": 0.061,
+          "verdict": "false",
+          "route": "false:linear:z4:3,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0281",
+          "status": "solved",
+          "seconds": 0.287,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0282",
+          "status": "solved",
+          "seconds": 0.286,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0283",
+          "status": "solved",
+          "seconds": 4.041,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 933,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0284",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:left_row_constancy",
+          "code_bytes": 403,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0285",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:left_row_constancy",
+          "code_bytes": 405,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0286",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0287",
+          "status": "solved",
+          "seconds": 0.072,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0288",
+          "status": "solved",
+          "seconds": 3.668,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 359,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0289",
+          "status": "solved",
+          "seconds": 0.055,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0290",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "true",
+          "route": "true:absorption_context_bridge",
+          "code_bytes": 180,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 12,
+          "nontrivial_models": 11,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0291",
+          "status": "solved",
+          "seconds": 3.519,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 982,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0292",
+          "status": "solved",
+          "seconds": 3.359,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 905,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0293",
+          "status": "solved",
+          "seconds": 0.108,
+          "verdict": "false",
+          "route": "false:linear:z9:3,7",
+          "code_bytes": 462,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0294",
+          "status": "solved",
+          "seconds": 3.423,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 321,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 8,
+          "nontrivial_models": 7,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0295",
+          "status": "solved",
+          "seconds": 0.007,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 850,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0296",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 521,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0297",
+          "status": "solved",
+          "seconds": 3.765,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 740,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0298",
+          "status": "solved",
+          "seconds": 3.822,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 751,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0299",
+          "status": "solved",
+          "seconds": 0.007,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 1610,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0300",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0301",
+          "status": "solved",
+          "seconds": 0.052,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0302",
+          "status": "solved",
+          "seconds": 0.009,
+          "verdict": "false",
+          "route": "false:witness:S5C",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0303",
+          "status": "solved",
+          "seconds": 0.009,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0304",
+          "status": "solved",
+          "seconds": 0.07,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0305",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0306",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0307",
+          "status": "solved",
+          "seconds": 3.362,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 652,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0308",
+          "status": "solved",
+          "seconds": 3.407,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 612,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 10,
+          "nontrivial_models": 9,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0309",
+          "status": "solved",
+          "seconds": 0.085,
+          "verdict": "false",
+          "route": "false:linear:z9:1,3",
+          "code_bytes": 462,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0310",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0311",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0312",
+          "status": "solved",
+          "seconds": 0.3,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0313",
+          "status": "solved",
+          "seconds": 3.392,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 335,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0314",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e2923_e1623",
+          "code_bytes": 6444,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0315",
+          "status": "solved",
+          "seconds": 3.323,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 387,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0316",
+          "status": "solved",
+          "seconds": 5.347,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 317,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0317",
+          "status": "solved",
+          "seconds": 5.366,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 319,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0318",
+          "status": "solved",
+          "seconds": 3.575,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 313,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0319",
+          "status": "solved",
+          "seconds": 3.5,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 357,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0320",
+          "status": "solved",
+          "seconds": 0.057,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0321",
+          "status": "solved",
+          "seconds": 3.546,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 362,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0322",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:distilled:e2998_e3870",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0323",
+          "status": "solved",
+          "seconds": 3.831,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 442,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0324",
+          "status": "solved",
+          "seconds": 3.809,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 368,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0325",
+          "status": "solved",
+          "seconds": 3.717,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 370,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0326",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:right_projection_collapse:nested_tail",
+          "code_bytes": 1466,
+          "label": "true",
+          "cert_shape": "other",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_skipped_unsupported_shape",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0327",
+          "status": "solved",
+          "seconds": 0.053,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0328",
+          "status": "solved",
+          "seconds": 0.008,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0329",
+          "status": "solved",
+          "seconds": 3.868,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:left_row_constant",
+          "code_bytes": 379,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 36,
+          "nontrivial_models": 35,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0330",
+          "status": "solved",
+          "seconds": 0.054,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0331",
+          "status": "solved",
+          "seconds": 3.916,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 501,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 36,
+          "nontrivial_models": 35,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0332",
+          "status": "solved",
+          "seconds": 0.056,
+          "verdict": "false",
+          "route": "false:spine:leftsucc:z4",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0333",
+          "status": "solved",
+          "seconds": 3.329,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 315,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0334",
+          "status": "solved",
+          "seconds": 3.37,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 493,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0335",
+          "status": "solved",
+          "seconds": 3.386,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 534,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0336",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 804,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0337",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 1123,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0338",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 1123,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0339",
+          "status": "solved",
+          "seconds": 0.059,
+          "verdict": "false",
+          "route": "false:linear:z4:2,3",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0340",
+          "status": "solved",
+          "seconds": 0.004,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 497,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0341",
+          "status": "solved",
+          "seconds": 0.007,
+          "verdict": "true",
+          "route": "true:universal_identity:right",
+          "code_bytes": 521,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 7,
+          "nontrivial_models": 6,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0342",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4B",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0343",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4D",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0344",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4D",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0345",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4D",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0346",
+          "status": "solved",
+          "seconds": 0.002,
+          "verdict": "false",
+          "route": "false:witness:S4D",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0347",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4B",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0348",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4B",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0349",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4D",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0350",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4B",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0351",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:IMP",
+          "code_bytes": 265,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0352",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 170,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0353",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:distilled:e3349_e4682",
+          "code_bytes": 1894,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 40,
+          "nontrivial_models": 39,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0354",
+          "status": "solved",
+          "seconds": 3.519,
+          "verdict": "true",
+          "route": "true:equational_closure",
+          "code_bytes": 322,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0355",
+          "status": "solved",
+          "seconds": 3.72,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 598,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 18,
+          "nontrivial_models": 17,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0356",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:S4E",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0357",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:Z3B",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0358",
+          "status": "solved",
+          "seconds": 0.051,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0359",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0360",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0361",
+          "status": "solved",
+          "seconds": 3.712,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 222,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 20,
+          "nontrivial_models": 19,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0362",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0363",
+          "status": "solved",
+          "seconds": 0.161,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0364",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 166,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0365",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 140,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0366",
+          "status": "solved",
+          "seconds": 3.327,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 168,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0367",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 172,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0368",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0369",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:S4B",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0370",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "false",
+          "route": "false:witness:T3L",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0371",
+          "status": "solved",
+          "seconds": 0.003,
+          "verdict": "false",
+          "route": "false:linear:z4:2,2",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0372",
+          "status": "solved",
+          "seconds": 0.076,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0373",
+          "status": "solved",
+          "seconds": 0.236,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0374",
+          "status": "solved",
+          "seconds": 3.7,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 166,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0375",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 150,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0376",
+          "status": "solved",
+          "seconds": 3.289,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 845,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 27,
+          "nontrivial_models": 26,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0377",
+          "status": "solved",
+          "seconds": 0.219,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0378",
+          "status": "solved",
+          "seconds": 3.566,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 172,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0379",
+          "status": "solved",
+          "seconds": 2.976,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 192,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0380",
+          "status": "solved",
+          "seconds": 5.329,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 397,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 20,
+          "nontrivial_models": 19,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0381",
+          "status": "solved",
+          "seconds": 3.715,
+          "verdict": "true",
+          "route": "true:completion:join",
+          "code_bytes": 336,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0382",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 202,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 24,
+          "nontrivial_models": 23,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0383",
+          "status": "solved",
+          "seconds": 0.005,
+          "verdict": "false",
+          "route": "false:linear:z4:2,1",
+          "code_bytes": 293,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0384",
+          "status": "solved",
+          "seconds": 3.384,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 553,
+          "label": "true",
+          "cert_shape": "lemma_chain",
+          "battery": 19,
+          "nontrivial_models": 18,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_chain_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0385",
+          "status": "solved",
+          "seconds": 3.633,
+          "verdict": "true",
+          "route": "true:equational_closure",
+          "code_bytes": 164,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 25,
+          "nontrivial_models": 24,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0386",
+          "status": "solved",
+          "seconds": 5.306,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 156,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 19,
+          "nontrivial_models": 18,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0387",
+          "status": "solved",
+          "seconds": 4.109,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 224,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 40,
+          "nontrivial_models": 39,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0388",
+          "status": "solved",
+          "seconds": 5.601,
+          "verdict": "true",
+          "route": "true:egg_bootstrap:right_col_constant",
+          "code_bytes": 355,
+          "label": "true",
+          "cert_shape": "lemma",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "lemma_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0389",
+          "status": "solved",
+          "seconds": 3.767,
+          "verdict": "true",
+          "route": "true:completion:bridge",
+          "code_bytes": 243,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0390",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:00",
+          "code_bytes": 172,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 67,
+          "nontrivial_models": 66,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0391",
+          "status": "solved",
+          "seconds": 0.067,
+          "verdict": "false",
+          "route": "false:enum_fin3",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0392",
+          "status": "solved",
+          "seconds": 0.002,
+          "verdict": "false",
+          "route": "false:witness:S5D",
+          "code_bytes": 313,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0393",
+          "status": "solved",
+          "seconds": 3.782,
+          "verdict": "true",
+          "route": "true:equational_closure",
+          "code_bytes": 187,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 21,
+          "nontrivial_models": 20,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0394",
+          "status": "solved",
+          "seconds": 0.001,
+          "verdict": "false",
+          "route": "false:witness:T3R",
+          "code_bytes": 277,
+          "label": "false",
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "false_table_verified"
+          ]
+        },
+        {
+          "id": "hard3_0395",
+          "status": "solved",
+          "seconds": 3.304,
+          "verdict": "true",
+          "route": "true:derived_cp_closure",
+          "code_bytes": 331,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 19,
+          "nontrivial_models": 18,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0396",
+          "status": "solved",
+          "seconds": 3.873,
+          "verdict": "true",
+          "route": "true:equational_closure",
+          "code_bytes": 319,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 19,
+          "nontrivial_models": 18,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0397",
+          "status": "solved",
+          "seconds": 3.842,
+          "verdict": "true",
+          "route": "true:derived_cp_closure",
+          "code_bytes": 296,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 20,
+          "nontrivial_models": 19,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0398",
+          "status": "solved",
+          "seconds": 3.609,
+          "verdict": "true",
+          "route": "true:equational_closure",
+          "code_bytes": 282,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 20,
+          "nontrivial_models": 19,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0399",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:11",
+          "code_bytes": 192,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 23,
+          "nontrivial_models": 22,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        },
+        {
+          "id": "hard3_0400",
+          "status": "solved",
+          "seconds": 0.0,
+          "verdict": "true",
+          "route": "true:constancy:11",
+          "code_bytes": 190,
+          "label": "true",
+          "cert_shape": "exact_expr",
+          "battery": 25,
+          "nontrivial_models": 24,
+          "oracle": "ok",
+          "checks": [
+            "no_banned_tactics",
+            "proof_kernel_verified",
+            "model_checked"
+          ]
+        }
+      ]
+    }
+  }
+}

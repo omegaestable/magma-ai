@@ -5259,6 +5259,57 @@ LEMMA_LIBRARY_TEXT = (
     ("commutative", "a ◇ b = b ◇ a"),
 )
 
+# Rung laws mined from an LLM protocol probe, 2026-08-27. Provenance: proposed
+# by `gpt-oss-120b` (deployed model, reasoning_effort=low, temperature 0 /
+# seed 0) under a "justified derivation ladder" prompt over 37 frontier rows,
+# then **proved from eq1 by the solver itself** — nothing here is trusted
+# because a model said it. They ship as general laws, never as row ids
+# (rail 9): each is a universally quantified equation, so a key hit transfers
+# to any hypothesis that entails it.
+#
+# Why they cannot come out of `enumerated_lemma_library()`: that enumerator
+# only emits laws whose LHS is `a` or `a ◇ b`, so `(c ◇ a) ◇ b = (b ◇ a) ◇ b`
+# and `(a ◇ b) ◇ a = b ◇ (a ◇ b)` are outside its grammar entirely, and none of
+# the 19 below matches any of the 601 entries by `canonical_law_key`.
+#
+# Measured (`stage2/experiments/mined_law_scan.py`, 2 s/law, 4 workers) over
+# the 51 order-4 residual rows the full solver misses at 420 s/row: **19/51
+# solved**, 0 oracle failures, ~6 s/row. Eight laws win rows (marked below);
+# `x ◇ y = (z ◇ (x ◇ z)) ◇ y` alone closes the whole residual eq1-`3983`
+# family. Three certificates, one per winning family, are real-judge accepted
+# on Lean 4.33.1 (`etp_4453_4652`, `etp_3983_3800`, `etp_4465_4468`).
+#
+# Pruned from the 31 mined: 11 single-variable laws that won nothing are
+# row-specific and only cost budget, and one entry parsed to a tautology
+# (`a ◇ b ◇ c` is left-associative, so its two sides are the same term).
+MINED_LEMMA_LIBRARY_TEXT = (
+    ("mined00", "(a ◇ b) ◇ a = b ◇ (a ◇ b)"),  # won rows in the probe scan
+    ("mined01", "(a ◇ x) ◇ x = (b ◇ x) ◇ x"),
+    ("mined02", "(c ◇ a) ◇ b = (b ◇ a) ◇ b"),
+    ("mined03", "a = (a ◇ ((a ◇ a) ◇ a)) ◇ a"),  # won rows in the probe scan
+    ("mined04", "a ◇ (b ◇ (a ◇ (c ◇ c))) = b"),
+    ("mined05", "a ◇ (b ◇ b) = a ◇ (c ◇ c)"),
+    ("mined06", "a ◇ a = (a ◇ (c ◇ d)) ◇ a"),  # won rows in the probe scan
+    ("mined07", "b ◇ (a ◇ (a ◇ (c ◇ a))) = a"),
+    ("mined08", "x ◇ (x ◇ x) = (z ◇ x) ◇ x"),  # won rows in the probe scan
+    ("mined09", "x ◇ y = (z ◇ (x ◇ z)) ◇ y"),  # won rows in the probe scan
+    ("mined10", "(a ◇ ((a ◇ (b ◇ b)) ◇ b)) ◇ a = a"),
+    ("mined11", "a = (a ◇ a) ◇ ((a ◇ (b ◇ a)) ◇ a)"),
+    ("mined12", "a = b ◇ ((a ◇ ((b ◇ a) ◇ b)) ◇ a)"),
+    ("mined13", "a = b ◇ ((a ◇ ((b ◇ b) ◇ b)) ◇ b)"),
+    ("mined14", "a ◇ ((b ◇ ((b ◇ b) ◇ a)) ◇ c) = a"),
+    ("mined15", "x = y ◇ ((x ◇ (y ◇ x)) ◇ (y ◇ y))"),
+    ("mined16", "(x ◇ (x ◇ (x ◇ (x ◇ x)))) ◇ x = x ◇ x"),  # won rows in the probe scan
+    ("mined17", "a ◇ a = (b ◇ (((c ◇ c) ◇ b) ◇ c)) ◇ (a ◇ a)"),  # won rows in the probe scan
+    ("mined18", "y ◇ x = ((x ◇ y) ◇ x) ◇ ((y ◇ (y ◇ x)) ◇ x)"),  # won rows in the probe scan
+)
+
+# Mined entries get a smaller per-law slice than `EGG_LADDER_RUNG_BUDGET`:
+# every one of the eight that won a row proved well inside 0.5 s, and there are
+# 19 of them ahead of the 600 enumerated candidates, so a full-size budget
+# would push the tail out of a `fast` route deadline for nothing.
+MINED_LEMMA_RUNG_BUDGET = 0.5
+
 LEMMA_APPLY_CHAIN_MAX_DEPTH = 3
 
 # Budget per lemma search, by how much a hit is worth paying for. The two
@@ -5330,9 +5381,12 @@ def enumerated_lemma_library() -> tuple[tuple[str, str], ...]:
 def full_lemma_library() -> tuple[tuple[str, str], ...]:
     curated_shapes = set()
     curated: list[tuple[str, str]] = []
-    for name, text in LEMMA_LIBRARY_TEXT:
+    for name, text in LEMMA_LIBRARY_TEXT + MINED_LEMMA_LIBRARY_TEXT:
+        key = canonical_law_key(parse_equation(text))
+        if key in curated_shapes:
+            continue
         curated.append((name, text))
-        curated_shapes.add(canonical_law_key(parse_equation(text)))
+        curated_shapes.add(key)
     extra = [
         (name, text)
         for name, text in enumerated_lemma_library()
@@ -7096,6 +7150,56 @@ EGG_LADDER_RUNG_BUDGET_CAP = 6.0
 EGG_LADDER_RUNG_SCAN_LIMIT = 200
 
 
+# A hypothesis with this many operations is "order-5 shaped" in the sweep
+# vocabulary: every one of the 353 order-5 misses in the 20k sweep has exactly
+# 5 operations in eq1, against 4 for every order-4 miss.
+MINED_LEMMA_SKIP_EQ1_OPS = 5
+
+
+def _term_op_count(term: Term) -> int:
+    if term[0] == "var":
+        return 0
+    return 1 + _term_op_count(term[1]) + _term_op_count(term[2])
+
+
+def mined_lemma_scan_is_useful(eq1: dict[str, Any]) -> bool:
+    """Would the extra mined scan be paying for a population it cannot serve?
+
+    Two cheap signals, and it takes BOTH to switch the scan off, because either
+    one alone is wrong:
+
+    * eq1 is order-5 shaped (>= 5 operations). Measured 2026-08-27, same law
+      set, same scanner: ~6 s CPU/row and 19/51 solved on the order-4 residual
+      against ~60 s CPU/row and **0/80** on `order5-sweep-20k-ALL-failures`.
+    * eq1 has no small *nontrivial* model. `lemma_survives_models` — the free
+      pre-filter that normally rejects ~70% of the library — is vacuous exactly
+      then, because a constant magma satisfies every equation, so each law
+      burns its whole saturation budget instead of being rejected for ~10 ms.
+      That is the order-5 `collapse_candidate` shape (z3-proved 2026-08-27: eq1
+      has no nontrivial finite model of size 2-7).
+
+    The conjunction matters and was measured, not assumed: the second signal
+    alone reads False on `etp_4453_4652` and `etp_3983_3800` too — order-4
+    residual rows the mined laws *do* close — so gating on it alone would skip
+    the entire population this library exists for.
+
+    The model set is the one `lemma_survives_models` already caches, and the op
+    count is a tree walk, so the whole gate is free. It is deliberately not
+    `hypothesis_models_seen()`: that global depends on whether the FALSE search
+    has run on this row yet, which makes the gate order-dependent.
+    """
+    if (_term_op_count(eq1["lhs"]) + _term_op_count(eq1["rhs"])
+            < MINED_LEMMA_SKIP_EQ1_OPS):
+        return True
+    models = _lemma_filter_models(
+        eq1["lhs"], eq1["rhs"], tuple(eq1["variables"]))
+    for table in models:
+        first = table[0][0]
+        if any(value != first for row in table for value in row):
+            return True
+    return False
+
+
 def _egg_find_rung(eq1: dict[str, Any], rules: list[_EggRule], *,
                    skip: set, deadline: float | None
                    ) -> tuple[dict[str, Any], str] | None:
@@ -7107,9 +7211,13 @@ def _egg_find_rung(eq1: dict[str, Any], rules: list[_EggRule], *,
     (measured: 172 of 601 survive on `hard3_0266`).
     """
     scanned = 0
+    mined_useful = mined_lemma_scan_is_useful(eq1)
     for _name, text in full_lemma_library():
         if scanned >= EGG_LADDER_RUNG_SCAN_LIMIT or deadline_expired(deadline):
             return None
+        is_mined = _name.startswith("mined")
+        if is_mined and not mined_useful:
+            continue
         try:
             lemma = lemma_goal(text)
         except ValueError:
@@ -7119,10 +7227,13 @@ def _egg_find_rung(eq1: dict[str, Any], rules: list[_EggRule], *,
         if not lemma_survives_models(eq1, lemma):
             continue
         scanned += 1
+        rung_budget = (
+            MINED_LEMMA_RUNG_BUDGET if is_mined
+            else min(_eff_time(EGG_LADDER_RUNG_BUDGET),
+                     EGG_LADDER_RUNG_BUDGET_CAP))
         proof = egg_saturate_prove_multi(
             rules, lemma,
-            time_budget=min(_eff_time(EGG_LADDER_RUNG_BUDGET),
-                            EGG_LADDER_RUNG_BUDGET_CAP),
+            time_budget=rung_budget,
             max_proof_bytes=EGG_LADDER_MAX_LAW_BYTES)
         if proof is None:
             continue
