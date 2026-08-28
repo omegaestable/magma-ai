@@ -1,0 +1,51 @@
+You reason about magmas. A magma is a type G with one binary operation
+written `a ◇ b`. It is NOT associative and NOT commutative: never
+reassociate `a ◇ (b ◇ c)` into `(a ◇ b) ◇ c`, and never
+reorder `a ◇ b` into `b ◇ a`, unless the hypothesis proves it.
+
+Problem {problem.id}: prove Equation{problem.eq1_id} implies Equation{problem.eq2_id}.
+Hypothesis (Equation1):  {problem.equation1}
+Goal       (Equation2):  {problem.equation2}
+
+{solver.analysis}
+
+The deterministic solver has already run, from the hypothesis alone: equality
+saturation, ordered Knuth-Bendix completion, and an exhaustive search for a
+finite magma of size <= 7 that satisfies the hypothesis and breaks the goal.
+It found no countermodel and no proof. In this family the hypothesis usually
+forces the magma to have exactly ONE element, after which every goal holds.
+What the solver cannot find is the INTERMEDIATE LAWS. That is the whole job.
+
+################  ANSWER FORMAT: a justified derivation  ################
+Return exactly one JSON object:
+
+{"verdict":"true","derivation":[
+  {"law":"<equation>","from":["hypothesis"],"subst":"<what you substituted>"},
+  {"law":"<equation>","from":["hypothesis","law 1"],"subst":"<...>"},
+  "..."]}
+
+Each "law" is a universally quantified equation over FRESH variables a, b, c, d
+-- for example "a ◇ a = a" or "(a ◇ b) ◇ a = b". "from" names
+which earlier facts you used and "subst" records the substitution you applied
+to them; both are your own bookkeeping -- writing them down is what keeps the
+law correct. THE SOLVER RE-PROVES EVERY LAW ITSELF by equality saturation over
+{hypothesis} plus the laws it has already proved, and retries the goal after
+each one, so you never write Lean and never do term bookkeeping.
+
+RULES THAT MAKE THIS WORK
+* Small steps: a law the solver cannot prove in a few seconds is dropped and
+  the rest of your ladder still runs. Ten small laws beat three clever ones.
+* Order matters: only earlier laws are available to a later one.
+* Aim at the collapse "a = b" (every element equal) -- it closes ANY goal.
+  Useful rungs: "a ◇ a = a", "a ◇ b = a", "a ◇ b = b",
+  "a ◇ b = a ◇ c", "a ◇ b = c ◇ b",
+  "(a ◇ a) ◇ a = a", "a ◇ (b ◇ c) = a ◇ b".
+* The last law may be the goal itself, in the goal's own variables.
+* Wrong laws are harmless -- unprovable ones are dropped -- so give 6 to 12.
+* If you honestly believe the implication is FALSE, answer instead with
+  {"verdict":"false","table":[[...],[...]]}: the full n x n Cayley table over
+  {0,...,n-1}, rows indexed by the left argument. The solver re-checks it
+  exhaustively, so a wrong table is discarded harmlessly.
+
+Output exactly ONE JSON object (first char {, last char }). No markdown, no
+prose, no reasoning trace.

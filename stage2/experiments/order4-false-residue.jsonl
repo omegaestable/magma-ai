@@ -1,0 +1,10 @@
+{"id": "etp_1486_3862", "eq1_id": 1486, "eq2_id": 3862, "equation1": "x = (y ◇ x) ◇ (x ◇ (z ◇ z))", "equation2": "x ◇ x = (x ◇ (x ◇ x)) ◇ x", "answer": "false"}
+{"id": "etp_1661_3524", "eq1_id": 1661, "eq2_id": 3524, "equation1": "x = (x ◇ y) ◇ ((y ◇ z) ◇ y)", "equation2": "x ◇ y = x ◇ ((y ◇ z) ◇ x)", "answer": "false"}
+{"id": "etp_481_3050", "eq1_id": 481, "eq2_id": 3050, "equation1": "x = y ◇ (x ◇ (y ◇ (z ◇ z)))", "equation2": "x = (((x ◇ x) ◇ x) ◇ x) ◇ x", "answer": "false"}
+{"id": "etp_481_2132", "eq1_id": 481, "eq2_id": 2132, "equation1": "x = y ◇ (x ◇ (y ◇ (z ◇ z)))", "equation2": "x = ((y ◇ y) ◇ x) ◇ (z ◇ z)", "answer": "false"}
+{"id": "etp_481_3056", "eq1_id": 481, "eq2_id": 3056, "equation1": "x = y ◇ (x ◇ (y ◇ (z ◇ z)))", "equation2": "x = (((x ◇ x) ◇ y) ◇ x) ◇ y", "answer": "false"}
+{"id": "etp_2531_23", "eq1_id": 2531, "eq2_id": 23, "equation1": "x = (y ◇ ((y ◇ x) ◇ x)) ◇ y", "equation2": "x = (x ◇ x) ◇ x", "answer": "false"}
+{"id": "etp_2531_99", "eq1_id": 2531, "eq2_id": 99, "equation1": "x = (y ◇ ((y ◇ x) ◇ x)) ◇ y", "equation2": "x = x ◇ ((x ◇ x) ◇ x)", "answer": "false"}
+{"id": "etp_2162_3877", "eq1_id": 2162, "eq2_id": 3877, "equation1": "x = ((y ◇ z) ◇ x) ◇ (x ◇ y)", "equation2": "x ◇ x = (y ◇ (x ◇ x)) ◇ x", "answer": "false"}
+{"id": "etp_898_4270", "eq1_id": 898, "eq2_id": 4270, "equation1": "x = y ◇ ((x ◇ z) ◇ (z ◇ y))", "equation2": "x ◇ (x ◇ x) = x ◇ (y ◇ y)", "answer": "false"}
+{"id": "etp_2316_4656", "eq1_id": 2316, "eq2_id": 4656, "equation1": "x = (y ◇ (x ◇ (z ◇ y))) ◇ z", "equation2": "(x ◇ y) ◇ y = (x ◇ z) ◇ z", "answer": "false"}
