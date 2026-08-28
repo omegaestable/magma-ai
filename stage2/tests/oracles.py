@@ -337,6 +337,82 @@ _LEMMA_CERT_RE = re.compile(
 _TABLE_RE = re.compile(r'finOpTable "(\[\[.*?\]\])"')
 _LIST_TABLE_RE = re.compile(r"List\.getD \[([0-9,]+)\]")
 _FIN_RE = re.compile(r"Exists\.intro \(Fin (\d+)\)")
+_FORMULA_OP_RE = re.compile(r"op := fun (\w+) (\w+) => Fin\.mk \(")
+
+# Nat heads the closed-form FALSE shape may use. Restated from the judge's
+# allowlisted prefixes, not imported from the solver: the point of this module
+# is that a wrong expression in the renderer cannot hide behind the same wrong
+# expression here, so the table is *recomputed* from the emitted Lean rather
+# than trusted.
+_FORMULA_BINOPS = {
+    "Nat.add": lambda x, y: x + y,
+    "Nat.mul": lambda x, y: x * y,
+    "Nat.sub": lambda x, y: max(0, x - y),   # Nat truncated subtraction
+    "Nat.mod": lambda x, y: x % y if y else x,
+    "Nat.div": lambda x, y: x // y if y else 0,
+    "Nat.xor": lambda x, y: x ^ y,
+    "Nat.land": lambda x, y: x & y,
+    "Nat.lor": lambda x, y: x | y,
+    "Nat.shiftLeft": lambda x, y: x << y,
+    "Nat.shiftRight": lambda x, y: x >> y,
+}
+
+
+def _formula_tokens(text: str) -> list[str]:
+    return re.findall(r"\(|\)|[A-Za-z_][A-Za-z0-9_.]*|\d+", text)
+
+
+def _formula_eval(tokens: list[str], pos: int, env: dict[str, int]) -> tuple[int, int]:
+    """Evaluate one prefix-application expression, returning (value, next pos)."""
+    if pos >= len(tokens):
+        raise OracleError("closed-form op: truncated expression")
+    tok = tokens[pos]
+    if tok == "(":
+        value, pos = _formula_eval(tokens, pos + 1, env)
+        if pos >= len(tokens) or tokens[pos] != ")":
+            raise OracleError("closed-form op: unbalanced parentheses")
+        return value, pos + 1
+    if tok.isdigit():
+        return int(tok), pos + 1
+    if tok == "Fin.val":
+        if pos + 1 >= len(tokens) or tokens[pos + 1] not in env:
+            raise OracleError("closed-form op: Fin.val of a non-argument")
+        return env[tokens[pos + 1]], pos + 2
+    if tok in _FORMULA_BINOPS:
+        left, pos = _formula_eval(tokens, pos + 1, env)
+        right, pos = _formula_eval(tokens, pos, env)
+        return _FORMULA_BINOPS[tok](left, right), pos
+    if tok in env:
+        return env[tok], pos + 1
+    raise OracleError(f"closed-form op uses an unrecognised head: {tok}")
+
+
+def _formula_table(code: str, n: int) -> list[list[int]] | None:
+    """Recompute the magma of a closed-form FALSE certificate, or None.
+
+    The certificate carries no table at all — the operation is an arithmetic
+    expression — so the only honest offline check is to interpret that
+    expression the way Lean would and rebuild the `n * n` magma from it. Doing
+    so also proves the emitted heads are all ones this oracle (and hence the
+    judge's allowlist) recognises: an unknown head is an error, never a pass.
+    """
+    match = _FORMULA_OP_RE.search(code)
+    if match is None:
+        return None
+    left, right = match.group(1), match.group(2)
+    start = match.end() - 1                     # the '(' opening the value
+    tokens = _formula_tokens(code[start:])
+    table: list[list[int]] = []
+    for i in range(n):
+        row: list[int] = []
+        for j in range(n):
+            value, _ = _formula_eval(tokens, 0, {left: i, right: j})
+            if not 0 <= value < n:
+                raise OracleError(
+                    f"closed-form op leaves Fin {n} at ({i},{j}): {value}")
+            row.append(value)
+        table.append(row)
+    return table
 
 # Restated from vendor/stage2-official/pipeline/config.json (the `judge` block
 # the runner actually passes to the verifier) rather than imported from the
@@ -357,7 +433,17 @@ JUDGE_MAX_FALSE_CERT_BYTES = 20_000
 # deployed Lean timeout of 300 s (not the 120 s fallback). Holding ~3x margin
 # for slower judge hardware gives ~51,700; 50,000 is that rounded down. Applies
 # only above order 10, the envelope every accepted FALSE row to date sits inside.
+# SUPERSEDED 2026-08-27 by the two bounds below; kept as a signpost so nobody
+# re-derives a limit from it. Nothing reads it any more.
 MAX_WITNESS_DECIDE_APPLICATIONS = 50_000
+# Applications alone is the wrong axis, and the solver's gate was corrected on
+# 2026-08-27 to say so; restated here independently from the same real-judge
+# points rather than imported. A *closed-form* op costs the judge a constant per
+# application (accepted at 216,000 and 262,144), while a table lookup costs
+# O(n^2) per application (`applications * n * n` accepted at 9.77M, rejected on a
+# deterministic heartbeat timeout at 24.3M).
+FORMULA_MAX_DECIDE_APPLICATIONS = 150_000
+TABLE_MAX_DECIDE_WORK = 8_000_000
 
 _LEMMA_CHAIN_HEAD = "import JudgeProblem\n\ndef submission : Goal := by\n  intro G _ h\n"
 
@@ -696,7 +782,10 @@ def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any])
 
     tm = _TABLE_RE.search(code)
     lm = _LIST_TABLE_RE.search(code)
-    if tm is not None:
+    formula_table = None if (tm is not None or lm is not None) else _formula_table(code, n)
+    if formula_table is not None:
+        table = formula_table
+    elif tm is not None:
         table = json.loads(tm.group(1))
         multi_digit = [v for row in table for v in row if v > 9]
         if multi_digit:
@@ -711,7 +800,9 @@ def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any])
                 f"List.getD witness has {len(flat)} cells, expected {n * n} for Fin {n}")
         table = [flat[r * n:(r + 1) * n] for r in range(n)]
     else:
-        raise OracleError("FALSE certificate missing finOpTable/List.getD table")
+        raise OracleError(
+            "FALSE certificate missing finOpTable/List.getD table and no "
+            "closed-form op to recompute one from")
 
     if len(table) != n or any(len(row) != n for row in table):
         raise OracleError(f"table shape does not match Fin {n}")
@@ -726,11 +817,26 @@ def check_false_certificate(code: str, eq1: dict[str, Any], eq2: dict[str, Any])
         raise OracleError(
             f"FALSE certificate is {size} bytes, over the judge's "
             f"{JUDGE_MAX_FALSE_CERT_BYTES}-byte cap")
-    widest = max(len(eq1["variables"]), len(eq2["variables"]))
-    if n > 10 and n ** max(1, widest) > MAX_WITNESS_DECIDE_APPLICATIONS:
-        raise OracleError(
-            f"Fin {n} witness against a {widest}-variable goal costs the judge "
-            f"{n ** widest} decide applications, beyond the measured envelope")
+    widest = max(1, len(eq1["variables"]), len(eq2["variables"]))
+    applications = n ** widest
+    # Shape-aware since 2026-08-27: what the judge spends is applications times
+    # the cost of one application, and a closed-form op is constant per
+    # application where a table lookup is O(n^2). Judging them by the same
+    # number authorised order-30 table certificates the judge deterministically
+    # rejects, and vetoed order-43 formula certificates it accepts.
+    if formula_table is not None:
+        if applications > FORMULA_MAX_DECIDE_APPLICATIONS:
+            raise OracleError(
+                f"Fin {n} closed-form witness against a {widest}-variable goal "
+                f"costs the judge {applications} decide applications, beyond "
+                f"the measured envelope")
+    else:
+        per_application = 2 * n * n if tm is not None else n * n
+        if applications * per_application > TABLE_MAX_DECIDE_WORK:
+            raise OracleError(
+                f"Fin {n} table witness against a {widest}-variable goal costs "
+                f"the judge {applications} x {per_application} work units, "
+                f"beyond the measured envelope")
     if not equation_holds(eq1["lhs"], eq1["rhs"], list(eq1["variables"]), table):
         raise OracleError("witness does not satisfy eq1")
     if equation_holds(eq2["lhs"], eq2["rhs"], list(eq2["variables"]), table):

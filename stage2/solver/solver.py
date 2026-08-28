@@ -169,7 +169,32 @@ AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
 # 25 are the two prime powers cheap enough to be worth carrying anyway.
 # Bounded by `witness_decide_is_affordable`, not by this tuple — an order here
 # is only *tried*, and a 3-variable goal already costs the judge 30 s at 25.
+# Orders past 25 live in `FORMULA_LINEAR_SIZES` below, because what makes them
+# reachable is the rendering, not this tuple.
 LARGE_LINEAR_SIZES = (11, 13, 16, 17, 19, 23, 25)
+
+# Linear orders past the complete-table ceiling, added 2026-08-27 (LEAN-01).
+#
+# Deliberately a *separate* tuple rather than an extension of the one above,
+# because they are reachable for a different reason and the distinction is what
+# `MAX_WITNESS_ORDER = 25` still means: 25 is where a **table**-rendered witness
+# stops being judge-accepted (order 25 accepted in 52.6 s, order 30 a
+# deterministic heartbeat rejection). These orders never ship as a table.
+# `formula_op_expr` recognises every linear magma, so they go out as ~383 bytes
+# of arithmetic, and the formula's `decide` was measured accepted at 216,000
+# applications — order 60 with a 3-variable hypothesis, 121 s.
+#
+# The motivating row is `order5_18263_27751`, a real order-5 sweep miss refuted
+# by `x ◇ y = 22x + 32y (mod 43)`: judge-accepted here at 383 bytes / 36.1 s,
+# and unreachable before on both counts (43 was past the tuple and 79,507
+# applications past the old 50,000 gate). A pure-linear scan over the 353
+# sampled order-5 misses finds 4 linear-refutable rows, 2 of them needing 43.
+#
+# The scan stays cheap: candidates are `(n-1)^2` per order and each is abandoned
+# at the first assignment violating eq1, and `large_linear_family_tables` skips
+# an order outright when the hypothesis' variable count would put the result
+# past `FORMULA_MAX_DECIDE_APPLICATIONS`.
+FORMULA_LINEAR_SIZES = (27, 29, 31, 37, 41, 43, 47)
 AFFINE_QUADRATIC_SIZES = (2, 3, 5, 7)
 ENUMERATION_MAX_N = 3
 STRUCTURED_MAX_N = 7
@@ -714,6 +739,13 @@ def reflexive_true_certificate() -> str:
 
 DECIDE_MAX_REC_DEPTH_APPLICATIONS = 4_096
 
+# Order above which `formula_op_expr` stops trying the square-term quadratic
+# fit. That branch enumerates the two square coefficients, so it costs n^2 fits
+# of an O(n^2) verification — 2,401 cell tests at order 7, 20,736 at 12, and it
+# runs on every candidate table the FALSE portfolio evaluates. The families it
+# exists for (`quadratic_x2` / `quadratic_y2`) never exceed order 7.
+FORMULA_QUADRATIC_FIT_MAX_ORDER = 12
+
 
 def _wcg5_table() -> list[list[int]]:
     """Twisted weak central groupoid on F_2^5 (ETP blueprint, 'Twisting a weak
@@ -740,14 +772,154 @@ def _formula_certificate(a: str, b: str) -> str:
     )
 
 
+def formula_op_expr(table: list[list[int]]) -> str | None:
+    """Closed form for a witness table, as a Lean `Nat` expression in `i`/`j`.
+
+    Returns the *value* expression that goes inside `Fin.mk (...)`, or None
+    when the table is not one of the recognised closed forms. Every head it can
+    emit — `Nat.add`, `Nat.mul`, `Nat.mod`, `Nat.xor`, `Nat.land`, `Nat.lor`,
+    `Fin.val` — sits under a prefix the judge's declaration allowlist already
+    permits, which is what makes the whole shape legal (the 2026-07-29
+    conclusion that arithmetic was banned came from writing it as `7 * i + 7 * j`
+    and being rejected on `HMul.hMul` — the *notation*, not the construction).
+
+    Why bother when a table of the same magma is already accepted: measured on
+    the real judge 2026-08-27, an order-17 linear magma is 1,044 bytes and 19.7 s
+    as a `List.getD` table and 382 bytes and 2.8 s as this formula, and the table
+    rendering is a hard heartbeat rejection from order 30 up while the formula is
+    accepted at order 60 (216,000 applications, 121 s). So this is not a size
+    optimisation — above order ~25 it is the difference between shipping the row
+    and shipping a certificate the judge deterministically rejects.
+
+    The fit is exact, never approximate: each family is solved from three or
+    four cells and then verified against all `n * n` of them, so a False
+    negative costs a fallback rendering and a False positive is impossible.
+    """
+    n = len(table)
+    if n < 2 or any(len(row) != n for row in table):
+        return None
+    if any(not (0 <= v < n) for row in table for v in row):
+        return None
+
+    def val(name: str) -> str:
+        return f"(Fin.val {name})"
+
+    # Affine `a*i + b*j + c (mod n)`: solve from (0,0), (1,0), (0,1).
+    c = table[0][0]
+    a = (table[1][0] - c) % n
+    b = (table[0][1] - c) % n
+    if all(table[i][j] == (a * i + b * j + c) % n
+           for i in range(n) for j in range(n)):
+        body = (f"(Nat.add (Nat.add (Nat.mul {a} {val('i')}) "
+                f"(Nat.mul {b} {val('j')})) {c})")
+        return f"Nat.mod {body} {n}"
+
+    # Quadratic `a*i + b*j + q*i*j + d (mod n)`: the affine fit plus (1,1).
+    d = table[0][0]
+    a = (table[1][0] - d) % n
+    b = (table[0][1] - d) % n
+    q = (table[1][1] - (a + b + d)) % n
+    if all(table[i][j] == (a * i + b * j + q * i * j + d) % n
+           for i in range(n) for j in range(n)):
+        body = (f"(Nat.add (Nat.add (Nat.add (Nat.mul {a} {val('i')}) "
+                f"(Nat.mul {b} {val('j')})) "
+                f"(Nat.mul {q} (Nat.mul {val('i')} {val('j')}))) {d})")
+        return f"Nat.mod {body} {n}"
+
+    # Full quadratic `a*i + b*j + q*i*j + r*i^2 + s*j^2 + d (mod n)`. The square
+    # terms cannot be solved for directly over a composite Z_n — three probes
+    # give `2r` rather than `r` — so `r` and `s` are enumerated and everything
+    # else follows from (0,0), (1,0), (0,1) and (1,1). That is n^2 fits of an
+    # O(n^2) verification, so it is bounded to small carriers; the families that
+    # need it (`quadratic_x2` / `quadratic_y2`) top out at order 7 anyway.
+    if n <= FORMULA_QUADRATIC_FIT_MAX_ORDER:
+        d = table[0][0]
+        for r in range(n):
+            a = (table[1][0] - d - r) % n
+            for s in range(n):
+                b = (table[0][1] - d - s) % n
+                q = (table[1][1] - (a + b + r + s + d)) % n
+                if all(table[i][j] == (a * i + b * j + q * i * j
+                                       + r * i * i + s * j * j + d) % n
+                       for i in range(n) for j in range(n)):
+                    body = (f"(Nat.add (Nat.add (Nat.add (Nat.add (Nat.add "
+                            f"(Nat.mul {a} {val('i')}) (Nat.mul {b} {val('j')})) "
+                            f"(Nat.mul {q} (Nat.mul {val('i')} {val('j')}))) "
+                            f"(Nat.mul {r} (Nat.mul {val('i')} {val('i')}))) "
+                            f"(Nat.mul {s} (Nat.mul {val('j')} {val('j')}))) {d})")
+                    return f"Nat.mod {body} {n}"
+
+    # Bitwise, only on a power-of-two carrier — otherwise the result can leave
+    # `Fin n` and the `mod` would silently change the magma.
+    if n & (n - 1) == 0:
+        for head, fn in (("Nat.xor", lambda x, y: x ^ y),
+                         ("Nat.land", lambda x, y: x & y),
+                         ("Nat.lor", lambda x, y: x | y)):
+            if all(table[i][j] == fn(i, j) for i in range(n) for j in range(n)):
+                return f"Nat.mod ({head} {val('i')} {val('j')}) {n}"
+    return None
+
+
+def false_certificate_formula(n: int, op_expr: str) -> str:
+    """Render a closed-form magma. `op_expr` comes from `formula_op_expr`.
+
+    Byte-for-byte the shape the real judge accepted on 2026-08-27 at orders 3,
+    13, 25, 36, 50 and 60 and on the Fin 64 XOR magma. `maxHeartbeats 0` is
+    right here and wrong for a table (see `false_certificate_list`): this shape's
+    cost is bounded by `FORMULA_MAX_DECIDE_APPLICATIONS`, which is calibrated
+    directly against the 300 s Lean timeout, so a heartbeat cap could only turn
+    an affordable certificate into a rejection.
+    """
+    return (
+        "import JudgeProblem\n"
+        "import JudgeDecide.DecideBang\n"
+        "set_option maxRecDepth 40000\n"
+        "set_option maxHeartbeats 0\n\n"
+        "def submission : Goal := by\n"
+        f"  let m : Magma (Fin {n}) := {{ op := fun i j => Fin.mk ({op_expr}) "
+        f"(Nat.mod_lt _ (Nat.succ_pos {n - 1})) }}\n"
+        f"  refine Exists.intro (Fin {n}) ?_\n"
+        "  refine Exists.intro m ?_\n"
+        "  decideFin!\n"
+    )
+
+
 # Closed-form magmas rendered as a formula instead of a table. `witness_check`
 # reads the Python table; `make_false_answer` swaps in the formula certificate
 # by table identity, and the transpose (the dual pass) gets the swapped formula.
+#
+# This table stays for magmas `formula_op_expr` cannot fit — WCG5's op is
+# `31 - (rotl x AND rotr y)`, which is neither affine, quadratic nor a bare
+# bitwise op, so the recogniser correctly declines it and the pinned certificate
+# below is what ships (pinned byte-for-byte in judge_verified_certs.jsonl).
 FORMULA_WITNESSES = (("WCG5", _wcg5_table()),)
 FORMULA_CERTS = {}
 for _name, _t in FORMULA_WITNESSES:
     FORMULA_CERTS[json.dumps(_t, separators=(",", ":"))] = _formula_certificate("i", "j")
     FORMULA_CERTS[json.dumps([list(c) for c in zip(*_t)], separators=(",", ":"))] = _formula_certificate("j", "i")
+
+
+def formula_certificate_for(n: int, table: list[list[int]],
+                            *, decide_applications: int | None = None) -> str | None:
+    """The closed-form certificate for this table, or None if it has none.
+
+    One function so the cost gate and the renderer cannot disagree about which
+    shape a witness ships in. Missing the hand-written `FORMULA_CERTS` entries
+    here is not hypothetical: WCG5 is an order-32 magma whose *table* rendering
+    is 33.5M work units — far past `TABLE_MAX_DECIDE_WORK` — and judging it by
+    that number dropped all six shipped `false:formula:WCG5` rows, even though
+    what actually goes to the judge is a 496-byte bit formula it accepts in 15 s.
+    """
+    if (decide_applications is not None
+            and decide_applications > FORMULA_MAX_DECIDE_APPLICATIONS):
+        return None
+    pinned = FORMULA_CERTS.get(json.dumps(table, separators=(",", ":")))
+    if pinned is not None:
+        return pinned
+    op_expr = formula_op_expr(table)
+    if op_expr is None:
+        return None
+    return false_certificate_formula(n, op_expr)
 
 
 def false_certificate_memo(n: int, table: list[list[int]],
@@ -769,7 +941,8 @@ def false_certificate_memo(n: int, table: list[list[int]],
         "import JudgeDecide.DecideBang\n"
         "import JudgeFinOp.MemoFinOp\n"
         "open MemoFinOp\n"
-        f"{max_rec_depth}\n"
+        f"{max_rec_depth}"
+        f"{FALSE_TABLE_HEARTBEAT_OPTION}\n"
         "def submission : Goal := by\n"
         f"  let m : Magma (Fin {n}) := {{\n"
         f"    op := finOpTable \"{table_str}\"\n"
@@ -811,13 +984,32 @@ def false_certificate_list(n: int, table: list[list[int]]) -> str:
     return (
         "import JudgeProblem\n"
         "import JudgeDecide.DecideBang\n"
-        f"set_option maxRecDepth {max(40_000, 80 * n * n)}\n\n"
+        f"set_option maxRecDepth {max(40_000, 80 * n * n)}\n"
+        f"{FALSE_TABLE_HEARTBEAT_OPTION}\n"
         "def submission : Goal := by\n"
         f"  let m : Magma (Fin {n}) := {{ op := {op} }}\n"
         f"  refine Exists.intro (Fin {n}) ?_\n"
         "  refine Exists.intro m ?_\n"
         "  decideFin!\n"
     )
+
+
+# Both table shapes carry a raised heartbeat budget; neither did before
+# 2026-08-27, and `_formula_certificate` always has.
+#
+# What this fixes, measured on the real judge: an order-30 `List.getD` table
+# against a 3-variable hypothesis is 27,000 `decide` applications and 2,747
+# bytes — inside every cap the solver checked — and comes back
+# `incorrect / LEAN_REJECTED`, "(deterministic) timeout at `whnf`, maximum
+# number of heartbeats (200000)". Adding this option to the identical
+# certificate makes it `accepted`. The counter is deterministic, so the failure
+# reproduces on the organizers' machine exactly as it does here.
+#
+# 1,000,000 rather than 0 on purpose: `TABLE_MAX_DECIDE_WORK` is the real gate,
+# and a certificate that slips past a fitted cost model should fail in ~30 s
+# rather than burn the judge's whole 300 s Lean timeout out of Solo's per-row
+# budget. The formula shape keeps 0 because its cap is applications, not work.
+FALSE_TABLE_HEARTBEAT_OPTION = "set_option maxHeartbeats 1000000\n"
 
 
 def false_certificate(n: int, table: list[list[int]],
@@ -831,8 +1023,30 @@ def false_certificate(n: int, table: list[list[int]],
     it is also far cheaper for the judge. `finOpTable` re-runs `extractDigits`
     over the whole table string on every single application, which is why an
     order-13 table costs it 78.1 s where the `List.getD` shape costs 5.8 s.
+
+    Above the legacy envelope a *recognised closed form* beats both (LEAN-01):
+    same magma, 382 bytes instead of 1,044 and 2.8 s instead of 19.7 s at order
+    17, and it is the only shape the judge still accepts from order 26 up. The
+    order <= 10 envelope keeps `finOpTable` regardless — that is where every
+    judge-accepted FALSE certificate to date lives, and restyling a working row
+    for a speedup it does not need is exactly the risk rail 3c exists for. The
+    one exception is a legacy-order table whose *decide* the table shape cannot
+    afford (an order-9 linear magma against a 5-variable hypothesis is 59,049
+    applications of a per-application table re-parse); there the choice is the
+    formula or nothing, so the formula wins.
     """
-    if n <= LEGACY_MAX_WITNESS_ORDER and all(0 <= v <= 9 for row in table for v in row):
+    legacy = n <= LEGACY_MAX_WITNESS_ORDER and all(
+        0 <= v <= 9 for row in table for v in row)
+    if legacy and (decide_applications is None
+                   or table_decide_work_is_affordable(
+                       n, decide_applications, memo=True)):
+        return false_certificate_memo(
+            n, table, decide_applications=decide_applications)
+    formula = formula_certificate_for(
+        n, table, decide_applications=decide_applications)
+    if formula is not None:
+        return formula
+    if legacy:
         return false_certificate_memo(
             n, table, decide_applications=decide_applications)
     return false_certificate_list(n, table)
@@ -1349,16 +1563,59 @@ def witness_decide_is_affordable(
     gives a 100 s working budget, so the anchor extrapolates to ~51,700
     applications; 50,000 is that, rounded down.
 
-    Orders through 10 are exempt. That envelope is behind every FALSE row the
-    judge has accepted to date, so a cost model introduced for the *new*
-    territory above it has no business vetoing it — this check can only ever
-    add rows, never take one away.
+    **The application count alone is the wrong axis** (corrected 2026-08-27,
+    LEAN-02 — the third instance of rail 3b-iii's mistake). What the judge
+    spends is applications times the cost of *one* application, and that cost
+    depends on the rendered shape:
+
+    * closed form — constant per application, so the bound is applications;
+      measured accepted at 216,000 (order 60, 3 variables) and 262,144 (Fin 64
+      XOR), which is where `FORMULA_MAX_DECIDE_APPLICATIONS = 150,000` sits;
+    * `List.getD` — the lookup walks the flattened table, so O(n^2) per
+      application;
+    * `finOpTable` — re-runs `extractDigits` over the whole table string per
+      application, dearer again by a constant.
+
+    Fitted to real-judge accept/reject points at `applications * n * n`: 0.37M
+    (n=13) accepted, 3.2M (n=20) accepted, 9.77M (n=25) accepted in 52.6 s,
+    24.3M (n=30) **rejected** on a deterministic heartbeat timeout, 60M (n=36)
+    rejected. `TABLE_MAX_DECIDE_WORK = 8,000,000` sits under the cheapest
+    accepted point with margin.
+
+    The old blanket exemption for orders <= 10 is gone with it, and that was a
+    live bug rather than a stylistic one: an order-10 `finOpTable` witness
+    against a 5-variable hypothesis is 100,000 applications, 504 bytes, and
+    `incorrect / LEAN_REJECTED` on heartbeats in 28.2 s. A rejection scores the
+    same as a skip and additionally burns the row's judge budget. Such a table
+    is not simply refused, though: if it has a closed form it ships as one,
+    which is why `false_certificate` has the same three-way branch.
     """
     n = len(table)
-    if n <= LEGACY_MAX_WITNESS_ORDER:
+    widest = max(1, len(eq1.get("variables") or ()),
+                 len(eq2.get("variables") or ()))
+    applications = n ** widest
+    legacy = n <= LEGACY_MAX_WITNESS_ORDER and all(
+        0 <= v <= 9 for row in table for v in row)
+    if legacy and table_decide_work_is_affordable(n, applications, memo=True):
         return True
-    widest = max(len(eq1.get("variables") or ()), len(eq2.get("variables") or ()))
-    return n ** max(1, widest) <= MAX_WITNESS_DECIDE_APPLICATIONS
+    if formula_certificate_for(n, table, decide_applications=applications) is not None:
+        return True
+    if legacy:
+        return False
+    return table_decide_work_is_affordable(n, applications, memo=False)
+
+
+def table_decide_work_is_affordable(n: int, applications: int,
+                                    *, memo: bool) -> bool:
+    """Shared cost predicate for a *table*-rendered witness.
+
+    Split out so the wide-domain search can skip an order before searching it
+    with exactly the predicate the acceptance path will apply afterwards — a
+    cost gate that guesses is a cost gate that discards good work (rail 5f-vii,
+    rider (a)).
+    """
+    per_application = 2 * n * n if memo else n * n
+    return applications * per_application <= TABLE_MAX_DECIDE_WORK
 
 
 def table_is_counterexample(
@@ -1516,7 +1773,8 @@ def affine_family_tables(max_n: int = 5):
                     yield route, table
 
 
-def large_linear_family_tables():
+def large_linear_family_tables(eq1: dict[str, Any] | None = None,
+                               eq2: dict[str, Any] | None = None):
     """Linear models `x ◇ y = ax + by (mod n)` for orders above 10.
 
     Split out from `affine_family_tables` rather than folded into it, for two
@@ -1529,8 +1787,24 @@ def large_linear_family_tables():
     Composite orders are included but sparse: on a prime order every non-zero
     coefficient is invertible, which is what makes these models satisfy the
     quasigroup-ish hypotheses this family tends to win on.
+
+    Pass the equations and an order whose certificate could not ship is skipped
+    *before* it is searched (rail 5f-vii). This is not a micro-optimisation at
+    these orders: `equation_holds` walks `n ** variables` assignments, and a
+    4-variable hypothesis every linear magma satisfies — the medial law, say —
+    costs 6.8 s per candidate at order 47 (measured) while the resulting witness
+    is 4.8M `decide` applications, i.e. guaranteed to be thrown away by
+    `witness_decide_is_affordable`. Every table here is linear and therefore
+    formula-renderable, so `FORMULA_MAX_DECIDE_APPLICATIONS` is exactly the
+    predicate that will judge the result.
     """
-    for n in LARGE_LINEAR_SIZES:
+    widest = 0
+    if eq1 is not None:
+        widest = max(1, len(eq1.get("variables") or ()),
+                     len((eq2 or {}).get("variables") or ()))
+    for n in LARGE_LINEAR_SIZES + FORMULA_LINEAR_SIZES:
+        if widest and n ** widest > FORMULA_MAX_DECIDE_APPLICATIONS:
+            continue
         for a in range(1, n):
             for b in range(1, n):
                 yield (
@@ -5343,6 +5617,24 @@ EGG_MAX_APPS = 200_000
 EGG_MAX_PROOF_BYTES = 96_000
 EGG_MAX_CERT_BYTES = MAX_LEAN_CODE_BYTES
 
+# How many extractions the byte cap has thrown away, and how big they were.
+# The cap is correctly sized against the judge's 100,000 (four certificates of
+# 45-88 KB were judge-accepted on 2026-08-27, so the band under it is measured
+# safe) — but the discard site was a silent `return None`, so the number of rows
+# it *costs* has never been measured, and that number is the only thing that
+# would justify compressing the egg rendering. Logged, throttled, so one
+# pathological row cannot flood a Marathon's stderr.
+_EGG_TOO_LARGE_COUNT = 0
+_EGG_TOO_LARGE_LOG_LIMIT = 25
+
+
+def note_egg_proof_too_large(total: int) -> None:
+    global _EGG_TOO_LARGE_COUNT
+    _EGG_TOO_LARGE_COUNT += 1
+    if _EGG_TOO_LARGE_COUNT <= _EGG_TOO_LARGE_LOG_LIMIT:
+        log_stderr({"route": "egg:proof_too_large", "bytes": total,
+                    "count": _EGG_TOO_LARGE_COUNT})
+
 _EGG_BINDER_CANDIDATES = ("t", "q", "p", "s", "r", "m", "n", "k")
 
 
@@ -5766,6 +6058,7 @@ def _egg_render_steps(start: Term, target: Term, steps: list,
         parts.append(step_proof)
         total += len(step_proof.encode("utf-8")) + 10
         if total > EGG_MAX_PROOF_BYTES:
+            note_egg_proof_too_large(total)
             return None
     if cur != target:
         return None
@@ -8403,7 +8696,33 @@ LEGACY_MAX_WITNESS_ORDER = 10
 # the deployed 300 s Lean timeout, holding ~3x margin for slower judge hardware.
 # Was 20_000, sized against a 120 s timeout that is only the local verifier's
 # fallback. See `witness_decide_is_affordable`.
+#
+# SUPERSEDED 2026-08-27 and deliberately left in place as a signpost rather than
+# deleted: it is no longer read by anything, because bounding applications alone
+# is the wrong axis. Do not re-derive a new limit from this number — the two
+# below are what the gate uses, and they are on the axis the judge actually
+# charges for.
 MAX_WITNESS_DECIDE_APPLICATIONS = 50_000
+
+# The two bounds that replaced it on 2026-08-27 (LEAN-02). Both are fitted to
+# real-judge accept/reject points on Lean 4.33.1, not extrapolated:
+#
+#   closed form   accepted at 125,000 (n=50, 108 s), 216,000 (n=60, 121 s) and
+#                 262,144 (Fin 64 XOR, 193 s) applications, all against the
+#                 deployed 300 s Lean timeout. 150,000 keeps the historic ~2x
+#                 margin for slower judge hardware and still clears order 47
+#                 with a 3-variable hypothesis (103,823).
+#
+#   table         `applications * n * n` accepted at 0.37M / 3.2M / 9.77M and
+#                 rejected at 24.3M and 60M. 8,000,000 sits below the cheapest
+#                 accepted point, because the rejection mode is a *deterministic*
+#                 heartbeat timeout — it does not vary with the machine, so a
+#                 model that overshoots ships guaranteed-zero certificates.
+#
+# Neither is a judge limit; both are ours, so the CI step that pins the
+# mirrored judge constants to `pipeline/config.json` is unaffected.
+FORMULA_MAX_DECIDE_APPLICATIONS = 150_000
+TABLE_MAX_DECIDE_WORK = 8_000_000
 
 # Cheap tier. 8 and 9 stay first: they are what the order-4 corpus is tuned on
 # (a 5,000-row order-5 batch reads `false:constraint_fin8` 7, `fin9` 2, `fin6` 1),
@@ -8749,9 +9068,17 @@ def constraint_countermodel_wide_domain(
     # out of other rows. Exhaustion-neutral: this function never sets
     # `_CONSTRAINT_EXHAUSTED`, so skipping cannot license a speculative TRUE
     # (rail 5f-ii).
+    #
+    # The predicate is `table_decide_work_is_affordable`, the same one
+    # `witness_decide_is_affordable` applies to whatever this search returns —
+    # a pre-check that is not the acceptance check is guessing (rider (a)).
+    # It is deliberately the *table* branch: `_cp_search` returns an arbitrary
+    # propagation-derived table, so assuming it will turn out to have a closed
+    # form would be optimistic, and a table that does have one is re-admitted by
+    # `witness_decide_is_affordable` anyway.
     widest = max(len(eq1["variables"]), len(eq2["variables"]), 1)
     for n in orders:
-        if n ** widest > MAX_WITNESS_DECIDE_APPLICATIONS:
+        if not table_decide_work_is_affordable(n, n ** widest, memo=False):
             continue
         deadline = local_deadline(_eff_time(time_budget))
         if deadline is not None and time.monotonic() >= deadline:
@@ -10666,10 +10993,13 @@ def solve_problem_pass(
     # countermodel is `x ◇ y = 7x + 7y (mod 13)`, which no other route can reach.
     if _engine_gate():
         return None
-    for index, (route, table) in enumerate(large_linear_family_tables()):
+    for index, (route, table) in enumerate(large_linear_family_tables(eq1, eq2)):
         # Re-gate periodically rather than per candidate: `_engine_gate` reads
-        # RSS, and there are a few thousand candidates here.
-        if index % 128 == 0 and _engine_gate():
+        # RSS, and there are a few thousand candidates here. 32 rather than 128
+        # since the orders reach 47: one candidate's `equation_holds` is
+        # `n ** variables` assignments, so the work between two polls has to be
+        # counted at the *largest* order in the tuple, not the smallest.
+        if index % 32 == 0 and _engine_gate():
             return None
         if witness_check(eq1, eq2, table):
             return false_record(len(table), table, route)

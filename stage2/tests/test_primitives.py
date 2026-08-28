@@ -1488,7 +1488,14 @@ def test_multi_digit_table_never_uses_the_finOpTable_shape(solver):
 
     code = solver.false_certificate(n, table)
     assert "finOpTable" not in code, "multi-digit table rendered with the digit parser"
-    assert "List.getD" in code
+    # `List.getD` was the only alternative until 2026-08-27. This magma is
+    # linear, so `formula_op_expr` now recognises it and it ships as ~380 bytes
+    # of arithmetic instead — judge-accepted, and 7x cheaper for the judge than
+    # the table of the same magma (order 17 A/B: 1,044 B / 19.7 s -> 382 B /
+    # 2.8 s). What this test pins is unchanged: whatever shape is chosen, it
+    # must not be the digit parser, and the oracle below must be able to read
+    # the magma back out of the certificate.
+    assert "List.getD" in code or "Fin.mk" in code
     assert solver.table_is_renderable(table)
     assert solver.table_is_counterexample(eq1, eq2, table)
     oracles.check_false_certificate(code, eq1, eq2)
@@ -1581,14 +1588,19 @@ def test_witness_check_applies_the_shippability_gate(solver):
 
 def test_large_linear_family_only_emits_shippable_tables(solver):
     """Every table the new above-10 family produces must clear both judge caps."""
+    # Two tuples since 2026-08-27: orders through 25 can still ship as a table,
+    # orders past it exist only because `formula_op_expr` renders them as
+    # arithmetic (see FORMULA_LINEAR_SIZES). `table_is_renderable` measures
+    # whatever `false_certificate` actually emits, so it covers both.
+    every = solver.LARGE_LINEAR_SIZES + solver.FORMULA_LINEAR_SIZES
     seen_orders = set()
     for route, table in solver.large_linear_family_tables():
         n = len(table)
         seen_orders.add(n)
         assert route.startswith("false:linear:z")
-        assert n in solver.LARGE_LINEAR_SIZES
+        assert n in every
         assert solver.table_is_renderable(table), f"order {n} table is unshippable"
-    assert seen_orders == set(solver.LARGE_LINEAR_SIZES)
+    assert seen_orders == set(every)
 
 
 def test_wide_domain_orders_are_value_capped_not_order_capped(solver):
