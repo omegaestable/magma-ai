@@ -165,28 +165,46 @@ with a golden entry and a fixture row.
   certificate the real judge has not accepted (rails 3c, 37).
 - No LLM calls: nothing here is a language task.
 
-## The extended evaluation battery, stated the Zulip way
+## The full combined evaluation set, stated the Zulip way
 
-The full combined set from every published file (11 HF data files + the
-harness samples + the marathon example): **2,969 distinct (eq1, eq2) pairs**
-— 2,869 labelled plus the 100 research rows. The "2130/2130" figure quoted
-from Zulip matches no union of these files (official distinct = 1,869;
-+ stress test = 2,069; + all `evaluation_*` = 2,869; everything = 2,969); the
-competition Zulip is not in the public archive, so the poster's composition
-could not be checked. Nothing published is missing from our battery:
-`hard.jsonl` is `hard1` with duplicated rows, the upstream
-`stage2_stress_test.jsonl` is byte-identical to ours, and the marathon example
-set is inside `normal`.
+"Full combined" = **every labelled problem file published for this
+competition, deduplicated by (eq1_id, eq2_id)**. Composition, with the
+result of one isolated pass (`audit_corpus.py --file`, 16 workers, `fast`
+tier, no LLM, 2026-08-28):
+
+| Source file | What it is | Rows | Distinct new pairs | Solved | Solver time |
+| --- | --- | --- | --- | --- | --- |
+| `normal.jsonl` | official Stage-2 set (500 T / 500 F) | 1000 | 1000 | 1000/1000 | 69.8 s |
+| `hard1.jsonl` | official (24 T / 45 F) | 69 | 69 | 69/69 | 5.3 s |
+| `hard2.jsonl` | official (100 T / 100 F) | 200 | 200 | 200/200 | 74.9 s |
+| `hard3.jsonl` | official (195 T / 205 F) | 400 | 400 | 400/400 | 74.4 s |
+| `sample_200.json` | organizer sample, disjoint from `normal` (100/100) | 200 | 200 | 200/200 | 17.6 s |
+| `stage2_stress_test.jsonl` | organizer stress test: 50 order-4 normal/hard/extra-hard + 50 order-5 normal (100/100) | 200 | 200 | 200/200 | 24.6 s |
+| `evaluation_normal.jsonl` | Stage-1 evaluation mirror (100/100) | 200 | 200 | 200/200 | 16.9 s |
+| `evaluation_hard.jsonl` | Stage-1 evaluation mirror (100/100) | 200 | 200 | 200/200 | 15.3 s |
+| `evaluation_extra_hard.jsonl` | Stage-1 evaluation mirror (100/100) | 200 | 200 | 200/200 | 20.4 s |
+| `evaluation_order5.jsonl` | Stage-1 order-5 evaluation mirror (100/100) | 200 | 200 | 200/200 | 84.5 s |
+| `sample_20.json` | organizer sample, ⊂ `normal` | 20 | 0 | — | — |
+| `hard.jsonl` | `hard1` with every row duplicated | 200 | 0 | — | — |
+| `marathon/normal_100.jsonl` | harness example, ⊂ `normal` | 100 | 0 | — | — |
+| **Labelled total** | | | **2,869** | **2,869/2,869** | **403.7 s** |
+| `research_order5_hard.jsonl` | the hard Austin set, labels null | 100 | 100 | **0/100** | ~460 s/row |
+| **Everything** | | | **2,969** | | |
 
 ```
-Result (measured 2026-08-28, `audit_corpus.py --file combined_eval_2869.jsonl`, 16 workers, isolated, `fast` tier, no LLM):
-2869/2869 solved — 0 failed
-Total solver time: 105.5 s
-Wall-clock: 1m46.0s
-about 0.04 s/problem on average (solver time), 0.037 s/problem wall on 16 workers.
+Result: 2869/2869 solved — 0 failed
+Total solver time: 403.7 s   (sum of per-row solver seconds)
+Wall-clock: 1m46.0s              (16 workers, isolated machine)
+about 0.14 s/problem on average.
 0 crashes, 0 oracle failures, 0 label mismatches; slowest row `evaluation_order5_0154` 60.4 s.
-The 100 research rows are the remaining 100 of the 2,969: 0/100, ~460 s/row, this session's target.
 ```
+
+The "2130/2130" quoted from the competition Zulip matches no union of these
+files (official distinct = 1,869; + stress test = 2,069; + all
+`evaluation_*` = 2,869; everything = 2,969); the competition Zulip is not in
+the public archive, so the poster's composition could not be checked — ask
+for their file list before comparing their 3.37 s/problem to our
+0.14 s/problem. Nothing published is missing from our battery.
 
 ## Files that matter
 

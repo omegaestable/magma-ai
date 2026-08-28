@@ -43,7 +43,7 @@ rules, priority, repairs) and built in `stage2/experiments/austin/`; it
 reproduces 28770 on a depth-2 universe and is wrong at depth 4 (rail 37); the
 69 research laws lose payload at every derailment (0/69). Lean renderer
 compiles up to the main proof. Multi-session research item; the README says
-where to resume. Extended official battery first full pass: 2089/2089 solved, 0 oracle failures, 73.5 s solver time (hard1 69/69 1.3s; hard2 200/200 24.6s; hard3 400/400 11.6s; normal 1000/1000 14.0s; sample_20 20/20 1.9s; sample_200 200/200 7.4s; stress_test_200 200/200 12.7s).
+where to resume. Extended official battery first full pass: 2089/2089 solved, 0 oracle failures, 260.4 s solver time (sum of per-row seconds; 73.5 s summed per-set wall on 16 workers).
 
 Not done / next: the six official rows still above 5 s pay the cheap
 constraint tier + local-model probe (36 s of 73 s) — kept on purpose for

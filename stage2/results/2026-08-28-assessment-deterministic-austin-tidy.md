@@ -226,7 +226,7 @@ sitting under the gitignored `stage2/results/*.jsonl`. Audited today:
 `order4_hard_0036` 11.7 s via `derived_cp_closure`). Moved to
 `data/stage2_official_problems/stress_test_200.jsonl` and added to
 `audit_corpus.py`'s official `SETS` as `stress_test_200`, so `--all` covers
-it; the first full pass on the extended battery read **2089/2089 solved, 0 oracle failures, 73.5 s solver time (hard1 69/69 1.3s; hard2 200/200 24.6s; hard3 400/400 11.6s; normal 1000/1000 14.0s; sample_20 20/20 1.9s; sample_200 200/200 7.4s; stress_test_200 200/200 12.7s)**. The research set is registered separately as `RESEARCH_SETS` /
+it; the first full pass on the extended battery read **2089/2089 solved, 0 oracle failures, 260.4 s solver time (sum of per-row seconds; 73.5 s summed per-set wall on 16 workers)**. The research set is registered separately as `RESEARCH_SETS` /
 `--set research_order5_hard` and deliberately kept out of `--all` and `--hf`:
 its labels are null and every row runs the whole engine chain to exhaustion
 (~460 s/row), which would add ~45 min to every standing audit for no label
