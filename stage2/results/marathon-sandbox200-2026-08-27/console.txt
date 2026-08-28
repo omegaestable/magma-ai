@@ -1,0 +1,13 @@
+sandbox_limits affinity_mask=0x3 cpus=2 memory_mb=2048
+key_source=process_env
+running: C:\Users\nacho\Documents\GitHub\magma-ai\.venv\Scripts\python.exe C:\Users\nacho\Documents\GitHub\magma-ai\vendor\stage2-official\scripts\run_marathon.py --solver C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions --manifest C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-manifest-2026-08-27.jsonl --output-dir C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27 --budget-tokens 0 --no-score
+Marathon Run
+  Solver:       C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions
+  Manifest:     C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-manifest-2026-08-27.jsonl (N=200)
+  Budget:       60000s wall, 0 tokens (200 × 300s / 200 × 32768tok)
+  Run dir:      C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27
+
+Solver exited rc=0 wall=1363.9s sigterm=False sigkill=False
+  (stderr tail in C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27\run.log)
+--no-score: skipping verification phase
+marathon_batch_done manifest=stage2\results\marathon-sandbox200-manifest-2026-08-27.jsonl returncode=0 wall_s=1364.7

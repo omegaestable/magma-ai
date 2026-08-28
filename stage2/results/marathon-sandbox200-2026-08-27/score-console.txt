@@ -1,0 +1,19 @@
+key_source=process_env
+running: C:\Users\nacho\Documents\GitHub\magma-ai\.venv\Scripts\python.exe C:\Users\nacho\Documents\GitHub\magma-ai\vendor\stage2-official\scripts\run_marathon.py --solver C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions --manifest C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-manifest-2026-08-27.jsonl --output-dir C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27 --score-only
+Marathon Run
+  Solver:       C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions
+  Manifest:     C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-manifest-2026-08-27.jsonl (N=200)
+  Budget:       60000s wall, 6553600 tokens (200 × 300s / 200 × 32768tok)
+  Run dir:      C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27
+
+--score-only: scoring existing output at C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27\answers.jsonl
+
+=== Result ===
+  Score:         199 / 200
+  Attempted:     200
+  Not attempted: 0
+  By status:     {'accepted': 199, 'incorrect': 1}
+  Summary:       C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27\summary.json
+  Output:        C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27\answers.jsonl
+  Log:           C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\marathon-sandbox200-2026-08-27\run.log
+marathon_batch_done manifest=stage2\results\marathon-sandbox200-manifest-2026-08-27.jsonl returncode=0 wall_s=686.9

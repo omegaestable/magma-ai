@@ -134,7 +134,7 @@ solver and the packaged 469,348-byte artifact. Diff by row id, never by total
 | Spotcheck | **90 / 90, 100% accuracy, 0 mistakes** |
 | Offline gate | **458 passed, 2 skipped** (`-n 8`, 17 min — the new fixture pins re-solve slow order-5 rows; the packager's `-n auto` run reads 457/3 with the documented `etp_3983_4296` timing flap) |
 | Packaged size | **469,348 bytes of 500,000 — 30.6 KB headroom**; organizer layout validator OK; fixture 159 pins |
-| Sandbox-shaped real Marathon (2 vCPU affinity + 2048 MB job object, 200-row stratified manifest: 50 hard3 / 50 fresh order-4 hard-region / 100 fresh order-5, deterministic-only — the key had expired) | <<MARATHON-PENDING>> |
+| Sandbox-shaped real Marathon (2 vCPU affinity + 2048 MB job object, 200-row stratified manifest: 50 hard3 / 50 fresh order-4 hard-region / 100 fresh order-5, deterministic-only — the key had expired) | **199 / 200 accepted, 0 not attempted, 0 real answers rejected** — solve phase **1,364 s of the 60,000 s budget** under 2 vCPU (all 200 rows answered in pass 1); the single `incorrect` is `order5_44626_3317`, the new speculative `fallback:marathon_grind` on a row that was a silent skip before (score-neutral by the rules); scored by the real Lean 4.33.1 judge, 687 s |
 | Real Solo, official runner on the packaged artifact (deterministic-only; the key had expired) | **7 / 7 solved, 0 failed, 1 judge call each, 0 LLM calls**: 4 fresh stratified rows in 18 s total, then 3 rows that exercise the new paths — `etp_2923_156` (overtime completion slot) 201 s, `etp_3983_3800` (mined-law ladder) 91 s, `order5_18399_29663` (escalated collapse) 173 s |
 
 

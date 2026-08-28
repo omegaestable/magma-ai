@@ -19,7 +19,7 @@ Lean *phase*; code cap is UTF-8 bytes), the diagnosis findings (scratchpad
 
 | Item | Before | After |
 | --- | --- | --- |
-| Offline gate | 297 passed / 2 skipped | see §6 |
+| Offline gate | 297 passed / 2 skipped | **458 passed / 2 skipped** |
 | Order-5 FALSE side, held-out 353 sweep misses covered by the witness portfolio | 2 / 353 | **134 / 353 (38.0%)** — 18 z3-harvested tables, 4.1 KB |
 | Fresh disjoint 2,000-row order-5 sample (`--row-budget 60`), row-id diff | 1953 | **1966**, 0 lost, 13 gained, 0 flips |
 | Order-4 residual (51 rows the solver missed at 420 s/row) | 0 | **18 via `egg_ladder` with the mined laws** (all 17 residual eq1-`3983` rows + `etp_4453_4652`); 31/51 solved overall at 420 s |
@@ -169,4 +169,13 @@ Fixture: 138 → 159 entries, every new row carrying its own equations and ids
 
 ## 6. Final verification (filled after the merged solver was measured)
 
-<<FINAL-NUMBERS: gate, isolated official + HF audits with row-id diffs, spotcheck, packaged size, sandbox-shaped real Marathon, real Solo>>
+- **Offline gate**: 458 passed / 2 skipped (`-n 8`, 17 min; the packager's `-n auto` run 457 / 3 with the documented `etp_3983_4296` timing flap). Skip count unchanged from the morning's 2 (rail 16).
+- **Isolated official audit** (16 workers, idle box): **1889 / 1889**, 0 lost / 0 gained / 0 verdict flips by row id vs `audit-2026-08-27-official.json`; 26 route changes, all egg/completion probe races or the 14 rows whose distilled entries pass 1 deleted; 0 crashes, 0 oracle failures; solver time **145 s vs 1,656 s** (−91%).
+- **Isolated HF audit**: **800 / 800**, 0 lost / 0 gained / 0 flips; 120 s vs 146 s.
+- **Spotcheck**: 90 / 90, 100% accuracy, 0 mistakes.
+- **Packaged**: **469,348 bytes** (30,652 headroom); organizer `_validate_submission_layout` OK; `SUBMISSION_NOTE.md` rewritten against the measured inventory.
+- **Judge parity smoke**: `normal_0001`, `hard2_0027`, `hard2_0051`, `hard2_0092` 4/4 accepted.
+- **Sandbox-shaped real Marathon** (`sandbox_limits_wrapper.py --cpus 2 --memory-mb 2048`, packaged artifact, 200-row stratified manifest `marathon-sandbox200-manifest-2026-08-27.jsonl`: 50 hard3 / 50 fresh order-4 hard-region / 100 fresh order-5, `--budget-tokens 0` because the key had expired — deterministic evidence only, rail 7): **199 / 200 accepted, 0 not attempted**, solve phase **1,364 s of 60,000 s**, all 200 answered in pass 1; the one `incorrect` is the speculative `fallback:marathon_grind` on `order5_44626_3317`. Scored on full cores by the real judge in 687 s. Report as STRATIFIED (rail 18).
+- **Real Solo** (official runner, packaged artifact): 4 fresh stratified rows **4/4** in 18 s; then **3/3** on rows chosen to exercise the new paths — `etp_2923_156` 201 s (overtime completion), `etp_3983_3800` 91 s (mined-law ladder), `order5_18399_29663` 173 s (escalated collapse); 1 judge call each, 0 LLM calls.
+- **Code freeze**: nothing else should touch `solver.py` before upload except a fix for a measured regression. Upload `stage2/submissions/solver.py` (469,348 B) + `stage2/solver/SUBMISSION_NOTE.md`.
+

@@ -1,0 +1,19 @@
+key_source=process_env
+running: C:\Users\nacho\Documents\GitHub\magma-ai\.venv\Scripts\python.exe -m pipeline.runner --submission C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions --problems C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-2026-08-27\solo-real4-manifest-2026-08-27.sliced4.jsonl --output C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-2026-08-27\results.json
+Pipeline Runner
+  Submission:  C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions
+  Problems:    4
+  Config:      timeout=3600s, max_output_tokens=65536
+  LLM:         openai/gpt-oss-120b (provider: deepinfra/bf16)
+  Output:      C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-2026-08-27\results.json
+
+[1/4] order5_40729_58419: Equation40729 -> Equation58419 -> SOLVED (false) in 5.9s [llm:0, judge:1]
+[2/4] order5_37261_54077: Equation37261 -> Equation54077 -> SOLVED (false) in 4.1s [llm:0, judge:1]
+[3/4] etp_3411_2974: Equation3411 -> Equation2974 -> SOLVED (false) in 4.1s [llm:0, judge:1]
+[4/4] hard3_0391: Equation4392 -> Equation4677 -> SOLVED (false) in 4.1s [llm:0, judge:1]
+
+============================================================
+Results: 4/4 solved, 0 failed
+Total time: 18.2s
+Output: C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-2026-08-27\results.json
+solo_batch_done problems=C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-2026-08-27\solo-real4-manifest-2026-08-27.sliced4.jsonl returncode=0 wall_s=18.7
