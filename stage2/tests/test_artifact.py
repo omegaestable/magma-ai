@@ -71,6 +71,36 @@ def _proxy_module():
     return proxy
 
 
+def test_packed_tables_round_trip_to_the_source_literals(artifact):
+    """The minifier packs `DISTILLED_CERTS` and the witness tables into
+    zlib+base85 blobs (2026-08-28, ~96 KB saved). The packer's own check
+    already compares the decoded blob to the source literal; this repeats it
+    from the *shipped file*, through the same `_unpack_table` the sandbox will
+    run, so a helper or blob edited by hand after packaging cannot pass."""
+    import importlib.util  # noqa: PLC0415
+
+    import solver  # noqa: PLC0415
+
+    sys.dont_write_bytecode = True
+    spec = importlib.util.spec_from_file_location("packed_solver_under_test", artifact)
+    packed = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(packed)
+    for name in ("DISTILLED_CERTS", "FP_WITNESS_TABLES", "O5_WITNESS_TABLES",
+                 "WITNESS_TABLES"):
+        want, got = getattr(solver, name), getattr(packed, name)
+        assert type(got) is type(want), name
+        assert got == want, f"{name} in the artifact differs from the source"
+    assert all(type(k) is tuple and type(v) is tuple
+               for k, v in packed.DISTILLED_CERTS.items())
+    assert all(type(entry) is tuple and type(entry[1]) is list
+               for entry in packed.FP_WITNESS_TABLES + packed.O5_WITNESS_TABLES
+               + packed.WITNESS_TABLES)
+    # Non-vacuity: the artifact really is packed, not a copy of the source.
+    text = artifact.read_text(encoding="utf-8")
+    assert "_unpack_table(" in text
+    assert "DISTILLED_CERTS: dict" not in text
+
+
 def test_artifact_is_under_the_judges_byte_cap(artifact):
     size = artifact.stat().st_size
     assert size < MAX_SOLVER_BYTES, (

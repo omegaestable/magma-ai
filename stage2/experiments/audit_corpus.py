@@ -47,6 +47,11 @@ SETS = {
     "hard1": PROBLEMS_DIR / "hard1.jsonl",
     "hard2": PROBLEMS_DIR / "hard2.jsonl",
     "hard3": PROBLEMS_DIR / "hard3.jsonl",
+    # The organizers' 200-row stress test (50 order-4 normal / hard / extra-hard
+    # + 50 order-5 normal, 100 TRUE / 100 FALSE). Promoted into the official
+    # battery 2026-08-28 (200/200, 0 oracle failures, 12.7 s); it used to sit
+    # under the gitignored `stage2/results/*.jsonl`.
+    "stress_test_200": PROBLEMS_DIR / "stress_test_200.jsonl",
 }
 
 # HF mirror evaluation sets. Deliberately excluded from headline public
@@ -57,6 +62,16 @@ HF_SETS = {
     f"hf_{name}": REPO_ROOT / "data" / "hf_cache" / f"{name}.jsonl"
     for name in ("evaluation_normal", "evaluation_hard",
                  "evaluation_extra_hard", "evaluation_order5")
+}
+
+# Research sets: selectable with `--set`, deliberately NOT part of `--all` or
+# `--hf`. The organizers' 100-row Austin-law set has null ground truth on every
+# row (excluded from evaluation) and every row runs the whole engine chain to
+# exhaustion (~460 s/row at `fast`, 2026-08-27), so folding it into the
+# standing audit would add ~45 min per run for zero label evidence. See
+# results/2026-08-27-austin-order5-hard-research-set.md.
+RESEARCH_SETS = {
+    "research_order5_hard": REPO_ROOT / "data" / "hf_cache" / "research_order5_hard.jsonl",
 }
 
 
@@ -206,7 +221,8 @@ def probe_general_engines(eq1: dict, eq2: dict) -> list[str]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", dest="set_name",
-                    choices=sorted({**SETS, **HF_SETS}), default="sample_20")
+                    choices=sorted({**SETS, **HF_SETS, **RESEARCH_SETS}),
+                    default="sample_20")
     ap.add_argument("--all", action="store_true", help="audit every public set")
     ap.add_argument("--hf", action="store_true",
                     help="audit the HF mirror evaluation sets instead")
@@ -236,7 +252,7 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
-    all_sets = {**SETS, **HF_SETS}
+    all_sets = {**SETS, **HF_SETS, **RESEARCH_SETS}
     if args.file:
         set_names = [args.file.stem]
         all_sets = {**all_sets, args.file.stem: args.file}

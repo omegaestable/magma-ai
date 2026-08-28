@@ -1,5 +1,9 @@
 # Next session brief — the deep sweeps
 
+> **2026-08-28:** the next session is the Austin problem session — read
+> `DEEP_SESSION_5_AUSTIN_HANDOVER.md` first; this brief remains the plan for the
+> deep sweeps that follow it.
+
 **State: end of the 2026-08-27 improvement pass 2.** Read `CLAUDE.md` first
 (authoritative), then this file for what to do, then
 `stage2/docs/DEEP_SWEEP_RUNBOOK.md` for the exact commands. Session evidence:
@@ -105,11 +109,15 @@ formula witnesses).
 
 ### 3.5 Bytes, if a change needs them
 
-The packaged artifact had 73 KB of headroom after pass 1. `DISTILLED_CERTS`
-remains the dominant cost and many entries are live-solvable, but they are
-**judge-pinned bytes**: delete one only when a new engine needs the room, and
-only after confirming the live route re-derives it and the real judge accepts
-the result (rails 1, 5h, 3c).
+**Resolved 2026-08-28.** The packager now packs `DISTILLED_CERTS` and the three
+witness tables as zlib+base85 blobs (round-tripped against the source literal
+before writing; disclosed in `SUBMISSION_NOTE.md`), so the artifact is
+**373,997 B with 126 KB of headroom** and every judge-pinned certificate is
+still shipped. A distilled entry now costs ~250 packed bytes, so do **not**
+delete live-solvable entries for room — the trade no longer exists. If bytes
+ever bind again, the next lever is packing `PROMPT`/`LLM_CONFIG` (~7 KB text,
+~4 KB packed) — but `PROMPT` must stay a top-level string constant for the
+organizer's AST extractor (`test_artifact.py`), so leave it alone.
 
 ---
 

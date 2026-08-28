@@ -11,18 +11,54 @@ located with `ast`. Before writing, the result is proved equivalent to the sourc
 by comparing parse trees with docstrings dropped from both — a stronger check
 than eyeballing the diff, and the reason this is safe to run unattended.
 
+Since 2026-08-28 the four big data tables (`PACKED_TABLES`) are additionally
+packed: each literal is serialised to JSON, zlib-compressed and base85-encoded,
+and the artifact rebuilds it at import time through a 6-line helper. The
+certificate library alone goes from ~100 KB to ~15 KB with every judge-pinned
+byte intact. The source keeps the readable literals; only the artifact carries
+the blobs, which the submission note discloses (rules/evaluation.md,
+"Submission Note": compressed data must be described, and it is). The packed
+value is decoded again here and compared to the source literal with `==`
+before anything is written, so a blob that does not round-trip exactly —
+tuple-vs-list included — aborts the packaging run.
+
     python minify_submission.py <source> <destination>
 """
 
 from __future__ import annotations
 
 import ast
+import base64
 import io
+import json
 import sys
 import tokenize
+import zlib
 from pathlib import Path
 
 DOCSTRING_OWNERS = (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+
+# Top-level literals packed in the artifact, with the shape each one is
+# rebuilt to. "certs": dict[(str, str)] -> (str, str, str); "tables":
+# tuple[(str, list[list[int]]), ...]. Anything else raises rather than packs.
+PACKED_TABLES = {
+    "DISTILLED_CERTS": "certs",
+    "FP_WITNESS_TABLES": "tables",
+    "O5_WITNESS_TABLES": "tables",
+    "WITNESS_TABLES": "tables",
+}
+UNPACK_HELPER = "_unpack_table"
+# The helper shipped in the artifact. Local imports keep the solver's own import
+# block untouched; `zlib`, `base64` and `json` are all stdlib in
+# python:3.11-slim.
+UNPACK_SOURCE = """\
+def _unpack_table(blob, kind):
+    import base64, json, zlib
+    data = json.loads(zlib.decompress(base64.b85decode(blob)).decode("utf-8"))
+    if kind == "certs":
+        return {(a, b): (c, d, e) for a, b, c, d, e in data}
+    return tuple((name, table) for name, table in data)
+"""
 
 
 def _comment_spans(source: str) -> dict[int, list[tuple[int, int]]]:
@@ -113,10 +149,97 @@ def _without_docstrings(tree: ast.AST) -> ast.AST:
     return tree
 
 
-def check(source: str, minified: str) -> None:
-    """Fail unless the two files parse to the same tree modulo docstrings."""
+def _assigned_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        return node.target.id
+    if (isinstance(node, ast.Assign) and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)):
+        return node.targets[0].id
+    return None
+
+
+def _encode_table(name: str, value: object) -> str:
+    kind = PACKED_TABLES[name]
+    if kind == "certs":
+        if not (isinstance(value, dict) and all(
+                isinstance(k, tuple) and len(k) == 2 and isinstance(v, tuple)
+                and len(v) == 3 for k, v in value.items())):
+            raise SystemExit(f"{name}: expected dict[(str, str)] -> (str, str, str)")
+        flat = [[*k, *v] for k, v in value.items()]
+    else:
+        if not (isinstance(value, tuple) and all(
+                isinstance(entry, tuple) and len(entry) == 2
+                and isinstance(entry[1], list) for entry in value)):
+            raise SystemExit(f"{name}: expected tuple[(str, list), ...]")
+        flat = [[entry_name, table] for entry_name, table in value]
+    payload = json.dumps(flat, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    blob = base64.b85encode(zlib.compress(payload, 9)).decode("ascii")
+    return f'{name} = {UNPACK_HELPER}("{blob}", "{kind}")'
+
+
+def pack_tables(minified: str) -> tuple[str, dict[str, object]]:
+    """Replace each `PACKED_TABLES` literal with a packed blob.
+
+    Runs on the minified text (its line numbers are the ones edited) and
+    returns the packed text plus the literal values, which `check` compares
+    against what the packed lines decode to.
+    """
+    tree = ast.parse(minified)
+    lines = minified.splitlines()
+    targets: list[tuple[int, int, str, object]] = []
+    for node in tree.body:
+        name = _assigned_name(node)
+        if name in PACKED_TABLES:
+            value = node.value
+            if value is None:
+                raise SystemExit(f"{name} has no value to pack")
+            targets.append((node.lineno, node.end_lineno, name, ast.literal_eval(value)))
+    missing = set(PACKED_TABLES) - {name for _, _, name, _ in targets}
+    if missing:
+        raise SystemExit(f"packed tables not found at top level: {sorted(missing)}")
+    values = {name: value for _, _, name, value in targets}
+    # Bottom-up so earlier line numbers stay valid; the helper goes in front of
+    # the first packed assignment, which is the earliest use.
+    for lineno, end_lineno, name, value in sorted(targets, reverse=True):
+        lines[lineno - 1:end_lineno] = [_encode_table(name, value)]
+    first = min(lineno for lineno, _, _, _ in targets)
+    lines[first - 1:first - 1] = UNPACK_SOURCE.splitlines() + [""]
+    return "\n".join(lines) + "\n", values
+
+
+def _decode_packed(packed: str) -> dict[str, object]:
+    """Run only the helper and the packed assignments, in a bare namespace."""
+    tree = ast.parse(packed)
+    namespace: dict[str, object] = {}
+    for node in tree.body:
+        is_helper = isinstance(node, ast.FunctionDef) and node.name == UNPACK_HELPER
+        if is_helper or _assigned_name(node) in PACKED_TABLES:
+            exec(compile(ast.Module(body=[node], type_ignores=[]), "<packed>", "exec"),
+                 namespace)
+    return {name: namespace[name] for name in PACKED_TABLES}
+
+
+def _drop_packed(tree: ast.Module) -> ast.Module:
+    tree.body = [
+        node for node in tree.body
+        if _assigned_name(node) not in PACKED_TABLES
+        and not (isinstance(node, ast.FunctionDef) and node.name == UNPACK_HELPER)]
+    return tree
+
+
+def check(source: str, minified: str, packed_values: dict[str, object] | None = None) -> None:
+    """Fail unless the two files parse to the same tree modulo docstrings —
+    and, when tables were packed, unless every packed value decodes to exactly
+    the source literal."""
     want_tree = _without_docstrings(ast.parse(source))
     got_tree = _without_docstrings(ast.parse(minified))
+    if packed_values is not None:
+        decoded = _decode_packed(minified)
+        for name, want in packed_values.items():
+            if decoded[name] != want or type(decoded[name]) is not type(want):
+                raise SystemExit(f"packed table {name} does not round-trip to the source literal")
+        _drop_packed(want_tree)
+        _drop_packed(got_tree)
     if ast.dump(want_tree) == ast.dump(got_tree):
         return
     # Name the first statement that differs. A bare "does not match" costs a
@@ -139,10 +262,14 @@ def main(argv: list[str]) -> int:
     source = source_path.read_text(encoding="utf-8")
     minified = minify(source)
     check(source, minified)
+    stripped = len(minified.encode("utf-8"))
+    minified, packed_values = pack_tables(minified)
+    check(source, minified, packed_values)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(minified.encode("utf-8"))
     before, after = len(source.replace("\r\n", "\n").encode("utf-8")), len(minified.encode("utf-8"))
-    print(f"{destination}: {before} -> {after} bytes ({before - after} stripped)")
+    print(f"{destination}: {before} -> {stripped} bytes stripped -> {after} bytes packed "
+          f"({before - after} saved)")
     return 0
 
 

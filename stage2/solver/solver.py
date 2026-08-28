@@ -1704,16 +1704,51 @@ def match_term(pattern: Term, target: Term, subst: dict[str, Term]) -> bool:
     return match_term(pattern[1], target[1], subst) and match_term(pattern[2], target[2], subst)
 
 
+# Compiled equation checks. `equation_holds` is the hottest function in the
+# file: the FALSE witness portfolio calls it ~40,000 times per row (every
+# `Fin 3` table, every affine/quadratic/named table, then the dual), and on a
+# TRUE row the affine family satisfies eq1, so BOTH equations are evaluated
+# over all n ** k assignments. Through the dict-environment `eval_term`
+# interpreter that was ~94 us per affine check and 4.1 s of a 6.5 s portfolio
+# over 12 rows (measured 2026-08-28). A per-equation lambda with the table
+# indexed directly (`t[t[v0][v1]][v2] == ...`) is the fastest pure-Python
+# shape: no environment dict, no recursion, one call per assignment. Same
+# assignment order and the same first-failure short-circuit, so the result and
+# the `note_hypothesis_model` bookkeeping downstream are unchanged.
+#
+# The cache is keyed on the equation dict's identity and keeps the dict alive
+# so the id cannot be recycled; the term identities are checked too, so a
+# rebuilt equation can never hit a stale entry. Cleared by
+# `clear_term_caches()` with the other per-row caches.
+_EQUATION_CHECK_CACHE: dict[int, tuple[dict[str, Any], Any, Any, Any]] = {}
+_EQUATION_CHECK_CACHE_MAX = 512
+
+
+def _compile_equation_check(equation: dict[str, Any]) -> Any:
+    hit = _EQUATION_CHECK_CACHE.get(id(equation))
+    if (hit is not None and hit[0] is equation
+            and hit[1] is equation["lhs"] and hit[2] is equation["rhs"]):
+        return hit[3]
+    names = {var: f"v{index}" for index, var in enumerate(equation["variables"])}
+
+    def render(term: Term) -> str:
+        if term[0] == "var":
+            return names[term[1]]
+        return f"t[{render(term[1])}][{render(term[2])}]"
+
+    params = "".join(f", {name}" for name in names.values())
+    source = f"lambda t{params}: {render(equation['lhs'])} == {render(equation['rhs'])}"
+    check = eval(source, {"__builtins__": {}})  # noqa: S307 - generated from our own parsed terms
+    if len(_EQUATION_CHECK_CACHE) >= _EQUATION_CHECK_CACHE_MAX:
+        _EQUATION_CHECK_CACHE.clear()
+    _EQUATION_CHECK_CACHE[id(equation)] = (equation, equation["lhs"], equation["rhs"], check)
+    return check
+
+
 def equation_holds(equation: dict[str, Any], table: list[list[int]]) -> bool:
-    n = len(table)
-
-    def op(a: int, b: int) -> int:
-        return table[a][b]
-
-    for values in product(range(n), repeat=len(equation["variables"])):
-        env: dict[str, Any] = {"op": op}
-        env.update(zip(equation["variables"], values))
-        if eval_term(equation["lhs"], env) != eval_term(equation["rhs"], env):
+    check = _compile_equation_check(equation)
+    for values in product(range(len(table)), repeat=len(equation["variables"])):
+        if not check(table, *values):
             return False
     return True
 
@@ -2990,6 +3025,7 @@ _TERM_CACHE_FUNCS = (
 def clear_term_caches() -> None:
     for cached in _TERM_CACHE_FUNCS:
         cached.cache_clear()
+    _EQUATION_CHECK_CACHE.clear()
 
 
 def combine_binary_congr(
@@ -11271,14 +11307,48 @@ def solve_problem_pass(
     # solver wall-clock and it was being spent on rows that turn out TRUE (it
     # wins 212 rows in 510,000 unseen order-4 rows, 0.04%). Moving the probes
     # ahead of it took 300 uniform order-4 rows from 456.2 s to 234.2 s with
-    # 0 lost / 0 gained / 0 verdict flips / 0 route changes. Egg first, then
-    # completion, exactly the order they had inside the engine list, so no
-    # row changes route. The speculative-TRUE evidence globals are only read
-    # on rows that stay unsolved, where the constraint tier still runs.
-    for probe_route in (egg_probe_route, completion_probe_route):
+    # 0 lost / 0 gained / 0 verdict flips / 0 route changes.
+    #
+    # Completion BEFORE egg since 2026-08-28. The per-engine profile over the
+    # 197 official rows slower than 1 s put `egg_probe_route` at 616 s of
+    # 859 s (72%) — all of it on rows that end TRUE — against 4.7 s for the
+    # completion probe over 110 calls: egg spends its full 6 s
+    # `EGG_PROBE_COLLAPSE_BUDGET` on collapse rows that completion then closes
+    # in ~0.3 s (61 of the 75 `completion:collapse` rows sat at exactly
+    # ~6.5 s). Completion's loss is cheap (it saturates rather than spending
+    # the clock), egg's is the whole slice. Swapped and A/B'd over those 197
+    # rows: 932 s -> 230 s, 0 lost / 0 flips / 0 oracle failures, 71 route
+    # changes all from `egg_collapse`/`egg_bootstrap` into judge-pinned
+    # `completion:*` families. The speculative-TRUE evidence globals are only
+    # read on rows that stay unsolved, where the constraint tier still runs.
+    for probe_route in (completion_probe_route, egg_probe_route):
         if _engine_gate():
             return None
         found = probe_route(eq1, eq2)
+        if found is not None and not route_excluded(str(found[0])):
+            return true_record(*found)
+
+    # The two cheapest general TRUE closures also run ahead of the cheap
+    # constraint tier (2026-08-28). Every official/HF row that reaches this
+    # point is TRUE (0 rows in either corpus are served by the constraint,
+    # local-model or large-linear tiers), and each paid the full cheap tier
+    # (7 orders x 0.8 s) plus the 1.5 s local-model probe -- ~7 s -- before
+    # `equational_closure` closed it in well under a second (13 calls, 0.81 s
+    # total, in the 2026-08-28 profile). The loss cost on a FALSE row that
+    # does reach here is bounded by the engines' own budgets: measured over
+    # 68 official FALSE rows, deep_absorption + equational_closure lose in
+    # 0.65 s mean / 2.07 s max and claim 0 of them. `derived_cp_closure`
+    # stays below: its loss is 8 s, more than the constraint tier it would
+    # displace. Same relative order as inside the engine list, so absorption
+    # hypotheses still get `deep_absorption_closure` first.
+    closure_first = not absorption_hypothesis(eq1)
+    early_closures = (
+        (equational_closure_route, deep_absorption_closure_route) if closure_first
+        else (deep_absorption_closure_route, equational_closure_route))
+    for closure_route in early_closures:
+        if _engine_gate():
+            return None
+        found = closure_route(eq1, eq2)
         if found is not None and not route_excluded(str(found[0])):
             return true_record(*found)
 
@@ -11340,19 +11410,11 @@ def solve_problem_pass(
     # guard modelling the 2048 MB sandbox (deep-tier closures were measured at
     # 5-17 GB RSS and were being OOM-killed in the playground).
     #
-    # `equational_closure` runs first unless eq1 is an absorption hypothesis, in
-    # which case `deep_absorption_closure` gets the first attempt. That single
-    # conditional is why this block is a sequence rather than a flat table.
-    closure_first = not absorption_hypothesis(eq1)
-    # `egg_probe_route` and `completion_probe_route` used to open this list;
-    # since 2026-08-27 they run above, ahead of the cheap constraint tier.
-    engines: list[Any] = []
-    if closure_first:
-        engines.append(equational_closure_route)
-    engines.append(deep_absorption_closure_route)
-    if not closure_first:
-        engines.append(equational_closure_route)
-    engines.extend((
+    # `egg_probe_route` and `completion_probe_route` used to open this list
+    # (moved above the cheap constraint tier 2026-08-27), and
+    # `equational_closure` / `deep_absorption_closure` followed them (moved
+    # 2026-08-28, see `early_closures`).
+    engines: list[Any] = [
         derived_cp_closure_route,
         projection_bootstrap_route,
         lemma_bootstrap_route,
@@ -11388,7 +11450,7 @@ def solve_problem_pass(
         # so it fired even after a memory trip or a passed deadline (fixed
         # 2026-07-29 by folding it into this loop).
         narrow_grind_true_route,
-    ))
+    ]
 
     for engine in engines:
         if _engine_gate():

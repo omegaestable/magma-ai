@@ -111,7 +111,35 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (2026-08-27 evening; improvement pass 2; judge parity on Lean 4.33.1)
+## Current measured state (2026-08-28; deterministic-pass perf + bytes; judge parity on Lean 4.33.1)
+
+Every number below is from the 2026-08-28 session
+(`stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`), measured on
+the merged solver and the packaged **373,997-byte** artifact, no LLM calls.
+Diff by row id, never by total (rail 2). Numbers not re-measured this session
+(sweeps, Marathon/Solo runs, LLM lane) are in the 2026-08-27 table below,
+which stays the reference for them.
+
+| Metric | Value |
+| --- | --- |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`+samples) | **1869 / 1869** distinct rows (1889 with `sample_20`'s duplicates), isolated (16 workers, idle box), **0 lost / 0 gained / 0 flips / 0 oracle failures** vs the 2026-08-27 pass-2 audit; solver time **1,105.9 s → 262.6 s (−76%)**; rows over 1 s **201 → 10**; 184 route changes, all `egg_collapse`/`egg_bootstrap` → `completion:*` |
+| HF mirror sets | **800 / 800**, isolated, 0 lost / 0 gained / 0 flips, **479.9 s → 135.1 s**; 70 route changes of the same kind |
+| Real judge (Lean 4.33.1, deployed caps) | **29 / 29 accepted**: 14 sampled route-changed official rows across `completion:collapse`/`join`/`bridge` + the 15 fixture pins whose route could drift, all re-pinned |
+| Offline gate | **474 passed, 1 skipped** (packager run, `-n auto`, 8 min 50 s; the skip is "no spot-check failures pinned yet"). The first post-reorder run read 452 / **9** skipped — drifted `egg_collapse` pins (rail 16), fixed by the re-pin |
+| Packaged size | **373,997 bytes of 500,000 — 126.0 KB headroom (25.2%)**; four data tables packed zlib+base85 with every pinned certificate kept; organizer layout validator OK; fixture **173** pins |
+| Upstream snapshot | `817a4653`, **0 ahead / 0 behind** upstream HEAD at session start (rail 14) |
+| Spotcheck (after packaging) | **90 / 90, 100% accuracy, 0 mistakes** |
+| **Full combined evaluation set** — every published file deduplicated by (eq1, eq2): 2,969 pairs, 2,869 labelled (`--file` run, 16 workers, isolated) | **2869 / 2869 solved, 0 failed**, 105.5 s solver time, wall-clock 1m46.0s, 0.04 s/problem; 0 crashes / 0 oracle failures / 0 label mismatches. The 100 unlabelled research rows are 0/100 (open research, `DEEP_SESSION_5_AUSTIN_HANDOVER.md`). A "2130/2130" figure quoted from the competition Zulip matches no union of the published files (see the handover) |
+| Extended official battery, first full pass (`--all` incl. `stress_test_200`) | **2089/2089 solved, 0 oracle failures, 73.5 s solver time (hard1 69/69 1.3s; hard2 200/200 24.6s; hard3 400/400 11.6s; normal 1000/1000 14.0s; sample_20 20/20 1.9s; sample_200 200/200 7.4s; stress_test_200 200/200 12.7s)** |
+| Organizers' stress test (`stress_test_200`: 50 order-4 normal/hard/extra-hard + 50 order-5 normal, 100 T / 100 F) | **200 / 200, 0 oracle failures, all labels matched, 12.7 s** — promoted into `audit_corpus.py --all` the same day (it was under the gitignored `stage2/results/*.jsonl`) |
+| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **0 / 100 — open research, not a solver gap**: every `eq2` is a confirmed Austin law and every `eq1` a Table-2/3 law with no infinite model ever built (blueprint `order_5.tex`). Measured dead today: affine templates over ℚ 0/69, z3 proving 169/169 `unknown`, ℤ piecewise-linear models 0/69 (control 40/40). Constructions map + plan: `stage2/results/2026-08-28-assessment-deterministic-austin-tidy.md`. Selectable with `--set research_order5_hard`, deliberately outside `--all` (~460 s/row) |
+| Full-deterministic question | **Keep the LLM lane** (optional in both modes, gated off without a proxy, kernel-checks everything, 5 judge-accepted TRUE certs since 2026-08-27 vs 0/433 before, ~+0.1 % expected on the order-5 quarter); same doc, §1 |
+
+The three solver changes: completion probe before egg probe (rail 34); the two
+cheap closures ahead of the cheap constraint tier (rail 35); a compiled
+`equation_holds` (rail 36). Nothing was deleted (rail 1).
+
+### The 2026-08-27 table (improvement pass 2)
 
 Every number below is from the 2026-08-27 improvement pass 2
 (`stage2/results/2026-08-27-improvement-pass-2.md`), measured on the merged
@@ -187,7 +215,9 @@ Regenerate everything with the four commands below.
 #    Run before AND after any solver change.
 .\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
-# 2. Full corpus audit (official sets; add --hf for the HF mirrors).
+# 2. Full corpus audit (official sets incl. the organizers' 200-row stress
+#    test since 2026-08-28; add --hf for the HF mirrors; the Austin research
+#    set is `--set research_order5_hard` only — never in --all, ~460 s/row).
 #    ~17 min wall clock on 16 workers (measured 2026-08-12). Only unsolved and
 #    late-solving rows pay for the last-resort engines, so the cost scales with
 #    the frontier, not the corpus. Run it once per session, not per edit — and
@@ -256,6 +286,13 @@ on the artifact, then pins the solver's judge-limit constants to
    for 253 seconds and the worst rejected one was `hard3_0134` at 34.9 KB for
    46 s. `WarnBytes` in the packager is 450,000: a "within 10% of the cap"
    alarm, not a de-bloat target.
+   **Packed since 2026-08-28.** `minify_submission.py` additionally packs the
+   four big data tables (zlib + base85, decoded by a 6-line helper at import;
+   the packer round-trips every blob against the source literal before it
+   writes). Artifact **373,997 of 500,000 — 126 KB headroom**; the source keeps
+   the readable literals. Compressed data is explicitly allowed by
+   `rules/evaluation.md` with a submission-note disclosure, which
+   `SUBMISSION_NOTE.md` carries.
    **The cap applies to the artifact, never to the source.** `stage2/solver/solver.py`
    is 529,700 bytes at HEAD and is *supposed* to be over 500 KB — it carries the
    comments and docstrings the stripper removes. CI asserted the cap on the source
@@ -861,6 +898,51 @@ the diagnosis file that carries the raw numbers, under
     `stage2/experiments/order5-ge4var-250-2026-08-27.jsonl` (seed 20260827).
     (diag `Solver.md` O5-8.)
 
+Rails 34–36 were measured on 2026-08-28
+(`stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`).
+
+34. **Order a probe portfolio by the cost of *losing*, not by the order the
+    engines were added.** The egg probe ran ahead of the completion probe
+    because that was their order inside the engine list. Egg's loss is its
+    whole 6 s collapse slice; completion's is ~0 s (it saturates). On 61 of
+    75 `completion:collapse` rows the egg slice was spent first and completion
+    closed the row in 0.3 s — 616 s of the 859 s the 197 slow official rows
+    cost, 72%, visible as a spike at exactly ~6.5 s in the route histogram
+    before any profiler ran. Swapping them: 1,106 → 263 s over the official
+    corpus, 0 lost / 0 flips. A fixed-time cluster in a per-route histogram
+    is a budget being burnt by whatever runs *before* the winner.
+35. **Every row that reaches a late FALSE tier on the local corpus is TRUE —
+    measure who actually pays for a tier before placing it.** 0 official/HF
+    rows are served by the constraint, local-model or large-linear tiers, so
+    the 7 × 0.8 s cheap tier plus the 1.5 s probe were a pure ~7 s tax on the
+    13 rows that then closed by `equational_closure` in < 1 s. The two cheap
+    closures (0.45 s and 1.6 s budgets; 0.65 s mean / 2.07 s max loss over 68
+    FALSE rows) now run ahead of the tier; `derived_cp_closure` (8 s loss)
+    does not. The tiers themselves stay: they win order-5 sweep rows the
+    corpus lacks, and 4.6 s on a rare row is cheaper than order-5 FALSE
+    coverage.
+36. **The hottest function in the file was an interpreter.** `equation_holds`
+    is called ~40,000 times per row by the witness portfolio, and on a TRUE
+    row the affine family satisfies eq1, so both equations were evaluated over
+    all `n ** k` assignments through a dict-environment tree walk (~94 µs per
+    affine check, 4.1 s of a 6.5 s portfolio over 12 rows). A per-equation
+    compiled lambda (`t[t[v0][v1]][v2] == ...`) is 7x on the full-check path
+    with 0 mismatches over 117,780 checks. Profile the leaf before reordering
+    the callers: reordering the portfolio could not have helped, because a TRUE
+    row runs every stage regardless of order.
+
+37. **A depth-bounded "exhaustive" model check is not exhaustive.** The tag
+    automaton for Kisielewicz's law 28770 passed an exhaustive check over the
+    depth-2 universe with 0 repairs and was wrong at depth 4 — 2,629 of 20,000
+    deep random assignments violate the law (`y = s0(a, s0(a', s0(a'', s0(p,
+    q))))` returns `q`). The same session had already caught a root-reduce
+    term model that passed 3,000 random tests and failed on the one
+    critical-pair coincidence the theory predicts. Models with unbounded
+    payload nesting need deep random (depth >= 5) *and* critical-pair-derived
+    assignments before any Lean time is spent on them; the Lean proof is the
+    arbiter, and it needs an inductive (size-function) argument, not `cases`.
+    (`stage2/experiments/austin/README.md`.)
+
 ## Environment gotchas that will bite you
 
 - **UTF-8.** Printing `◇` crashes with `UnicodeEncodeError` on Windows cp1252.
@@ -928,7 +1010,7 @@ Three judging entry points, all in `stage2/experiments/`:
 
 | Tool | Use it for |
 | --- | --- |
-| `judge_rows.py --ids <row ids>` / `--problems <jsonl>` | judge rows the solver solves live, from the main tree (needs `vendor/stage2-official/.lake`) |
+| `judge_rows.py --ids <row ids> [--problems <extra.jsonl>]` | judge rows the solver solves live, from the main tree (needs `vendor/stage2-official/.lake`). `--ids` selects; `--problems` only adds files to resolve those ids from (a fixture-derived jsonl for rows outside the official/HF sets). Passing `--problems` alone exits with "no row ids selected" (bitten 2026-08-28) |
 | `judge_cert_text.py --in <certs.jsonl> --out <judged.jsonl>` | judge certificate *text* you already have — rows `{id, equation1, equation2, eq1_id, eq2_id, verdict, code}`. This is the one to use from a worktree with no Lean build; it applies the deployed caps and prints `accepted N/M`. |
 | `judge_rows.py --write-fixture` / `--append-fixture` | pin accepted certs. **`--write-fixture` REPLACES the file** (rail 16) — append unless you mean to. |
 
@@ -952,12 +1034,17 @@ Three judging entry points, all in `stage2/experiments/`:
   drift. The 37 bespoke matchers this replaced were proved equivalent over the
   entire real input domain (4,694 ETP equations plus every equation in every
   benchmark set) before being deleted.
-- The general TRUE engines, in order: `egg_probe`, **`completion_probe`**,
-  `equational_closure`, `deep_absorption_closure`, `derived_cp_closure`,
-  `projection_bootstrap`, `lemma_bootstrap`, `lemma_chain_bootstrap`,
-  `egg_closure`, **`egg_collapse`**, `egg_priority_bootstrap`,
-  **`egg_bootstrap`**, **`egg_ladder`**, **`completion`**, then the demoted
-  `narrow_grind`.
+- The general TRUE engines, in order (2026-08-28): **`completion_probe`**,
+  `egg_probe`, `equational_closure`, `deep_absorption_closure` — those four
+  run *ahead of* the cheap constraint tier and the local-model probe — then,
+  after the cheap FALSE tiers: `derived_cp_closure`, `projection_bootstrap`,
+  `lemma_bootstrap`, `lemma_chain_bootstrap`, `egg_closure`,
+  **`egg_collapse`**, `egg_priority_bootstrap`, **`egg_bootstrap`**,
+  **`egg_ladder`**, **`completion`**, then the demoted `narrow_grind`.
+  Completion probes before egg because egg's loss is its whole 6 s collapse
+  slice while completion's is ~0 s (rail 34); the two cheap closures moved up
+  because every official/HF row that reaches them is TRUE and was paying ~7 s
+  of FALSE search first (rail 35).
 - **`completion` (2026-08-21) is ordered (unfailing) Knuth-Bendix completion with
   proof recording** — the only engine that derives *new rules by superposition*
   and then rewrites with them, where an e-graph only propagates congruence over
@@ -968,9 +1055,10 @@ Three judging entry points, all in `stage2/experiments/`:
   variables silently blocks every unorientable rule from touching it.
   Certificates are the existing `lemma_chain` shape, so
   `check_true_lemma_chain_certificate` verifies every block independently and
-  there is no new oracle surface. Its probe slot is unscaled and sits second among
-  the general engines because its *loss* is cheap: it saturates in ~0 s rather
-  than spending the budget, which is not true of any engine below it.
+  there is no new oracle surface. Its probe slot is unscaled and sits **first**
+  among the general engines (second until 2026-08-28) because its *loss* is
+  cheap: it saturates in ~0 s rather than spending the budget, which is not true
+  of any engine below it — including the egg probe it used to follow.
 - **`egg_ladder` (2026-08-11) is the only engine that reasons with more than one
   law at a time.** `egg_saturate_prove_multi` saturates under a *set* of rules,
   each carrying the Lean hypothesis name that justifies it; the route derives a
@@ -983,11 +1071,17 @@ Three judging entry points, all in `stage2/experiments/`:
   projection in 60 s, idempotence is derivable in under 2 s, and with idempotence
   in scope right projection follows in **0.01 s with a 267-byte proof**.
 - FALSE: named compact witnesses → structured/affine/quadratic families →
-  bounded `Fin 2..3` enumeration → **`constraint_countermodel` cheap tier
-  (orders 8,9,6,4,10 — most successes land in ~0.5 s)** → [TRUE engines] →
-  `local_model_counterexample` (randomized `Fin 4..6` repair search) →
-  **`constraint_countermodel` wide tier (45 s per order)**. Everything after the
-  cheap tier runs only on rows nothing else claimed, so solved rows pay nothing.
+  bounded `Fin 2..3` enumeration → [the four cheap TRUE probes/closures] →
+  **`constraint_countermodel` cheap tier (orders 8,9,6,5,4,7,10, 0.8 s each —
+  most successes land in ~0.5 s)** → unscaled `local_model` probe → large
+  linear scan → [the remaining TRUE engines] → `local_model_counterexample`
+  (randomized `Fin 4..7` repair search) → **`constraint_countermodel` wide
+  tier (45 s per order)**. Everything after the portfolio runs only on rows
+  nothing else claimed, so solved rows pay nothing. The portfolio's
+  `equation_holds` is a compiled per-equation lambda since 2026-08-28 (7x on a
+  full `n ** k` check, 2.5x on first-fail; 0 mismatches over 117,780 checks) —
+  the affine family satisfies eq1 on TRUE rows, so both equations were being
+  evaluated in full through the dict-environment interpreter.
   The cheap tier is capped at 4 variables and the wide tier at 6 with a per-order
   instance bound (`n ** variables <= 20_000`) — see rail 5f-ii for why those two
   numbers differ. The named-table pass also runs its **dual** on its own time
@@ -1037,6 +1131,7 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
+| **Deep session 5: the Austin problem session** | **`stage2/docs/DEEP_SESSION_5_AUSTIN_HANDOVER.md`** |
 | **Next session plan (the deep sweeps)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
 | **Exact commands for the deep sweeps** | **`stage2/docs/DEEP_SWEEP_RUNBOOK.md`** |
 | Deep-sweep campaign log + ranked levers | `stage2/results/2026-08-25-deep-sweep-campaign.md` |
@@ -1052,6 +1147,14 @@ solver primitive cannot hide itself in the oracle.
 | Agent role playbooks | `AGENTS.md` |
 
 ## Known open frontier
+
+**The organizers' Austin research set (`research_order5_hard`, 2026-08-28):**
+0/100 and provably not a search problem — see the measured-state table and
+`stage2/results/2026-08-28-assessment-deterministic-austin-tidy.md` §2 for
+the construction-by-construction map (linear, cohomology and every finite
+family are dead by Lefschetz / "no finite models"; what remains is per-law
+greedy translation-invariant or Kisielewicz-encoding models plus a Lean
+formalisation each). Do not re-run table search, z3, or affine templates on it.
 
 **Updated 2026-08-27 after the improvement pass.** Order-4: the four-law
 frontier is closed as a family (`650`, `2923`, `3569`, `2854`); what remains is
@@ -1265,14 +1368,16 @@ Also refuted in the second pass, so nobody spends a session on them again:
    multi-hour order-5..9 constraint run (a deep-sweep item), a
    permutation-structure-aware search (eq1 forces right-multiplications to
    pair into inverses), or a bespoke infinite construction.
-6. **Bytes.** The artifact is at 472,504 of 500,000 (5.5% headroom).
-   `DISTILLED_CERTS` is still the dominant cost at 65 entries, and **50 of the
-   65 are now live-solvable** (48 measured 2026-08-21 + 2 more via the bridge,
-   both judge-accepted). The ~120 KB recovery remains available but was
-   **deliberately not taken**: judge-pinned bytes beat a very good bet when no
-   new engine needs the room, and this was the last engine session. If a
-   future change needs bytes, the scoped procedure in
-   `NEXT_SESSION_BRIEF` §3.3 still applies.
+6. ~~**Bytes.** The artifact is at 472,504 of 500,000 (5.5% headroom).~~ —
+   **closed 2026-08-28 without deleting anything.** The packager now packs
+   `DISTILLED_CERTS`, `FP_WITNESS_TABLES`, `O5_WITNESS_TABLES` and
+   `WITNESS_TABLES` as zlib+base85 blobs (99.7 KB → 14.6 KB for the
+   certificate library alone); the artifact is **373,997 bytes, 126 KB
+   (25.2%) headroom**, every judge-pinned certificate still shipped, disclosed
+   in `SUBMISSION_NOTE.md` as the rules require. The "delete live-solvable
+   distilled entries" procedure in `NEXT_SESSION_BRIEF` §3.3 is no longer
+   needed and should not be run: a pinned certificate costs ~250 packed bytes
+   now.
 
 **Dead ends measured on 2026-08-27 — do not re-run any of these.** Each is a
 negative result with the numbers behind it; the pointer is the diagnosis file
@@ -1286,6 +1391,7 @@ summarised in `stage2/results/2026-08-27-improvement-pass-2.md`.
 | `reasoning_effort=medium` | 2.8x tokens, 7x wall, **the same 2 of 37** rows settled; p90/max latency breaches the 300 s HTTP timeout | `LLM.md` LLM-7 |
 | Bigger completion pair-weight caps, iterative deepening, pick-given-ratio / variable-weighted selection, axiom-only or weight-restricted superposition, non-ground unorientable rewriting, the `_kbo_gt` size short-circuit | **Eleven strategies converge on the same 6 of 40** collapse candidates (portfolio union = 6; a mirrored-KBO tie-break — a genuinely different reduction ordering — finds *exactly the same six*). Every win lands in ≤ 2.6 s; 60 s buys nothing over 20 s while 33/40 stay open. The only untried structural idea with upside is a much faster core (term interning + discrimination-tree indexing, ~15 → 1000+ equations/s), which is a large rewrite of repo-wide primitives | `Solver.md` O5-6 |
 | An LLM lane or mined-law pass on the order-5 collapse bucket | 6 protocols x 20 rows = 120 calls, **0 settled**; the 31 mined laws over 80 order-5 misses = **0/80** in 1199 s. `lemma_survives_models` rejects nothing when eq1 has no small non-trivial model, so every law burns its full budget (~60 s CPU/row vs ~6 s on order-4) | `LLM.md` LLM-8 |
+| Automated infinite models for the Austin research set (`research_order5_hard`): affine over Q, Z piecewise-linear, root-reduce / normal-form term models, junk-truncated repair models, tag automata (2026-08-28) | **0/69 every way**; the tag automaton reproduces 28770 at depth 2 and is wrong at depth 4; the research laws lose payload at every derailment. Tooling + numbers: `stage2/experiments/austin/README.md`, assessment doc §2 | `2026-08-28-assessment-deterministic-austin-tidy.md` |
 | An infinite-carrier / confluence certificate for the order-4 FALSE residue (eq1 `481`, `2531`, `1661`, `1486`) | **NO-GO offline.** The teorth cache stores entry names and file:line only, no Lean source; there is no ETP Lean anywhere in the repo and the sandbox has no network | `Generalizability.md` F8 |
 
 One free signal found while measuring the above: when

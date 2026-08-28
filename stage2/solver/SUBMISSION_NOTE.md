@@ -41,9 +41,21 @@ The main engines, in dispatch order:
 
 ## Generated data payloads (disclosure)
 
-The solver contains no compressed data and no binary blobs. All embedded data
-is plain Python/Lean text, and every payload below is reproducible from the
-sources named. Sizes are of the packaged artifact measured 2026-08-27.
+The solver contains **four compressed data blobs and no binary executables**.
+In the submitted `solver.py`, the four largest data tables — `DISTILLED_CERTS`,
+`FP_WITNESS_TABLES`, `O5_WITNESS_TABLES` and `WITNESS_TABLES` — are stored as
+strings produced by serialising the plain Python literal to JSON, compressing
+it with zlib (level 9) and encoding the result with base85 (`base64.b85encode`);
+a six-line helper at the top of the data section (`_unpack_table`) reverses
+exactly that at import time using only the standard library. Nothing else in
+the file is compressed or encoded. The packing is a pure size measure (the
+certificate library alone is ~100 KB as text and ~15 KB packed, against the
+500 KB cap) and is applied by the build script
+`stage2/solver/minify_submission.py`, which decodes each blob again and
+compares it to the source literal before writing the artifact. The readable
+literals live in the source tree (`stage2/solver/solver.py`) in plain
+Python/Lean text. Every payload below is reproducible from the sources named.
+Sizes are of the unpacked text, measured 2026-08-28.
 
 - **`DISTILLED_CERTS` — 59 complete Lean certificates (~99 KB of source, the
   single largest payload).** Keyed by the renaming-invariant canonical text of

@@ -1,4 +1,59 @@
-# Latest handoff — 2026-08-27 (improvement pass 2)
+# Latest handoff — 2026-08-28 (deterministic pass: 4x faster, 96 KB lighter)
+
+Evidence: `stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`.
+No LLM calls. **Official 1869/1869 and HF 800/800, both isolated, 0 lost / 0
+gained / 0 flips / 0 oracle failures by row id; official solver time
+1,105.9 s → 262.6 s, HF 479.9 s → 135.1 s; real judge 29/29 on the rows that
+changed route; gate 474 passed / 1 skipped; packaged 373,997 B (126 KB
+headroom).**
+
+What changed, in one line each (rails 34–36 in `CLAUDE.md` carry the numbers):
+
+- `solve_problem_pass`: completion probe now runs *before* the egg probe (egg
+  was burning its 6 s collapse slice on rows completion closes in 0.3 s — 72%
+  of all slow-row time), and `equational_closure`/`deep_absorption_closure`
+  run ahead of the cheap constraint tier (every corpus row reaching that tier
+  is TRUE and paid ~7 s of FALSE search first).
+- `equation_holds` is a compiled per-equation lambda (7x on full checks, 0
+  mismatches over 117,780 checks); the affine family was the hidden cost.
+- `minify_submission.py` packs `DISTILLED_CERTS` and the three witness tables
+  (zlib+base85, round-tripped against the source literal before writing;
+  `test_artifact.py` repeats it from the shipped file). Disclosed in
+  `SUBMISSION_NOTE.md` as `rules/evaluation.md` requires. Do **not** delete
+  distilled entries for bytes any more — a pin costs ~250 packed bytes.
+- Fixture: 15 drifted pins re-judged and replaced, 14 new pins (173 total).
+  After any reorder, expect `test_judge_verified` skips and re-pin the same
+  day — a skipped pin is not coverage (rail 16).
+
+Same-day part 2 (`stage2/results/2026-08-28-assessment-deterministic-austin-tidy.md`):
+**keep the LLM lane** (optional, gated, kernel-checked, small positive
+judge-verified upside); the organizers' **stress test is 200/200** and now in
+`--all`; the **Austin research set is 0/100 and open research** — affine
+templates, z3 proving, z3 finite models and ℤ piecewise-linear models were all
+measured dead today, the blueprint's construction map says why (no finite
+quotients → per-law greedy/encoding constructions + a Lean proof each);
+**repo**: clone is 173 MB tracked + 59 MiB loose objects, the ~8.4 GB is the
+untracked Lean cache (7.1 GB) + venvs + results; tidy plan (LFS for six files,
+junction `.lake`, tag+drop `stage1/`, `git gc`) is written, none executed —
+history rewrites are the user's call.
+
+Part 3 ("math mode" on the Austin set): the literature's construction was
+identified (Kisielewicz tag automata: spine tags, junk off the spine, guarded
+rules, priority, repairs) and built in `stage2/experiments/austin/`; it
+reproduces 28770 on a depth-2 universe and is wrong at depth 4 (rail 37); the
+69 research laws lose payload at every derailment (0/69). Lean renderer
+compiles up to the main proof. Multi-session research item; the README says
+where to resume. Extended official battery first full pass: 2089/2089 solved, 0 oracle failures, 73.5 s solver time (hard1 69/69 1.3s; hard2 200/200 24.6s; hard3 400/400 11.6s; normal 1000/1000 14.0s; sample_20 20/20 1.9s; sample_200 200/200 7.4s; stress_test_200 200/200 12.7s).
+
+Not done / next: the six official rows still above 5 s pay the cheap
+constraint tier + local-model probe (36 s of 73 s) — kept on purpose for
+order-5 FALSE coverage; a Marathon/Solo real-runner re-measure on the packed
+artifact (only the artifact tests and the 3.11 import were run on it this
+session); the deep-sweep items in `NEXT_SESSION_BRIEF.md` are unchanged.
+
+---
+
+# Previous handoff — 2026-08-27 (improvement pass 2)
 
 Read `CLAUDE.md` first, then `stage2/docs/NEXT_SESSION_BRIEF.md` (what to do
 next) and `stage2/docs/DEEP_SWEEP_RUNBOOK.md` (the exact commands). Session
