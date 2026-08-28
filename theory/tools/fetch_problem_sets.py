@@ -31,6 +31,7 @@ HF_SUBSETS = (
     "evaluation_hard",
     "evaluation_extra_hard",
     "evaluation_order5",
+    "research_order5_hard",
 )
 HF_CACHE_DIR = REPO_ROOT / "data" / "hf_cache"
 HF_METADATA_DIR = HF_CACHE_DIR / "metadata"

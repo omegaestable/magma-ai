@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-05-12T14:04:55.868680+00:00",
+  "fetched_at": "2026-08-28T02:57:52.840455+00:00",
   "source_dataset": "SAIRfoundation/equational-theories-selected-problems",
   "subsets": [
     "normal",
@@ -10,121 +10,134 @@
     "evaluation_normal",
     "evaluation_hard",
     "evaluation_extra_hard",
-    "evaluation_order5"
+    "evaluation_order5",
+    "research_order5_hard"
   ],
   "files": [
     {
       "path": "data/hf_cache/normal.jsonl",
       "bytes": 193538,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/normal.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/normal.json",
       "bytes": 243,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/normal.json"
     },
     {
       "path": "data/hf_cache/hard.jsonl",
       "bytes": 37704,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/hard.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/hard.json",
       "bytes": 233,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/hard.json"
     },
     {
       "path": "data/hf_cache/hard1.jsonl",
       "bytes": 13042,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/hard1.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/hard1.json",
       "bytes": 306,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/hard1.json"
     },
     {
       "path": "data/hf_cache/hard2.jsonl",
       "bytes": 38142,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/hard2.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/hard2.json",
       "bytes": 235,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/hard2.json"
     },
     {
       "path": "data/hf_cache/hard3.jsonl",
       "bytes": 75895,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/hard3.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/hard3.json",
       "bytes": 235,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/hard3.json"
     },
     {
       "path": "data/hf_cache/evaluation_normal.jsonl",
       "bytes": 39967,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/evaluation_normal.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/evaluation_normal.json",
       "bytes": 302,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/evaluation_normal.json"
     },
     {
       "path": "data/hf_cache/evaluation_hard.jsonl",
       "bytes": 39116,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/evaluation_hard.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/evaluation_hard.json",
       "bytes": 298,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/evaluation_hard.json"
     },
     {
       "path": "data/hf_cache/evaluation_extra_hard.jsonl",
       "bytes": 41454,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/evaluation_extra_hard.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/evaluation_extra_hard.json",
       "bytes": 310,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/evaluation_extra_hard.json"
     },
     {
       "path": "data/hf_cache/evaluation_order5.jsonl",
       "bytes": 45522,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/evaluation_order5.jsonl"
     },
     {
       "path": "data/hf_cache/metadata/evaluation_order5.json",
       "bytes": 309,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/evaluation_order5.json"
+    },
+    {
+      "path": "data/hf_cache/research_order5_hard.jsonl",
+      "bytes": 22765,
+      "status": "downloaded",
+      "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/data/research_order5_hard.jsonl"
+    },
+    {
+      "path": "data/hf_cache/metadata/research_order5_hard.json",
+      "bytes": 800,
+      "status": "downloaded",
+      "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/metadata/research_order5_hard.json"
     },
     {
       "path": "data/hf_cache/README.upstream.md",
       "bytes": 7418,
-      "status": "downloaded",
+      "status": "cached",
       "url": "https://huggingface.co/datasets/SAIRfoundation/equational-theories-selected-problems/resolve/main/README.md"
     }
   ]

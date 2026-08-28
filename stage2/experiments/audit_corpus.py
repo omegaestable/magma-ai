@@ -75,7 +75,8 @@ def build_battery(eq1: dict) -> list[list[list[int]]]:
 
 
 def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
-              effort: str = "fast", row_budget: float = 0.0) -> dict:
+              effort: str = "fast", row_budget: float = 0.0,
+              single_pass: bool = False) -> dict:
     S.set_effort(effort)
     # Deployment always bounds a row: Solo sets a hard deadline of
     # `SOLO_DETERMINISTIC_SHARE * budget` and Marathon bounds its deterministic
@@ -93,7 +94,18 @@ def audit_row(problem: dict, *, subsumption: bool, false_budget: float,
     row: dict = {"id": str(problem.get("id", "")), "status": "skip"}
     started = time.monotonic()
     try:
-        record = S.solve_problem(problem, false_time_budget=false_budget)
+        if single_pass:
+            # `solve_problem`'s tier ladder re-runs every cheaper tier's full
+            # engine chain before trying `effort`, on the documented assumption
+            # that a failing pass is near-free (~0.15s median on hard3). On a
+            # family where a failing fast pass costs ~450s (measured on
+            # research_order5_hard), that assumption inverts: escalating would
+            # tax every row for the fast-tier cost before ever reaching a
+            # deeper one. This bypasses the ladder and runs exactly one pass at
+            # `effort`, matching the tier `S.set_effort` already pinned above.
+            record = S.solve_problem_pass(problem, false_time_budget=false_budget)
+        else:
+            record = S.solve_problem(problem, false_time_budget=false_budget)
     except Exception as exc:  # noqa: BLE001
         row["status"] = "crash"
         row["error"] = f"{type(exc).__name__}: {exc}"
@@ -213,6 +225,12 @@ def main() -> int:
                     help="per-row hard deadline in seconds, mirroring the "
                          "bound Solo/Marathon impose (0 = unbounded, the "
                          "historical audit behaviour)")
+    ap.add_argument("--single-pass", action="store_true",
+                    help="run exactly one pass at --effort instead of "
+                         "solve_problem's cheaper-tiers-first ladder; use "
+                         "when a failing lower tier is not cheap on this row "
+                         "family, so the ladder would tax every row for its "
+                         "cost before reaching --effort")
     ap.add_argument("--workers", type=int,
                     default=max(1, min(16, (os.cpu_count() or 2) - 2)))
     ap.add_argument("--out", type=Path, default=None)
@@ -243,7 +261,8 @@ def main() -> int:
         started = time.monotonic()
         worker = partial(audit_row, subsumption=args.subsumption,
                          false_budget=args.false_budget, effort=args.effort,
-                         row_budget=args.row_budget)
+                         row_budget=args.row_budget,
+                         single_pass=args.single_pass)
         if args.workers == 1:
             rows = []
             for i, problem in enumerate(problems, 1):

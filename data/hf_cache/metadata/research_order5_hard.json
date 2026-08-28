@@ -1,0 +1,13 @@
+{
+  "subset_name": "research_order5_hard",
+  "source": "official",
+  "curators": [],
+  "difficulty": "order5_hard",
+  "problem_count": 100,
+  "true_count": 0,
+  "false_count": 0,
+  "unknown_count": 100,
+  "selection_method": "programmatic",
+  "derived_from": "order5_austin_blueprint_frontier",
+  "notes": "Research subset with NO ground truth: answer is null on every record. 100 order-5 implication problems whose conclusion (equation2) is one of the 10 confirmed Austin laws from the Equational Theories Project blueprint chapter 'Order 5 Austin laws', and whose hypothesis (equation1) is one of the 120 blueprint laws with open model-status. Every problem remained undecided after a 3 s Vampire+Mace4 race, finite-model checks where applicable, and Vampire CASC-mode 120 s in both directions."
+}
