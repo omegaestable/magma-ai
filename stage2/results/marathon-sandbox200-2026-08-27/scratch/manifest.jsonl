@@ -1,0 +1,200 @@
+{"id": "order5_15618_44401", "eq1_id": 15618, "eq2_id": 44401, "equation1": "x = y * (((y * (y * x)) * z) * z)", "equation2": "x * y = x * ((y * (x * x)) * y)"}
+{"id": "order5_17674_31681", "eq1_id": 17674, "eq2_id": 31681, "equation1": "x = (y * z) * (z * (z * (z * x)))", "equation2": "x = (y * ((z * z) * (y * x))) * x"}
+{"id": "order5_42557_29612", "eq1_id": 42557, "eq2_id": 29612, "equation1": "x * x = y * (z * ((y * z) * x))", "equation2": "x = (y * (y * (x * (x * z)))) * y"}
+{"id": "etp_905_2839", "eq1_id": 905, "eq2_id": 2839, "equation1": "x = y ◇ ((x ◇ z) ◇ (w ◇ u))", "equation2": "x = ((y ◇ z) ◇ (w ◇ w)) ◇ w", "answer": true}
+{"id": "etp_696_949", "eq1_id": 696, "eq2_id": 949, "equation1": "x = y ◇ (x ◇ ((z ◇ z) ◇ z))", "equation2": "x = y ◇ ((z ◇ x) ◇ (y ◇ z))", "answer": true}
+{"id": "etp_3560_3935", "eq1_id": 3560, "eq2_id": 3935, "equation1": "x ◇ y = y ◇ ((y ◇ y) ◇ z)", "equation2": "x ◇ y = (x ◇ (z ◇ x)) ◇ y", "answer": true}
+{"id": "hard3_0325", "index": 325, "difficulty": "hard", "eq1_id": 3034, "eq2_id": 3762, "equation1": "x = ((y ◇ (z ◇ w)) ◇ z) ◇ x", "equation2": "x ◇ y = (y ◇ y) ◇ (y ◇ y)", "answer": true}
+{"id": "etp_4384_4630", "eq1_id": 4384, "eq2_id": 4630, "equation1": "x ◇ (x ◇ x) = (x ◇ y) ◇ z", "equation2": "(x ◇ y) ◇ x = (x ◇ y) ◇ z", "answer": true}
+{"id": "order5_26899_32318", "eq1_id": 26899, "eq2_id": 32318, "equation1": "x = ((y * x) * (z * x)) * (x * z)", "equation2": "x = (y * ((y * (z * x)) * z)) * x"}
+{"id": "order5_47673_35430", "eq1_id": 47673, "eq2_id": 35430, "equation1": "x * x = (x * (x * y)) * (x * x)", "equation2": "x = ((x * (x * y)) * (z * y)) * y"}
+{"id": "etp_131_645", "eq1_id": 131, "eq2_id": 645, "equation1": "x = y ◇ ((y ◇ z) ◇ y)", "equation2": "x = x ◇ (y ◇ ((y ◇ z) ◇ x))", "answer": true}
+{"id": "etp_2079_1845", "eq1_id": 2079, "eq2_id": 1845, "equation1": "x = ((x ◇ y) ◇ z) ◇ (z ◇ y)", "equation2": "x = (x ◇ (x ◇ y)) ◇ (z ◇ z)", "answer": false}
+{"id": "order5_12702_1891", "eq1_id": 12702, "eq2_id": 1891, "equation1": "x = x * ((y * (y * (z * y))) * y)", "equation2": "x = (y * (x * x)) * (z * y)"}
+{"id": "etp_4200_2346", "eq1_id": 4200, "eq2_id": 2346, "equation1": "x ◇ y = ((z ◇ x) ◇ z) ◇ y", "equation2": "x = (y ◇ (y ◇ (y ◇ z))) ◇ w", "answer": false}
+{"id": "order5_2390_1317", "eq1_id": 2390, "eq2_id": 1317, "equation1": "x = (y * (z * (y * z))) * y", "equation2": "x = y * (((y * x) * y) * z)"}
+{"id": "etp_1666_672", "eq1_id": 1666, "eq2_id": 672, "equation1": "x = (x ◇ y) ◇ ((z ◇ x) ◇ z)", "equation2": "x = y ◇ (x ◇ ((x ◇ z) ◇ x))", "answer": false}
+{"id": "order5_13498_45445", "eq1_id": 13498, "eq2_id": 45445, "equation1": "x = x * ((x * ((y * y) * z)) * z)", "equation2": "x * y = y * (((y * y) * z) * y)"}
+{"id": "etp_1_2985", "eq1_id": 1, "eq2_id": 2985, "equation1": "x = x", "equation2": "x = ((y ◇ (z ◇ x)) ◇ w) ◇ x", "answer": false}
+{"id": "order5_59078_15630", "eq1_id": 59078, "eq2_id": 15630, "equation1": "(x * x) * x = x * ((y * y) * y)", "equation2": "x = y * (((y * (y * z)) * x) * x)"}
+{"id": "order5_43024_44250", "eq1_id": 43024, "eq2_id": 44250, "equation1": "x * y = z * (y * ((z * x) * z))", "equation2": "x * x = y * ((y * (x * x)) * y)"}
+{"id": "order5_12699_39486", "eq1_id": 12699, "eq2_id": 39486, "equation1": "x = x * ((y * (y * (z * x))) * z)", "equation2": "x = (((y * z) * (y * x)) * y) * z"}
+{"id": "order5_40912_38426", "eq1_id": 40912, "eq2_id": 38426, "equation1": "x = ((((y * x) * y) * z) * x) * x", "equation2": "x = ((y * ((y * y) * y)) * y) * y"}
+{"id": "hard3_0275", "index": 275, "difficulty": "hard", "eq1_id": 2650, "eq2_id": 3943, "equation1": "x = ((x ◇ x) ◇ (y ◇ x)) ◇ y", "equation2": "x ◇ y = (x ◇ (z ◇ z)) ◇ y", "answer": false}
+{"id": "hard3_0396", "index": 396, "difficulty": "hard", "eq1_id": 4558, "eq2_id": 4519, "equation1": "x ◇ (y ◇ z) = (w ◇ x) ◇ y", "equation2": "x ◇ (y ◇ z) = (x ◇ w) ◇ y", "answer": true}
+{"id": "etp_563_589", "eq1_id": 563, "eq2_id": 589, "equation1": "x = y ◇ (z ◇ (y ◇ (z ◇ y)))", "equation2": "x = y ◇ (z ◇ (w ◇ (x ◇ y)))", "answer": true}
+{"id": "order5_59188_36780", "eq1_id": 59188, "eq2_id": 36780, "equation1": "(x * x) * y = y * ((z * z) * z)", "equation2": "x = (((y * z) * x) * (x * z)) * x"}
+{"id": "order5_1238_47223", "eq1_id": 1238, "eq2_id": 47223, "equation1": "x = x * (((y * x) * x) * x)", "equation2": "x * y = (y * z) * ((x * y) * x)"}
+{"id": "etp_4037_3443", "eq1_id": 4037, "eq2_id": 3443, "equation1": "x ◇ y = (z ◇ (z ◇ w)) ◇ w", "equation2": "x ◇ y = z ◇ (w ◇ (z ◇ w))", "answer": true}
+{"id": "etp_4226_2637", "eq1_id": 4226, "eq2_id": 2637, "equation1": "x ◇ y = ((z ◇ z) ◇ x) ◇ y", "equation2": "x = (y ◇ ((z ◇ w) ◇ w)) ◇ u", "answer": false}
+{"id": "order5_49491_52116", "eq1_id": 49491, "eq2_id": 52116, "equation1": "x * x = (y * (x * (y * z))) * y", "equation2": "x * x = ((y * (x * y)) * x) * y"}
+{"id": "order5_17927_624", "eq1_id": 17927, "eq2_id": 624, "equation1": "x = (x * y) * (x * ((z * y) * y))", "equation2": "x = x * (x * ((y * y) * z))"}
+{"id": "etp_2202_718", "eq1_id": 2202, "eq2_id": 718, "equation1": "x = ((y ◇ z) ◇ z) ◇ (y ◇ w)", "equation2": "x = y ◇ (y ◇ ((y ◇ y) ◇ z))", "answer": true}
+{"id": "hard3_0095", "index": 95, "difficulty": "hard", "eq1_id": 735, "eq2_id": 2812, "equation1": "x = y ◇ (y ◇ ((z ◇ w) ◇ x))", "equation2": "x = ((y ◇ z) ◇ (z ◇ z)) ◇ x", "answer": false}
+{"id": "order5_528_37753", "eq1_id": 528, "eq2_id": 37753, "equation1": "x = y * (y * (z * (z * x)))", "equation2": "x = ((y * (z * (y * y))) * z) * z"}
+{"id": "hard3_0208", "index": 208, "difficulty": "hard", "eq1_id": 1962, "eq2_id": 4175, "equation1": "x = (y ◇ (z ◇ x)) ◇ (y ◇ x)", "equation2": "x ◇ y = ((y ◇ z) ◇ x) ◇ y", "answer": true}
+{"id": "order5_7398_43514", "eq1_id": 7398, "eq2_id": 43514, "equation1": "x = x * (y * ((x * (z * x)) * x))", "equation2": "x * y = x * ((x * z) * (z * x))"}
+{"id": "etp_513_382", "eq1_id": 513, "eq2_id": 382, "equation1": "x = y ◇ (y ◇ (y ◇ (y ◇ x)))", "equation2": "x ◇ y = (x ◇ z) ◇ z", "answer": false}
+{"id": "hard3_0324", "index": 324, "difficulty": "hard", "eq1_id": 3034, "eq2_id": 1228, "equation1": "x = ((y ◇ (z ◇ w)) ◇ z) ◇ x", "equation2": "x = x ◇ (((x ◇ y) ◇ x) ◇ x)", "answer": true}
+{"id": "order5_36057_57761", "eq1_id": 36057, "eq2_id": 57761, "equation1": "x = ((y * (z * z)) * (x * z)) * x", "equation2": "x * (y * y) = ((z * y) * x) * y"}
+{"id": "hard3_0170", "index": 170, "difficulty": "hard", "eq1_id": 1510, "eq2_id": 1163, "equation1": "x = (y ◇ x) ◇ (z ◇ (w ◇ x))", "equation2": "x = y ◇ ((z ◇ (y ◇ x)) ◇ x)", "answer": false}
+{"id": "hard3_0133", "index": 133, "difficulty": "hard", "eq1_id": 1054, "eq2_id": 2264, "equation1": "x = x ◇ ((y ◇ (y ◇ z)) ◇ w)", "equation2": "x = (x ◇ (y ◇ (y ◇ x))) ◇ y", "answer": true}
+{"id": "etp_1508_27", "eq1_id": 1508, "eq2_id": 27, "equation1": "x = (y ◇ x) ◇ (z ◇ (z ◇ z))", "equation2": "x = (x ◇ y) ◇ z", "answer": true}
+{"id": "order5_41592_17088", "eq1_id": 41592, "eq2_id": 17088, "equation1": "x * x = y * (x * (y * (x * y)))", "equation2": "x = (x * y) * (y * (z * (y * z)))"}
+{"id": "order5_41663_43587", "eq1_id": 41663, "eq2_id": 43587, "equation1": "x * x = y * (z * (x * (z * x)))", "equation2": "x * y = x * ((z * y) * (z * z))"}
+{"id": "order5_31118_59279", "eq1_id": 31118, "eq2_id": 59279, "equation1": "x = (x * ((y * y) * (z * y))) * x", "equation2": "(x * y) * x = x * ((x * z) * y)"}
+{"id": "order5_35799_46850", "eq1_id": 35799, "eq2_id": 46850, "equation1": "x = ((y * (y * y)) * (y * z)) * z", "equation2": "x * x = (y * x) * ((x * z) * y)"}
+{"id": "order5_33166_28196", "eq1_id": 33166, "eq2_id": 28196, "equation1": "x = (y * (((y * y) * y) * z)) * x", "equation2": "x = ((y * (z * z)) * z) * (y * z)"}
+{"id": "etp_1822_3448", "eq1_id": 1822, "eq2_id": 3448, "equation1": "x = (y ◇ z) ◇ ((w ◇ w) ◇ y)", "equation2": "x ◇ y = z ◇ (w ◇ (w ◇ w))", "answer": true}
+{"id": "order5_42610_60060", "eq1_id": 42610, "eq2_id": 60060, "equation1": "x * y = x * (x * ((x * x) * y))", "equation2": "(x * x) * y = (y * z) * (y * y)"}
+{"id": "order5_28478_9097", "eq1_id": 28478, "eq2_id": 9097, "equation1": "x = (((x * y) * y) * y) * (y * z)", "equation2": "x = x * ((x * y) * (x * (x * z)))"}
+{"id": "etp_679_1041", "eq1_id": 679, "eq2_id": 1041, "equation1": "x = y ◇ (x ◇ ((y ◇ y) ◇ x))", "equation2": "x = x ◇ ((y ◇ (x ◇ z)) ◇ x)", "answer": false}
+{"id": "order5_62288_28097", "eq1_id": 62288, "eq2_id": 28097, "equation1": "(x * y) * z = ((y * x) * y) * z", "equation2": "x = ((y * (z * y)) * y) * (x * y)"}
+{"id": "order5_50406_12999", "eq1_id": 50406, "eq2_id": 12999, "equation1": "x * x = (y * ((y * y) * z)) * z", "equation2": "x = y * ((y * (y * (z * x))) * x)"}
+{"id": "order5_4290_42111", "eq1_id": 4290, "eq2_id": 42111, "equation1": "x * (x * y) = y * (x * x)", "equation2": "x * y = z * (y * (x * (x * x)))"}
+{"id": "order5_9338_35452", "eq1_id": 9338, "eq2_id": 35452, "equation1": "x = y * ((x * y) * (y * (z * z)))", "equation2": "x = ((x * (y * x)) * (y * x)) * x"}
+{"id": "order5_10011_49873", "eq1_id": 10011, "eq2_id": 49873, "equation1": "x = x * ((y * x) * ((x * x) * z))", "equation2": "x * y = (y * (z * (y * y))) * z"}
+{"id": "order5_44418_53224", "eq1_id": 44418, "eq2_id": 53224, "equation1": "x * y = x * ((y * (y * z)) * z)", "equation2": "x * y = (((x * z) * y) * x) * x"}
+{"id": "order5_29462_27565", "eq1_id": 29462, "eq2_id": 27565, "equation1": "x = (y * (x * (x * (x * z)))) * z", "equation2": "x = ((x * (y * x)) * y) * (z * x)"}
+{"id": "order5_2990_20306", "eq1_id": 2990, "eq2_id": 20306, "equation1": "x = ((y * (z * y)) * x) * x", "equation2": "x = (y * z) * ((z * (z * z)) * y)"}
+{"id": "order5_12026_27930", "eq1_id": 12026, "eq2_id": 27930, "equation1": "x = y * (((x * z) * z) * (y * x))", "equation2": "x = ((y * (y * z)) * x) * (y * y)"}
+{"id": "etp_3280_55", "eq1_id": 3280, "eq2_id": 55, "equation1": "x ◇ x = y ◇ (y ◇ (x ◇ z))", "equation2": "x = x ◇ (y ◇ (y ◇ x))", "answer": false}
+{"id": "order5_36529_23341", "eq1_id": 36529, "eq2_id": 23341, "equation1": "x = (((y * x) * y) * (z * x)) * z", "equation2": "x = ((y * x) * x) * (z * (y * z))"}
+{"id": "hard3_0022", "index": 22, "difficulty": "hard", "eq1_id": 103, "eq2_id": 3519, "equation1": "x = x ◇ ((x ◇ y) ◇ z)", "equation2": "x ◇ y = x ◇ ((y ◇ x) ◇ y)", "answer": false}
+{"id": "etp_3331_705", "eq1_id": 3331, "eq2_id": 705, "equation1": "x ◇ y = x ◇ (z ◇ (y ◇ z))", "equation2": "x = y ◇ (y ◇ ((x ◇ x) ◇ z))", "answer": false}
+{"id": "hard3_0209", "index": 209, "difficulty": "hard", "eq1_id": 1966, "eq2_id": 2207, "equation1": "x = (y ◇ (z ◇ x)) ◇ (z ◇ x)", "equation2": "x = ((y ◇ z) ◇ z) ◇ (w ◇ x)", "answer": true}
+{"id": "hard3_0078", "index": 78, "difficulty": "hard", "eq1_id": 556, "eq2_id": 4396, "equation1": "x = y ◇ (z ◇ (y ◇ (x ◇ z)))", "equation2": "x ◇ (x ◇ y) = (x ◇ x) ◇ y", "answer": false}
+{"id": "hard3_0017", "index": 17, "difficulty": "hard", "eq1_id": 72, "eq2_id": 214, "equation1": "x = y ◇ (y ◇ (x ◇ x))", "equation2": "x = (x ◇ (y ◇ z)) ◇ x", "answer": false}
+{"id": "etp_2156_2505", "eq1_id": 2156, "eq2_id": 2505, "equation1": "x = ((y ◇ y) ◇ z) ◇ (w ◇ x)", "equation2": "x = (y ◇ ((x ◇ y) ◇ x)) ◇ z", "answer": false}
+{"id": "order5_14755_2247", "eq1_id": 14755, "eq2_id": 2247, "equation1": "x = y * (((y * y) * (z * x)) * z)", "equation2": "x = (x * (x * (y * y))) * y"}
+{"id": "order5_50843_42059", "eq1_id": 50843, "eq2_id": 42059, "equation1": "x * y = (z * ((x * z) * y)) * y", "equation2": "x * y = z * (x * (y * (z * x)))"}
+{"id": "order5_61741_44543", "eq1_id": 61741, "eq2_id": 44543, "equation1": "(x * x) * x = ((y * z) * y) * z", "equation2": "x * y = y * ((x * (z * z)) * y)"}
+{"id": "hard3_0270", "index": 270, "difficulty": "hard", "eq1_id": 2567, "eq2_id": 2849, "equation1": "x = (y ◇ ((z ◇ x) ◇ x)) ◇ x", "equation2": "x = ((x ◇ (x ◇ x)) ◇ y) ◇ x", "answer": false}
+{"id": "etp_1559_4394", "eq1_id": 1559, "eq2_id": 4394, "equation1": "x = (y ◇ z) ◇ (x ◇ (y ◇ w))", "equation2": "x ◇ (x ◇ x) = (y ◇ z) ◇ w", "answer": true}
+{"id": "etp_4209_3967", "eq1_id": 4209, "eq2_id": 3967, "equation1": "x ◇ y = ((z ◇ y) ◇ x) ◇ y", "equation2": "x ◇ y = (y ◇ (y ◇ z)) ◇ x", "answer": false}
+{"id": "etp_4251_3762", "eq1_id": 4251, "eq2_id": 3762, "equation1": "x ◇ y = ((z ◇ w) ◇ y) ◇ u", "equation2": "x ◇ y = (y ◇ y) ◇ (y ◇ y)", "answer": true}
+{"id": "order5_61860_22287", "eq1_id": 61860, "eq2_id": 22287, "equation1": "(x * x) * y = ((z * z) * x) * x", "equation2": "x = (x * (y * x)) * ((x * x) * x)"}
+{"id": "hard3_0089", "index": 89, "difficulty": "hard", "eq1_id": 652, "eq2_id": 3266, "equation1": "x = x ◇ (y ◇ ((z ◇ x) ◇ w))", "equation2": "x ◇ x = x ◇ (y ◇ (z ◇ z))", "answer": true}
+{"id": "order5_2462_43284", "eq1_id": 2462, "eq2_id": 43284, "equation1": "x = (x * ((y * x) * z)) * x", "equation2": "x * x = x * ((x * x) * (x * y))"}
+{"id": "etp_1070_433", "eq1_id": 1070, "eq2_id": 433, "equation1": "x = x ◇ ((y ◇ (z ◇ w)) ◇ w)", "equation2": "x = x ◇ (y ◇ (x ◇ (z ◇ y)))", "answer": true}
+{"id": "hard3_0296", "index": 296, "difficulty": "hard", "eq1_id": 2816, "eq2_id": 3197, "equation1": "x = ((y ◇ z) ◇ (z ◇ w)) ◇ x", "equation2": "x = (((y ◇ z) ◇ y) ◇ y) ◇ x", "answer": true}
+{"id": "order5_4548_61345", "eq1_id": 4548, "eq2_id": 61345, "equation1": "x * (y * z) = (z * z) * x", "equation2": "(x * y) * z = (x * (y * x)) * x"}
+{"id": "hard3_0342", "index": 342, "difficulty": "hard", "eq1_id": 3270, "eq2_id": 3736, "equation1": "x ◇ x = y ◇ (x ◇ (x ◇ z))", "equation2": "x ◇ y = (x ◇ z) ◇ (y ◇ y)", "answer": false}
+{"id": "etp_3229_1149", "eq1_id": 3229, "eq2_id": 1149, "equation1": "x = (((y ◇ z) ◇ w) ◇ x) ◇ z", "equation2": "x = y ◇ ((z ◇ (x ◇ x)) ◇ w)", "answer": true}
+{"id": "order5_20011_29325", "eq1_id": 20011, "eq2_id": 29325, "equation1": "x = (y * y) * ((y * (y * z)) * x)", "equation2": "x = (x * (y * (x * (z * x)))) * z"}
+{"id": "etp_4155_1690", "eq1_id": 4155, "eq2_id": 1690, "equation1": "x ◇ y = ((y ◇ x) ◇ x) ◇ y", "equation2": "x = (y ◇ x) ◇ ((x ◇ z) ◇ w)", "answer": false}
+{"id": "etp_3411_2974", "eq1_id": 3411, "eq2_id": 2974, "equation1": "x ◇ y = z ◇ (y ◇ (w ◇ w))", "equation2": "x = ((y ◇ (z ◇ x)) ◇ x) ◇ y", "answer": false}
+{"id": "order5_42797_54747", "eq1_id": 42797, "eq2_id": 54747, "equation1": "x * y = y * (y * ((x * x) * x))", "equation2": "x * (x * y) = x * ((y * x) * y)"}
+{"id": "order5_17134_23511", "eq1_id": 17134, "eq2_id": 23511, "equation1": "x = (x * y) * (z * (z * (x * y)))", "equation2": "x = ((y * y) * y) * (x * (z * z))"}
+{"id": "order5_54504_32148", "eq1_id": 54504, "eq2_id": 32148, "equation1": "x * (y * z) = z * (z * (y * x))", "equation2": "x = (y * ((x * (y * z)) * y)) * z"}
+{"id": "hard3_0278", "index": 278, "difficulty": "hard", "eq1_id": 2661, "eq2_id": 331, "equation1": "x = ((x ◇ y) ◇ (x ◇ x)) ◇ z", "equation2": "x ◇ y = x ◇ (z ◇ w)", "answer": true}
+{"id": "order5_17289_28765", "eq1_id": 17289, "eq2_id": 28765, "equation1": "x = (y * x) * (z * (z * (y * y)))", "equation2": "x = (((y * y) * y) * x) * (x * x)"}
+{"id": "etp_2843_881", "eq1_id": 2843, "eq2_id": 881, "equation1": "x = ((y ◇ z) ◇ (w ◇ u)) ◇ z", "equation2": "x = y ◇ ((x ◇ y) ◇ (x ◇ z))", "answer": true}
+{"id": "hard3_0223", "index": 223, "difficulty": "hard", "eq1_id": 2083, "eq2_id": 1647, "equation1": "x = ((x ◇ y) ◇ z) ◇ (w ◇ y)", "equation2": "x = (x ◇ y) ◇ ((x ◇ y) ◇ x)", "answer": false}
+{"id": "order5_54214_52277", "eq1_id": 54214, "eq2_id": 52277, "equation1": "x * (y * y) = y * (y * (z * x))", "equation2": "x * y = ((x * (x * z)) * x) * y"}
+{"id": "etp_2298_1650", "eq1_id": 2298, "eq2_id": 1650, "equation1": "x = (y ◇ (x ◇ (x ◇ z))) ◇ z", "equation2": "x = (x ◇ y) ◇ ((x ◇ z) ◇ x)", "answer": true}
+{"id": "order5_11528_9101", "eq1_id": 11528, "eq2_id": 9101, "equation1": "x = y * ((z * (z * z)) * (x * y))", "equation2": "x = x * ((x * y) * (x * (z * x)))"}
+{"id": "hard3_0398", "index": 398, "difficulty": "hard", "eq1_id": 4573, "eq2_id": 4343, "equation1": "x ◇ (y ◇ z) = (w ◇ w) ◇ y", "equation2": "x ◇ (y ◇ y) = y ◇ (x ◇ x)", "answer": true}
+{"id": "hard3_0381", "index": 381, "difficulty": "hard", "eq1_id": 3941, "eq2_id": 3936, "equation1": "x ◇ y = (x ◇ (z ◇ y)) ◇ w", "equation2": "x ◇ y = (x ◇ (z ◇ x)) ◇ z", "answer": true}
+{"id": "etp_751_1170", "eq1_id": 751, "eq2_id": 1170, "equation1": "x = y ◇ (z ◇ ((x ◇ z) ◇ w))", "equation2": "x = y ◇ ((z ◇ (y ◇ y)) ◇ w)", "answer": true}
+{"id": "hard3_0126", "index": 126, "difficulty": "hard", "eq1_id": 1014, "eq2_id": 2480, "equation1": "x = y ◇ ((z ◇ w) ◇ (u ◇ x))", "equation2": "x = (x ◇ ((y ◇ z) ◇ y)) ◇ x", "answer": false}
+{"id": "etp_4156_3614", "eq1_id": 4156, "eq2_id": 3614, "equation1": "x ◇ y = ((y ◇ x) ◇ x) ◇ z", "equation2": "x ◇ y = z ◇ ((y ◇ w) ◇ w)", "answer": true}
+{"id": "etp_1215_3802", "eq1_id": 1215, "eq2_id": 3802, "equation1": "x = y ◇ ((z ◇ (w ◇ w)) ◇ w)", "equation2": "x ◇ y = (z ◇ y) ◇ (x ◇ x)", "answer": true}
+{"id": "order5_47317_43340", "eq1_id": 47317, "eq2_id": 43340, "equation1": "x * y = (z * x) * ((y * y) * x)", "equation2": "x * x = y * ((x * x) * (y * z))"}
+{"id": "order5_44626_3317", "eq1_id": 44626, "eq2_id": 3317, "equation1": "x * y = y * ((z * (z * y)) * x)", "equation2": "x * y = x * (y * (x * z))"}
+{"id": "order5_51554_15483", "eq1_id": 51554, "eq2_id": 15483, "equation1": "x * y = ((y * x) * (z * y)) * x", "equation2": "x = y * (((x * (y * z)) * y) * x)"}
+{"id": "hard3_0217", "index": 217, "difficulty": "hard", "eq1_id": 2049, "eq2_id": 215, "equation1": "x = ((x ◇ x) ◇ y) ◇ (z ◇ w)", "equation2": "x = (x ◇ (y ◇ z)) ◇ y", "answer": false}
+{"id": "order5_60350_33869", "eq1_id": 60350, "eq2_id": 33869, "equation1": "(x * y) * y = (y * y) * (y * x)", "equation2": "x = ((y * x) * (x * (z * z))) * z"}
+{"id": "etp_4170_4683", "eq1_id": 4170, "eq2_id": 4683, "equation1": "x ◇ y = ((y ◇ y) ◇ z) ◇ x", "equation2": "(x ◇ y) ◇ z = (y ◇ w) ◇ u", "answer": true}
+{"id": "order5_12873_56574", "eq1_id": 12873, "eq2_id": 56574, "equation1": "x = y * ((x * (z * (x * z))) * x)", "equation2": "x * (x * y) = (z * (x * z)) * z"}
+{"id": "order5_58595_9976", "eq1_id": 58595, "eq2_id": 9976, "equation1": "(x * y) * y = y * (y * (x * z))", "equation2": "x = x * ((x * y) * ((x * y) * y))"}
+{"id": "hard3_0397", "index": 397, "difficulty": "hard", "eq1_id": 4573, "eq2_id": 4306, "equation1": "x ◇ (y ◇ z) = (w ◇ w) ◇ y", "equation2": "x ◇ (x ◇ y) = z ◇ (y ◇ w)", "answer": true}
+{"id": "order5_7343_12737", "eq1_id": 7343, "eq2_id": 12737, "equation1": "x = x * (x * ((y * (x * x)) * z))", "equation2": "x = x * ((y * (z * (y * y))) * z)"}
+{"id": "hard3_0097", "index": 97, "difficulty": "hard", "eq1_id": 752, "eq2_id": 2554, "equation1": "x = y ◇ (z ◇ ((x ◇ w) ◇ x))", "equation2": "x = (y ◇ ((y ◇ z) ◇ y)) ◇ x", "answer": false}
+{"id": "hard3_0237", "index": 237, "difficulty": "hard", "eq1_id": 2126, "eq2_id": 3734, "equation1": "x = ((y ◇ y) ◇ x) ◇ (x ◇ z)", "equation2": "x ◇ y = (x ◇ z) ◇ (x ◇ w)", "answer": false}
+{"id": "hard3_0331", "index": 331, "difficulty": "hard", "eq1_id": 3092, "eq2_id": 3081, "equation1": "x = (((x ◇ y) ◇ z) ◇ y) ◇ w", "equation2": "x = (((x ◇ y) ◇ y) ◇ z) ◇ x", "answer": true}
+{"id": "order5_2758_39202", "eq1_id": 2758, "eq2_id": 39202, "equation1": "x = ((y * y) * (z * y)) * y", "equation2": "x = (((y * x) * (z * y)) * z) * z"}
+{"id": "order5_58699_22633", "eq1_id": 58699, "eq2_id": 22633, "equation1": "(x * y) * z = x * (x * (x * z))", "equation2": "x = (y * (y * y)) * ((x * z) * y)"}
+{"id": "etp_388_3241", "eq1_id": 388, "eq2_id": 3241, "equation1": "x ◇ y = (y ◇ y) ◇ y", "equation2": "x = (((y ◇ z) ◇ w) ◇ z) ◇ u", "answer": false}
+{"id": "order5_416_41793", "eq1_id": 416, "eq2_id": 41793, "equation1": "x = x * (x * (y * (x * x)))", "equation2": "x * y = x * (y * (z * (y * x)))"}
+{"id": "etp_2344_41", "eq1_id": 2344, "eq2_id": 41, "equation1": "x = (y ◇ (y ◇ (y ◇ z))) ◇ y", "equation2": "x ◇ x = y ◇ z", "answer": true}
+{"id": "order5_24209_35117", "eq1_id": 24209, "eq2_id": 35117, "equation1": "x = ((y * x) * x) * ((y * z) * y)", "equation2": "x = ((y * z) * ((y * y) * y)) * y"}
+{"id": "order5_24024_33445", "eq1_id": 24024, "eq2_id": 33445, "equation1": "x = ((x * x) * y) * ((z * x) * x)", "equation2": "x = (y * (((z * z) * y) * z)) * z"}
+{"id": "order5_1489_48080", "eq1_id": 1489, "eq2_id": 48080, "equation1": "x = (y * x) * (y * (x * y))", "equation2": "x * y = (y * (y * z)) * (x * y)"}
+{"id": "hard3_0343", "index": 343, "difficulty": "hard", "eq1_id": 3270, "eq2_id": 4093, "equation1": "x ◇ x = y ◇ (x ◇ (x ◇ z))", "equation2": "x ◇ x = ((y ◇ y) ◇ y) ◇ x", "answer": false}
+{"id": "order5_8228_27027", "eq1_id": 8228, "eq2_id": 27027, "equation1": "x = x * (x * (((y * y) * x) * x))", "equation2": "x = ((y * y) * (y * y)) * (z * x)"}
+{"id": "hard3_0266", "index": 266, "difficulty": "hard", "eq1_id": 2521, "eq2_id": 1879, "equation1": "x = (y ◇ ((x ◇ z) ◇ z)) ◇ x", "equation2": "x = (x ◇ (y ◇ z)) ◇ (w ◇ x)", "answer": true}
+{"id": "order5_12680_60098", "eq1_id": 12680, "eq2_id": 60098, "equation1": "x = x * ((y * (y * (x * y))) * x)", "equation2": "(x * x) * y = (z * y) * (z * y)"}
+{"id": "order5_28583_32906", "eq1_id": 28583, "eq2_id": 32906, "equation1": "x = (((y * x) * x) * x) * (z * x)", "equation2": "x = (x * (((y * z) * y) * y)) * x"}
+{"id": "etp_3370_218", "eq1_id": 3370, "eq2_id": 218, "equation1": "x ◇ y = y ◇ (z ◇ (z ◇ x))", "equation2": "x = (y ◇ (x ◇ x)) ◇ x", "answer": false}
+{"id": "order5_51219_30209", "eq1_id": 51219, "eq2_id": 30209, "equation1": "x * x = ((x * y) * (z * z)) * x", "equation2": "x = (x * (y * ((x * z) * z))) * y"}
+{"id": "order5_44264_46868", "eq1_id": 44264, "eq2_id": 46868, "equation1": "x * x = y * ((y * (y * y)) * z)", "equation2": "x * x = (y * x) * ((z * y) * y)"}
+{"id": "order5_40729_58419", "eq1_id": 40729, "eq2_id": 58419, "equation1": "x = ((((x * y) * x) * z) * y) * y", "equation2": "(x * y) * x = x * (z * (y * x))"}
+{"id": "order5_7407_5691", "eq1_id": 7407, "eq2_id": 5691, "equation1": "x = x * (y * ((x * (z * z)) * y))", "equation2": "x = x * (y * (y * ((z * z) * z)))"}
+{"id": "hard3_0318", "index": 318, "difficulty": "hard", "eq1_id": 2931, "eq2_id": 2484, "equation1": "x = ((y ◇ (x ◇ z)) ◇ w) ◇ x", "equation2": "x = (x ◇ ((y ◇ z) ◇ z)) ◇ x", "answer": true}
+{"id": "order5_40092_35508", "eq1_id": 40092, "eq2_id": 35508, "equation1": "x = (((y * (x * z)) * z) * y) * z", "equation2": "x = ((x * (y * y)) * (z * z)) * y"}
+{"id": "order5_5820_3953", "eq1_id": 5820, "eq2_id": 3953, "equation1": "x = y * (x * (y * ((x * z) * z)))", "equation2": "x * y = (y * (x * x)) * z"}
+{"id": "order5_25548_6079", "eq1_id": 25548, "eq2_id": 6079, "equation1": "x = (y * (z * (z * y))) * (y * z)", "equation2": "x = y * (z * (x * ((x * x) * z)))"}
+{"id": "etp_2066_1728", "eq1_id": 2066, "eq2_id": 1728, "equation1": "x = ((x ◇ y) ◇ y) ◇ (z ◇ x)", "equation2": "x = (y ◇ y) ◇ ((y ◇ x) ◇ x)", "answer": false}
+{"id": "hard3_0144", "index": 144, "difficulty": "hard", "eq1_id": 1125, "eq2_id": 2014, "equation1": "x = y ◇ ((y ◇ (y ◇ z)) ◇ x)", "equation2": "x = (y ◇ (z ◇ w)) ◇ (y ◇ x)", "answer": true}
+{"id": "order5_59531_282", "eq1_id": 59531, "eq2_id": 282, "equation1": "(x * y) * y = z * ((z * x) * x)", "equation2": "x = ((y * y) * x) * z"}
+{"id": "order5_27969_39426", "eq1_id": 27969, "eq2_id": 39426, "equation1": "x = ((y * (y * z)) * z) * (z * z)", "equation2": "x = (((y * z) * (x * y)) * y) * z"}
+{"id": "etp_3921_4534", "eq1_id": 3921, "eq2_id": 4534, "equation1": "x ◇ y = (x ◇ (x ◇ z)) ◇ y", "equation2": "x ◇ (y ◇ z) = (y ◇ z) ◇ w", "answer": false}
+{"id": "hard3_0215", "index": 215, "difficulty": "hard", "eq1_id": 2046, "eq2_id": 1063, "equation1": "x = ((x ◇ x) ◇ y) ◇ (z ◇ x)", "equation2": "x = x ◇ ((y ◇ (z ◇ z)) ◇ x)", "answer": false}
+{"id": "hard3_0024", "index": 24, "difficulty": "hard", "eq1_id": 112, "eq2_id": 2277, "equation1": "x = x ◇ ((y ◇ z) ◇ z)", "equation2": "x = (x ◇ (y ◇ (z ◇ y))) ◇ x", "answer": true}
+{"id": "hard3_0005", "index": 5, "difficulty": "hard", "eq1_id": 34, "eq2_id": 3556, "equation1": "x = (y ◇ z) ◇ x", "equation2": "x ◇ y = y ◇ ((y ◇ x) ◇ y)", "answer": true}
+{"id": "order5_46818_14373", "eq1_id": 46818, "eq2_id": 14373, "equation1": "x * x = (x * y) * ((y * x) * z)", "equation2": "x = x * (((x * y) * (y * z)) * x)"}
+{"id": "hard3_0094", "index": 94, "difficulty": "hard", "eq1_id": 723, "eq2_id": 3089, "equation1": "x = y ◇ (y ◇ ((z ◇ x) ◇ x))", "equation2": "x = (((x ◇ y) ◇ z) ◇ y) ◇ x", "answer": false}
+{"id": "etp_4555_2566", "eq1_id": 4555, "eq2_id": 2566, "equation1": "x ◇ (y ◇ z) = (z ◇ w) ◇ w", "equation2": "x = (y ◇ ((y ◇ z) ◇ w)) ◇ u", "answer": false}
+{"id": "etp_862_2902", "eq1_id": 862, "eq2_id": 2902, "equation1": "x = x ◇ ((y ◇ z) ◇ (z ◇ z))", "equation2": "x = ((y ◇ (x ◇ x)) ◇ y) ◇ x", "answer": false}
+{"id": "hard3_0124", "index": 124, "difficulty": "hard", "eq1_id": 1014, "eq2_id": 1577, "equation1": "x = y ◇ ((z ◇ w) ◇ (u ◇ x))", "equation2": "x = (y ◇ z) ◇ (y ◇ (z ◇ x))", "answer": true}
+{"id": "order5_3363_31473", "eq1_id": 3363, "eq2_id": 31473, "equation1": "x * y = y * (z * (x * y))", "equation2": "x = (y * ((y * z) * (z * y))) * z"}
+{"id": "hard3_0387", "index": 387, "difficulty": "hard", "eq1_id": 4140, "eq2_id": 4135, "equation1": "x ◇ y = ((x ◇ z) ◇ x) ◇ w", "equation2": "x ◇ y = ((x ◇ y) ◇ z) ◇ z", "answer": true}
+{"id": "hard3_0001", "index": 1, "difficulty": "hard", "eq1_id": 5, "eq2_id": 625, "equation1": "x = y ◇ x", "equation2": "x = x ◇ (x ◇ ((y ◇ z) ◇ x))", "answer": true}
+{"id": "order5_58889_21180", "eq1_id": 58889, "eq2_id": 21180, "equation1": "(x * y) * z = z * (z * (y * x))", "equation2": "x = (y * z) * (((z * z) * y) * z)"}
+{"id": "hard3_0354", "index": 354, "difficulty": "hard", "eq1_id": 3360, "eq2_id": 379, "equation1": "x ◇ y = y ◇ (y ◇ (z ◇ z))", "equation2": "x ◇ y = (x ◇ y) ◇ z", "answer": true}
+{"id": "etp_232_3887", "eq1_id": 232, "eq2_id": 3887, "equation1": "x = (y ◇ (y ◇ y)) ◇ y", "equation2": "x ◇ x = (y ◇ (y ◇ x)) ◇ x", "answer": true}
+{"id": "hard3_0030", "index": 30, "difficulty": "hard", "eq1_id": 155, "eq2_id": 3509, "equation1": "x = (x ◇ x) ◇ (y ◇ z)", "equation2": "x ◇ y = x ◇ ((x ◇ x) ◇ y)", "answer": true}
+{"id": "hard3_0114", "index": 114, "difficulty": "hard", "eq1_id": 922, "eq2_id": 1444, "equation1": "x = y ◇ ((y ◇ y) ◇ (z ◇ x))", "equation2": "x = (x ◇ y) ◇ (x ◇ (y ◇ x))", "answer": true}
+{"id": "order5_2788_39790", "eq1_id": 2788, "eq2_id": 39790, "equation1": "x = ((y * z) * (y * x)) * y", "equation2": "x = (((x * (x * y)) * x) * x) * x"}
+{"id": "order5_59686_36537", "eq1_id": 59686, "eq2_id": 36537, "equation1": "(x * y) * z = y * ((z * x) * y)", "equation2": "x = (((y * x) * y) * (z * z)) * z"}
+{"id": "order5_11151_5604", "eq1_id": 11151, "eq2_id": 5604, "equation1": "x = y * ((x * (z * z)) * (y * z))", "equation2": "x = x * (x * (y * ((y * z) * y)))"}
+{"id": "etp_485_2097", "eq1_id": 485, "eq2_id": 2097, "equation1": "x = y ◇ (x ◇ (z ◇ (x ◇ z)))", "equation2": "x = ((y ◇ x) ◇ y) ◇ (x ◇ x)", "answer": true}
+{"id": "order5_3212_53163", "eq1_id": 3212, "eq2_id": 53163, "equation1": "x = (((y * z) * z) * x) * z", "equation2": "x * y = (((x * x) * z) * z) * z"}
+{"id": "hard3_0294", "index": 294, "difficulty": "hard", "eq1_id": 2787, "eq2_id": 3007, "equation1": "x = ((y ◇ z) ◇ (y ◇ x)) ◇ x", "equation2": "x = ((y ◇ (z ◇ z)) ◇ x) ◇ x", "answer": true}
+{"id": "order5_32802_39853", "eq1_id": 32802, "eq2_id": 39853, "equation1": "x = (x * (((x * y) * z) * z)) * x", "equation2": "x = (((x * (y * x)) * z) * y) * z"}
+{"id": "order5_14490_26902", "eq1_id": 14490, "eq2_id": 26902, "equation1": "x = x * (((y * z) * (y * y)) * y)", "equation2": "x = ((y * x) * (z * x)) * (y * y)"}
+{"id": "order5_28379_13114", "eq1_id": 28379, "eq2_id": 13114, "equation1": "x = (((x * x) * x) * y) * (x * x)", "equation2": "x = y * ((z * (x * (y * y))) * x)"}
+{"id": "order5_39482_8449", "eq1_id": 39482, "eq2_id": 8449, "equation1": "x = (((y * z) * (y * x)) * x) * z", "equation2": "x = y * (x * (((y * x) * z) * x))"}
+{"id": "hard3_0155", "index": 155, "difficulty": "hard", "eq1_id": 1281, "eq2_id": 3409, "equation1": "x = y ◇ (((x ◇ x) ◇ z) ◇ x)", "equation2": "x ◇ y = z ◇ (y ◇ (w ◇ y))", "answer": true}
+{"id": "hard3_0391", "index": 391, "difficulty": "hard", "eq1_id": 4392, "eq2_id": 4677, "equation1": "x ◇ (x ◇ x) = (y ◇ z) ◇ y", "equation2": "(x ◇ y) ◇ z = (y ◇ x) ◇ z", "answer": false}
+{"id": "etp_1091_3835", "eq1_id": 1091, "eq2_id": 3835, "equation1": "x = y ◇ ((x ◇ (y ◇ z)) ◇ w)", "equation2": "x ◇ y = (z ◇ z) ◇ (w ◇ u)", "answer": true}
+{"id": "etp_3910_2169", "eq1_id": 3910, "eq2_id": 2169, "equation1": "x ◇ x = (y ◇ (z ◇ w)) ◇ y", "equation2": "x = ((y ◇ z) ◇ x) ◇ (z ◇ x)", "answer": false}
+{"id": "order5_12802_61180", "eq1_id": 12802, "eq2_id": 61180, "equation1": "x = y * ((x * (x * (y * x))) * y)", "equation2": "(x * y) * y = (x * (x * y)) * x"}
+{"id": "hard3_0023", "index": 23, "difficulty": "hard", "eq1_id": 110, "eq2_id": 10, "equation1": "x = x ◇ ((y ◇ z) ◇ x)", "equation2": "x = x ◇ (y ◇ x)", "answer": true}
+{"id": "hard3_0299", "index": 299, "difficulty": "hard", "eq1_id": 2841, "eq2_id": 4275, "equation1": "x = ((y ◇ z) ◇ (w ◇ u)) ◇ x", "equation2": "x ◇ (x ◇ x) = y ◇ (y ◇ x)", "answer": true}
+{"id": "etp_350_2126", "eq1_id": 350, "eq2_id": 2126, "equation1": "x ◇ y = z ◇ (z ◇ x)", "equation2": "x = ((y ◇ y) ◇ x) ◇ (x ◇ z)", "answer": false}
+{"id": "etp_1716_3659", "eq1_id": 1716, "eq2_id": 3659, "equation1": "x = (y ◇ x) ◇ ((z ◇ w) ◇ w)", "equation2": "x ◇ x = (x ◇ x) ◇ (x ◇ x)", "answer": true}
+{"id": "order5_61718_12082", "eq1_id": 61718, "eq2_id": 12082, "equation1": "(x * x) * x = ((y * x) * y) * x", "equation2": "x = y * (((y * x) * y) * (z * y))"}
+{"id": "hard3_0085", "index": 85, "difficulty": "hard", "eq1_id": 644, "eq2_id": 2462, "equation1": "x = x ◇ (y ◇ ((y ◇ y) ◇ z))", "equation2": "x = (x ◇ ((y ◇ x) ◇ z)) ◇ x", "answer": true}
+{"id": "order5_39215_8889", "eq1_id": 39215, "eq2_id": 8889, "equation1": "x = (((y * x) * (z * z)) * y) * z", "equation2": "x = y * (z * (((z * y) * z) * z))"}
+{"id": "etp_2238_1200", "eq1_id": 2238, "eq2_id": 1200, "equation1": "x = (x ◇ (x ◇ (x ◇ x))) ◇ x", "equation2": "x = y ◇ ((z ◇ (w ◇ x)) ◇ w)", "answer": false}
+{"id": "hard3_0195", "index": 195, "difficulty": "hard", "eq1_id": 1763, "eq2_id": 4142, "equation1": "x = (y ◇ z) ◇ ((x ◇ z) ◇ x)", "equation2": "x ◇ y = ((x ◇ z) ◇ y) ◇ y", "answer": false}
+{"id": "order5_61815_30633", "eq1_id": 61815, "eq2_id": 30633, "equation1": "(x * x) * y = ((y * z) * y) * z", "equation2": "x = (y * (z * ((x * x) * x))) * x"}
+{"id": "order5_59072_57999", "eq1_id": 59072, "eq2_id": 57999, "equation1": "(x * x) * x = x * ((x * y) * y)", "equation2": "x * (y * z) = ((z * y) * z) * x"}
+{"id": "order5_6566_33040", "eq1_id": 6566, "eq2_id": 33040, "equation1": "x = x * (y * ((y * z) * (z * x)))", "equation2": "x = (y * (((x * z) * x) * y)) * x"}
+{"id": "etp_242_1016", "eq1_id": 242, "eq2_id": 1016, "equation1": "x = (y ◇ (z ◇ y)) ◇ x", "equation2": "x = y ◇ ((z ◇ w) ◇ (u ◇ z))", "answer": false}
+{"id": "etp_450_952", "eq1_id": 450, "eq2_id": 952, "equation1": "x = x ◇ (y ◇ (z ◇ (y ◇ x)))", "equation2": "x = y ◇ ((z ◇ x) ◇ (z ◇ y))", "answer": false}
+{"id": "order5_2740_4499", "eq1_id": 2740, "eq2_id": 4499, "equation1": "x = ((y * y) * (x * z)) * y", "equation2": "x * (y * y) = (z * z) * z"}
+{"id": "order5_13247_6981", "eq1_id": 13247, "eq2_id": 6981, "equation1": "x = y * ((z * (z * (x * x))) * x)", "equation2": "x = y * (z * ((x * y) * (z * z)))"}
+{"id": "order5_7555_55081", "eq1_id": 7555, "eq2_id": 55081, "equation1": "x = y * (x * ((x * (z * y)) * z))", "equation2": "x * (y * y) = y * ((x * z) * x)"}
+{"id": "order5_30573_46174", "eq1_id": 30573, "eq2_id": 46174, "equation1": "x = (y * (y * ((z * y) * x))) * x", "equation2": "x * y = (x * y) * (z * (x * x))"}
+{"id": "order5_45402_55714", "eq1_id": 45402, "eq2_id": 55714, "equation1": "x * y = y * (((x * y) * x) * y)", "equation2": "x * (x * y) = (z * y) * (z * z)"}
+{"id": "hard3_0260", "index": 260, "difficulty": "hard", "eq1_id": 2478, "eq2_id": 2287, "equation1": "x = (x ◇ ((y ◇ z) ◇ x)) ◇ z", "equation2": "x = (x ◇ (y ◇ (z ◇ w))) ◇ z", "answer": true}
+{"id": "hard3_0291", "index": 291, "difficulty": "hard", "eq1_id": 2728, "eq2_id": 4354, "equation1": "x = ((y ◇ x) ◇ (z ◇ w)) ◇ x", "equation2": "x ◇ (y ◇ y) = z ◇ (w ◇ y)", "answer": true}
+{"id": "order5_6538_13713", "eq1_id": 6538, "eq2_id": 13713, "equation1": "x = x * (y * ((y * x) * (x * x)))", "equation2": "x = y * ((x * ((y * x) * z)) * z)"}
+{"id": "order5_61041_33784", "eq1_id": 61041, "eq2_id": 33784, "equation1": "(x * y) * x = (x * (y * y)) * z", "equation2": "x = ((x * y) * (z * (y * y))) * y"}
+{"id": "order5_2960_33917", "eq1_id": 2960, "eq2_id": 33917, "equation1": "x = ((y * (y * z)) * y) * x", "equation2": "x = ((y * x) * (z * (x * y))) * x"}
+{"id": "order5_37261_54077", "eq1_id": 37261, "eq2_id": 54077, "equation1": "x = ((x * (y * (y * z))) * z) * x", "equation2": "x * (y * x) = y * (z * (z * z))"}
+{"id": "hard3_0224", "index": 224, "difficulty": "hard", "eq1_id": 2083, "eq2_id": 1833, "equation1": "x = ((x ◇ y) ◇ z) ◇ (w ◇ y)", "equation2": "x = (x ◇ (x ◇ x)) ◇ (x ◇ y)", "answer": false}
+{"id": "etp_3278_1555", "eq1_id": 3278, "eq2_id": 1555, "equation1": "x ◇ x = y ◇ (y ◇ (x ◇ x))", "equation2": "x = (y ◇ z) ◇ (x ◇ (x ◇ w))", "answer": false}

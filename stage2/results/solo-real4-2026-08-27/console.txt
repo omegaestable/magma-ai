@@ -1,0 +1,19 @@
+key_source=process_env
+running: C:\Users\nacho\Documents\GitHub\magma-ai\.venv\Scripts\python.exe -m pipeline.runner --submission C:\Users\nacho\Documents\GitHub\magma-ai\stage2\submissions --problems C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-manifest-2026-08-27.sliced4.jsonl --output C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-2026-08-27
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\nacho\Documents\GitHub\magma-ai\vendor\stage2-official\pipeline\runner.py", line 112, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\nacho\Documents\GitHub\magma-ai\vendor\stage2-official\pipeline\runner.py", line 44, in main
+    for entry in json.loads(Path(output_path).read_text()):
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\python314\Lib\pathlib\__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\python314\Lib\pathlib\__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: 'C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\stage2\\results\\solo-real4-2026-08-27'
+solo_batch_done problems=C:\Users\nacho\Documents\GitHub\magma-ai\stage2\results\solo-real4-manifest-2026-08-27.sliced4.jsonl returncode=1 wall_s=0.6

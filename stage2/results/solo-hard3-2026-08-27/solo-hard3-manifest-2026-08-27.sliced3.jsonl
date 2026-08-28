@@ -1,0 +1,3 @@
+{"id": "etp_2923_156", "eq1_id": 2923, "eq2_id": 156, "equation1": "x = ((y ◇ (x ◇ z)) ◇ y) ◇ x", "equation2": "x = (x ◇ y) ◇ (x ◇ x)"}
+{"id": "etp_3983_3800", "eq1_id": 3983, "eq2_id": 3800, "equation1": "x ◇ y = (y ◇ (z ◇ w)) ◇ x", "equation2": "x ◇ y = (z ◇ x) ◇ (w ◇ w)"}
+{"id": "order5_18399_29663", "eq1_id": 18399, "eq2_id": 29663, "equation1": "x = (y * z) * (x * ((z * z) * z))", "equation2": "x = (y * (y * (y * (z * x)))) * y"}

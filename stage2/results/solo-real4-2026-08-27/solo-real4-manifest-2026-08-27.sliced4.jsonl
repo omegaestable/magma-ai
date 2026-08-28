@@ -1,0 +1,4 @@
+{"id": "order5_40729_58419", "eq1_id": 40729, "eq2_id": 58419, "equation1": "x = ((((x * y) * x) * z) * y) * y", "equation2": "(x * y) * x = x * (z * (y * x))"}
+{"id": "order5_37261_54077", "eq1_id": 37261, "eq2_id": 54077, "equation1": "x = ((x * (y * (y * z))) * z) * x", "equation2": "x * (y * x) = y * (z * (z * z))"}
+{"id": "etp_3411_2974", "eq1_id": 3411, "eq2_id": 2974, "equation1": "x ◇ y = z ◇ (y ◇ (w ◇ w))", "equation2": "x = ((y ◇ (z ◇ x)) ◇ x) ◇ y", "answer": false}
+{"id": "hard3_0391", "index": 391, "difficulty": "hard", "eq1_id": 4392, "eq2_id": 4677, "equation1": "x ◇ (x ◇ x) = (y ◇ z) ◇ y", "equation2": "(x ◇ y) ◇ z = (y ◇ x) ◇ z", "answer": false}
