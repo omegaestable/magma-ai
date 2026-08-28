@@ -4,7 +4,7 @@ Read `CLAUDE.md` first, then `stage2/docs/NEXT_SESSION_BRIEF.md` (what to do
 next) and `stage2/docs/DEEP_SWEEP_RUNBOOK.md` (the exact commands). Session
 evidence: `stage2/results/2026-08-27-improvement-pass-2.md`.
 
-**Headline numbers: `<<FINAL-NUMBERS: filled at session end>>`.** Until the
+**Headline numbers: official **1889/1889**, HF **800/800**, both isolated with **0 lost / 0 gained / 0 flips** by row id; official solver time 1,656 s → **145 s**; spotcheck **90/90**; gate **458 passed / 2 skipped**; packaged **469,348 B**; **63/63** real-judge accepts on every new certificate shape; LLM lane **3/37** on the hard sample with its first-ever judge-accepted TRUE proofs; order-5 witness portfolio 2 → **134/353** of held-out misses.** Until the
 verification run lands, quote pass 1's table in `CLAUDE.md` and say which pass
 it is from. Never write a predicted number as a measured one.
 

@@ -111,34 +111,33 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (2026-08-27; judge parity on Lean 4.33.1)
+## Current measured state (2026-08-27 evening; improvement pass 2; judge parity on Lean 4.33.1)
 
-Every number below is from the 2026-08-26/27 improvement pass
-(`stage2/results/2026-08-26-improvement-pass.md`), measured on the packaged
-2026-08-27 artifact. Diff by row id, never by total (rail 2).
+Every number below is from the 2026-08-27 improvement pass 2
+(`stage2/results/2026-08-27-improvement-pass-2.md`), measured on the merged
+solver and the packaged 469,348-byte artifact. Diff by row id, never by total
+(rail 2). The pass-1 table it replaces is in that results doc's predecessor,
+`stage2/results/2026-08-26-improvement-pass.md`.
 
 | Metric | Value |
 | --- | --- |
-| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`+samples) | **1869 / 1869**, isolated, **0 lost / 0 gained / 0 flips** vs 2026-08-24 |
-| HF mirror sets | **800 / 800**, isolated, 0 lost / 0 gained / 0 flips |
-| **The merged order-4 miss ledger (218 rows the sweeps had failed, 190 TRUE / 28 FALSE)** | **163–167 / 218** solved (two isolated runs; the spread is timing-marginal `2923`/`650` rows), 0 oracle failures, 0 label mismatches. Families: `650` 46/47, `2923` 46/49, `3569` 34/34, `2854` 2/2, both former "unreachable" survivors closed in 0.1 s; FALSE 18/28 |
-| Order-5 (353 misses, no labels) | 27 + escalation (~7.5% of the 253 TRUE-by-collapse bucket); see the frontier section — a proof-size wall, now characterised |
-| Real judge (Lean 4.33.1) on every new certificate family | **41/41 accepted**: multi-fill bridge ×5, library witnesses ×5 (orders 5–11), `formula:WCG5` ×6, infinite/large distilled ×10, 16 formerly-distilled rows on their live routes; parity smoke 4/4 |
-| **Organizer stress test** (2026-08-27; the final-leaderboard configuration, 4 categories × 25 T / 25 F) | **200 / 200 offline, 200 / 200 real-judge accepted**, 0 rejected, 23 s total |
-| Real Marathon, 1000-row **stratified hard** unseen batch (`etp-hardtest-1000-2026-08-26.jsonl`, 4-op ≥3-var hypotheses, FALSE side hard-region filtered) | **999 / 1000 accepted, 0 rejected, 1 not attempted**; 5,048 s of 300,000 s, 10.8k LLM tokens (0 accepts) — run 2026-08-27 on the packaged artifact, 4.33.1 judge |
-| LLM lane, real calls | **433 calls / ~820k tokens / 0 accepted** across gpt-oss-120b low (353 rows), medium (40), gemma-4-31b (40) |
-| Spotcheck | 90 / 90, 0 mistakes |
-| Offline gate | **297 passed, 2 skipped** (one pin flaps on timing under load — a third skip is that, not coverage) |
-| Packaged size | **426,613 bytes of 500,000 — 73 KB headroom** after deleting 16 live-solvable distilled entries (81 KB) and shipping five infinite/large certs |
+| Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`+samples) | **1889 / 1889**, isolated (16 workers, idle box), **0 lost / 0 gained / 0 flips** vs the 2026-08-27 pass-1 audit; 26 route changes, all inside the egg/completion probe families and the 14 rows whose distilled entries were deleted in pass 1; solver time **145 s vs 1,656 s** (−91%, the TRUE probes now run before the cheap constraint tier) |
+| HF mirror sets | **800 / 800**, isolated, 0 lost / 0 gained / 0 flips, 120 s vs 146 s |
+| Fresh disjoint 2,000-row order-5 sample, `--row-budget 60` (branch measurement) | 1953 → **1966**, 0 lost, 13 gained, 0 flips |
+| Order-5, ≥ 4 variables (never swept before; stratified, `--row-budget 300`) | **250 / 250** — order-5 difficulty peaks at exactly 3 variables |
+| Official-shape-matched order-4 batch (stratified, 125 T / 125 F, `--row-budget 300`) | **250 / 250**, max row 9.35 s |
+| Order-4 residual ledger (51 rows missed at 420 s/row before this pass) | **31 / 51** at 420 s, 18 of them via `egg_ladder` with the mined laws (all 17 eq1-`3983` rows + `etp_4453_4652`) |
+| Order-5 held-out sweep misses (353) covered by the witness portfolio | 2 → **134 / 353 (38.0%)**, 18 z3-harvested tables (4.1 KB); the harvest at orders 7–9 is spent |
+| Order-5 collapse sample (40 z3-proved TRUE-by-collapse rows) | 3 → **6 / 40** (unfailing superposition), 0/40 known-FALSE rows claimed, escalation capped at 25 s absolute |
+| LLM lane, real calls (before the key expired at 19:03 local) | 37-row hard sample **3 / 37 settled** (was 0/37, 0/433 historically), 5 distinct `llm:true:ladder:goal` certs judge-accepted incl. 2 inside a real 20-row Marathon; token utilisation 11.4% vs 1.3% / 0.03% before |
+| Real judge (Lean 4.33.1, deployed caps) this session | **63 / 63 accepted** across every new shape: formula witnesses (z11/z17/z25/z43/quadratic), order-9 formula fallback, unfailing-completion chains (incl. the merge-seeded `exact (h a a b)` lemma), mined-law ladders, overtime completion, O5 tables, the 45–88 KB TRUE band, four previously unpinned route families, 7+2 re-pins, the `h`-renamed parser cert, parity smoke 4/4 |
+| Spotcheck | **90 / 90, 100% accuracy, 0 mistakes** |
+| Offline gate | **458 passed, 2 skipped** (`-n 8`, 17 min — the new fixture pins re-solve slow order-5 rows; the packager's `-n auto` run reads 457/3 with the documented `etp_3983_4296` timing flap) |
+| Packaged size | **469,348 bytes of 500,000 — 30.6 KB headroom**; organizer layout validator OK; fixture 159 pins |
+| Sandbox-shaped real Marathon (2 vCPU affinity + 2048 MB job object, 200-row stratified manifest: 50 hard3 / 50 fresh order-4 hard-region / 100 fresh order-5, deterministic-only — the key had expired) | <<MARATHON-PENDING>> |
+| Real Solo, official runner on the packaged artifact (deterministic-only; the key had expired) | **7 / 7 solved, 0 failed, 1 judge call each, 0 LLM calls**: 4 fresh stratified rows in 18 s total, then 3 rows that exercise the new paths — `etp_2923_156` (overtime completion slot) 201 s, `etp_3983_3800` (mined-law ladder) 91 s, `order5_18399_29663` (escalated collapse) 173 s |
 
-<<FINAL-NUMBERS: filled at session end>>
 
-The table above is the **2026-08-27 improvement-pass-1** state. A second
-improvement pass ran on 2026-08-27 (seven agents: `compliance-tests`,
-`false-side`, `completion`, `lean-formula`, `pacing`, `mined-laws`,
-`llm-lane`); its measured numbers replace this table at the marker above once
-the verification run completes. What shipped in it is listed in
-`stage2/docs/NEXT_SESSION_BRIEF.md`.
 
 **2026-08-26/27 session — the improvement pass.** Four mechanisms, each
 aimed at a family: the **multi-fill goal bridge** (+ bridge in the probe slot,

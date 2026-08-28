@@ -1,0 +1,122 @@
+[
+  {
+    "id": "order5_40729_58419",
+    "eq1_id": 40729,
+    "eq2_id": 58419,
+    "elapsed_seconds": 5.88,
+    "solved": true,
+    "verdict": "false",
+    "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 5) := {\n    op := finOpTable \"[[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3],[4,4,4,4,4],[0,0,0,0,0]]\"\n  }\n  refine Exists.intro (Fin 5) ?_\n  refine Exists.intro m ?_\n  decideFin!\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "false",
+          "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 5) := {\n    op := finOpTable \"[[1,1,1,1,1],[2,2,2,2,2],[3,3,3,3,3],[4,4,4,4,4],[0,0,0,0,0]]\"\n  }\n  refine Exists.intro (Fin 5) ?_\n  refine Exists.intro m ?_\n  decideFin!\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 5.46
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"false:spine:leftsucc:z5\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "order5_37261_54077",
+    "eq1_id": 37261,
+    "eq2_id": 54077,
+    "elapsed_seconds": 4.12,
+    "solved": true,
+    "verdict": "false",
+    "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 2) := {\n    op := finOpTable \"[[0,0],[1,1]]\"\n  }\n  refine Exists.intro (Fin 2) ?_\n  refine Exists.intro m ?_\n  decideFin!\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "false",
+          "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 2) := {\n    op := finOpTable \"[[0,0],[1,1]]\"\n  }\n  refine Exists.intro (Fin 2) ?_\n  refine Exists.intro m ?_\n  decideFin!\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 3.71
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"false:witness:LP\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "etp_3411_2974",
+    "eq1_id": 3411,
+    "eq2_id": 2974,
+    "elapsed_seconds": 4.08,
+    "solved": true,
+    "verdict": "false",
+    "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 2) := {\n    op := finOpTable \"[[0,0],[0,0]]\"\n  }\n  refine Exists.intro (Fin 2) ?_\n  refine Exists.intro m ?_\n  decideFin!\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "false",
+          "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 2) := {\n    op := finOpTable \"[[0,0],[0,0]]\"\n  }\n  refine Exists.intro (Fin 2) ?_\n  refine Exists.intro m ?_\n  decideFin!\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 3.7
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"false:witness:C0\"}\n",
+        "returncode": 1
+      }
+    ]
+  },
+  {
+    "id": "hard3_0391",
+    "eq1_id": 4392,
+    "eq2_id": 4677,
+    "elapsed_seconds": 4.1,
+    "solved": true,
+    "verdict": "false",
+    "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 3) := {\n    op := finOpTable \"[[0,0,0],[0,0,1],[0,0,0]]\"\n  }\n  refine Exists.intro (Fin 3) ?_\n  refine Exists.intro m ?_\n  decideFin!\n",
+    "llm_calls": 0,
+    "judge_calls": 1,
+    "log": [
+      {
+        "type": "judge",
+        "request": {
+          "verdict": "false",
+          "code": "import JudgeProblem\nimport JudgeDecide.DecideBang\nimport JudgeFinOp.MemoFinOp\nopen MemoFinOp\nset_option maxHeartbeats 1000000\n\ndef submission : Goal := by\n  let m : Magma (Fin 3) := {\n    op := finOpTable \"[[0,0,0],[0,0,1],[0,0,0]]\"\n  }\n  refine Exists.intro (Fin 3) ?_\n  refine Exists.intro m ?_\n  decideFin!\n"
+        },
+        "response": {
+          "status": "accepted",
+          "message": "certificate accepted"
+        },
+        "elapsed": 3.7
+      },
+      {
+        "type": "solver_stderr",
+        "tail": "{\"judge_status\": \"accepted\", \"route\": \"false:enum_fin3\"}\n",
+        "returncode": 1
+      }
+    ]
+  }
+]

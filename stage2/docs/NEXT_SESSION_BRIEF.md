@@ -14,9 +14,7 @@ Deadline **2026-08-31 23:59 AoE**. The deliverable is unchanged: one
 
 ## 1. Where the numbers go
 
-```
-<<FINAL-NUMBERS: filled at session end>>
-```
+See the **Current measured state** table in `CLAUDE.md` (2026-08-27 evening) — official 1889/1889 and HF 800/800 with 0 lost / 0 gained / 0 flips, spotcheck 90/90, gate 458/2, packaged 469,348 B, 63/63 real-judge accepts; the sandbox-shaped Marathon and Solo lines are appended there when their runs finish.
 
 Coverage, gate, packaged size and real-judge counts for pass 2 are filled in by
 the verification run and mirror into `CLAUDE.md`'s *Current measured state*
