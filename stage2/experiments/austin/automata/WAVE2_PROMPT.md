@@ -40,3 +40,10 @@ What wave 1 learned (7 of 10 generated skeletons were FALSE, 4 were repaired by 
 5. Wave rules unchanged: your law only; nothing outside gen/ except `certs/<row id>.lean` copies of ACCEPTED
    files; no batch jobs; one judge call at a time; report in the WAVE_PROMPT.md format (one ROW line per row,
    dual rows included, repaired rule set verbatim under HOLES).
+
+6. **Banned tokens (judge scans the raw text, comments included)**: `macro`, `macro_rules`, `syntax`, `elab`, `elab_rules`,
+   `notation*`, `infix*`, `prefix`, `postfix`, `#eval`, `run_cmd`, `run_elab`, `axiom`, `unsafe`, `sorry`, `admit`,
+   `native_decide`. Do NOT define tactic macros to save bytes (39163's 24 KB proof became unshippable that way).
+   To save bytes use `python squeeze.py in.lean out.lean --rename` (whitespace/operator spacing/`theorem`→`def`/
+   identifier renames; 18137 went 23,064 → 19,705 B and was accepted) and shorten hypothesis names; `by_contra` is
+   Mathlib (use `apply Classical.byContradiction; intro h`).

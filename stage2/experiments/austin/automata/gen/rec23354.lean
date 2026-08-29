@@ -83,6 +83,125 @@ theorem rhs : ¬ @EquationRHS M inst := by
   simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4]
 
 
+theorem sz_pos (t : M) : 1 ≤ sz t := by cases t <;> simp [sz] <;> omega
+theorem sz_J (a b : M) : sz (J a b) = sz a + sz b + 1 := rfl
+theorem sz_a1_lt {t : M} (h : tg t = 2) : sz (a1 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a1]; have := sz_pos b; omega
+theorem sz_a2_lt {t : M} (h : tg t = 2) : sz (a2 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a2]; have := sz_pos a; omega
+theorem a1_ne {t : M} (h : tg t = 2) : a1 t ≠ t := by
+  intro hc; have := sz_a1_lt h; rw [hc] at this; omega
+theorem a2_ne {t : M} (h : tg t = 2) : a2 t ≠ t := by
+  intro hc; have := sz_a2_lt h; rw [hc] at this; omega
+
+/-- the unfolding of `op` with the two nested calls packed away as opaque variables -/
+theorem op_cases (u v : M) : ∃ p1 p2 : M,
+    p1 = (if hs1 : msr (a2 u) (a1 v) < msr u v then op (a2 u) (a1 v) else J u v) ∧
+    p2 = (if hs2 : msr (a2 (a2 (a1 u))) (a2 v) < msr u v then op (a2 (a2 (a1 u))) (a2 v) else J u v) ∧
+    op u v = (
+  if P1 u v then a2 (a1 u)
+  else if P2 u v then a2 (a1 u)
+  else if P3 u v ∧ msr (a2 u) (a1 v) < msr u v ∧ a1 u = p1 then a1 v
+  else if P4 u v ∧ msr (a2 (a2 (a1 u))) (a2 v) < msr u v ∧ a1 (a2 (a1 u)) = p2 then a2 (a1 u)
+  else J u v) :=
+  ⟨_, _, rfl, rfl, op.eq_1 u v⟩
+
+/-- one unfold of `op`: free, or one of the four rules fired (with its op-guards) -/
+theorem TR4 (u v : M) : op u v = J u v ∨
+    (P1 u v ∧ op u v = a2 (a1 u)) ∨
+    (P2 u v ∧ op u v = a2 (a1 u)) ∨
+    (P3 u v ∧ a1 u = op (a2 u) (a1 v) ∧ op u v = a1 v) ∨
+    (P4 u v ∧ a1 (a2 (a1 u)) = op (a2 (a2 (a1 u))) (a2 v) ∧ op u v = a2 (a1 u)) := by
+  obtain ⟨p1, p2, hp1, hp2, hop⟩ := op_cases u v
+  rw [hop]
+  split
+  · rename_i h; exact Or.inr (Or.inl ⟨h, rfl⟩)
+  · split
+    · rename_i h1 h; exact Or.inr (Or.inr (Or.inl ⟨h, rfl⟩))
+    · split
+      · rename_i h1 h2 h
+        obtain ⟨h3, hs1, he⟩ := h
+        rw [dif_pos hs1] at hp1; subst hp1
+        exact Or.inr (Or.inr (Or.inr (Or.inl ⟨h3, he, rfl⟩)))
+      · split
+        · rename_i h1 h2 h3 h
+          obtain ⟨h4, hs2, he⟩ := h
+          rw [dif_pos hs2] at hp2; subst hp2
+          exact Or.inr (Or.inr (Or.inr (Or.inr ⟨h4, he, rfl⟩)))
+        · left; rfl
+
+/-- every rule needs `tg v = 2` and returns `a1 v`, a proper subterm of `v` -/
+theorem TRs (u v : M) : op u v = J u v ∨ (tg v = 2 ∧ op u v = a1 v ∧ sz (op u v) < sz v) := by
+  rcases TR4 u v with h | ⟨h1, h⟩ | ⟨h2, h⟩ | ⟨h3, -, h⟩ | ⟨h4, -, h⟩
+  · exact Or.inl h
+  · obtain ⟨-, -, -, htv, heq, -, -⟩ := h1
+    exact Or.inr ⟨htv, by rw [h, heq], by rw [h, heq]; exact sz_a1_lt htv⟩
+  · obtain ⟨-, -, -, htv, heq, -, -, -, -⟩ := h2
+    exact Or.inr ⟨htv, by rw [h, heq], by rw [h, heq]; exact sz_a1_lt htv⟩
+  · obtain ⟨-, htv, -, -⟩ := h3
+    exact Or.inr ⟨htv, h, by rw [h]; exact sz_a1_lt htv⟩
+  · obtain ⟨-, -, -, htv, heq, -⟩ := h4
+    exact Or.inr ⟨htv, by rw [h, heq], by rw [h, heq]; exact sz_a1_lt htv⟩
+
+/-- the hard core fact: `a1 x` can never be produced by recursing on `(a2 x, x)`.
+    Empirically checked: 0 violations over all 3236 compound terms up to size 12. -/
+theorem core_no_fix (x : M) (htx : tg x = 2) : a1 x ≠ op (a2 x) x := by
+  sorry
+
+/-- position ii is unconditionally free: `op (op y x) y = J (op y x) y` -/
+theorem Rfree (x y : M) : op (op y x) y = J (op y x) y := by
+  rcases TRs y x with hW | ⟨htx, hW, hs⟩
+  · -- op y x is free: op y x = J y x
+    rw [hW]
+    rcases TR4 (J y x) y with h | ⟨h1, h⟩ | ⟨h2, h⟩ | ⟨h3, hg, h⟩ | ⟨h4, hg, h⟩
+    · exact h
+    · exfalso
+      obtain ⟨-, t2, t3, t4, t5, t6, t7⟩ := h1
+      simp only [a1_J_eq, a2_J_eq] at t2 t3 t5 t6 t7
+      have hax : a2 y = x := t5.trans t3
+      rw [hax] at t6 t7
+      exact a1_ne t6 t7.symm
+    · exfalso
+      obtain ⟨-, t2, t3, t4, t5, t6, t7, t8, t9⟩ := h2
+      simp only [a1_J_eq, a2_J_eq] at t2 t3 t5 t6 t7 t8 t9
+      have hax : a2 y = x := t5.trans t3
+      rw [hax] at t6 t7 t8 t9
+      have hs1 := sz_a1_lt t6
+      have hs2 := sz_a2_lt t7
+      have := congrArg sz t8
+      omega
+    · exfalso
+      obtain ⟨-, t2, t3, t4⟩ := h3
+      simp only [a1_J_eq, a2_J_eq] at t2 t3 t4 hg
+      rcases TRs x (a1 y) with hd | ⟨htay, hd, hsd⟩
+      · rw [hd] at hg
+        -- hg : y = J x (a1 y)  ⇒  a1 y = x  and  a2 y = a1 y = x
+        have hay : a1 y = x := by have := congrArg a1 hg; simpa [a1_J_eq] using this
+        have hay2 : a2 y = a1 y := by have := congrArg a2 hg; simpa [a2_J_eq] using this
+        rw [hay] at hay2
+        rw [hay2] at t3
+        rw [hay2, hay] at t4
+        exact a1_ne t3 t4.symm
+      · rw [hd] at hg
+        -- hg : y = a1 (a1 y), impossible by size since tg y = 2
+        have hs1 := sz_a1_lt t2
+        have hs2 := sz_a1 (a1 y)
+        have := congrArg sz hg
+        omega
+    · exfalso
+      obtain ⟨-, t2, t3, t4, t5, t6⟩ := h4
+      simp only [a1_J_eq, a2_J_eq] at t2 t3 t5 t6 hg
+      have hax : a2 y = x := t5.trans t3
+      rw [hax] at t6 hg
+      exact core_no_fix x t6 hg
+  · -- op y x decodes: op y x = a1 x, tg x = 2
+    rw [hW]
+    sorry
+
+/-- position iv is unconditionally free: `op x (op x z) = J x (op x z)` -/
+theorem Ffree (x z : M) : op x (op x z) = J x (op x z) := by
+  sorry
+
 /-- THE LAW: x = ((y * x) * y) * (x * (x * z)) -/
 theorem law (x y z : M) : op (op (op (y) (x)) (y)) (op (x) (op (x) (z))) = x := by
   sorry

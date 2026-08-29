@@ -1,0 +1,43 @@
+theorem sz_pos (t : M) : 1 ≤ sz t := by cases t <;> simp [sz] <;> omega
+theorem sz_J (a b : M) : sz (J a b) = sz a + sz b + 1 := rfl
+theorem sz_a1_lt {t : M} (h : tg t = 2) : sz (a1 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a1]; have := sz_pos b; omega
+theorem sz_a2_lt {t : M} (h : tg t = 2) : sz (a2 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a2]; have := sz_pos a; omega
+
+/-- weak characterisation: `op u v` is free, or a proper accessor of `u`, or a proper accessor of `v` -/
+theorem TRs (u v : M) : op u v = J u v ∨ (tg u = 2 ∧ sz (op u v) < sz u) ∨ (tg v = 2 ∧ sz (op u v) < sz v) := by
+  rcases TR10 u v with h | ⟨h1,he⟩ | ⟨h2,he⟩ | ⟨h3,_,_,_,he⟩ | ⟨h4,_,he⟩ | ⟨h5,_,he⟩ | ⟨h6,_,_,_,he⟩ | ⟨h7,_,_,_,he⟩ |
+      ⟨h8,_,_,_,_,_,_,_,he⟩ | ⟨h9,he⟩ | ⟨h10,_,_,_,_,he⟩
+  · exact Or.inl h
+  · obtain ⟨t1,t2,t3,-,-,-,-⟩ := h1
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨t1,t2,t3,-,-,-,-,-,-,-,-⟩ := h2
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨t1,t2,t3,-,-,-⟩ := h3
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨t1,t2,t3,-,-,-,-,-⟩ := h4
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨-,-,-,t4⟩ := h5
+    right; right; refine ⟨t4, ?_⟩; rw [he]
+    exact sz_a1_lt t4
+  · obtain ⟨-,t2⟩ := h6
+    right; right; refine ⟨t2, ?_⟩; rw [he]
+    exact sz_a1_lt t2
+  · obtain ⟨t1,-,-,t4,-,-,-,-,-,-,-,-⟩ := h7
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a1_lt t4; have := sz_a1 (a2 u); have := sz_a2 u; omega
+  · obtain ⟨t1,t2,-,-,-,-⟩ := h8
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t2; have := sz_a2 u; omega
+  · obtain ⟨t1,-,-,t4,-,-,-,-,-,-,-,-⟩ := h9
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a1_lt t4; have := sz_a1 (a2 u); have := sz_a2 u; omega
+  · obtain ⟨t1,t2,-,-,-,-⟩ := h10
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t2; have := sz_a2 u; omega
+

@@ -285,7 +285,7 @@ theorem op_R5 {y z : M} (hty : tg y = 2) (hyq : a1 y = a2 y) (htz : tg z = 2) (h
     msr_lt_of_max_lt (by simp only [j1, sz]; omega)
   have hs2 : msr (a1 (a2 (J (J y1 y1) z))) (a2 (J (J y1 y1) z)) < msr (J y1 y1) (J (J y1 y1) z) :=
     msr_lt_of_max_lt (by simp only [j2, sz]; kf sz_a1 z)
-  rw [dif_pos hs1] at hp1; rw [dif_pos hs2] at hp2; subst hp1; subst hp2
+  rw [dif_pos hs1] at hp1; subst hp1; rw [dif_pos hs2] at hp2; subst hp2
   have s1 := sz_a2 y1
   rw [hop]
   split
@@ -318,6 +318,14 @@ theorem op_R5 {y z : M} (hty : tg y = 2) (hyq : a1 y = a2 y) (htz : tg z = 2) (h
             show y1 = op (a1 z) z
             rw [hz]; exact hq.symm
 
+theorem R24case {y : M} (hty : tg y = 2) (h7 : y = a2 (op (a1 y) y)) : a1 (op (a1 y) y) = a1 y := by
+  have s1 := sz_tg y hty
+  have s2 := sz_a2 (op (a1 y) y)
+  rcases TRs (a1 y) y with hf | ⟨-, -, -, hs | ⟨-, -, -, -, hr⟩⟩
+  · rw [hf]; rfl
+  · kf cs h7
+  · rw [hr] at h7; simp only [j2] at h7; kf cs h7, sz_a1 y
+
 theorem op_R2 {y : M} (hty : tg y = 2) (z : M) : op y (J y (J (J z y) (op (a1 y) y))) = a1 y := by
   obtain ⟨p1, p2, hp1, hp2, hop⟩ := op_cases y (J y (J (J z y) (op (a1 y) y)))
   have hs1 : msr (a1 y) y < msr y (J y (J (J z y) (op (a1 y) y))) :=
@@ -329,11 +337,8 @@ theorem op_R2 {y : M} (hty : tg y = 2) (z : M) : op y (J y (J (J z y) (op (a1 y)
   split
   · rename_i h
     obtain ⟨-, -, -, -, -, -, h7⟩ := h
-    sj at h7 ⊢
-    rcases TRs (a1 y) y with hf | ⟨-, -, -, hs | ⟨-, -, -, -, hr⟩⟩
-    · rw [hf]; rfl
-    · kf cs h7
-    · rw [hr] at h7; simp only [j2] at h7; kf cs h7, sz_a1 y
+    sj at h7
+    exact R24case hty h7
   · split
     · rfl
     · rename_i h1 h2
@@ -382,11 +387,8 @@ theorem op_R4 {y : M} (hty : tg y = 2) : op y (J y (J (op (a1 y) y) (op (a1 y) y
   split
   · rename_i h
     obtain ⟨-, -, -, -, h5, -, -⟩ := h
-    sj at h5 ⊢
-    rcases TRs (a1 y) y with hf | ⟨-, -, -, hs | ⟨-, -, -, -, hr⟩⟩
-    · rw [hf]; rfl
-    · kf cs h5
-    · rw [hr] at h5; simp only [j2] at h5; kf cs h5, sz_a1 y
+    sj at h5
+    exact R24case hty h5
   · split
     · rfl
     · split

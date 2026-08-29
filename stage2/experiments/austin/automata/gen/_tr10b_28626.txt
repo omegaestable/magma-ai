@@ -1,0 +1,71 @@
+/-- one unfold of `op`: free, or one of the ten rules fired (with its op-guards) -/
+theorem TR10 (u v : M) : op u v = J u v ∨
+    (P1 u v ∧ op u v = a2 (a1 (a1 u))) ∨
+    (P2 u v ∧ op u v = a2 (a1 (a1 u))) ∨
+    (P3 u v ∧ ∃ q1, q1 = op (a2 (a2 (a1 (a1 u)))) v ∧ a1 (a2 (a1 (a1 u))) = op q1 (a2 (a2 (a1 (a1 u)))) ∧ op u v = a2 (a1 (a1 u))) ∨
+    (P4 u v ∧ a1 (a1 (a2 (a1 (a1 u)))) = op (a2 (a1 (a2 (a1 (a1 u))))) v ∧ op u v = a2 (a1 (a1 u))) ∨
+    (P5 u v ∧ a1 (a1 u) = op (a2 (a1 u)) (a1 v) ∧ op u v = a1 v) ∨
+    (P6 u v ∧ ∃ q5, q5 = op (a2 u) (a1 v) ∧ a1 u = op q5 (a2 u) ∧ op u v = a1 v) ∨
+    (P7 u v ∧ ∃ q7, q7 = op (a2 u) (a1 (a1 (a2 u))) ∧ a1 u = op q7 (a2 u) ∧ op u v = a1 (a1 (a2 u))) ∨
+    (P8 u v ∧ ∃ q9 q10, q9 = op (a2 (a2 u)) (a1 u) ∧ a1 (a2 u) = q9 ∧ q10 = op (a2 u) (a2 (a2 u)) ∧ a1 u = op q10 (a2 u) ∧
+        a1 (a1 (a2 (a2 u))) = op (a2 (a1 (a2 (a2 u)))) v ∧ op u v = a2 (a2 u)) ∨
+    (P9 u v ∧ op u v = a1 (a1 (a2 u))) ∨
+    (P10 u v ∧ ∃ q9, q9 = op (a2 (a2 u)) (a1 u) ∧ a1 (a2 u) = q9 ∧
+        a1 (a1 (a2 (a2 u))) = op (a2 (a1 (a2 (a2 u)))) v ∧ op u v = a2 (a2 u)) := by
+  obtain ⟨p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, hp1, hp2, hp3, hp4, hp5, hp6, hp7, hp8, hp9, hp10, hp11, hp12, hop⟩ := op_cases u v
+  by_cases h1 : P1 u v
+  · exact Or.inr (Or.inl ⟨h1, by rw [hop, if_pos h1]⟩)
+  by_cases h2 : P2 u v
+  · exact Or.inr (Or.inr (Or.inl ⟨h2, by rw [hop, if_neg h1, if_pos h2]⟩))
+  by_cases h3c : P3 u v ∧ msr (a2 (a2 (a1 (a1 u)))) (v) < msr u v ∧ msr (p1) (a2 (a2 (a1 (a1 u)))) < msr u v ∧ a1 (a2 (a1 (a1 u))) = p2
+  · obtain ⟨h3, hs1, hs2, he⟩ := h3c
+    rw [dif_pos hs1] at hp1; subst hp1
+    rw [dif_pos hs2] at hp2; subst hp2
+    refine Or.inr (Or.inr (Or.inr (Or.inl ⟨h3, _, rfl, he, ?_⟩)))
+    rw [hop, if_neg h1, if_neg h2, if_pos ⟨h3, hs1, hs2, he⟩]
+  by_cases h4c : P4 u v ∧ msr (a2 (a1 (a2 (a1 (a1 u))))) (v) < msr u v ∧ a1 (a1 (a2 (a1 (a1 u)))) = p3
+  · obtain ⟨h4, hs3, he⟩ := h4c
+    rw [dif_pos hs3] at hp3; subst hp3
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h4, he, ?_⟩))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_pos ⟨h4, hs3, he⟩]
+  by_cases h5c : P5 u v ∧ msr (a2 (a1 u)) (a1 v) < msr u v ∧ a1 (a1 u) = p4
+  · obtain ⟨h5, hs4, he⟩ := h5c
+    rw [dif_pos hs4] at hp4; subst hp4
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h5, he, ?_⟩)))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_pos ⟨h5, hs4, he⟩]
+  by_cases h6c : P6 u v ∧ msr (a2 u) (a1 v) < msr u v ∧ msr (p5) (a2 u) < msr u v ∧ a1 u = p6
+  · obtain ⟨h6, hs5, hs6, he⟩ := h6c
+    rw [dif_pos hs5] at hp5; subst hp5
+    rw [dif_pos hs6] at hp6; subst hp6
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h6, _, rfl, he, ?_⟩))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_pos ⟨h6, hs5, hs6, he⟩]
+  by_cases h7c : P7 u v ∧ msr (a2 u) (a1 (a1 (a2 u))) < msr u v ∧ msr (p7) (a2 u) < msr u v ∧ a1 u = p8
+  · obtain ⟨h7, hs7, hs8, he⟩ := h7c
+    rw [dif_pos hs7] at hp7; subst hp7
+    rw [dif_pos hs8] at hp8; subst hp8
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h7, _, rfl, he, ?_⟩)))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_pos ⟨h7, hs7, hs8, he⟩]
+  by_cases h8c : P8 u v ∧ msr (a2 (a2 u)) (a1 u) < msr u v ∧ msr (a2 u) (a2 (a2 u)) < msr u v ∧ msr (p10) (a2 u) < msr u v ∧
+      msr (a2 (a1 (a2 (a2 u)))) (v) < msr u v ∧ a1 (a2 u) = p9 ∧ a1 u = p11 ∧ a1 (a1 (a2 (a2 u))) = p12
+  · obtain ⟨h8, hs9, hs10, hs11, hs12, he9, he11, he12⟩ := h8c
+    rw [dif_pos hs9] at hp9; subst hp9
+    rw [dif_pos hs10] at hp10; subst hp10
+    rw [dif_pos hs11] at hp11; subst hp11
+    rw [dif_pos hs12] at hp12; subst hp12
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h8, _, _, rfl, he9, rfl, he11, he12, ?_⟩))))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c,
+        if_pos ⟨h8, hs9, hs10, hs11, hs12, he9, he11, he12⟩]
+  by_cases h9 : P9 u v
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h9, by
+      rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c, if_neg h8c,
+          if_pos h9]⟩)))))))))
+  by_cases h10c : P10 u v ∧ msr (a2 (a2 u)) (a1 u) < msr u v ∧ msr (a2 (a1 (a2 (a2 u)))) (v) < msr u v ∧
+      a1 (a2 u) = p9 ∧ a1 (a1 (a2 (a2 u))) = p12
+  · obtain ⟨h10, hs9, hs12, he9, he12⟩ := h10c
+    rw [dif_pos hs9] at hp9; subst hp9
+    rw [dif_pos hs12] at hp12; subst hp12
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨h10, _, rfl, he9, he12, ?_⟩)))))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c, if_neg h8c, if_neg h9,
+        if_pos ⟨h10, hs9, hs12, he9, he12⟩]
+  left
+  rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c, if_neg h8c, if_neg h9, if_neg h10c]

@@ -156,57 +156,109 @@ theorem TR10 (u v : M) : op u v = J u v ∨
     (P10 u v ∧ ∃ q9, q9 = op (a2 (a2 u)) (a1 u) ∧ a1 (a2 u) = q9 ∧
         a1 (a1 (a2 (a2 u))) = op (a2 (a1 (a2 (a2 u)))) v ∧ op u v = a2 (a2 u)) := by
   obtain ⟨p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, hp1, hp2, hp3, hp4, hp5, hp6, hp7, hp8, hp9, hp10, hp11, hp12, hop⟩ := op_cases u v
-  rw [hop]
-  split
-  · exact Or.inr (Or.inl ⟨by assumption, rfl⟩)
-  · split
-    · exact Or.inr (Or.inr (Or.inl ⟨by assumption, rfl⟩))
-    · split
-      · rename_i h1 h2 h
-        obtain ⟨h3, hs1, hs2, he⟩ := h
-        rw [dif_pos hs1] at hp1; subst hp1
-        rw [dif_pos hs2] at hp2; subst hp2
-        exact Or.inr (Or.inr (Or.inr (Or.inl ⟨h3, _, rfl, he, rfl⟩)))
-      · split
-        · rename_i h1 h2 h3 h
-          obtain ⟨h4, hs3, he⟩ := h
-          rw [dif_pos hs3] at hp3; subst hp3
-          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h4, he, rfl⟩))))
-        · split
-          · rename_i h1 h2 h3 h4 h
-            obtain ⟨h5, hs4, he⟩ := h
-            rw [dif_pos hs4] at hp4; subst hp4
-            exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h5, he, rfl⟩)))))
-          · split
-            · rename_i h1 h2 h3 h4 h5 h
-              obtain ⟨h6, hs5, hs6, he⟩ := h
-              rw [dif_pos hs5] at hp5; subst hp5
-              rw [dif_pos hs6] at hp6; subst hp6
-              exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h6, _, rfl, he, rfl⟩))))))
-            · split
-              · rename_i h1 h2 h3 h4 h5 h6 h
-                obtain ⟨h7, hs7, hs8, he⟩ := h
-                rw [dif_pos hs7] at hp7; subst hp7
-                rw [dif_pos hs8] at hp8; subst hp8
-                exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h7, _, rfl, he, rfl⟩)))))))
-              · split
-                · rename_i h1 h2 h3 h4 h5 h6 h7 h
-                  obtain ⟨h8, hs9, hs10, hs11, hs12, he9, he11, he12⟩ := h
-                  rw [dif_pos hs9] at hp9; subst hp9
-                  rw [dif_pos hs10] at hp10; subst hp10
-                  rw [dif_pos hs11] at hp11; subst hp11
-                  rw [dif_pos hs12] at hp12; subst hp12
-                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h8, _, _, rfl, he9, rfl, he11, he12, rfl⟩))))))))
-                · split
-                  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨by assumption, rfl⟩)))))))))
-                  · split
-                    · rename_i h1 h2 h3 h4 h5 h6 h7 h8 h9 h
-                      obtain ⟨h10, hs9, hs12, he9, he12⟩ := h
-                      rw [dif_pos hs9] at hp9; subst hp9
-                      rw [dif_pos hs12] at hp12; subst hp12
-                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨h10, _, rfl, he9, he12, rfl⟩)))))))))
-                    · left; rfl
+  by_cases h1 : P1 u v
+  · exact Or.inr (Or.inl ⟨h1, by rw [hop, if_pos h1]⟩)
+  by_cases h2 : P2 u v
+  · exact Or.inr (Or.inr (Or.inl ⟨h2, by rw [hop, if_neg h1, if_pos h2]⟩))
+  by_cases h3c : P3 u v ∧ msr (a2 (a2 (a1 (a1 u)))) (v) < msr u v ∧ msr (p1) (a2 (a2 (a1 (a1 u)))) < msr u v ∧ a1 (a2 (a1 (a1 u))) = p2
+  · obtain ⟨h3, hs1, hs2, he⟩ := h3c
+    rw [dif_pos hs1] at hp1; subst hp1
+    rw [dif_pos hs2] at hp2; subst hp2
+    refine Or.inr (Or.inr (Or.inr (Or.inl ⟨h3, _, rfl, he, ?_⟩)))
+    rw [hop, if_neg h1, if_neg h2, if_pos ⟨h3, hs1, hs2, he⟩]
+  by_cases h4c : P4 u v ∧ msr (a2 (a1 (a2 (a1 (a1 u))))) (v) < msr u v ∧ a1 (a1 (a2 (a1 (a1 u)))) = p3
+  · obtain ⟨h4, hs3, he⟩ := h4c
+    rw [dif_pos hs3] at hp3; subst hp3
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h4, he, ?_⟩))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_pos ⟨h4, hs3, he⟩]
+  by_cases h5c : P5 u v ∧ msr (a2 (a1 u)) (a1 v) < msr u v ∧ a1 (a1 u) = p4
+  · obtain ⟨h5, hs4, he⟩ := h5c
+    rw [dif_pos hs4] at hp4; subst hp4
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h5, he, ?_⟩)))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_pos ⟨h5, hs4, he⟩]
+  by_cases h6c : P6 u v ∧ msr (a2 u) (a1 v) < msr u v ∧ msr (p5) (a2 u) < msr u v ∧ a1 u = p6
+  · obtain ⟨h6, hs5, hs6, he⟩ := h6c
+    rw [dif_pos hs5] at hp5; subst hp5
+    rw [dif_pos hs6] at hp6; subst hp6
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h6, _, rfl, he, ?_⟩))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_pos ⟨h6, hs5, hs6, he⟩]
+  by_cases h7c : P7 u v ∧ msr (a2 u) (a1 (a1 (a2 u))) < msr u v ∧ msr (p7) (a2 u) < msr u v ∧ a1 u = p8
+  · obtain ⟨h7, hs7, hs8, he⟩ := h7c
+    rw [dif_pos hs7] at hp7; subst hp7
+    rw [dif_pos hs8] at hp8; subst hp8
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h7, _, rfl, he, ?_⟩)))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_pos ⟨h7, hs7, hs8, he⟩]
+  by_cases h8c : P8 u v ∧ msr (a2 (a2 u)) (a1 u) < msr u v ∧ msr (a2 u) (a2 (a2 u)) < msr u v ∧ msr (p10) (a2 u) < msr u v ∧
+      msr (a2 (a1 (a2 (a2 u)))) (v) < msr u v ∧ a1 (a2 u) = p9 ∧ a1 u = p11 ∧ a1 (a1 (a2 (a2 u))) = p12
+  · obtain ⟨h8, hs9, hs10, hs11, hs12, he9, he11, he12⟩ := h8c
+    rw [dif_pos hs9] at hp9; subst hp9
+    rw [dif_pos hs10] at hp10; subst hp10
+    rw [dif_pos hs11] at hp11; subst hp11
+    rw [dif_pos hs12] at hp12; subst hp12
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h8, _, _, rfl, he9, rfl, he11, he12, ?_⟩))))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c,
+        if_pos ⟨h8, hs9, hs10, hs11, hs12, he9, he11, he12⟩]
+  by_cases h9 : P9 u v
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨h9, by
+      rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c, if_neg h8c,
+          if_pos h9]⟩)))))))))
+  by_cases h10c : P10 u v ∧ msr (a2 (a2 u)) (a1 u) < msr u v ∧ msr (a2 (a1 (a2 (a2 u)))) (v) < msr u v ∧
+      a1 (a2 u) = p9 ∧ a1 (a1 (a2 (a2 u))) = p12
+  · obtain ⟨h10, hs9, hs12, he9, he12⟩ := h10c
+    rw [dif_pos hs9] at hp9; subst hp9
+    rw [dif_pos hs12] at hp12; subst hp12
+    refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨h10, _, rfl, he9, he12, ?_⟩)))))))))
+    rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c, if_neg h8c, if_neg h9,
+        if_pos ⟨h10, hs9, hs12, he9, he12⟩]
+  left
+  rw [hop, if_neg h1, if_neg h2, if_neg h3c, if_neg h4c, if_neg h5c, if_neg h6c, if_neg h7c, if_neg h8c, if_neg h9, if_neg h10c]
 
+theorem sz_pos (t : M) : 1 ≤ sz t := by cases t <;> simp [sz] <;> omega
+theorem sz_J (a b : M) : sz (J a b) = sz a + sz b + 1 := rfl
+theorem sz_a1_lt {t : M} (h : tg t = 2) : sz (a1 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a1]; have := sz_pos b; omega
+theorem sz_a2_lt {t : M} (h : tg t = 2) : sz (a2 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a2]; have := sz_pos a; omega
+
+/-- weak characterisation: `op u v` is free, or a proper accessor of `u`, or a proper accessor of `v` -/
+theorem TRs (u v : M) : op u v = J u v ∨ (tg u = 2 ∧ sz (op u v) < sz u) ∨ (tg v = 2 ∧ sz (op u v) < sz v) := by
+  rcases TR10 u v with h | ⟨h1,he⟩ | ⟨h2,he⟩ | ⟨h3,_,_,_,he⟩ | ⟨h4,_,he⟩ | ⟨h5,_,he⟩ | ⟨h6,_,_,_,he⟩ | ⟨h7,_,_,_,he⟩ |
+      ⟨h8,_,_,_,_,_,_,_,he⟩ | ⟨h9,he⟩ | ⟨h10,_,_,_,_,he⟩
+  · exact Or.inl h
+  · obtain ⟨t1,t2,t3,-,-,-,-⟩ := h1
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨t1,t2,t3,-,-,-,-,-,-,-,-⟩ := h2
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨t1,t2,t3,-,-,-⟩ := h3
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨t1,t2,t3,-,-,-,-,-⟩ := h4
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t3; have := sz_a1 (a1 u); have := sz_a1 u; omega
+  · obtain ⟨-,-,-,t4⟩ := h5
+    right; right; refine ⟨t4, ?_⟩; rw [he]
+    exact sz_a1_lt t4
+  · obtain ⟨-,t2⟩ := h6
+    right; right; refine ⟨t2, ?_⟩; rw [he]
+    exact sz_a1_lt t2
+  · obtain ⟨t1,-,-,t4,-,-,-,-,-,-,-,-⟩ := h7
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a1_lt t4; have := sz_a1 (a2 u); have := sz_a2 u; omega
+  · obtain ⟨t1,t2,-,-,-,-⟩ := h8
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t2; have := sz_a2 u; omega
+  · obtain ⟨t1,-,-,t4,-,-,-,-,-,-,-,-⟩ := h9
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a1_lt t4; have := sz_a1 (a2 u); have := sz_a2 u; omega
+  · obtain ⟨t1,t2,-,-,-,-⟩ := h10
+    right; left; refine ⟨t1, ?_⟩; rw [he]
+    have := sz_a2_lt t2; have := sz_a2 u; omega
+
+
+theorem P1_of_free (y x z : M) : P1 (J (J (J y x) y) y) (J x z) :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
 
 theorem rhs : ¬ @EquationRHS M inst := by
   intro h

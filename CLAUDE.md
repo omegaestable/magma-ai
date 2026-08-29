@@ -139,6 +139,28 @@ The three solver changes: completion probe before egg probe (rail 34); the two
 cheap closures ahead of the cheap constraint tier (rail 35); a compiled
 `equation_holds` (rail 36). Nothing was deleted (rail 1).
 
+### 2026-08-29 order-4 miss frontier (current coverage baseline)
+
+The latest three campaigns cover **400,000 order-4 rows**:
+**399,618 / 400,000 solved (99.9045%)**, with **382 skips** (362 labelled TRUE
+and 20 labelled FALSE), 0 crashes, 0 oracle failures, and 0 label mismatches.
+Every skip has a four-operation hypothesis; 293/382 have a bare-variable side.
+Across the audited Aug 20 + Aug 25–29 order-4 campaigns there are **930,000
+row evaluations / 929,955 unique IDs**. Including the 2,000-row Aug 28
+uniform reference draw, the recorded generated total is **932,000 / 931,955
+unique**. The top two diagnostic hypothesis families account for 202/382
+latest misses and the top eight for 338/382 (88.5%). Full triage and the
+implementation prompt are in
+`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`; the report files are
+`stage2/results/etp-sweep-20260829-100k-summary.md`,
+`stage2/results/etp-sweep-20260829-200k-summary.md`, and
+`stage2/results/etp-sweep-20260829-100k-b31-b40-summary.md`.
+
+The historical audited failure ledgers contain **652 unique misses** (603
+TRUE, 49 FALSE); the latest 382-row ledger is the current fast-tier frontier,
+not the complete historical target. These samples are still research baselines,
+not an exhaustive claim about all 22M labelled order-4 pairs.
+
 ### The 2026-08-27 table (improvement pass 2)
 
 Every number below is from the 2026-08-27 improvement pass 2
@@ -969,6 +991,39 @@ Rails 38–41 were measured on 2026-08-28 (evening, the Austin session —
     generator closes, not when it yields, so a sibling call sees the elevated
     depth and hits the limit. Thread the depth as an argument.
 
+Rails 42–46 were measured from the 2026-08-29 order-4 campaigns
+(`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`).
+
+42. **The order-4 baseline is now 930,000 audited row evaluations, not the old
+    110k frontier.** The latest 400k campaign solves **399,618/400,000
+    (99.9045%)** and leaves 382 skips, while the audited union is 929,955
+    unique IDs. The additional 2,000-row reference draw brings the recorded
+    generated total to 932,000 / 931,955 unique. Use the dated reports as the
+    current coverage baseline; do not quote the old four-law sample as the
+    present frontier.
+43. **Miss IDs are a triage ledger, not solver policy.** The two largest
+    canonical eq1 families account for 202/382 misses and the top eight for
+    338/382, but a fix must be a structural parse-tree/motif rule that survives
+    held-out equations. Never paste these IDs or equations into the submitted
+    solver as answers.
+44. **Split order-4 miss work by polarity.** The latest ledger contains 362
+    labelled TRUE and 20 labelled FALSE rows; the historical audited union is
+    603 TRUE and 49 FALSE. A timed-out or incomplete countermodel search proves
+    neither polarity; TRUE requires a kernel-checked derivation, and FALSE
+    requires an exhaustively checked, judge-accepted witness.
+45. **A research prompt may propose intermediate laws, but it may not decide
+    the verdict.** Ask for hypothesis-specific self-overlap/helper laws or
+    concrete verified witnesses; reject raw Lean, tactic shortcuts, and
+    benchmark-specific recipes. The solver re-proves every proposed law and
+    every new certificate is real-judge checked. The ready-to-paste prompt is
+    in `stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`.
+46. **“All misses solved” needs both coverage and pacing gates.** First require
+    zero skips, crashes, oracle failures, and label mismatches on the frozen
+    382-row latest manifest, then on the full 652-row historical miss union;
+    require no official/HF row-id regression and report p50/p95/max timing.
+    Run one audit at a time with positive budgets and record worker count/load;
+    do not promote a broad-sweep win that only consumed more wall clock.
+
 ## Environment gotchas that will bite you
 
 - **UTF-8.** Printing `◇` crashes with `UnicodeEncodeError` on Windows cp1252.
@@ -1159,6 +1214,7 @@ solver primitive cannot hide itself in the oracle.
 | --- | --- |
 | **Deep session 5: the Austin problem session** | **`stage2/docs/DEEP_SESSION_5_AUSTIN_HANDOVER.md`** |
 | **Next session plan (the deep sweeps)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
+| **Order-4 miss elimination (2026-08-29)** | **`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`** |
 | **Exact commands for the deep sweeps** | **`stage2/docs/DEEP_SWEEP_RUNBOOK.md`** |
 | Deep-sweep campaign log + ranked levers | `stage2/results/2026-08-25-deep-sweep-campaign.md` |
 | Deep-sweep design, cost model, per-batch protocol | `stage2/docs/DEEP_SWEEP_ROADMAP.md` |
@@ -1174,8 +1230,15 @@ solver primitive cannot hide itself in the oracle.
 
 ## Known open frontier
 
-**The organizers' Austin research set (`research_order5_hard`, 2026-08-28):**
-**10/100** (evening session) — two constructions work and are fully
+**Current order-4 update (2026-08-29):** the latest 400k baseline leaves 382
+misses (362 TRUE, 20 FALSE), while the audited Aug 20 + Aug 25–29 campaign
+history totals 930,000 row evaluations / 929,955 unique IDs. Its historical
+failure-ledger union is 652 rows (603 TRUE, 49 FALSE). The latest ledger is the
+active fast-tier target; the full union is the promotion target. Details are in
+`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`.
+
+**The organizers' Austin research set (`research_order5_hard`, 2026-08-29):**
+**37/100 judge-accepted and shipped** (`stage2/results/2026-08-29-austin-wave-37.md`: generated free-model skeletons are usually false — level-2 decoder holes — and fable proof agents repair and prove them, 10/16; sonnet agents 0/8; five laws are quotient laws; the 20 KB FALSE cap binds — `squeeze.py`, and `macro` is banned). Earlier state, 2026-08-28: **10/100** (evening session) — two constructions work and are fully
 automated end to end (search → complete symbolic verification → Lean → real
 judge): tag automata (`stage2/experiments/austin/automata/`) and
 piecewise-linear models over ℚ. The 90 open rows are the laws whose free

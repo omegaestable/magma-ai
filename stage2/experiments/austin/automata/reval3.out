@@ -8,3 +8,5 @@
 24199 FAIL rules None -> None full {'nrules': 13, 'fails': 39, 'kinds': {'value:exh9/1': 25, 'value:deep': 3, 'value:closure': 4, 'value:fuzz': 6, 'value:critical': 1}} {'nrules': 13, 'fails': 39, 'kinds': {'value:exh9/1': 25, 'value:deep': 3, 'value:closure': 4, 'value:fuzz': 6, 'value:critical': 1}} secs 100.5 
 17286 FAIL rules None -> None full {'nrules': 7, 'fails': 1, 'kinds': {'value:deep': 1}} {'nrules': 7, 'fails': 1, 'kinds': {'value:deep': 1}} secs 129.4 
 6912 FAIL rules None -> None full {'nrules': 14, 'fails': 5, 'kinds': {'value:deep': 3, 'value:closure': 1, 'value:critical': 1}} {'nrules': 14, 'fails': 5, 'kinds': {'value:deep': 3, 'value:closure': 1, 'value:critical': 1}} secs 134.6 
+36524 None rules None -> None full None  secs 2400.0 timeout
+10222 None rules None -> None full None  secs 2400.0 timeout
