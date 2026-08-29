@@ -1,0 +1,3 @@
+law 38249: x = ((y * ((x * x) * z)) * y) * y   (normalised: x = ('y', ('y', (('z', ('x', 'x')), 'y'))))   DUALIZED: rules/op are for the dual L-form law; the served magma is op flipped
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & u = v.1 & J?v.2 & J?v.2.1 & J?v.2.1.2 & v.2.1.2.1 = v.2.1.2.2 & u = v.2.2 -> v.2.1.2.1

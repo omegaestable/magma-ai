@@ -1,0 +1,63 @@
+{"eq": 5833, "nrules": 9, "fails_all": 6, "fails_kept": 5, "refuted": [22818], "rows": ["research_order5_hard_0058"], "secs": 13.2}
+{"eq": 5837, "nrules": 9, "fails_all": 2, "fails_kept": 0, "refuted": [22818, 25964], "rows": ["research_order5_hard_0021", "research_order5_hard_0045"], "secs": 6.5}
+{"eq": 6878, "nrules": 5, "fails_all": 58, "fails_kept": 49, "refuted": [28770], "rows": ["research_order5_hard_0034"], "secs": 2.2}
+{"eq": 6912, "nrules": 5, "fails_all": 0, "fails_kept": 0, "refuted": [28770, 15535], "rows": ["research_order5_hard_0049", "research_order5_hard_0091"], "secs": 2.4}
+{"eq": 7701, "nrules": 7, "fails_all": 6, "fails_kept": 1, "refuted": [15535], "rows": ["research_order5_hard_0094"], "secs": 4.7}
+{"eq": 8485, "nrules": 14, "fails_all": 3, "fails_kept": 2, "refuted": [4916], "rows": ["research_order5_hard_0096"], "secs": 18.6}
+{"eq": 9345, "nrules": 15, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0041"], "secs": 8.9}
+{"eq": 9663, "nrules": 14, "fails_all": 3, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0018"], "secs": 7.2}
+{"eq": 9667, "nrules": 14, "fails_all": 0, "fails_kept": 0, "refuted": [25964], "rows": ["research_order5_hard_0071"], "secs": 8.2}
+{"eq": 10218, "nrules": 20, "fails_all": 3, "fails_kept": 10, "refuted": [30591], "rows": ["research_order5_hard_0079"], "secs": 15.8}
+{"eq": 10222, "nrules": 23, "fails_all": 3, "fails_kept": 2, "refuted": [20034], "rows": ["research_order5_hard_0005"], "secs": 17.0}
+{"eq": 11081, "nrules": 8, "fails_all": 0, "fails_kept": 0, "refuted": [41082, 22818], "rows": ["research_order5_hard_0003", "research_order5_hard_0030"], "secs": 6.0}
+{"eq": 11116, "nrules": 10, "fails_all": 2, "fails_kept": 7, "refuted": [22455, 28770, 22818], "rows": ["research_order5_hard_0009", "research_order5_hard_0047", "research_order5_hard_0056"], "secs": 5.4}
+{"eq": 11280, "nrules": 16, "fails_all": 0, "fails_kept": 0, "refuted": [25964], "rows": ["research_order5_hard_0092"], "secs": 12.2}
+{"eq": 12073, "nrules": 1, "fails_all": 50, "fails_kept": 61, "refuted": [28770, 41082], "rows": ["research_order5_hard_0007", "research_order5_hard_0022"], "secs": 0.8}
+{"eq": 12087, "nrules": 3, "fails_all": 55, "fails_kept": 52, "refuted": [28770, 22818], "rows": ["research_order5_hard_0024", "research_order5_hard_0097"], "secs": 2.3}
+{"eq": 12234, "nrules": 11, "fails_all": 45, "fails_kept": 36, "refuted": [22818], "rows": ["research_order5_hard_0061"], "secs": 9.2}
+{"eq": 12294, "nrules": 13, "fails_all": 2, "fails_kept": 6, "refuted": [41082], "rows": ["research_order5_hard_0093"], "secs": 10.9}
+{"eq": 12883, "nrules": 6, "fails_all": 0, "fails_kept": 2, "refuted": [30591], "rows": ["research_order5_hard_0031"], "secs": 3.5}
+{"eq": 13764, "nrules": 12, "fails_all": 2, "fails_kept": 2, "refuted": [22455, 20034], "rows": ["research_order5_hard_0008", "research_order5_hard_0081"], "secs": 7.7}
+{"eq": 13992, "nrules": 12, "fails_all": 0, "fails_kept": 0, "refuted": [30591, 22455], "rows": ["research_order5_hard_0076", "research_order5_hard_0085"], "secs": 8.4}
+{"eq": 17286, "nrules": 3, "fails_all": 17, "fails_kept": 13, "refuted": [20034, 28770], "rows": ["research_order5_hard_0025", "research_order5_hard_0040"], "secs": 2.0}
+{"eq": 18137, "nrules": 3, "fails_all": 14, "fails_kept": 10, "refuted": [25964], "rows": ["research_order5_hard_0042"], "secs": 1.9}
+{"eq": 20911, "nrules": 1, "fails_all": 176, "fails_kept": 160, "refuted": [20034], "rows": ["research_order5_hard_0043"], "secs": 0.7}
+{"eq": 21864, "nrules": 1, "fails_all": 26, "fails_kept": 23, "refuted": [20034], "rows": ["research_order5_hard_0033"], "secs": 0.7}
+{"eq": 21865, "nrules": 1, "fails_all": 7, "fails_kept": 14, "refuted": [28770, 41082], "rows": ["research_order5_hard_0039", "research_order5_hard_0057"], "secs": 0.8}
+{"eq": 21866, "nrules": 1, "fails_all": 39, "fails_kept": 38, "refuted": [20034, 22818], "rows": ["research_order5_hard_0020", "research_order5_hard_0028"], "secs": 0.7}
+{"eq": 22591, "nrules": 2, "fails_all": 14, "fails_kept": 4, "refuted": [20034, 28770, 41082], "rows": ["research_order5_hard_0017", "research_order5_hard_0052", "research_order5_hard_0069"], "secs": 0.8}
+{"eq": 23354, "nrules": 2, "fails_all": 1, "fails_kept": 5, "refuted": [17522], "rows": ["research_order5_hard_0027"], "secs": 1.3}
+{"eq": 23357, "nrules": 2, "fails_all": 3, "fails_kept": 4, "refuted": [22455], "rows": ["research_order5_hard_0048"], "secs": 1.3}
+{"eq": 23653, "nrules": 4, "fails_all": 1874, "fails_kept": 1846, "refuted": [22818], "rows": ["research_order5_hard_0080"], "secs": 0.7}
+{"eq": 24199, "nrules": 1, "fails_all": 26, "fails_kept": 11, "refuted": [22455], "rows": ["research_order5_hard_0086"], "secs": 0.8}
+{"eq": 24200, "nrules": 1, "fails_all": 61, "fails_kept": 41, "refuted": [22455, 30591], "rows": ["research_order5_hard_0001", "research_order5_hard_0087"], "secs": 0.8}
+{"eq": 25087, "nrules": 2, "fails_all": 110, "fails_kept": 80, "refuted": [4916], "rows": ["research_order5_hard_0100"], "secs": 0.9}
+{"eq": 27859, "nrules": 1, "fails_all": 116, "fails_kept": 130, "refuted": [4916, 25964], "rows": ["research_order5_hard_0050", "research_order5_hard_0099"], "secs": 0.7}
+{"eq": 27863, "nrules": 1, "fails_all": 23, "fails_kept": 21, "refuted": [30591], "rows": ["research_order5_hard_0053"], "secs": 0.8}
+{"eq": 28626, "nrules": 2, "fails_all": 37, "fails_kept": 22, "refuted": [15535, 22818], "rows": ["research_order5_hard_0037", "research_order5_hard_0038"], "secs": 1.4}
+{"eq": 32280, "nrules": 7, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0029"], "secs": 4.1}
+{"eq": 32281, "nrules": 7, "fails_all": 10, "fails_kept": 11, "refuted": [41082, 15535, 17522], "rows": ["research_order5_hard_0006", "research_order5_hard_0032", "research_order5_hard_0068"], "secs": 5.0}
+{"eq": 32294, "nrules": 7, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0064"], "secs": 4.2}
+{"eq": 33020, "nrules": 2, "fails_all": 49, "fails_kept": 43, "refuted": [28770, 20034], "rows": ["research_order5_hard_0012", "research_order5_hard_0054"], "secs": 2.0}
+{"eq": 34888, "nrules": 1, "fails_all": 50, "fails_kept": 49, "refuted": [22818], "rows": ["research_order5_hard_0046"], "secs": 0.7}
+{"eq": 34889, "nrules": 1, "fails_all": 80, "fails_kept": 81, "refuted": [22818, 17522, 30591], "rows": ["research_order5_hard_0010", "research_order5_hard_0036", "research_order5_hard_0070"], "secs": 0.7}
+{"eq": 35036, "nrules": 2, "fails_all": 43, "fails_kept": 53, "refuted": [17522, 41082], "rows": ["research_order5_hard_0073", "research_order5_hard_0074"], "secs": 2.5}
+{"eq": 35836, "nrules": 9, "fails_all": 10, "fails_kept": 9, "refuted": [25964], "rows": ["research_order5_hard_0095"], "secs": 6.3}
+{"eq": 36487, "nrules": 6, "fails_all": 2, "fails_kept": 2, "refuted": [17522, 22818], "rows": ["research_order5_hard_0051", "research_order5_hard_0098"], "secs": 8.2}
+{"eq": 36524, "nrules": 3, "fails_all": 43, "fails_kept": 55, "refuted": [41082], "rows": ["research_order5_hard_0063"], "secs": 2.5}
+{"eq": 36638, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [28770], "rows": ["research_order5_hard_0060"], "secs": 2.2}
+{"eq": 36713, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [25964, 22818, 15535], "rows": ["research_order5_hard_0035", "research_order5_hard_0083", "research_order5_hard_0089"], "secs": 2.0}
+{"eq": 38249, "nrules": 1, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0072"], "secs": 0.9}
+{"eq": 38316, "nrules": 1, "fails_all": 57, "fails_kept": 46, "refuted": [22455, 20034], "rows": ["research_order5_hard_0055", "research_order5_hard_0065"], "secs": 1.1}
+{"eq": 38565, "nrules": 1, "fails_all": 49, "fails_kept": 58, "refuted": [41082], "rows": ["research_order5_hard_0077"], "secs": 1.0}
+{"eq": 39126, "nrules": 4, "fails_all": 6, "fails_kept": 3, "refuted": [22455, 30591], "rows": ["research_order5_hard_0044", "research_order5_hard_0075"], "secs": 4.1}
+{"eq": 39163, "nrules": 3, "fails_all": 51, "fails_kept": 46, "refuted": [22818], "rows": ["research_order5_hard_0002"], "secs": 2.6}
+{"eq": 39214, "nrules": 1, "fails_all": 52, "fails_kept": 54, "refuted": [41082], "rows": ["research_order5_hard_0026"], "secs": 0.9}
+{"eq": 40037, "nrules": 1, "fails_all": 51, "fails_kept": 50, "refuted": [25964], "rows": ["research_order5_hard_0078"], "secs": 1.0}
+{"eq": 40057, "nrules": 2, "fails_all": 51, "fails_kept": 47, "refuted": [28770], "rows": ["research_order5_hard_0011"], "secs": 3.6}
+{"eq": 40070, "nrules": 2, "fails_all": 52, "fails_kept": 52, "refuted": [17522], "rows": ["research_order5_hard_0084"], "secs": 3.7}
+{"eq": 40909, "nrules": 1, "fails_all": 49, "fails_kept": 53, "refuted": [28770], "rows": ["research_order5_hard_0014"], "secs": 1.0}
+{"eq": 40914, "nrules": 2, "fails_all": 1, "fails_kept": 0, "refuted": [4916, 28770], "rows": ["research_order5_hard_0016", "research_order5_hard_0023"], "secs": 2.3}
+{"eq": 40951, "nrules": 1, "fails_all": 59, "fails_kept": 56, "refuted": [4916], "rows": ["research_order5_hard_0067"], "secs": 1.1}
+{"eq": 41252, "nrules": 2, "fails_all": 0, "fails_kept": 0, "refuted": [20034], "rows": ["research_order5_hard_0088"], "secs": 3.9}
+{"eq": 41253, "nrules": 2, "fails_all": 0, "fails_kept": 0, "refuted": [4916], "rows": ["research_order5_hard_0004"], "secs": 3.0}

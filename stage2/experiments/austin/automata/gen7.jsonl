@@ -1,0 +1,15 @@
+{"eq": 5833, "dualized": false, "nrules": 4, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0058"], "secs": 128.7}
+{"eq": 5837, "dualized": false, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [22818, 25964], "rows": ["research_order5_hard_0021", "research_order5_hard_0045"], "secs": 43.1}
+{"eq": 6878, "dualized": false, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [28770], "rows": ["research_order5_hard_0034"], "secs": 82.3}
+{"eq": 6912, "dualized": false, "nrules": 9, "fails_all": 0, "fails_kept": 0, "refuted": [28770, 15535], "rows": ["research_order5_hard_0049", "research_order5_hard_0091"], "secs": 11.9}
+{"eq": 7701, "dualized": false, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [15535], "rows": ["research_order5_hard_0094"], "secs": 30.8}
+{"eq": 8485, "dualized": false, "nrules": 4, "fails_all": 0, "fails_kept": 0, "refuted": [4916], "rows": ["research_order5_hard_0096"], "secs": 316.5}
+{"eq": 9663, "dualized": false, "nrules": 49, "fails_all": 3, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0018"], "secs": 172.9}
+{"eq": 9667, "dualized": false, "nrules": 2, "fails_all": 0, "fails_kept": 0, "refuted": [25964], "rows": ["research_order5_hard_0071"], "secs": 129.0}
+{"eq": 10218, "dualized": false, "nrules": 111, "fails_all": 0, "fails_kept": 0, "refuted": [30591], "rows": ["research_order5_hard_0079"], "secs": 478.1}
+{"eq": 10222, "dualized": false, "nrules": 133, "fails_all": 3, "fails_kept": 3, "refuted": [20034], "rows": ["research_order5_hard_0005"], "secs": 506.3}
+{"eq": 11081, "dualized": false, "nrules": 4, "fails_all": 0, "fails_kept": 1, "refuted": [41082, 22818], "rows": ["research_order5_hard_0003", "research_order5_hard_0030"], "secs": 82.2}
+{"eq": 11280, "dualized": false, "nrules": 4, "fails_all": 0, "fails_kept": 0, "refuted": [25964], "rows": ["research_order5_hard_0092"], "secs": 78.4}
+{"eq": 12073, "dualized": false, "nrules": 2, "fails_all": 15, "fails_kept": 26, "refuted": [28770, 41082], "rows": ["research_order5_hard_0007", "research_order5_hard_0022"], "secs": 1.3}
+{"eq": 12087, "dualized": false, "nrules": 4, "fails_all": 0, "fails_kept": 1, "refuted": [28770, 22818], "rows": ["research_order5_hard_0024", "research_order5_hard_0097"], "secs": 17.5}
+{"eq": 12234, "dualized": false, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0061"], "secs": 274.2}

@@ -1,0 +1,6 @@
+law 39126: x = (((y * x) * (x * z)) * y) * y   (normalised: x = ('y', ('y', (('z', 'x'), ('x', 'y')))))   DUALIZED: rules/op are for the dual L-form law; the served magma is op flipped
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & u = v.1 & J?v.2 & J?v.2.1 & J?v.2.2 & v.2.1.2 = v.2.2.1 & u = v.2.2.2 -> v.2.1.2
+R2 [B11l] J?v & u = v.1 & J?v.2 & J?v.2.1 & op(v.2.1.2, u) == v.2.2 -> v.2.1.2
+R3 [B10l] J?v & u = v.1 & J?v.2 & J?v.2.2 & u = v.2.2.2 & J?v.2.2.1 & op(v.2.2.1.1, v.2.2.1) == v.2.1 -> v.2.2.1
+R4 [B1l,B11v] J?v & u = v.1 & J?u & J?op(u.1, u) & op(op(u.1, u).1, op(u.1, u)) == v.2 & J?op(u.1, u).1 & u.1 = op(u.1, u).1.2 -> u.1

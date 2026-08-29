@@ -1,0 +1,8 @@
+law 5141: x = y * (y * (z * (y * (x * y))))   (normalised: x = ('y', ('y', ('z', ('y', ('x', 'y'))))))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & u = v.1 & J?v.2 & J?v.2.2 & u = v.2.2.1 & J?v.2.2.2 & u = v.2.2.2.2 -> v.2.2.2.1
+R2 [111l] J?v & u = v.1 & J?v.2 & J?v.2.2 & u = v.2.2.1 & J?u & op(u.1, u) == v.2.2.2 -> u.1
+R3 [111s] J?v & u = v.1 & J?v.2 & J?v.2.2 & u = v.2.2.1 & J?u & J?u.2 & J?u.2.2 & u.1 = u.2.2.1 & J?u.2.2.2 & v.2.2.2 = u.2.2.2.1 & u.1 = u.2.2.2.2 & op(u.1, u) == v.2.2.2 -> u.1
+R4 [11l,111v] J?v & u = v.1 & J?v.2 & J?u & op(u, op(u.1, u)) == v.2.2 -> u.1
+R5 [1l,111v] J?v & u = v.1 & J?u & J?op(u, op(u.1, u)) & op(op(u, op(u.1, u)).1, op(u, op(u.1, u))) == v.2 -> u.1
+R6 [el,1v,111v] J?u & J?op(u, op(u.1, u)) & op(u, op(op(u, op(u.1, u)).1, op(u, op(u.1, u)))) == v -> u.1

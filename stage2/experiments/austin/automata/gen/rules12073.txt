@@ -1,0 +1,4 @@
+law 12073: x = y * (((y * x) * x) * (z * z))   (normalised: x = ('y', ((('y', 'x'), 'x'), ('z', 'z'))))
+deep tests: all rules 15/3000 fails; kept rules 26/3000 fails
+R1 [free] J?v & J?v.1 & J?v.1.1 & u = v.1.1.1 & v.1.1.2 = v.1.2 & J?v.2 & v.2.1 = v.2.2 -> v.1.1.2
+R2 [B00l] J?v & J?v.1 & J?v.2 & v.2.1 = v.2.2 & op(u, v.1.2) == v.1.1 -> v.1.2

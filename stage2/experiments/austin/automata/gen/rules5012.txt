@@ -1,0 +1,5 @@
+law 5012: x = y * (x * (z * (z * (y * z))))   (normalised: x = ('y', ('x', ('z', ('z', ('y', 'z'))))))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & J?v.2 & J?v.2.2 & v.2.1 = v.2.2.1 & J?v.2.2.2 & u = v.2.2.2.1 & v.2.1 = v.2.2.2.2 -> v.1
+R2 [111l] J?v & J?v.2 & J?v.2.2 & v.2.1 = v.2.2.1 & op(u, v.2.1) == v.2.2.2 -> v.1
+R3 [11l] J?v & J?v.2 & op(v.2.1, op(u, v.2.1)) == v.2.2 -> v.1

@@ -1,0 +1,9 @@
+law 5093: x = y * (y * (y * (x * (z * y))))   (normalised: x = ('y', ('y', ('y', ('x', ('z', 'y'))))))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & u = v.1 & J?v.2 & u = v.2.1 & J?v.2.2 & J?v.2.2.2 & u = v.2.2.2.2 -> v.2.2.1
+R2 [111l] J?v & u = v.1 & J?v.2 & u = v.2.1 & J?v.2.2 & J?u & op(u.1, u) == v.2.2.2 -> v.2.2.1
+R3 [111s] J?v & u = v.1 & J?v.2 & u = v.2.1 & J?v.2.2 & J?u & J?u.2 & u.1 = u.2.1 & J?u.2.2 & v.2.2.2 = u.2.2.1 & J?u.2.2.2 & u.1 = u.2.2.2.2 & op(u.1, u) == v.2.2.2 -> v.2.2.1
+R4 [11l] J?v & u = v.1 & J?v.2 & u = v.2.1 & J?u & J?u.2 & v.2.2 = u.2.1 & J?u.2.2 & u.1 = u.2.2.2 & op(u.1, op(u.1, u)) == v.2.2 -> u.1
+R5 [11l,111v] J?v & u = v.1 & J?v.2 & u = v.2.1 & J?u & J?op(u.1, u) & op(op(u.1, u).1, op(u.1, u)) == v.2.2 -> op(u.1, u).1
+R6 [1l,11v,111v] J?v & u = v.1 & J?u & J?op(u.1, u) & op(u, op(op(u.1, u).1, op(u.1, u))) == v.2 -> op(u.1, u).1
+R7 [el,11v,111v] J?u & J?op(u.1, u) & op(u, op(u, op(op(u.1, u).1, op(u.1, u)))) == v -> op(u.1, u).1

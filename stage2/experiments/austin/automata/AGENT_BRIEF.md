@@ -78,6 +78,15 @@ Lessons recorded by the author of the template (they cost real iterations):
   itself; `msr_J_nlt : ¬ msr w (J u v) < msr u v` shows the `J u v` fallback of a gate never passes the next gate.
 - `simp only … at h` does nothing on an `abbrev` application — destructure it in the `rcases` pattern or `unfold` first.
 - The shell heredoc strips backslashes: write helper scripts with the Write tool; set `PYTHONIOENCODING=utf-8`.
+- `split` reduces a gate `dite` only when the gate or its negation is a hypothesis in context; otherwise it case-splits
+  the `Nat.lt` proof and fails with "Dependent elimination failed … Nat.le.refl". Put every gate fact (`by_cases g_k`,
+  or the always-false gates `ngJ : ¬ msr (J u v) u < msr u v`) in context before `split`. `rw [hP]` on
+  `op (op (a2 u) u) u` needs `rw [hP, hP]` (the rewrite creates a new occurrence).
+- If the skeleton turns out FALSE (9345, 13992 did — the generator located a payload through an accessor path that is
+  wrong when an inner product of the encoding is itself decoded), the repair that worked twice: recover the payload
+  through the occurrence that is provably free (`u = v.2`-type invariants: every rule carries it), drop the R1-shape
+  guards, keep 3–4 rules, re-validate with `cf.deep_tests` (≥ 40k, several seeds) and critical-pair-shaped instances,
+  regenerate the skeleton via `leangen.emit` with the new rules, then prove. Report the repaired rule set verbatim.
 - Before opening the proof, run a coincidence-targeted check of the rule set (x, z drawn from subterms/products of an
   R-shaped y; `gen/chk<eq>.py`'s `cf.Closed.evp` reproduces any instance in milliseconds, and
   `simp (config := {decide := true}) [op.eq_1, sz, P1, …]` decides a concrete instance in Lean in ~1 s). If you find a

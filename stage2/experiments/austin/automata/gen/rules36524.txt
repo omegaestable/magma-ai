@@ -1,0 +1,19 @@
+law 36524: x = (((y * x) * y) * (y * z)) * y   (normalised: x = ('y', (('z', 'y'), ('y', ('x', 'y')))))   DUALIZED: rules/op are for the dual L-form law; the served magma is op flipped
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & J?v.1 & u = v.1.2 & J?v.2 & u = v.2.1 & J?v.2.2 & u = v.2.2.2 -> v.2.2.1
+R2 [B11l] J?v & J?v.1 & u = v.1.2 & J?v.2 & u = v.2.1 & J?u & J?u.1 & op(u.1.2, u) == v.2.2 -> u.1.2
+R3 [B11s] J?v & J?v.1 & u = v.1.2 & J?v.2 & u = v.2.1 & J?u & J?u.1 & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & v.2.2 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.2.2 -> u.1.2
+R4 [B1l,B11v] J?v & J?v.1 & u = v.1.2 & J?u & J?u.1 & op(u, op(u.1.2, u)) == v.2 -> u.1.2
+R5 [B0l] J?v & J?v.2 & u = v.2.1 & J?v.2.2 & u = v.2.2.2 & J?u & J?u.1 & op(u.1.2, u) == v.1 -> v.2.2.1
+R6 [B0l,B11l] J?v & J?v.2 & u = v.2.1 & J?u & J?u.1 & op(u.1.2, u) == v.1 & op(u.1.2, u) == v.2.2 -> u.1.2
+R7 [B0l,B11s] J?v & J?v.2 & u = v.2.1 & J?u & J?u.1 & op(u.1.2, u) == v.1 & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & v.2.2 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.2.2 -> u.1.2
+R8 [B0l,B1l,B11v] J?v & J?u & J?u.1 & op(u.1.2, u) == v.1 & op(u, op(u.1.2, u)) == v.2 -> u.1.2
+R9 [B0s] J?v & J?v.2 & u = v.2.1 & J?v.2.2 & u = v.2.2.2 & J?u & J?u.1 & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & v.1 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.1 -> v.2.2.1
+R10 [B0s,B11l] J?v & J?v.2 & u = v.2.1 & J?u & J?u.1 & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & v.1 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.1 & op(u.1.2, u) == v.2.2 -> u.1.2
+R11 [B0s,B11s] J?v & J?v.2 & u = v.2.1 & J?u & J?u.1 & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & v.1 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.1 & u.1.2 = u.2.1 & v.2.2 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.2.2 -> u.1.2
+R12 [B0s,B1l,B11v] J?v & J?u & J?u.1 & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & v.1 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == v.1 & op(u, op(u.1.2, u)) == v.2 -> u.1.2
+R13 [Bl,B11v] J?u & J?u.1 & J?op(u, op(u.1.2, u)) & J?op(u, op(u.1.2, u)).1 & op(op(u, op(u.1.2, u)).1.2, op(u, op(u.1.2, u))) == v & J?op(u, op(u.1.2, u)).1.2 & u = op(u, op(u.1.2, u)).1.2.2 -> u.1.2
+R14 [Bl,B0l,B11v] J?u & J?u.1 & J?op(u, op(u.1.2, u)) & J?op(u, op(u.1.2, u)).1 & op(op(u, op(u.1.2, u)).1.2, op(u, op(u.1.2, u))) == v & op(u.1.2, u) == op(u, op(u.1.2, u)).1.2 -> u.1.2
+R15 [Bl,B0s,B11v] J?u & J?u.1 & J?op(u, op(u.1.2, u)) & J?op(u, op(u.1.2, u)).1 & op(op(u, op(u.1.2, u)).1.2, op(u, op(u.1.2, u))) == v & J?u.2 & u.1.2 = u.2.1 & J?u.2.2 & op(u, op(u.1.2, u)).1.2 = u.2.2.1 & u.1.2 = u.2.2.2 & op(u.1.2, u) == op(u, op(u.1.2, u)).1.2 -> u.1.2
+R16 [Bl,B0v] J?u & J?u.1 & op(u.1.2, u) = u.2 & v = u.1 & op(u.1.2, u) = u.2 & op(op(u.1.2, u), op(u, op(op(u.1.2, u), u))) == v -> op(u.1.2, u)
+R17 [Bl,B0v,B11v] J?u & J?u.1 & op(op(u.1.2, u), op(u, op(u.1.2, u))) == v -> u.1.2

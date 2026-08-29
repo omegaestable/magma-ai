@@ -12,7 +12,7 @@ spec = importlib.util.spec_from_file_location('solver_mod', ROOT + '/stage2/solv
 solver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(solver)
 
-certdir = os.path.join(here, '..', 'certs')
+certdir = os.path.join(here, 'certs')
 rows = {r['id']: r for r in load_rows()}
 latest = {}
 for line in open(os.path.join(certdir, 'ledger.jsonl'), encoding='utf-8'):

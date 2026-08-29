@@ -1,0 +1,6 @@
+{"eq": 4952, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [4916], "rows": ["research_order5_hard_0062"], "secs": 1.1}
+{"eq": 5012, "nrules": 4, "fails_all": 2214, "fails_kept": 2325, "refuted": [15535, 20034], "rows": ["research_order5_hard_0015", "research_order5_hard_0019"], "secs": 0.2}
+{"eq": 5066, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [41082, 30591], "rows": ["research_order5_hard_0013", "research_order5_hard_0090"], "secs": 1.0}
+{"eq": 5107, "nrules": 7, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0082"], "secs": 1.0}
+{"eq": 5141, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [4916], "rows": ["research_order5_hard_0066"], "secs": 0.9}
+{"eq": 5295, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [30591], "rows": ["research_order5_hard_0059"], "secs": 1.1}

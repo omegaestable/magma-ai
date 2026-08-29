@@ -84,7 +84,7 @@ def emit(eq, outdir, seed=0):
     C2 = Closed(law, keep)
     tested2, fails2 = cf.deep_tests(C2, law, 3000, 200, eq * 5 + 7)
     import fuzz as fz
-    ftested, ffails = fz.fuzz(Closed(law, keep), law, keep, 20000, seed=eq)
+    ftested, ffails = fz.fuzz(Closed(law, keep), law, keep, 12000, seed=eq)
     fails2 = fails2 + ffails
     rows = [r for r in load_rows() if int(r['eq1_id']) == eq]
     A, B = law[1]

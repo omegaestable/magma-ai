@@ -1,0 +1,25 @@
+{"eq": 32280, "dualized": true, "nrules": 12, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0029"], "secs": 6.3}
+{"eq": 32281, "dualized": true, "nrules": 7, "fails_all": 14, "fails_kept": 10, "refuted": [41082, 15535, 17522], "rows": ["research_order5_hard_0006", "research_order5_hard_0032", "research_order5_hard_0068"], "secs": 6.7}
+{"eq": 32294, "dualized": true, "nrules": 12, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0064"], "secs": 6.3}
+{"eq": 33020, "dualized": true, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [28770, 20034], "rows": ["research_order5_hard_0012", "research_order5_hard_0054"], "secs": 3.0}
+{"eq": 34888, "dualized": true, "nrules": 10, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0046"], "secs": 3.8}
+{"eq": 34889, "dualized": true, "nrules": 3, "fails_all": 9, "fails_kept": 8, "refuted": [22818, 17522, 30591], "rows": ["research_order5_hard_0010", "research_order5_hard_0036", "research_order5_hard_0070"], "secs": 1.9}
+{"eq": 35036, "dualized": true, "nrules": 8, "fails_all": 0, "fails_kept": 0, "refuted": [17522, 41082], "rows": ["research_order5_hard_0073", "research_order5_hard_0074"], "secs": 4.8}
+{"eq": 35836, "dualized": true, "nrules": 23, "fails_all": 1, "fails_kept": 0, "refuted": [25964], "rows": ["research_order5_hard_0095"], "secs": 21.1}
+{"eq": 36487, "dualized": true, "nrules": 14, "fails_all": 0, "fails_kept": 0, "refuted": [17522, 22818], "rows": ["research_order5_hard_0051", "research_order5_hard_0098"], "secs": 6.5}
+{"eq": 36524, "dualized": true, "nrules": 17, "fails_all": 0, "fails_kept": 0, "refuted": [41082], "rows": ["research_order5_hard_0063"], "secs": 9.7}
+{"eq": 36638, "dualized": true, "nrules": 14, "fails_all": 1, "fails_kept": 0, "refuted": [28770], "rows": ["research_order5_hard_0060"], "secs": 11.5}
+{"eq": 36713, "dualized": true, "nrules": 15, "fails_all": 0, "fails_kept": 0, "refuted": [25964, 22818, 15535], "rows": ["research_order5_hard_0035", "research_order5_hard_0083", "research_order5_hard_0089"], "secs": 7.3}
+{"eq": 38249, "dualized": true, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0072"], "secs": 1.4}
+{"eq": 38316, "dualized": true, "nrules": 8, "fails_all": 0, "fails_kept": 0, "refuted": [22455, 20034], "rows": ["research_order5_hard_0055", "research_order5_hard_0065"], "secs": 7.0}
+{"eq": 38565, "dualized": true, "nrules": 7, "fails_all": 0, "fails_kept": 0, "refuted": [41082], "rows": ["research_order5_hard_0077"], "secs": 4.0}
+{"eq": 39126, "dualized": true, "nrules": 11, "fails_all": 0, "fails_kept": 0, "refuted": [22455, 30591], "rows": ["research_order5_hard_0044", "research_order5_hard_0075"], "secs": 5.1}
+{"eq": 39163, "dualized": true, "nrules": 15, "fails_all": 0, "fails_kept": 0, "refuted": [22818], "rows": ["research_order5_hard_0002"], "secs": 8.0}
+{"eq": 39214, "dualized": true, "nrules": 5, "fails_all": 0, "fails_kept": 2, "refuted": [41082], "rows": ["research_order5_hard_0026"], "secs": 2.0}
+{"eq": 40037, "dualized": true, "nrules": 4, "fails_all": 0, "fails_kept": 0, "refuted": [25964], "rows": ["research_order5_hard_0078"], "secs": 2.2}
+{"eq": 40057, "dualized": true, "nrules": 8, "fails_all": 0, "fails_kept": 0, "refuted": [28770], "rows": ["research_order5_hard_0011"], "secs": 4.5}
+{"eq": 40070, "dualized": true, "nrules": 9, "fails_all": 0, "fails_kept": 0, "refuted": [17522], "rows": ["research_order5_hard_0084"], "secs": 10.2}
+{"eq": 40909, "dualized": true, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [28770], "rows": ["research_order5_hard_0014"], "secs": 3.0}
+{"eq": 40914, "dualized": true, "nrules": 2, "fails_all": 0, "fails_kept": 0, "refuted": [4916, 28770], "rows": ["research_order5_hard_0016", "research_order5_hard_0023"], "secs": 1.1}
+{"eq": 41252, "dualized": true, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [20034], "rows": ["research_order5_hard_0088"], "secs": 2.9}
+{"eq": 41253, "dualized": true, "nrules": 3, "fails_all": 0, "fails_kept": 0, "refuted": [4916], "rows": ["research_order5_hard_0004"], "secs": 2.1}

@@ -1,0 +1,7 @@
+(rules of the ACCEPTED rec13992.lean; the original generator output, refuted, is rules13992_gen0.txt)
+law 13992: x = y * ((z * ((x * y) * y)) * y)   (normalised: x = ('y', (('z', (('x', 'y'), 'y')), 'y')))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & J?v.1 & J?v.1.2 & J?v.1.2.1 & u = v.1.2.1.2 & u = v.1.2.2 & u = v.2 -> v.1.2.1.1
+R2 [010l] J?v & J?v.1 & J?v.1.2 & u = v.1.2.2 & u = v.2 & J?u & op(u.2, u) == v.1.2.1 -> u.2
+R3 [01l] J?v & J?v.1 & u = v.2 & J?u & op(u.2, u) == v.1.2 & op(u.2, u) == u.2 -> u.2
+R4 [0l] J?v & u = v.2 & J?u & J?op(op(u.2, u), u) & op(op(op(u.2, u), u).2, op(op(u.2, u), u)) == v.1 -> u.2

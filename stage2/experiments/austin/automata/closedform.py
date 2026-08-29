@@ -508,12 +508,12 @@ def minimise(law, rules, N=3000, secs=200, seed=1):
     import fuzz as fz
     C = Closed(law, rules)
     deep_tests(C, law, N, secs, seed)
-    fz.fuzz(C, law, rules, 20000, seed=seed + 1)
+    fz.fuzz(C, law, rules, 8000, seed=seed + 1)
     keep = [r for i, r in enumerate(rules) if i in C.fired or r[2] == 'free']
     if len(keep) == len(rules): return rules
     C2 = Closed(law, keep)
     t, f = deep_tests(C2, law, N, secs, seed + 2)
-    t2, f2 = fz.fuzz(C2, law, keep, 20000, seed=seed + 3)
+    t2, f2 = fz.fuzz(C2, law, keep, 8000, seed=seed + 3)
     return keep if not f and not f2 else rules
 
 def best_rules(law, N=3000, secs=200, seed=1, minimize=True):

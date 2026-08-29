@@ -1,0 +1,6 @@
+law 8485: x = y * (x * (((z * x) * y) * y))   (normalised: x = ('y', ('x', ((('z', 'x'), 'y'), 'y'))))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & J?v.2 & J?v.2.1 & J?v.2.1.1 & v.1 = v.2.1.1.2 & u = v.2.1.2 & u = v.2.2 -> v.1
+R2 [B100l] J?v & J?v.2 & J?v.2.1 & u = v.2.1.2 & u = v.2.2 & J?v.1 & J?v.1.2 & J?v.1.2.1 & op(v.1.2.1.2, v.1) == v.2.1.1 -> v.1
+R3 [B10l,B100l] J?v & J?v.2 & u = v.2.2 & J?u & J?u.2 & J?u.2.1 & op(u.2.1.2, u) == v.2.1 & J?v.1 & J?v.1.2 & J?v.1.2.1 & op(v.1.2.1.2, v.1) == u.2.1.2 -> v.1
+R4 [B1l,B100v] J?v & J?v.1 & J?v.1.2 & J?v.1.2.1 & op(op(op(v.1.2.1.2, v.1), u), u) == v.2 -> v.1

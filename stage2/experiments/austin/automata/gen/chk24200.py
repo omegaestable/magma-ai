@@ -1,0 +1,10 @@
+import sys, os, json
+sys.path.insert(0, 'C:\\Users\\nacho\\Documents\\GitHub\\magma-ai\\stage2\\experiments\\austin\\automata')
+import closedform as cf
+from freemodel import normalise, catalog
+from laws import parse_eq
+law = normalise(parse_eq(catalog()[24200]))
+rules = [([('TG', ('U',)), ('TG', ('A1', ('U',))), ('EQ', ('A2', ('A1', ('U',))), ('A2', ('U',))), ('TG', ('V',)), ('TG', ('A1', ('V',))), ('EQ', ('A2', ('A1', ('U',))), ('A1', ('A1', ('V',)))), ('EQ', ('A2', ('A1', ('V',))), ('A2', ('V',)))], ('A2', ('A1', ('U',))), 'free'), ([('TG', ('U',)), ('TG', ('A1', ('U',))), ('EQ', ('A2', ('A1', ('U',))), ('A2', ('U',))), ('TG', ('V',)), ('OPEQ', ('OP', ('A2', ('A1', ('U',))), ('A2', ('V',))), ('A1', ('V',)))], ('A2', ('A1', ('U',))), 'B0s'), ([('TG', ('U',)), ('TG', ('V',)), ('TG', ('A1', ('V',))), ('EQ', ('A2', ('U',)), ('A1', ('A1', ('V',)))), ('EQ', ('A2', ('A1', ('V',))), ('A2', ('V',))), ('TG', ('A2', ('U',))), ('TG', ('A1', ('A2', ('U',)))), ('EQ', ('A1', ('U',)), ('A1', ('A1', ('A2', ('U',))))), ('EQ', ('A2', ('A1', ('A2', ('U',)))), ('A2', ('A2', ('U',))))], ('A2', ('U',)), 'A0s'), ([('TG', ('U',)), ('TG', ('V',)), ('TG', ('A2', ('U',))), ('TG', ('A1', ('A2', ('U',)))), ('EQ', ('A1', ('U',)), ('A1', ('A1', ('A2', ('U',))))), ('EQ', ('A2', ('A1', ('A2', ('U',)))), ('A2', ('A2', ('U',)))), ('OPEQ', ('OP', ('A2', ('U',)), ('A2', ('V',))), ('A1', ('V',)))], ('A2', ('U',)), 'A0s,B0s'), ([('TG', ('V',)), ('TG', ('A1', ('V',))), ('EQ', ('A2', ('A1', ('V',))), ('A2', ('V',))), ('TG', ('A1', ('A1', ('V',)))), ('TG', ('A1', ('A1', ('A1', ('V',))))), ('EQ', ('U',), ('A1', ('A1', ('A1', ('A1', ('V',)))))), ('EQ', ('A2', ('A1', ('A1', ('A1', ('V',))))), ('A2', ('A1', ('A1', ('V',))))), ('EQ', ('A1', ('A1', ('V',))), ('U',))], ('A1', ('A1', ('V',))), 'As')]
+C = cf.Closed(law, rules)
+tested, fails = cf.deep_tests(C, law, int(sys.argv[1]) if len(sys.argv) > 1 else 3000, 300, 11)
+print("tested", tested, "fails", len(fails))

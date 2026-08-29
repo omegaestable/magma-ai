@@ -1,0 +1,4 @@
+law 25087: x = (y * (x * (x * y))) * (z * z)   (normalised: x = (('y', ('x', ('x', 'y'))), ('z', 'z')))
+deep tests: all rules 110/3000 fails; kept rules 80/3000 fails
+R1 [free] J?u & J?u.2 & J?u.2.2 & u.2.1 = u.2.2.1 & u.1 = u.2.2.2 & J?v & v.1 = v.2 -> u.2.1
+R2 [A11s] J?u & J?u.2 & J?v & v.1 = v.2 & op(u.2.1, u.1) == u.2.2 -> u.2.1
