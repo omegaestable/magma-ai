@@ -92,4 +92,5 @@ leaf count, deterministic under load.
 | Prover9 300 s on all 169 TRUE-side problems | 169 timeouts |
 | Recursive self-consistency check inside the symbolic verifier | unbounded unfolding; bounded unfolding with unknowns reports failures at depth 1–3 (the model as written is incomplete: short chains after two early unloads are not covered) |
 | Exact critical-pair completion (5107, 5012, 5837) | diverges; rule depth and tree size grow without bound |
-| Blind CEGIS search on the hard family (batches 3–7, 600–900 s per law) | 0 of the all-bare-variable laws; 0 of 5012/5837/6912/… (compound off-spine but early unloads inside the off-spine term) |
+| Blind CEGIS search on the hard family (batches 3–8, 600–900 s per law) | 0 of the all-bare-variable laws; 0 of 5012/5837/6912/… (compound off-spine but early unloads inside the off-spine term) |
+| ℚ piecewise-linear sweep, rounds 1+2 (721 M candidates, 4 workers, ~65 min) | **1 hit in 69** (25087, shipped with its dual). Round 2 is a *shallow* negative: every hypothesis got through only 11–16 of the 97 three-region templates at 7 coefficient values; the full-coefficient and four-region tiers never started. An overnight run on all cores is the cheap follow-up, not a new idea |
