@@ -74,12 +74,15 @@ def rule_lean(conds, x, k):
 def dual_pat(p):
     return p if isinstance(p, str) else (dual_pat(p[1]), dual_pat(p[0]))
 
-def emit(eq, outdir, seed=0):
+def emit(eq, outdir, seed=0, rules_override=None):
     cat = catalog(); orig = normalise(parse_eq(cat[eq]))
     # R-form laws (x = A * y) are served by the model of the dual L-form law with the operation flipped
     dualized = isinstance(orig[1][1], str) and not isinstance(orig[1][0], str)
     law = ('x', dual_pat(orig[1])) if dualized else orig
-    rules, tested, fails, C = cf.best_rules(law, 3000, 200, eq * 3 + 1)
+    if rules_override is not None:
+        rules = list(rules_override); C = Closed(law, rules); tested, fails = cf.deep_tests(C, law, 3000, 200, eq * 3 + 1)
+    else:
+        rules, tested, fails, C = cf.best_rules(law, 3000, 200, eq * 3 + 1)
     keep = list(rules)
     C2 = Closed(law, keep)
     tested2, fails2 = cf.deep_tests(C2, law, 3000, 200, eq * 5 + 7)

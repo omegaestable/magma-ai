@@ -1,9 +1,13 @@
-"""dualcert.py <accepted_L.lean> <L_eq_id> <R_eq_id> <goal_eq_id> <out.lean>
+"""dualcert.py <accepted.lean> <L_eq_id> <target_eq_id> <goal_eq_id> <out.lean>
 
-Build the certificate of the R-form row (R_eq, goal) from an ACCEPTED certificate of its dual L-form law:
-flip `inst` (op b a), recompute the refutation of the goal in the flipped magma (instance found with the
-semantic free model — generator triples only, so every product is a free J in any correct model), keep the
-file's own refutation tactic, and prove `lhs` by trying the six variable permutations of `law`.
+Transplant an ACCEPTED certificate to another row served by the same `op`.
+
+`op` in an accepted file is always the free model of an L-form law `L_eq` (x = y * B); the file's `inst`
+is either `{ op := op }` (the L-form row itself) or `{ op := fun a b => op b a }` (a dualized R-form row).
+The target row's hypothesis `target_eq` must be `L_eq` or its dual; the target's `inst` is chosen from
+its orientation, the refutation of `goal_eq` is recomputed in the target magma (generator triples only,
+so every product is a free J in any correct model), the file's own refutation tactic is kept, and `lhs`
+is proved by trying the six variable permutations of `law` (the statement is the L-form law either way).
 """
 import sys, os, re, itertools
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -16,29 +20,34 @@ def lt(t):
     return 'J (%s) (%s)' % (lt(t[1]), lt(t[2]))
 
 def main():
-    acc, leq, req, goal, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
+    acc, leq, teq, goal, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
     A = open(acc, encoding='utf-8').read()
     cat = catalog()
     L = normalise(parse_eq(cat[leq]))
+    T = normalise(parse_eq(cat[teq]))
+    flipped = not isinstance(T[1][0], str)          # target is x = A * y: served by op flipped
+    if not flipped and T != L:
+        print('target is L-form but differs from the L law; refusing'); sys.exit(1)
     F = fm.Free(L)
     g = normalise(parse_eq(cat[goal])); gv = pvars(g[1])
     order = ['x'] + [v for v in gv if v != 'x']
     def evg(p, s):
         if isinstance(p, str): return s[p]
         a, b = evg(p[0], s), evg(p[1], s)
-        return F.op(b, a)          # flipped magma
+        return F.op(b, a) if flipped else F.op(a, b)
     inst = None
     for vals in itertools.product([('g', 0), ('g', 1), ('g', 2)], repeat=len(order)):
         s = dict(zip(order, vals))
         if s['x'] != evg(g[1], s): inst = s; break
     if inst is None:
-        print('no generator instance refutes the goal in the flipped magma'); sys.exit(1)
+        print('no generator instance refutes the goal in the target magma'); sys.exit(1)
     def lp(p):
         if isinstance(p, str): return lt(inst[p])
-        return 'op (%s) (%s)' % (lp(p[1]), lp(p[0]))
+        return 'op (%s) (%s)' % (lp(p[1]), lp(p[0])) if flipped else 'op (%s) (%s)' % (lp(p[0]), lp(p[1]))
     # inst
-    A2 = re.sub(r'def inst : Magma M := \{ op := [^\n]*\}', 'def inst : Magma M := { op := fun a b => op b a }', A, count=1)
-    assert A2 != A, 'inst line not found'
+    newinst = 'def inst : Magma M := { op := fun a b => op b a }' if flipped else 'def inst : Magma M := { op := op }'
+    A2 = re.sub(r'def inst : Magma M := \{ op := [^\n]*\}', newinst, A, count=1)
+    assert 'def inst : Magma M' in A2, 'inst line not found'
     # rhs block
     i = A2.index('theorem rhs')
     m = re.search(r'\n(?=(theorem |/--|def |abbrev |end submission))', A2[i + 1:]); j = i + 1 + m.start()
@@ -54,7 +63,7 @@ def main():
     perms = ' | '.join('exact (law %s).symm' % ' '.join(p) for p in itertools.permutations(['x', 'y', 'z']))
     A2 = A2[:i] + 'theorem lhs : @EquationLHS M inst := by\n  intro x y z\n  first | %s\n\n' % perms + A2[j:]
     open(out, 'w', encoding='utf-8', newline='\n').write(A2)
-    print('written', out, len(A2.encode()), 'bytes; instance', {k: lt(v) for k, v in inst.items()})
+    print('written', out, len(A2.encode()), 'bytes;', 'flipped' if flipped else 'unflipped', 'instance', {k: lt(v) for k, v in inst.items()})
 
 if __name__ == '__main__':
     main()
