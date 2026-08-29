@@ -57,11 +57,20 @@ literals live in the source tree (`stage2/solver/solver.py`) in plain
 Python/Lean text. Every payload below is reproducible from the sources named.
 Sizes are of the unpacked text, measured 2026-08-28.
 
-- **`DISTILLED_CERTS` — 59 complete Lean certificates (~99 KB of source, the
+- **`DISTILLED_CERTS` — 69 complete Lean certificates (~158 KB of source, the
   single largest payload).** Keyed by the renaming-invariant canonical text of
   the (hypothesis, goal) equation pair, never by a problem id, so one entry
   serves every spelling of the same implication. 37 are TRUE certificates and
-  22 are FALSE. Methodology: each was produced by the engines described above
+  32 are FALSE. Ten of the FALSE ones (named `aus_e*`, added 2026-08-28) are
+  *infinite* countermodels of our own construction for order-5 laws with no
+  finite models: eight are inductive term carriers with a few projection
+  rules (a "tag automaton"), found by a symbolic search whose verifier is a
+  complete case analysis and rendered as a Lean case tree closed by
+  `simp`/`omega`; two are piecewise-linear operations on ℚ found by a small
+  exhaustive sweep and proved by `linarith` over the linear regions. Every one
+  was accepted by the official judge before being stored; they were generated
+  offline by `stage2/experiments/austin/automata/`. Methodology for the rest:
+  each was produced by the engines described above
   — mostly ordered Knuth-Bendix completion with proof recording, run offline
   with a larger budget than a graded row affords — and then submitted to the
   official Lean judge; a certificate the judge did not accept is never stored.

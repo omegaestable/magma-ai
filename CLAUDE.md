@@ -132,7 +132,7 @@ which stays the reference for them.
 | **Full combined evaluation set** — every published labelled file deduplicated by (eq1, eq2): `normal`+`hard1`+`hard2`+`hard3`+`sample_200`+`stress_test`+the four `evaluation_*` mirrors = **2,869 pairs** (+100 unlabelled research rows = 2,969; `sample_20`, `hard.jsonl`, the marathon example add nothing new) | **2869 / 2869 solved, 0 failed**, solver time 403.7 s (sum of per-row seconds), wall-clock 1m46.0s on 16 workers, 0.14 s/problem; 0 crashes / 0 oracle failures / 0 label mismatches. The research rows are 0/100 (`DEEP_SESSION_5_AUSTIN_HANDOVER.md`). A "2130/2130" figure quoted from the competition Zulip matches no union of the published files |
 | Extended official battery, first full pass (`--all` incl. `stress_test_200`) | **2089/2089 solved, 0 oracle failures, 260.4 s solver time (sum of per-row seconds; per-set wall on 16 workers: hard1 1.3 s, hard2 24.6 s, hard3 11.6 s, normal 14.0 s, sample_20 1.9 s, sample_200 7.4 s, stress_test_200 12.7 s)** |
 | Organizers' stress test (`stress_test_200`: 50 order-4 normal/hard/extra-hard + 50 order-5 normal, 100 T / 100 F) | **200 / 200, 0 oracle failures, all labels matched, 12.7 s** — promoted into `audit_corpus.py --all` the same day (it was under the gitignored `stage2/results/*.jsonl`) |
-| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **0 / 100 — open research, not a solver gap**: every `eq2` is a confirmed Austin law and every `eq1` a Table-2/3 law with no infinite model ever built (blueprint `order_5.tex`). Measured dead today: affine templates over ℚ 0/69, z3 proving 169/169 `unknown`, ℤ piecewise-linear models 0/69 (control 40/40). Constructions map + plan: `stage2/results/2026-08-28-assessment-deterministic-austin-tidy.md`. Selectable with `--set research_order5_hard`, deliberately outside `--all` (~460 s/row) |
+| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **10 / 100 accepted by the real judge (evening session, was 0)** — the first infinite models of any Table-2 law: 8 rows by *tag automata* (term models with a few projection rules, found by a complete symbolic verifier + CEGIS search; 11116 ×3, 5066 ×2, 4952, and the duals 34888, 41252) and 2 by a *piecewise-linear model over ℚ* (25087 and its dual 20911). All ten ship as `false:distilled:aus_e*` (packed +5.8 KB; artifact **379,836 B**), byte-pinned (fixture 183 pins), gate **482–483 passed / 2–3 skipped** across two `-n auto` runs (skips: the spot-check placeholder and the documented timing route-drift flaps — `pytest -rs` lists them; none from the new pins; the fixture+golden files alone read 237 passed, 0 skipped). The remaining 90: the free model's repair hierarchy is infinite (its limit is a *recursive* fixed point — for 5107 a 4-rule model plus one structurally recursive auxiliary, 0/3,000 biased random failures, not yet certifiable: needs an inductive verifier and a recursive-op Lean template); 10 hypotheses are bad-orientation and must be solved on the dual (rail 39). Dead today: Prover9 300 s on 169 TRUE-side problems (169 timeouts), exact critical-pair completion (diverges), bounded-unfolding verification of recursive models (191k leaves at depth 2). Everything: `stage2/results/2026-08-28-austin-tag-automata.md`, tooling `stage2/experiments/austin/automata/`. Selectable with `--set research_order5_hard`, deliberately outside `--all` |
 | Full-deterministic question | **Keep the LLM lane** (optional in both modes, gated off without a proxy, kernel-checks everything, 5 judge-accepted TRUE certs since 2026-08-27 vs 0/433 before, ~+0.1 % expected on the order-5 quarter); same doc, §1 |
 
 The three solver changes: completion probe before egg probe (rail 34); the two
@@ -943,6 +943,32 @@ Rails 34–36 were measured on 2026-08-28
     arbiter, and it needs an inductive (size-function) argument, not `cases`.
     (`stage2/experiments/austin/README.md`.)
 
+Rails 38–41 were measured on 2026-08-28 (evening, the Austin session —
+`stage2/results/2026-08-28-austin-tag-automata.md`).
+
+38. **A symbolic case analysis with unification is a proof; a random checker
+    is not.** Rail 37's random checker missed the depth-4 failure that a
+    symbolic verifier (constructor splits + unification with the occurs
+    check as the "level" argument) finds in 14 leaves; the same verifier
+    *proves* the law for every element of the carrier, and the Lean
+    certificate is its case tree. When a model lives on an inductive type,
+    verify by case analysis, never by sampling.
+39. **A term model with free products has one admissible orientation.** If
+    the innermost spine product is `y ◇ x` with `y` bare, the forced early
+    unload (`x` of root shape ⇒ `y ◇ x` = payload) hits every `x` with that
+    payload and contradicts the injectivity of `L_y` the law forces — no such
+    model exists. Solve the dual law and dualise the model back. Ten of the
+    69 research hypotheses are in this class.
+40. **Per-verification wall-clock deadlines under parallel load produce
+    spurious negatives (rail 5e, in a search).** Under 12 workers a 5 s
+    verification deadline made 5066 and the 28770 control read "none" when
+    each solves in seconds alone. Cap searches by a deterministic quantity
+    (leaf count) and keep wall clocks as a far safety net.
+41. **A recursion-depth counter kept in a mutable field is wrong across
+    generator suspension** — the `finally` that decrements it runs when the
+    generator closes, not when it yields, so a sibling call sees the elevated
+    depth and hits the limit. Thread the depth as an argument.
+
 ## Environment gotchas that will bite you
 
 - **UTF-8.** Printing `◇` crashes with `UnicodeEncodeError` on Windows cp1252.
@@ -1149,12 +1175,15 @@ solver primitive cannot hide itself in the oracle.
 ## Known open frontier
 
 **The organizers' Austin research set (`research_order5_hard`, 2026-08-28):**
-0/100 and provably not a search problem — see the measured-state table and
-`stage2/results/2026-08-28-assessment-deterministic-austin-tidy.md` §2 for
-the construction-by-construction map (linear, cohomology and every finite
-family are dead by Lefschetz / "no finite models"; what remains is per-law
-greedy translation-invariant or Kisielewicz-encoding models plus a Lean
-formalisation each). Do not re-run table search, z3, or affine templates on it.
+**10/100** (evening session) — two constructions work and are fully
+automated end to end (search → complete symbolic verification → Lean → real
+judge): tag automata (`stage2/experiments/austin/automata/`) and
+piecewise-linear models over ℚ. The 90 open rows are the laws whose free
+model has an infinite repair hierarchy; the next lever is an *inductive*
+verifier plus a recursive-op Lean template for the fixed-point models (5107's
+is written down and empirically validated), and a wider ℚ-PWL sweep. Read
+`stage2/results/2026-08-28-austin-tag-automata.md` first. Do not re-run table
+search, z3, affine templates, Prover9, or exact critical-pair completion on it.
 
 **Updated 2026-08-27 after the improvement pass.** Order-4: the four-law
 frontier is closed as a family (`650`, `2923`, `3569`, `2854`); what remains is

@@ -99,7 +99,7 @@ def main() -> int:
                 "toolchain": toolchain,
             })
             if message and status != "accepted":
-                record["judge_message"] = str(message)[:600]
+                record["judge_message"] = str(message)[:20000]
             accepted += status == "accepted"
             out.write(json.dumps(record, ensure_ascii=False) + "\n")
             out.flush()

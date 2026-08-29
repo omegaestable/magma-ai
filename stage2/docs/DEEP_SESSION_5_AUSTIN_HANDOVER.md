@@ -23,8 +23,31 @@ returns nothing on that shape. Solving a hypothesis solves every row that
 shares it: `11116`, `22591`, `32281`, `34889`, `36713` cover 3 rows each,
 15 hypotheses cover 2, and the goal `22818` appears in 20 rows.
 
-Current state: **0 / 100 — 100 left.** 0 at every tier, 0 from every
-automated construction tried on 2026-08-28 (table below).
+Current state (updated 2026-08-28 evening): **10 / 100 accepted by the real
+judge — 90 left.** Rows `0009`, `0047`, `0056` (eq1 11116), `0013`, `0090`
+(5066), `0062` (4952), `0046` (34888, dual of 11116), `0088` (41252, dual
+of 4952) by tag automata, and `0100` (25087), `0043` (20911, its dual) by
+piecewise-linear models over ℚ; all shipped as `false:distilled:aus_e*`. Evidence and the whole
+method: `stage2/results/2026-08-28-austin-tag-automata.md`; tooling:
+`stage2/experiments/austin/automata/` (README there). **Read that results
+doc before this plan: Track A below was executed, and what it found changes
+the plan.** In one line: the finite tag automaton works when the early
+unloads (inner products that are themselves law instances) close after one
+or two repairs (11116, 5066, 4952, 28770); on the rest the repair hierarchy
+is infinite and the true model is the *recursive* fixed point (`op u v = x
+iff v = op(u, op(u, op(z, op(x, u))))`), which for 5107 collapses to four
+rules plus a unary `pay(u) = op(u.1, u)` by structural recursion and
+passes 3,000 biased random tests — but neither the symbolic verifier
+(finite case analysis) nor the renderer (no well-founded recursion) can
+certify it yet. **The next lever is an inductive verifier + a recursive-op
+Lean template, not more search.** Also: ten hypotheses have the wrong
+orientation for any term model (innermost `y ◇ x` with `y` bare) and must be
+solved on the dual (`synthesize_any` does this).
+
+The paragraph below is the state as of the morning of 2026-08-28 and is kept
+for the record:
+0 at every tier, 0 from every automated construction tried on 2026-08-28
+(table below).
 
 ## What settles a row
 

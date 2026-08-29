@@ -717,6 +717,11 @@ def check_no_banned_tactics(code: str, route: str = "") -> None:
             f"the judge's banned-token scan rejects before Lean ever runs")
     if route in GRIND_ALLOWED_ROUTES:
         return
+    if code in _judge_pinned_false_certs():
+        # Byte-exact match against a certificate the real judge accepted: the
+        # pin *is* the evidence (rail 5h), and the infinite-automaton
+        # certificates (2026-08-28) close their case trees with `simp`.
+        return
     found = sorted({m.group() for m in _BANNED_TACTIC_RE.finditer(code)})
     if found:
         raise OracleError(
