@@ -1,0 +1,22 @@
+24200 FAIL rules None -> None full {'nrules': 5, 'fails': 65, 'kinds': {'value:deep': 2, 'value:fuzz': 63}} {'nrules': 5, 'fails': 65, 'kinds': {'value:deep': 2, 'value:fuzz': 63}} secs 10.1 
+21864 FAIL rules None -> None full {'nrules': 6, 'fails': 2, 'kinds': {'value:deep': 2}} {'nrules': 6, 'fails': 2, 'kinds': {'value:deep': 2}} secs 22.9 
+23354 OK rules 7 -> 3 full {'nrules': 7, 'fails': 0, 'kinds': {}}  secs 30.7 
+40037 FAIL rules None -> None full {'nrules': 4, 'fails': 1, 'kinds': {'value:fuzz': 1}} {'nrules': 4, 'fails': 1, 'kinds': {'value:fuzz': 1}} secs 21.5 
+17286 FAIL rules None -> None full {'nrules': 5, 'fails': 22, 'kinds': {'value:fuzz': 17, 'value:deep': 5}} {'nrules': 5, 'fails': 22, 'kinds': {'value:fuzz': 17, 'value:deep': 5}} secs 50.6 
+28626 FAIL rules None -> None full {'nrules': 5, 'fails': 9, 'kinds': {'value:fuzz': 9}} {'nrules': 5, 'fails': 9, 'kinds': {'value:fuzz': 9}} secs 54.8 
+39214 FAIL rules None -> None full {'nrules': 9, 'fails': 2, 'kinds': {'value:deep': 2}} {'nrules': 9, 'fails': 2, 'kinds': {'value:deep': 2}} secs 31.1 
+21865 FAIL rules None -> None full {'nrules': 6, 'fails': 91, 'kinds': {'value:deep': 31, 'value:fuzz': 60}} {'nrules': 6, 'fails': 91, 'kinds': {'value:deep': 31, 'value:fuzz': 60}} secs 13.8 
+21866 FAIL rules None -> None full {'nrules': 7, 'fails': 74, 'kinds': {'value:deep': 11, 'value:fuzz': 63}} {'nrules': 7, 'fails': 74, 'kinds': {'value:deep': 11, 'value:fuzz': 63}} secs 11.1 
+27859 FAIL rules None -> None full {'nrules': 3, 'fails': 194, 'kinds': {'value:deep': 131, 'value:fuzz': 63}} {'nrules': 3, 'fails': 194, 'kinds': {'value:deep': 131, 'value:fuzz': 63}} secs 2.3 
+22591 FAIL rules None -> None full {'nrules': 3, 'fails': 6, 'kinds': {'value:deep': 6}} {'nrules': 3, 'fails': 6, 'kinds': {'value:deep': 6}} secs 5.8 
+34889 FAIL rules None -> None full {'nrules': 3, 'fails': 19, 'kinds': {'value:deep': 17, 'value:fuzz': 2}} {'nrules': 3, 'fails': 19, 'kinds': {'value:deep': 17, 'value:fuzz': 2}} secs 9.0 
+6912 FAIL rules None -> None full {'nrules': 9, 'fails': 3, 'kinds': {'value:deep': 3}} {'nrules': 9, 'fails': 3, 'kinds': {'value:deep': 3}} secs 30.8 
+12087 OK rules 11 -> 3 full {'nrules': 11, 'fails': 0, 'kinds': {}}  secs 100.2 
+12883 FAIL rules None -> None full {'nrules': 18, 'fails': 1, 'kinds': {'value:fuzz': 1}} {'nrules': 22, 'fails': 10, 'kinds': {'value:deep': 7, 'value:fuzz': 3}} secs 102.5 
+24199 FAIL rules None -> None full {'nrules': 7, 'fails': 6, 'kinds': {'value:deep': 3, 'value:fuzz': 3}} {'nrules': 7, 'fails': 6, 'kinds': {'value:deep': 3, 'value:fuzz': 3}} secs 27.7 
+12073 FAIL rules None -> None full {'nrules': 2, 'fails': 107, 'kinds': {'value:deep': 45, 'value:fuzz': 62}} {'nrules': 2, 'fails': 107, 'kinds': {'value:deep': 45, 'value:fuzz': 62}} secs 4.1 
+32281 FAIL rules None -> None full {'nrules': 24, 'fails': 39, 'kinds': {'value:deep': 21, 'value:fuzz': 18}} {'nrules': 24, 'fails': 39, 'kinds': {'value:deep': 21, 'value:fuzz': 18}} secs 170.9 
+11081 OK rules 24 -> 24 full {'nrules': 24, 'fails': 0, 'kinds': {}}  secs 945.9 
+35036 OK rules 24 -> 24 full {'nrules': 24, 'fails': 0, 'kinds': {}}  secs 951.5 
+13764 OK rules 67 -> 67 full {'nrules': 67, 'fails': 0, 'kinds': {}}  secs 1082.2 
+9663 FAIL rules None -> None full {'nrules': 49, 'fails': 1, 'kinds': {'value:fuzz': 1}} {'nrules': 59, 'fails': 168, 'kinds': {'value:deep': 166, 'value:fuzz': 2}} secs 1303.9 

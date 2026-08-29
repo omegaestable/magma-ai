@@ -1,0 +1,69 @@
+{"eq": 4952, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 10820, "tainted": 0, "bail": 0, "cuts": 0, "memo": 24242, "maxsz": 119, "secs": 1.3}
+{"eq": 5012, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 8910, "tainted": 9041, "bail": 0, "cuts": 206157, "memo": 252257, "maxsz": 119, "secs": 13.5}
+{"eq": 5066, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 7231, "tainted": 0, "bail": 0, "cuts": 0, "memo": 25760, "maxsz": 119, "secs": 1.1}
+{"eq": 5107, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 154, "tainted": 0, "bail": 0, "cuts": 43546, "memo": 62455, "maxsz": 119, "secs": 3.2}
+{"eq": 5141, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 95, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 339362, "memo": 292165, "maxsz": 119, "secs": 14.5}
+{"eq": 5295, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 10352, "tainted": 10366, "bail": 0, "cuts": 230260, "memo": 141023, "maxsz": 119, "secs": 8.1}
+{"eq": 5833, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 48005, "tainted": 0, "bail": 0, "cuts": 378, "memo": 27560, "maxsz": 119, "secs": 3.0}
+{"eq": 5837, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 54471, "tainted": 0, "bail": 0, "cuts": 387, "memo": 25006, "maxsz": 119, "secs": 2.3}
+{"eq": 6878, "tested": 2545, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 12271895, "tainted": 41, "bail": 0, "cuts": 154747, "memo": 150781, "maxsz": 119, "secs": 240.5}
+{"eq": 6912, "tested": 3000, "fails": 0, "conflicts": 1, "cycles": 0, "rbail": 0, "rcycles": 25853, "tainted": 1448, "bail": 0, "cuts": 57674, "memo": 46882, "maxsz": 119, "secs": 8.8}
+{"eq": 7701, "tested": 1845, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1347600, "tainted": 0, "bail": 0, "cuts": 1557, "memo": 28010, "maxsz": 119, "secs": 240.0}
+{"eq": 8485, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1308, "tainted": 92, "bail": 0, "cuts": 4030, "memo": 50593, "maxsz": 119, "secs": 25.6}
+{"eq": 9345, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 14347, "memo": 36443, "maxsz": 119, "secs": 5.5}
+{"eq": 9663, "tested": 3000, "fails": 1, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 437221, "tainted": 62329, "bail": 0, "cuts": 293605, "memo": 127338, "maxsz": 119, "secs": 68.7}
+{"eq": 9667, "tested": 3, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1173482, "tainted": 556398, "bail": 0, "cuts": 2762236, "memo": 294, "maxsz": 31, "secs": 263.6}
+{"eq": 10218, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1067, "tainted": 919, "bail": 0, "cuts": 33448, "memo": 61688, "maxsz": 119, "secs": 19.3}
+{"eq": 10222, "tested": 3000, "fails": 2, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 5030, "memo": 38682, "maxsz": 119, "secs": 4.7}
+{"eq": 11081, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1105004, "tainted": 329901, "bail": 0, "cuts": 600217, "memo": 143855, "maxsz": 119, "secs": 75.1}
+{"eq": 11116, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 6, "tainted": 6, "bail": 0, "cuts": 37326, "memo": 25123, "maxsz": 119, "secs": 2.0}
+{"eq": 11280, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 41075, "memo": 74830, "maxsz": 119, "secs": 14.5}
+{"eq": 12073, "tested": 3000, "fails": 9, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 18160, "memo": 36137, "maxsz": 119, "secs": 4.3}
+{"eq": 12087, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 51864, "memo": 53924, "maxsz": 119, "secs": 36.0}
+{"eq": 12234, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 25922, "memo": 67462, "maxsz": 119, "secs": 118.0}
+{"eq": 12294, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 441853, "tainted": 0, "bail": 0, "cuts": 20269, "memo": 54980, "maxsz": 119, "secs": 16.3}
+{"eq": 12883, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 47798, "tainted": 0, "bail": 0, "cuts": 14688, "memo": 65607, "maxsz": 119, "secs": 5.8}
+{"eq": 13764, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1618622, "tainted": 0, "bail": 0, "cuts": 97370, "memo": 150272, "maxsz": 119, "secs": 214.9}
+{"eq": 13992, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 48995, "memo": 37666, "maxsz": 119, "secs": 5.0}
+{"eq": 17286, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 426617, "tainted": 6444, "bail": 0, "cuts": 24620, "memo": 146817, "maxsz": 119, "secs": 28.1}
+{"eq": 18137, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 90250, "memo": 142798, "maxsz": 119, "secs": 18.2}
+{"eq": 20911, "tested": 3000, "fails": 76, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 150522, "tainted": 0, "bail": 0, "cuts": 47, "memo": 17829, "maxsz": 119, "secs": 7.1}
+{"eq": 21864, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 481128, "tainted": 37, "bail": 0, "cuts": 12388, "memo": 38793, "maxsz": 119, "secs": 15.7}
+{"eq": 21865, "tested": 3000, "fails": 2, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 727389, "tainted": 1412, "bail": 0, "cuts": 14632, "memo": 62290, "maxsz": 119, "secs": 24.5}
+{"eq": 21866, "tested": 3000, "fails": 20, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 526371, "tainted": 0, "bail": 0, "cuts": 7242, "memo": 32369, "maxsz": 119, "secs": 16.0}
+{"eq": 22591, "tested": 3000, "fails": 7, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 98433, "tainted": 89266, "bail": 0, "cuts": 124431, "memo": 28241, "maxsz": 119, "secs": 6.8}
+{"eq": 23354, "error": "timeout", "secs": 360.0}
+{"eq": 23357, "error": "timeout", "secs": 360.0}
+{"eq": 23653, "error": "timeout", "secs": 360.0}
+{"eq": 24199, "tested": 3000, "fails": 23, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 10642370, "tainted": 188612, "bail": 0, "cuts": 378846, "memo": 44989, "maxsz": 119, "secs": 194.7}
+{"eq": 24200, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 4999638, "tainted": 40042, "bail": 0, "cuts": 22330, "memo": 23708, "maxsz": 119, "secs": 89.1}
+{"eq": 25087, "tested": 3000, "fails": 111, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 92972, "tainted": 0, "bail": 0, "cuts": 27731, "memo": 47583, "maxsz": 119, "secs": 11.2}
+{"eq": 27859, "tested": 3000, "fails": 57, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 92059, "memo": 82626, "maxsz": 119, "secs": 19.2}
+{"eq": 27863, "tested": 3000, "fails": 11, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 53729, "memo": 78684, "maxsz": 119, "secs": 28.3}
+{"eq": 28626, "error": "timeout", "secs": 360.0}
+{"eq": 32280, "error": "timeout", "secs": 360.0}
+{"eq": 32281, "tested": 1185, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 4136, "rcycles": 0, "tainted": 0, "bail": 0, "cuts": 183978, "memo": 91130, "maxsz": 119, "secs": 240.4}
+{"eq": 32294, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 52796, "tainted": 64500, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 168249, "memo": 96750, "maxsz": 119, "secs": 11.4}
+{"eq": 33020, "tested": 15, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1259412, "tainted": 1016784, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 4994966, "memo": 31817, "maxsz": 107, "secs": 274.7}
+{"eq": 34888, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 50, "tainted": 50, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 103943, "memo": 51328, "maxsz": 119, "secs": 6.4}
+{"eq": 34889, "error": "timeout", "secs": 360.0}
+{"eq": 35036, "error": "timeout", "secs": 360.0}
+{"eq": 35836, "tested": 2712, "fails": 4, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 661499, "tainted": 707349, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 2498620, "memo": 237491, "maxsz": 119, "secs": 240.0}
+{"eq": 36487, "error": "timeout", "secs": 360.0}
+{"eq": 36524, "error": "timeout", "secs": 360.0}
+{"eq": 36638, "error": "timeout", "secs": 360.0}
+{"eq": 36713, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 29267, "tainted": 17297, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 628950, "memo": 86038, "maxsz": 119, "secs": 22.4}
+{"eq": 38249, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 756, "tainted": 602, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 76208, "memo": 37952, "maxsz": 119, "secs": 16.7}
+{"eq": 38316, "tested": 3000, "fails": 9, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 1851934, "tainted": 2941988, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 1291861, "memo": 150686, "maxsz": 119, "secs": 98.4}
+{"eq": 38565, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 325373, "tainted": 72930, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 292580, "memo": 193999, "maxsz": 119, "secs": 49.1}
+{"eq": 39126, "error": "timeout", "secs": 360.0}
+{"eq": 39163, "error": "timeout", "secs": 360.0}
+{"eq": 39214, "tested": 3000, "fails": 2, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 413099, "tainted": 547594, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 838351, "memo": 176419, "maxsz": 119, "secs": 76.3}
+{"eq": 40037, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 27145, "memo": 89556, "maxsz": 119, "secs": 2.6}
+{"eq": 40057, "tested": 18, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 14121269, "tainted": 10160863, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 1351854, "memo": 1784, "maxsz": 117, "secs": 262.1}
+{"eq": 40070, "tested": 120, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 9443671, "tainted": 7993476, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 69568, "memo": 23995, "maxsz": 119, "secs": 240.5}
+{"eq": 40909, "error": "timeout", "secs": 360.0}
+{"eq": 40914, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 25356, "memo": 75828, "maxsz": 119, "secs": 2.1}
+{"eq": 40951, "tested": 3, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 3165276, "tainted": 2522153, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 6843713, "memo": 1812, "maxsz": 15, "secs": 357.9}
+{"eq": 41252, "tested": 3000, "fails": 0, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 58307, "tainted": 66699, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 225058, "memo": 105575, "maxsz": 119, "secs": 11.9}
+{"eq": 41253, "tested": 3000, "fails": 45, "conflicts": 0, "cycles": 0, "rbail": 0, "rcycles": 0, "tainted": 0, "spurious": 0, "unverified": 0, "bail": 0, "cuts": 119965, "memo": 158255, "maxsz": 119, "secs": 11.8}

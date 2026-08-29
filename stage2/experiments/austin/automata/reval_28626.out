@@ -1,0 +1,6 @@
+{"eq": 28626, "exist": false, "nrules": 6, "fails": 0, "kinds": {}, "secs": 80.1}
+  dropped A0s fired 0 -> 5 rules
+  dropped A0s,Bs fired 0 -> 4 rules
+  dropped A0s,Bs~ fired 0 -> 3 rules
+  minimised set FAILS fresh seeds (21); falling back to the full set
+{"eq": 28626, "dualized": false, "law": "x = (((y * x) * y) * y) * (x * z)", "full_noexist": {"nrules": 6, "fails": 0, "kinds": {}}, "status": "OK", "nrules_full": 6, "nrules": 6, "removed": ["A0s", "A0s,Bs", "A0s,Bs~"], "secs": 123.9, "emit": {"eq": 28626, "dualized": false, "nrules": 6, "fails_all": 0, "fails_kept": 0, "refuted": [15535, 22818], "rows": ["research_order5_hard_0037", "research_order5_hard_0038"]}}

@@ -4,3 +4,4 @@ R1 [free] J?v & u = v.1 & J?v.2 & J?v.2.1 & u = v.2.1.2 & J?v.2.2 & u = v.2.2.2 
 R2 [B11l] J?v & u = v.1 & J?v.2 & J?v.2.1 & u = v.2.1.2 & J?u & op(u.1, u) == v.2.2 -> u.1
 R3 [B10l] J?v & u = v.1 & J?v.2 & J?v.2.2 & u = v.2.2.2 & J?u & op(u.1, u) == v.2.1 -> v.2.2.1
 R4 [B10l,B11l] J?v & u = v.1 & J?v.2 & J?u & op(u.1, u) == v.2.1 & op(u.1, u) == v.2.2 -> u.1
+R5 [rep5] J?v & u = v.1 & J?v.2 & J?u & u.1 = u.2 & u.1 = v.2.1 & op(v.2.1, v.2) == u.1 -> J(v.2, u)

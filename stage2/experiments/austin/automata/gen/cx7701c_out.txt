@@ -1,0 +1,6 @@
+pool sizes 68 876 max size 59
+level-3 coincidence tested 73878 fails 0 in 10.0s memo 372567
+deep_tests seed 1 tested 40000 fails 0 in 9s fired {0: 48002, 1: 883, 2: 4}
+deep_tests seed 2 tested 40000 fails 0 in 9s fired {0: 49285, 1: 928, 2: 9}
+deep_tests seed 3 tested 40000 fails 0 in 9s fired {0: 49107, 1: 879, 2: 8}
+exit 0

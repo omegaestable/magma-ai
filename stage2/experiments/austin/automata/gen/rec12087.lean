@@ -50,18 +50,15 @@ def P1 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a1 (a1 v)) = 2 ∧
 instance (u v : M) : Decidable (P1 u v) := by unfold P1; infer_instance
 def P2 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a1 (a1 v)) = 2 ∧ u = a1 (a1 (a1 v))
 instance (u v : M) : Decidable (P2 u v) := by unfold P2; infer_instance
-def P3 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 v) = 2 ∧ a2 (a1 v) = a2 (a2 v)
+def P3 (u v : M) : Prop := tg v = 2 ∧ tg (a2 v) = 2
 instance (u v : M) : Decidable (P3 u v) := by unfold P3; infer_instance
-def P4 (u v : M) : Prop := tg v = 2 ∧ tg (a2 v) = 2
-instance (u v : M) : Decidable (P4 u v) := by unfold P4; infer_instance
 def op (u v : M) : M :=
   let p1 := if hs1 : msr (a2 (a1 (a1 v))) (a2 (a1 v)) < msr u v then op (a2 (a1 (a1 v))) (a2 (a1 v)) else J u v
   let p2 := if hs2 : msr (u) (a1 (a2 v)) < msr u v then op (u) (a1 (a2 v)) else J u v
   let p3 := if hs3 : msr (p2) (a2 (a2 v)) < msr u v then op (p2) (a2 (a2 v)) else J u v
   if P1 u v then a2 (a1 (a1 v))
   else if P2 u v ∧ msr (a2 (a1 (a1 v))) (a2 (a1 v)) < msr u v ∧ a2 v = p1 then a2 (a1 (a1 v))
-  else if P3 u v ∧ msr (u) (a1 (a2 v)) < msr u v ∧ a1 (a1 v) = p2 then a1 (a2 v)
-  else if P4 u v ∧ msr (u) (a1 (a2 v)) < msr u v ∧ msr (p2) (a2 (a2 v)) < msr u v ∧ a1 v = p3 then a1 (a2 v)
+  else if P3 u v ∧ msr (u) (a1 (a2 v)) < msr u v ∧ msr (p2) (a2 (a2 v)) < msr u v ∧ a1 v = p3 then a1 (a2 v)
   else J u v
 termination_by msr u v
 decreasing_by
@@ -72,7 +69,7 @@ decreasing_by
 
 def inst : Magma M := { op := op }
 
-def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v
+def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v
 
 theorem op_free {u v : M} (h : ¬ Pre u v) : op u v = J u v := by
   rw [op.eq_1]; simp only [Pre, not_or] at h; simp [h]
@@ -82,7 +79,7 @@ theorem rhs : ¬ @EquationRHS M inst := by
   have := h (g 1) (g 0) (g 2)
   revert this
   change ¬ g 1 = op (op (op (op (g 0) (g 0)) (g 0)) (g 1)) (op (g 0) (g 2))
-  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4]
+  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3]
 
 
 /-- THE LAW: x = y * (((y * x) * z) * (x * z)) -/

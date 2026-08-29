@@ -75,9 +75,126 @@ theorem rhs : ¬ @EquationRHS M inst := by
   simp (config := {decide := true}) [op.eq_1, sz, P1, P2]
 
 
+theorem P1_P2 {u v : M} (h : P1 u v) : P2 u v := ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
+
+/-- the three size equations carried by the R2 shape `v = J _ (J u (J _ _))` -/
+theorem P2_sz {u v : M} (h : P2 u v) : sz v = sz (a1 v) + sz (a2 v) + 1 ∧ sz (a2 v) = sz u + sz (a2 (a2 v)) + 1 ∧
+    sz (a2 (a2 v)) = sz (a1 (a2 (a2 v))) + sz (a2 (a2 (a2 v))) + 1 := by
+  obtain ⟨h1, h2, h3, h4⟩ := h
+  have t1 := sz_tg v h1
+  have t2 := sz_tg (a2 v) h2
+  have t3 := sz_tg (a2 (a2 v)) h4
+  rw [← h3] at t2
+  exact ⟨t1, t2, t3⟩
+
+/-- the extra size equation of the R1 shape `v = J x (J u (J y (J x y)))` -/
+theorem P1_sz {u v : M} (h : P1 u v) : sz (a2 (a2 (a2 v))) = sz (a1 v) + sz (a1 (a2 (a2 v))) + 1 := by
+  obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := h
+  have t := sz_tg _ h5
+  rw [← h6, ← h7] at t
+  exact t
+
+/-- the unfolding of `op` with the nested call packed away as an opaque variable -/
+theorem op_cases (u v : M) : ∃ p1 : M,
+    p1 = (if hs1 : msr (a1 v) (a1 (a2 (a2 v))) < msr u v then op (a1 v) (a1 (a2 (a2 v))) else J u v) ∧
+    op u v = (
+  if P1 u v then a1 v
+  else if P2 u v ∧ msr (a1 v) (a1 (a2 (a2 v))) < msr u v ∧ a2 (a2 (a2 v)) = p1 then a1 v
+  else J u v) :=
+  ⟨_, rfl, op.eq_1 u v⟩
+
+/-- one unfold of `op`: free, or R1, or R2 with its guard -/
+theorem TR (u v : M) : op u v = J u v ∨ (P1 u v ∧ op u v = a1 v) ∨
+    (P2 u v ∧ a2 (a2 (a2 v)) = op (a1 v) (a1 (a2 (a2 v))) ∧ op u v = a1 v) := by
+  obtain ⟨p1, hp1, hop⟩ := op_cases u v
+  rw [hop]
+  split
+  · rename_i h; exact Or.inr (Or.inl ⟨h, rfl⟩)
+  · split
+    · rename_i h1 h
+      obtain ⟨h2, hs1, he⟩ := h
+      rw [dif_pos hs1] at hp1; subst hp1
+      exact Or.inr (Or.inr ⟨h2, he, rfl⟩)
+    · left; rfl
+
+/-- no rule fires unless `u` sits strictly inside `a2 v` -/
+theorem NF {u v : M} (h : sz (a2 v) ≤ sz u) : op u v = J u v := by
+  rcases TR u v with h' | ⟨h1, -⟩ | ⟨h1, -, -⟩
+  · exact h'
+  · have := P2_sz (P1_P2 h1); omega
+  · have := P2_sz h1; omega
+
+/-- whatever `op x y` is, its second component sits inside `y` -/
+theorem sz_a2_op (x y : M) : sz (a2 (op x y)) ≤ sz y := by
+  rcases TR x y with h | ⟨-, h⟩ | ⟨-, -, h⟩
+  · rw [h, a2_J_eq]; exact Nat.le_refl _
+  · rw [h]; have := sz_a2 (a1 y); have := sz_a1 y; omega
+  · rw [h]; have := sz_a2 (a1 y); have := sz_a1 y; omega
+
+/-- product 2 of the law is free -/
+theorem N2 (x y : M) : op y (op x y) = J y (op x y) := NF (sz_a2_op x y)
+
+/-- product 3 of the law is free -/
+theorem N3 (x y z : M) : op z (J y (op x y)) = J z (J y (op x y)) := by
+  have s := sz_a2_op x y
+  have s1 := sz_a2 (a2 (op x y))
+  have s2 := sz_a1 (a2 (op x y))
+  have s3 := sz_a2 (a1 (a2 (op x y)))
+  rcases TR z (J y (op x y)) with h | ⟨h1, -⟩ | ⟨h1, he, -⟩
+  · exact h
+  · have t := P1_sz h1
+    simp only [a1_J_eq, a2_J_eq] at t
+    omega
+  · simp only [a1_J_eq, a2_J_eq] at he
+    rw [NF (by omega : sz (a2 (a1 (a2 (op x y)))) ≤ sz y)] at he
+    have := congrArg sz he
+    simp only [sz] at this
+    omega
+
+/-- product 4 of the law is free -/
+theorem N4 (x y z : M) : op x (J z (J y (op x y))) = J x (J z (J y (op x y))) := by
+  rcases TR x (J z (J y (op x y))) with h | ⟨h1, -⟩ | ⟨h1, he, -⟩
+  · exact h
+  · obtain ⟨-, -, h3, -, h5, -, h7⟩ := h1
+    simp only [a1_J_eq, a2_J_eq] at h3 h5 h7
+    subst h3
+    rw [NF (sz_a2 _)] at h5 h7
+    simp only [a1_J_eq, a2_J_eq] at h5 h7
+    have := sz_tg _ h5
+    have := congrArg sz h7
+    omega
+  · obtain ⟨-, -, h3, -⟩ := h1
+    simp only [a1_J_eq, a2_J_eq] at h3 he
+    subst h3
+    rw [NF (sz_a2 _)] at he
+    simp only [a1_J_eq, a2_J_eq] at he
+    rcases TR z x with h' | ⟨h1', h'⟩ | ⟨h1', -, h'⟩
+    · rw [h'] at he; have := congrArg sz he; simp only [sz] at this; omega
+    · rw [h'] at he; have := (P2_sz (P1_P2 h1')).1; have := congrArg sz he; omega
+    · rw [h'] at he; have := (P2_sz h1').1; have := congrArg sz he; omega
+
+/-- product 5: rule R1 or R2 fires and returns `x` -/
+theorem R2 (x y z : M) : op z (J x (J z (J y (op x y)))) = x := by
+  obtain ⟨p1, hp1, hop⟩ := op_cases z (J x (J z (J y (op x y))))
+  have hs1 : msr (a1 (J x (J z (J y (op x y))))) (a1 (a2 (a2 (J x (J z (J y (op x y))))))) < msr z (J x (J z (J y (op x y)))) := by
+    simp only [a1_J_eq, a2_J_eq]
+    apply msr_lt_of_max_lt
+    simp only [sz]
+    omega
+  rw [dif_pos hs1] at hp1; subst hp1
+  rw [hop]
+  split
+  · rfl
+  · split
+    · rfl
+    · rename_i h1 h2
+      exfalso; apply h2
+      exact ⟨⟨rfl, rfl, rfl, rfl⟩, hs1, rfl⟩
+
 /-- THE LAW: x = ((((y * x) * y) * z) * x) * z (stated for the DUAL L-form law; the served magma flips op, so EquationLHS unfolds to exactly this) -/
 theorem law (x y z : M) : op (z) (op (x) (op (z) (op (y) (op (x) (y))))) = x := by
-  sorry
+  rw [N2, N3, N4]
+  exact R2 x y z
 
 
 theorem lhs : @EquationLHS M inst := by

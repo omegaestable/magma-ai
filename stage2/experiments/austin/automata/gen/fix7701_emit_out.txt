@@ -1,0 +1,3 @@
+R1..R3 identical to the generator's; adding R4
+{"eq": 7701, "dualized": false, "nrules": 4, "fails_all": 0, "fails_kept": 0, "refuted": [15535], "rows": ["research_order5_hard_0094"]}
+exit 0

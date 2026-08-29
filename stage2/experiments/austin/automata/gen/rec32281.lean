@@ -94,6 +94,10 @@ def P23 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ u = a1 (a1 v) ∧ tg 
 instance (u v : M) : Decidable (P23 u v) := by unfold P23; infer_instance
 def P24 (u v : M) : Prop := tg v = 2 ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ tg (a2 (a1 (a2 v))) = 2 ∧ tg (a1 (a2 (a1 (a2 v)))) = 2
 instance (u v : M) : Decidable (P24 u v) := by unfold P24; infer_instance
+def P25 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ u = a1 (a1 v) ∧ tg (a2 (a1 v)) = 2 ∧ a2 (a2 (a1 v)) = a2 v ∧ tg (a2 (a2 (a1 v))) = 2 ∧ tg (a1 (a2 (a2 (a1 v)))) = 2 ∧ tg (a2 (a1 (a2 (a2 (a1 v))))) = 2 ∧ tg (a1 (a2 (a1 (a2 (a2 (a1 v)))))) = 2 ∧ a1 (a2 (a1 v)) = a1 (a1 (a2 (a1 (a2 (a2 (a1 v)))))) ∧ a2 (a1 (a2 (a1 (a2 (a2 (a1 v)))))) = a2 (a2 (a1 (a2 (a2 (a1 v))))) ∧ a2 (a1 (a2 (a1 (a2 (a2 (a1 v)))))) = a2 (a2 (a2 (a1 v)))
+instance (u v : M) : Decidable (P25 u v) := by unfold P25; infer_instance
+def P26 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ u = a1 (a1 v) ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ tg (a2 (a1 (a2 v))) = 2 ∧ tg (a1 (a2 (a1 (a2 v)))) = 2 ∧ a2 (a1 (a2 (a1 (a2 v)))) = a1 (a1 (a2 (a1 (a2 v)))) ∧ a2 (a1 (a2 (a1 (a2 v)))) = a2 (a2 (a1 (a2 v))) ∧ a2 (a1 (a2 (a1 (a2 v)))) = a2 (a2 v)
+instance (u v : M) : Decidable (P26 u v) := by unfold P26; infer_instance
 def op (u v : M) : M :=
   let p1 := if hs1 : msr (a2 (a1 (a2 (a1 (a2 (a2 (a1 v))))))) (a2 (a2 (a1 v))) < msr u v then op (a2 (a1 (a2 (a1 (a2 (a2 (a1 v))))))) (a2 (a2 (a1 v))) else J u v
   let p2 := if hs2 : msr (a1 (a2 (a1 v))) (a2 (a2 (a1 (a2 (a2 (a1 v)))))) < msr u v then op (a1 (a2 (a1 v))) (a2 (a2 (a1 (a2 (a2 (a1 v)))))) else J u v
@@ -149,6 +153,8 @@ def op (u v : M) : M :=
   else if P22 u v ∧ msr (a2 (a1 v)) (a2 (a2 v)) < msr u v ∧ msr (p21) (a2 (a2 v)) < msr u v ∧ msr (a2 (a1 (a2 (a1 (p22))))) (p22) < msr u v ∧ msr (a2 (a2 v)) (a2 v) < msr u v ∧ msr (a1 (a1 (a2 v))) (a2 v) < msr u v ∧ tg (p22) = 2 ∧ tg (a1 (p22)) = 2 ∧ tg (a2 (a1 (p22))) = 2 ∧ tg (a1 (a2 (a1 (p22)))) = 2 ∧ a1 (a2 v) = p28 ∧ a2 (a1 v) = p14 ∧ a2 (a2 v) = p27 then a1 (a1 (a2 v))
   else if P23 u v ∧ msr (a2 (a1 (a2 (a1 (a2 v))))) (a2 v) < msr u v ∧ msr (p9) (a2 v) < msr u v ∧ a2 (a1 v) = p29 then a2 (a1 (a2 (a1 (a2 v))))
   else if P24 u v ∧ msr (a2 (a1 (a2 (a1 (a2 v))))) (a2 v) < msr u v ∧ msr (p9) (a2 v) < msr u v ∧ msr (u) (p29) < msr u v ∧ a1 v = p30 then a2 (a1 (a2 (a1 (a2 v))))
+  else if P25 u v then a1 (a1 (a2 (a2 (a1 v))))
+  else if P26 u v ∧ msr (a2 (a1 (a2 (a1 (a2 v))))) (a2 v) < msr u v ∧ a2 (a1 v) = p9 then a1 (a1 (a2 v))
   else J u v
 termination_by msr u v
 decreasing_by
@@ -186,7 +192,7 @@ decreasing_by
 
 def inst : Magma M := { op := fun a b => op b a }
 
-def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v ∨ P5 u v ∨ P6 u v ∨ P7 u v ∨ P8 u v ∨ P9 u v ∨ P10 u v ∨ P11 u v ∨ P12 u v ∨ P13 u v ∨ P14 u v ∨ P15 u v ∨ P16 u v ∨ P17 u v ∨ P18 u v ∨ P19 u v ∨ P20 u v ∨ P21 u v ∨ P22 u v ∨ P23 u v ∨ P24 u v
+def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v ∨ P5 u v ∨ P6 u v ∨ P7 u v ∨ P8 u v ∨ P9 u v ∨ P10 u v ∨ P11 u v ∨ P12 u v ∨ P13 u v ∨ P14 u v ∨ P15 u v ∨ P16 u v ∨ P17 u v ∨ P18 u v ∨ P19 u v ∨ P20 u v ∨ P21 u v ∨ P22 u v ∨ P23 u v ∨ P24 u v ∨ P25 u v ∨ P26 u v
 
 theorem op_free {u v : M} (h : ¬ Pre u v) : op u v = J u v := by
   rw [op.eq_1]; simp only [Pre, not_or] at h; simp [h]
@@ -196,7 +202,7 @@ theorem rhs : ¬ @EquationRHS M inst := by
   have := h (g 2) (g 0) (g 1)
   revert this
   change ¬ g 2 = op (g 1) (op (g 2) (op (g 2) (op (g 1) (op (g 0) (g 0)))))
-  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24]
+  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24, P25, P26]
 
 
 /-- THE LAW: x = (y * ((y * (y * x)) * z)) * z (stated for the DUAL L-form law; the served magma flips op, so EquationLHS unfolds to exactly this) -/

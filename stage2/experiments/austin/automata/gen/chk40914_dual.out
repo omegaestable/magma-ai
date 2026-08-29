@@ -1,0 +1,7 @@
+original : ('x', ((((('y', 'x'), 'y'), 'z'), 'x'), 'z'))
+dual law : ('x', ('z', ('x', ('z', ('y', ('x', 'y'))))))
+deep_tests seed 11 : tested 3000 fails 0 fired {0: 4059, 1: 59}
+deep_tests seed 12 : tested 3000 fails 0 fired {0: 4005, 1: 55}
+pool size 40
+exhaustive triples over pool: 64000 fails 0
+targeted instances: 144000 fails 0 fired {0: 610120, 1: 10435} cycles 0

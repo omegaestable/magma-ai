@@ -1,4 +1,5 @@
+(REPAIRED rule set, gen/repair9667.py; the original generator output, refuted by gen/hole9667.py, is rules9667_gen0.txt)
 law 9667: x = y * ((z * y) * (x * (y * y)))   (normalised: x = ('y', (('z', 'y'), ('x', ('y', 'y')))))
 deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
 R1 [free] J?v & J?v.1 & u = v.1.2 & J?v.2 & J?v.2.2 & u = v.2.2.1 & u = v.2.2.2 -> v.2.1
-R2 [B0l] J?v & J?v.2 & J?v.2.2 & u = v.2.2.1 & u = v.2.2.2 & J?u & J?u.1 & op(u.1.2, u) == v.1 -> v.2.1
+R2 [B0l2] J?v & J?v.2 & J?v.2.2 & u = v.2.2.1 & u = v.2.2.2 & J?u & J?u.2 & J?u.2.2 & op(u.2.2.1, u) == v.1 -> v.2.1

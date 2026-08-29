@@ -50,22 +50,114 @@ def P1 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧
 instance (u v : M) : Decidable (P1 u v) := by unfold P1; infer_instance
 def P2 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
 instance (u v : M) : Decidable (P2 u v) := by unfold P2; infer_instance
-def P3 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 u) = 2
+def P3 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 (a1 u)) = 2 ∧ a2 v = a2 (a2 (a1 u)) ∧ tg (a1 (a2 (a1 u))) = 2 ∧ tg (a1 (a1 (a2 (a1 u)))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 u))))) = 2
 instance (u v : M) : Decidable (P3 u v) := by unfold P3; infer_instance
-def P4 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 v) = 2 ∧ u = a2 (a2 v)
+def P4 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 u) = 2
 instance (u v : M) : Decidable (P4 u v) := by unfold P4; infer_instance
+def P5 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ tg (a2 (a1 (a2 v))) = 2 ∧ tg (a1 (a2 (a1 (a2 v)))) = 2 ∧ tg (a1 (a1 (a2 (a1 (a2 v))))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 (a2 v)))))) = 2
+instance (u v : M) : Decidable (P5 u v) := by unfold P5; infer_instance
+def P6 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a2 u) = 2
+instance (u v : M) : Decidable (P6 u v) := by unfold P6; infer_instance
+def P7 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ u = a1 (a2 (a1 v)) ∧ a1 (a1 v) = a2 (a2 (a1 v)) ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 (a1 u)) = 2 ∧ a2 v = a2 (a2 (a1 u)) ∧ tg (a2 u) = 2 ∧ a1 (a2 (a1 u)) = a2 (a2 u)
+instance (u v : M) : Decidable (P7 u v) := by unfold P7; infer_instance
+def P8 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 v) = 2 ∧ u = a2 (a2 v)
+instance (u v : M) : Decidable (P8 u v) := by unfold P8; infer_instance
+def P9 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P9 u v) := by unfold P9; infer_instance
+def P10 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 (a1 u)) = 2 ∧ a2 v = a2 (a2 (a1 u)) ∧ tg (a1 (a2 (a1 u))) = 2 ∧ tg (a1 (a1 (a2 (a1 u)))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 u))))) = 2
+instance (u v : M) : Decidable (P10 u v) := by unfold P10; infer_instance
+def P11 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 u) = 2
+instance (u v : M) : Decidable (P11 u v) := by unfold P11; infer_instance
+def P12 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ tg (a2 (a1 (a2 v))) = 2 ∧ tg (a1 (a2 (a1 (a2 v)))) = 2 ∧ tg (a1 (a1 (a2 (a1 (a2 v))))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 (a2 v)))))) = 2
+instance (u v : M) : Decidable (P12 u v) := by unfold P12; infer_instance
+def P13 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg u = 2 ∧ tg (a2 u) = 2
+instance (u v : M) : Decidable (P13 u v) := by unfold P13; infer_instance
+def P14 (u v : M) : Prop := tg v = 2 ∧ tg (a1 v) = 2 ∧ tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 v = a1 (a1 u) ∧ tg (a2 (a1 u)) = 2 ∧ a2 v = a2 (a2 (a1 u)) ∧ tg (a2 u) = 2 ∧ a1 (a2 (a1 u)) = a2 (a2 u)
+instance (u v : M) : Decidable (P14 u v) := by unfold P14; infer_instance
+def P15 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P15 u v) := by unfold P15; infer_instance
+def P16 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P16 u v) := by unfold P16; infer_instance
+def P17 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P17 u v) := by unfold P17; infer_instance
+def P18 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2 ∧ tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ tg (a1 (a2 (a1 v))) = 2 ∧ tg (a1 (a1 (a2 (a1 v)))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 v))))) = 2 ∧ tg (a2 (a1 (a2 (a1 v)))) = 2 ∧ u = a1 (a2 (a1 (a2 (a1 v)))) ∧ a1 (a1 (a2 (a1 v))) = a2 (a2 (a1 (a2 (a1 v))))
+instance (u v : M) : Decidable (P18 u v) := by unfold P18; infer_instance
+def P19 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P19 u v) := by unfold P19; infer_instance
+def P20 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P20 u v) := by unfold P20; infer_instance
+def P21 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P21 u v) := by unfold P21; infer_instance
+def P22 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P22 u v) := by unfold P22; infer_instance
+def P23 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2 ∧ tg v = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2 ∧ tg (a1 (a2 (a1 v))) = 2 ∧ tg (a1 (a1 (a2 (a1 v)))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 v))))) = 2
+instance (u v : M) : Decidable (P23 u v) := by unfold P23; infer_instance
+def P24 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a2 (a1 u)) = 2
+instance (u v : M) : Decidable (P24 u v) := by unfold P24; infer_instance
 def op (u v : M) : M :=
   let p1 := if hs1 : msr (a1 (a2 (a1 u))) (u) < msr u v then op (a1 (a2 (a1 u))) (u) else J u v
-  let p2 := if hs2 : msr (a2 (a2 u)) (a2 v) < msr u v then op (a2 (a2 u)) (a2 v) else J u v
-  let p3 := if hs3 : msr (a2 (a2 u)) (u) < msr u v then op (a2 (a2 u)) (u) else J u v
-  let p4 := if hs4 : msr (u) (a1 (a1 v)) < msr u v then op (u) (a1 (a1 v)) else J u v
+  let p2 := if hs2 : msr (a1 (a2 (a1 (a1 (a2 (a1 u)))))) (a1 (a2 (a1 u))) < msr u v then op (a1 (a2 (a1 (a1 (a2 (a1 u)))))) (a1 (a2 (a1 u))) else J u v
+  let p3 := if hs3 : msr (a2 (a2 u)) (a2 v) < msr u v then op (a2 (a2 u)) (a2 v) else J u v
+  let p4 := if hs4 : msr (a2 (a2 u)) (u) < msr u v then op (a2 (a2 u)) (u) else J u v
+  let p5 := if hs5 : msr (a1 (a2 (a1 (a2 v)))) (a2 v) < msr u v then op (a1 (a2 (a1 (a2 v)))) (a2 v) else J u v
+  let p6 := if hs6 : msr (a1 (a2 (a1 (a1 (a2 (a1 (a2 v))))))) (a1 (a2 (a1 (a2 v)))) < msr u v then op (a1 (a2 (a1 (a1 (a2 (a1 (a2 v))))))) (a1 (a2 (a1 (a2 v)))) else J u v
+  let p7 := if hs7 : msr (a1 (a2 (a1 (a2 v)))) (u) < msr u v then op (a1 (a2 (a1 (a2 v)))) (u) else J u v
+  let p8 := if hs8 : msr (a2 v) (p3) < msr u v then op (a2 v) (p3) else J u v
+  let p9 := if hs9 : msr (u) (a1 (a1 v)) < msr u v then op (u) (a1 (a1 v)) else J u v
+  let p10 := if hs10 : msr (a1 (a2 (a1 (p1)))) (p1) < msr u v then op (a1 (a2 (a1 (p1)))) (p1) else J u v
+  let p11 := if hs11 : msr (a1 (a2 (a1 (a1 (a2 (a1 (p1))))))) (a1 (a2 (a1 (p1)))) < msr u v then op (a1 (a2 (a1 (a1 (a2 (a1 (p1))))))) (a1 (a2 (a1 (p1)))) else J u v
+  let p12 := if hs12 : msr (a2 (a2 (p1))) (v) < msr u v then op (a2 (a2 (p1))) (v) else J u v
+  let p13 := if hs13 : msr (a2 (a2 (p1))) (p1) < msr u v then op (a2 (a2 (p1))) (p1) else J u v
+  let p14 := if hs14 : msr (a1 (a2 (a1 v))) (v) < msr u v then op (a1 (a2 (a1 v))) (v) else J u v
+  let p15 := if hs15 : msr (a1 (a2 (a1 (a1 (a2 (a1 v)))))) (a1 (a2 (a1 v))) < msr u v then op (a1 (a2 (a1 (a1 (a2 (a1 v)))))) (a1 (a2 (a1 v))) else J u v
+  let p16 := if hs16 : msr (a1 (a2 (a1 v))) (p1) < msr u v then op (a1 (a2 (a1 v))) (p1) else J u v
+  let p17 := if hs17 : msr (v) (p12) < msr u v then op (v) (p12) else J u v
+  let p18 := if hs18 : msr (u) (a1 (a1 (a2 (a1 (p1))))) < msr u v then op (u) (a1 (a1 (a2 (a1 (p1))))) else J u v
+  let p19 := if hs19 : msr (u) (a1 (a2 (a2 (p1)))) < msr u v then op (u) (a1 (a2 (a2 (p1)))) else J u v
+  let p20 := if hs20 : msr (u) (a1 (a1 (a2 (a1 v)))) < msr u v then op (u) (a1 (a1 (a2 (a1 v)))) else J u v
   if P1 u v then a1 (a1 v)
   else if P2 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ a2 v = p1 then a1 (a1 v)
-  else if P3 u v ∧ msr (a2 (a2 u)) (a2 v) < msr u v ∧ msr (a2 (a2 u)) (u) < msr u v ∧ a2 (a1 u) = p2 ∧ a2 v = p3 then a1 (a1 v)
-  else if P4 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ a2 (a1 v) = p4 then a1 (a1 v)
+  else if P3 u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 u)))))) (a1 (a2 (a1 u))) < msr u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ a2 u = p2 ∧ a2 v = p1 then a1 (a1 v)
+  else if P4 u v ∧ msr (a2 (a2 u)) (a2 v) < msr u v ∧ msr (a2 (a2 u)) (u) < msr u v ∧ a2 (a1 u) = p3 ∧ a2 v = p4 then a1 (a1 v)
+  else if P5 u v ∧ msr (a1 (a2 (a1 (a2 v)))) (a2 v) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 (a2 v))))))) (a1 (a2 (a1 (a2 v)))) < msr u v ∧ msr (a1 (a2 (a1 (a2 v)))) (u) < msr u v ∧ a2 (a1 u) = p5 ∧ a2 u = p6 ∧ a2 v = p7 then a1 (a1 v)
+  else if P6 u v ∧ msr (a2 (a2 u)) (a2 v) < msr u v ∧ msr (a2 v) (p3) < msr u v ∧ msr (a2 (a2 u)) (u) < msr u v ∧ a1 u = p8 ∧ a2 v = p4 then a1 (a1 v)
+  else if P7 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ a2 v = p1 then a1 (a1 v)
+  else if P8 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ a2 (a1 v) = p9 then a1 (a1 v)
+  else if P9 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ a2 (a1 v) = p9 ∧ a2 v = p1 then a1 (a1 v)
+  else if P10 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 u)))))) (a1 (a2 (a1 u))) < msr u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ a2 (a1 v) = p9 ∧ a2 u = p2 ∧ a2 v = p1 then a1 (a1 v)
+  else if P11 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ msr (a2 (a2 u)) (a2 v) < msr u v ∧ msr (a2 (a2 u)) (u) < msr u v ∧ a2 (a1 v) = p9 ∧ a2 (a1 u) = p3 ∧ a2 v = p4 then a1 (a1 v)
+  else if P12 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ msr (a1 (a2 (a1 (a2 v)))) (a2 v) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 (a2 v))))))) (a1 (a2 (a1 (a2 v)))) < msr u v ∧ msr (a1 (a2 (a1 (a2 v)))) (u) < msr u v ∧ a2 (a1 v) = p9 ∧ a2 (a1 u) = p5 ∧ a2 u = p6 ∧ a2 v = p7 then a1 (a1 v)
+  else if P13 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ msr (a2 (a2 u)) (a2 v) < msr u v ∧ msr (a2 v) (p3) < msr u v ∧ msr (a2 (a2 u)) (u) < msr u v ∧ a2 (a1 v) = p9 ∧ a1 u = p8 ∧ a2 v = p4 then a1 (a1 v)
+  else if P14 u v ∧ msr (u) (a1 (a1 v)) < msr u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ a2 (a1 v) = p9 ∧ a2 v = p1 then a1 (a1 v)
+  else if P15 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a1 (a2 (a1 (p1)))) (p1) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ tg (a2 (a1 (p1))) = 2 ∧ v = p10 ∧ tg (a1 (a2 (a1 (p1)))) = 2 ∧ tg (a2 (a1 (a2 (a1 (p1))))) = 2 ∧ u = a1 (a2 (a1 (a2 (a1 (p1))))) ∧ a1 (a1 (a2 (a1 (p1)))) = a2 (a2 (a1 (a2 (a1 (p1))))) then a1 (a1 (a2 (a1 (p1))))
+  else if P16 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 (p1))))))) (a1 (a2 (a1 (p1)))) < msr u v ∧ msr (a1 (a2 (a1 (p1)))) (p1) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ v = a1 (a1 (p1)) ∧ tg (a2 (a1 (p1))) = 2 ∧ v = a2 (a2 (a1 (p1))) ∧ tg (a1 (a2 (a1 (p1)))) = 2 ∧ tg (a1 (a1 (a2 (a1 (p1))))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 (p1)))))) = 2 ∧ a2 (p1) = p11 ∧ v = p10 ∧ tg (a2 (a1 (a2 (a1 (p1))))) = 2 ∧ u = a1 (a2 (a1 (a2 (a1 (p1))))) ∧ a1 (a1 (a2 (a1 (p1)))) = a2 (a2 (a1 (a2 (a1 (p1))))) then a1 (a1 (a2 (a1 (p1))))
+  else if P17 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a2 (a2 (p1))) (v) < msr u v ∧ msr (a2 (a2 (p1))) (p1) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ v = a1 (a1 (p1)) ∧ tg (a2 (p1)) = 2 ∧ a2 (a1 (p1)) = p12 ∧ v = p13 ∧ tg (a2 (a2 (p1))) = 2 ∧ tg (a2 (a2 (a2 (p1)))) = 2 ∧ u = a1 (a2 (a2 (a2 (p1)))) ∧ a1 (a2 (a2 (p1))) = a2 (a2 (a2 (a2 (p1)))) then a1 (a2 (a2 (p1)))
+  else if P18 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a1 (a2 (a1 v))) (v) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 v)))))) (a1 (a2 (a1 v))) < msr u v ∧ msr (a1 (a2 (a1 v))) (p1) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ v = a1 (a1 (p1)) ∧ a2 (a1 (p1)) = p14 ∧ a2 (p1) = p15 ∧ v = p16 then a1 (a1 (a2 (a1 v)))
+  else if P19 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a2 (a2 (p1))) (v) < msr u v ∧ msr (v) (p12) < msr u v ∧ msr (a2 (a2 (p1))) (p1) < msr u v ∧ tg (p1) = 2 ∧ tg (a2 (p1)) = 2 ∧ a1 (p1) = p17 ∧ v = p13 ∧ tg (a2 (a2 (p1))) = 2 ∧ tg (a2 (a2 (a2 (p1)))) = 2 ∧ u = a1 (a2 (a2 (a2 (p1)))) ∧ a1 (a2 (a2 (p1))) = a2 (a2 (a2 (a2 (p1)))) then a1 (a2 (a2 (p1)))
+  else if P20 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a1 (a2 (a1 (p1)))) (p1) < msr u v ∧ msr (u) (a1 (a1 (a2 (a1 (p1))))) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ tg (a2 (a1 (p1))) = 2 ∧ v = p10 ∧ tg (a1 (a2 (a1 (p1)))) = 2 ∧ a2 (a1 (a2 (a1 (p1)))) = p18 then a1 (a1 (a2 (a1 (p1))))
+  else if P21 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 (p1))))))) (a1 (a2 (a1 (p1)))) < msr u v ∧ msr (a1 (a2 (a1 (p1)))) (p1) < msr u v ∧ msr (u) (a1 (a1 (a2 (a1 (p1))))) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ v = a1 (a1 (p1)) ∧ tg (a2 (a1 (p1))) = 2 ∧ v = a2 (a2 (a1 (p1))) ∧ tg (a1 (a2 (a1 (p1)))) = 2 ∧ tg (a1 (a1 (a2 (a1 (p1))))) = 2 ∧ tg (a2 (a1 (a1 (a2 (a1 (p1)))))) = 2 ∧ a2 (p1) = p11 ∧ v = p10 ∧ a2 (a1 (a2 (a1 (p1)))) = p18 then a1 (a1 (a2 (a1 (p1))))
+  else if P22 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a2 (a2 (p1))) (v) < msr u v ∧ msr (a2 (a2 (p1))) (p1) < msr u v ∧ msr (u) (a1 (a2 (a2 (p1)))) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ v = a1 (a1 (p1)) ∧ tg (a2 (p1)) = 2 ∧ a2 (a1 (p1)) = p12 ∧ v = p13 ∧ tg (a2 (a2 (p1))) = 2 ∧ a2 (a2 (a2 (p1))) = p19 then a1 (a2 (a2 (p1)))
+  else if P23 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a1 (a2 (a1 v))) (v) < msr u v ∧ msr (a1 (a2 (a1 (a1 (a2 (a1 v)))))) (a1 (a2 (a1 v))) < msr u v ∧ msr (a1 (a2 (a1 v))) (p1) < msr u v ∧ msr (u) (a1 (a1 (a2 (a1 v)))) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ v = a1 (a1 (p1)) ∧ a2 (a1 (p1)) = p14 ∧ a2 (p1) = p15 ∧ v = p16 ∧ a2 (a1 (a2 (a1 v))) = p20 then a1 (a1 (a2 (a1 v)))
+  else if P24 u v ∧ msr (a1 (a2 (a1 u))) (u) < msr u v ∧ msr (a2 (a2 (p1))) (v) < msr u v ∧ msr (v) (p12) < msr u v ∧ msr (a2 (a2 (p1))) (p1) < msr u v ∧ msr (u) (a1 (a2 (a2 (p1)))) < msr u v ∧ tg (p1) = 2 ∧ tg (a2 (p1)) = 2 ∧ a1 (p1) = p17 ∧ v = p13 ∧ tg (a2 (a2 (p1))) = 2 ∧ a2 (a2 (a2 (p1))) = p19 then a1 (a2 (a2 (p1)))
   else J u v
 termination_by msr u v
 decreasing_by
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+  · assumption
   · assumption
   · assumption
   · assumption
@@ -74,7 +166,7 @@ decreasing_by
 
 def inst : Magma M := { op := op }
 
-def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v
+def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v ∨ P5 u v ∨ P6 u v ∨ P7 u v ∨ P8 u v ∨ P9 u v ∨ P10 u v ∨ P11 u v ∨ P12 u v ∨ P13 u v ∨ P14 u v ∨ P15 u v ∨ P16 u v ∨ P17 u v ∨ P18 u v ∨ P19 u v ∨ P20 u v ∨ P21 u v ∨ P22 u v ∨ P23 u v ∨ P24 u v
 
 theorem op_free {u v : M} (h : ¬ Pre u v) : op u v = J u v := by
   rw [op.eq_1]; simp only [Pre, not_or] at h; simp [h]
@@ -84,7 +176,7 @@ theorem rhs : ¬ @EquationRHS M inst := by
   have := h (g 2) (g 0) (g 1)
   revert this
   change ¬ g 2 = op (op (op (op (op (g 0) (g 0)) (g 1)) (g 2)) (g 2)) (g 1)
-  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4]
+  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22, P23, P24]
 
 
 /-- THE LAW: x = y * ((x * (y * x)) * (z * y)) -/

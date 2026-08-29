@@ -52,20 +52,37 @@ def P2 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ tg (a1 (a1 u)) = 2 ∧
 instance (u v : M) : Decidable (P2 u v) := by unfold P2; infer_instance
 def P3 (u v : M) : Prop := tg u = 2 ∧ tg (a1 u) = 2 ∧ a2 (a1 u) = a2 u ∧ tg v = 2
 instance (u v : M) : Decidable (P3 u v) := by unfold P3; infer_instance
+def P4 (u v : M) : Prop := tg u = 2 ∧ tg v = 2
+instance (u v : M) : Decidable (P4 u v) := by unfold P4; infer_instance
+def P5 (u v : M) : Prop := tg u = 2 ∧ tg (a2 u) = 2 ∧ a1 u = a1 (a2 u) ∧ tg (a1 (a2 u)) = 2 ∧ a1 u = a2 (a1 (a2 u)) ∧ a1 (a1 (a2 u)) = a2 (a2 u) ∧ tg (a1 (a1 (a2 u))) = 2 ∧ tg (a1 (a1 (a1 (a2 u)))) = 2 ∧ tg (a1 (a1 (a1 (a1 (a2 u))))) = 2 ∧ v = a2 (a1 (a1 (a1 (a1 (a2 u))))) ∧ a1 (a1 (a1 (a1 (a1 (a2 u))))) = a2 (a1 (a1 (a1 (a2 u)))) ∧ a1 (a1 (a1 (a1 (a1 (a2 u))))) = a2 (a1 (a1 (a2 u)))
+instance (u v : M) : Decidable (P5 u v) := by unfold P5; infer_instance
+def P6 (u v : M) : Prop := tg u = 2 ∧ tg (a2 u) = 2 ∧ a1 u = a1 (a2 u) ∧ tg (a1 (a2 u)) = 2 ∧ a1 u = a2 (a1 (a2 u)) ∧ a1 (a1 (a2 u)) = a2 (a2 u) ∧ tg (a1 (a1 (a2 u))) = 2 ∧ tg (a1 (a1 (a1 (a2 u)))) = 2 ∧ tg (a1 (a1 (a1 (a1 (a2 u))))) = 2 ∧ v = a2 (a1 (a1 (a1 (a1 (a2 u))))) ∧ a1 (a1 (a1 (a1 (a1 (a2 u))))) = a2 (a1 (a1 (a1 (a2 u)))) ∧ a1 (a1 (a1 (a1 (a1 (a2 u))))) = a2 (a1 (a1 (a2 u)))
+instance (u v : M) : Decidable (P6 u v) := by unfold P6; infer_instance
 def op (u v : M) : M :=
   let p1 := if hs1 : msr (a2 (a1 u)) (a1 v) < msr u v then op (a2 (a1 u)) (a1 v) else J u v
+  let p2 := if hs2 : msr (a2 u) (a1 v) < msr u v then op (a2 u) (a1 v) else J u v
+  let p3 := if hs3 : msr (p2) (a2 u) < msr u v then op (p2) (a2 u) else J u v
+  let p4 := if hs4 : msr (a2 u) (a1 (a1 (a2 u))) < msr u v then op (a2 u) (a1 (a1 (a2 u))) else J u v
+  let p5 := if hs5 : msr (p4) (a2 u) < msr u v then op (p4) (a2 u) else J u v
   if P1 u v then a2 (a1 (a1 u))
   else if P2 u v then a2 (a1 (a1 u))
   else if P3 u v ∧ msr (a2 (a1 u)) (a1 v) < msr u v ∧ a1 (a1 u) = p1 then a1 v
+  else if P4 u v ∧ msr (a2 u) (a1 v) < msr u v ∧ msr (p2) (a2 u) < msr u v ∧ a1 u = p3 then a1 v
+  else if P5 u v ∧ msr (a2 u) (a1 (a1 (a2 u))) < msr u v ∧ msr (p4) (a2 u) < msr u v ∧ a1 u = p5 then a1 (a1 (a2 u))
+  else if P6 u v then a1 (a1 (a2 u))
   else J u v
 termination_by msr u v
 decreasing_by
+  · assumption
+  · assumption
+  · assumption
+  · assumption
   · assumption
 
 
 def inst : Magma M := { op := op }
 
-def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v
+def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v ∨ P5 u v ∨ P6 u v
 
 theorem op_free {u v : M} (h : ¬ Pre u v) : op u v = J u v := by
   rw [op.eq_1]; simp only [Pre, not_or] at h; simp [h]
@@ -75,7 +92,7 @@ theorem rhs : ¬ @EquationRHS M inst := by
   have := h (g 1) (g 0) (g 2)
   revert this
   change ¬ g 1 = op (g 0) (op (op (op (g 1) (op (g 2) (g 2))) (g 0)) (g 0))
-  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3]
+  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6]
 
 
 /-- THE LAW: x = (((y * x) * y) * y) * (x * z) -/
