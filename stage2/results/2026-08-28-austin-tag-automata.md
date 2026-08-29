@@ -13,7 +13,7 @@ Every number below is measured; the judge is Lean 4.33.1 through
 | Hypotheses with a verified infinite model | 8 of 69 (11116, 5066, 4952, 34888, 41252, 25087, 20911, and the control 28770 — Kisielewicz's law, whose automaton the search rediscovers, repair included) |
 | Certificate size / judge time | 2.7–11.6 KB, 5–46 s (FALSE cap 20,000 B, 300 s) |
 | Shipped | all 10 as `false:distilled:aus_e<eq1>_e<eq2>` in `DISTILLED_CERTS`, byte-pinned in `judge_verified_certs.jsonl` (+10 fixture lines carrying their own equations, rail 16) |
-| Second construction family | **piecewise-linear over ℚ** (Le Floch's 2025 shape for 13102): 25087 `x = (y◇(x◇(x◇y)))◇(z◇z)` has `x◇y = −x/2+y/2 if y ≤ 0 ∧ x ≤ y; −x/2+y if 0 ≤ y ∧ x ≤ 0; −x+y otherwise` (exact on 30,000 rationals, refutes 4916 at (1,0,0)); the mirrored operation is a model of the dual 20911 refuting 20034. Found by a 3-region sweep with coefficients in {0, ±½, ±1, ±2} over the 69 hypotheses: **1 hit in 69** at that width; a wider sweep is running. Lean: a 4-way *linear-region lemma* for `op x y`, nested `rcases` in evaluation order with `linarith` pruning, refutation by `norm_num`; the carrier must be hidden as `def submission.carrier := ℚ` because `Rat` is not on the judge's allowlist (rail 25) |
+| Second construction family | **piecewise-linear over ℚ** (Le Floch's 2025 shape for 13102): 25087 `x = (y◇(x◇(x◇y)))◇(z◇z)` has `x◇y = −x/2+y/2 if y ≤ 0 ∧ x ≤ y; −x/2+y if 0 ≤ y ∧ x ≤ 0; −x+y otherwise` (exact on 30,000 rationals, refutes 4916 at (1,0,0)); the mirrored operation is a model of the dual 20911 refuting 20034. Found by a 3-region sweep with coefficients in {0, ±½, ±1, ±2} over the 69 hypotheses: **1 hit in 69** at that width, and none more in a shallow wider round (table below). Lean: a 4-way *linear-region lemma* for `op x y`, nested `rcases` in evaluation order with `linarith` pruning, refutation by `norm_num`; the carrier must be hidden as `def submission.carrier := ℚ` because `Rat` is not on the judge's allowlist (rail 25) |
 | TRUE side (Track C) | Prover9, 300 s, all 169 problems (100 rows + 69 `eq1 ⇒ x = y`): **169 timeouts, 0 proved**. Consistent with Vampire; the rows are on the model side |
 
 These are, to the best of the literature search (ETP blueprint, final ETP
@@ -40,7 +40,7 @@ u ◇ v                  = J u v      otherwise
 Three rules. 5066 `x = y◇(y◇(x◇(y◇(z◇y))))` and 4952 are two-rule models
 (root projection + one exception).
 
-## The tooling (scratchpad `engine/`, to be promoted to `stage2/experiments/austin/automata/`)
+## The tooling (`stage2/experiments/austin/automata/`, README there)
 
 | Piece | What it does |
 | --- | --- |
@@ -80,6 +80,24 @@ op(x, u))))` for some `x, z`, which is definable by well-founded recursion but
 needs an *inductive* proof — outside what the symbolic verifier (finite case
 analysis) or a 20 KB certificate can carry today.
 
+For 5107 the fixed point is small and explicit. Only the two innermost
+products can unload early (every other site is cyclic), so the model is four
+rules plus one auxiliary `pay(u) = op(u.1, u)` by structural recursion:
+
+```
+u ◇ J u (J u (J z (J x u)))            = x            -- generic unload
+u ◇ J u (J u (J z w)),  w = pay u      = u.1          -- bottom is u's own payload
+u ◇ J u (J u x3),  u = J a (J z3 (J x3 a)) = a         -- p2 unloaded, p1 free
+u ◇ J u (J u w2),  w2 = op (pay u).1 (pay u) = u.1    -- p1 and p2 unloaded
+u ◇ v                                  = J u v        -- otherwise
+```
+
+Every recursive call is on a proper subterm, so `op` is well-founded. It
+passes 3,000 biased random tests (chains built from `x`, `z = y`, nested
+chains) with 0 failures — the strongest evidence so far that 5107 is an
+Austin law — and it is exactly what an inductive verifier and a
+recursive-op renderer would have to certify.
+
 **Search under load (rail 5e again).** Per-verification wall-clock deadlines
 under 12-way parallelism produced spurious "none"s on laws that solve in
 seconds in isolation (5066, the 28770 control); verification is now capped by
@@ -90,7 +108,7 @@ leaf count, deterministic under load.
 | Idea | Result |
 | --- | --- |
 | Prover9 300 s on all 169 TRUE-side problems | 169 timeouts |
-| Recursive self-consistency check inside the symbolic verifier | unbounded unfolding; bounded unfolding with unknowns reports failures at depth 1–3 (the model as written is incomplete: short chains after two early unloads are not covered) |
+| Recursive self-consistency check inside the symbolic verifier | naive unfolding is unbounded; bounded unfolding with a free unknown, then with a "free product or proper subterm of an argument" 3-way split, still reports spurious failures (depth 1: 51 leaves; depth 2: 191,000 leaves, 467 s) even though the 4-rule 5107 model is right on every concrete instance tried (0 / 3,000 biased random tests, and the very instance the verifier flags evaluates to `x` on ground terms). The case analysis needs induction, not deeper unfolding |
 | Exact critical-pair completion (5107, 5012, 5837) | diverges; rule depth and tree size grow without bound |
 | Blind CEGIS search on the hard family (batches 3–8, 600–900 s per law) | 0 of the all-bare-variable laws; 0 of 5012/5837/6912/… (compound off-spine but early unloads inside the off-spine term) |
 | ℚ piecewise-linear sweep, rounds 1+2 (721 M candidates, 4 workers, ~65 min) | **1 hit in 69** (25087, shipped with its dual). Round 2 is a *shallow* negative: every hypothesis got through only 11–16 of the 97 three-region templates at 7 coefficient values; the full-coefficient and four-region tiers never started. An overnight run on all cores is the cheap follow-up, not a new idea |
