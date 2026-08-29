@@ -1212,7 +1212,8 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
-| **Deep session 5: the Austin problem session** | **`stage2/docs/DEEP_SESSION_5_AUSTIN_HANDOVER.md`** |
+| **Deep session 6: Austin 37 → 100 (the current plan)** | **`stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md`** |
+| Deep session 5: the Austin problem session | `stage2/docs/DEEP_SESSION_5_AUSTIN_HANDOVER.md` |
 | **Next session plan (the deep sweeps)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
 | **Order-4 miss elimination (2026-08-29)** | **`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`** |
 | **Exact commands for the deep sweeps** | **`stage2/docs/DEEP_SWEEP_RUNBOOK.md`** |
