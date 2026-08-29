@@ -189,10 +189,11 @@ class Extractor:
             return
         # structural: unify (P under env) with (A under r), (Q under env) with (B under r)
         # process the side that is bound first so the other side's variables get determined
-        order = [(P, self.A, path + (0,)), (Q, self.B, path + (1,))]
-        if vP is None and vQ is not None: order = [(Q, self.B, path + (1,)), (P, self.A, path + (0,))]
-        for pp, qq, ppath in order:
-            self.unify(pp, env, qq, r, conds, ppath=ppath, choices=choices)
+        order = [(P, self.A, path + (0,), ('A',)), (Q, self.B, path + (1,), ('B',))]
+        if vP is None and vQ is not None: order = [(Q, self.B, path + (1,), ('B',)), (P, self.A, path + (0,), ('A',))]
+        for pp, qq, ppath, qpath in order:
+            self.unify(pp, env, qq, r, conds, ppath=ppath, choices=choices, qpath=qpath)
+        self.resolve_rdefer(conds)
         vP2, vQ2 = self.val(P, env, path + (0,), choices, conds), self.val(Q, env, path + (1,), choices, conds)
         if vP2 is None or vQ2 is None or has_free(vP2) or has_free(vQ2):
             return                  # a free decoder/payload: the structural conditions already say it all (vacuous)
@@ -231,7 +232,7 @@ class Extractor:
             if r is not None: return r
         return None
 
-    def unify(self, p, s, q, r, conds, ppath=None, choices=None):
+    def unify(self, p, s, q, r, conds, ppath=None, choices=None, qpath=None):
         """eval(p, s) = eval(q, r): p is a law pattern under env s, q a root-pattern under env r.
         A compound law-side node whose mode (choices[ppath]) is not `free` is DECODED: it is unified as its
         nested-op value (when determined), not decomposed as a free product — the mode the 5837/33020/23357
@@ -240,6 +241,8 @@ class Extractor:
             e = self.val(p, s, ppath, choices, conds)
             if e is not None:
                 self.unify_expr(q, e, r, conds); return
+        qc0 = None if qpath is None else qpath + (0,)
+        qc1 = None if qpath is None else qpath + (1,)
         if isinstance(p, str) and isinstance(q, str):
             bp, bq = s.bound(p), r.bound(q)
             if bp and bq: conds.append(('EQ', s.get(p), r.get(q)))
@@ -251,6 +254,8 @@ class Extractor:
         if isinstance(p, str):
             if s.bound(p):
                 e = s.get(p)
+                if qpath is not None and qpath in self.rdec:
+                    self.rdefer.append((q, e, r)); return
                 if e[0] == 'F':
                     v = self.val(q, r)
                     if v is not None:
@@ -258,18 +263,18 @@ class Extractor:
                     # refine the placeholder structurally: F := J(F1, F2)
                     f1, f2 = self.fresh(), self.fresh(); assign(e, ('J', f1, f2))
                     r1 = Env(); r1.b = r.b; r1.parent = r.parent
-                    self.unify_expr(q[0], f1, r, conds)
-                    self.unify_expr(q[1], f2, r, conds)
+                    self.unify_expr(q[0], f1, r, conds, qc0)
+                    self.unify_expr(q[1], f2, r, conds, qc1)
                     return
                 conds.append(('TG', e))
-                self.unify_expr(q[0], ('A1', e), r, conds)
-                self.unify_expr(q[1], ('A2', e), r, conds)
+                self.unify_expr(q[0], ('A1', e), r, conds, qc0)
+                self.unify_expr(q[1], ('A2', e), r, conds, qc1)
             else:
                 v = self.val(q, r)
                 if v is not None: s.bind(p, v, conds)
                 else:
                     f1, f2 = self.fresh(), self.fresh(); s.bind(p, ('J', f1, f2), conds)
-                    self.unify_expr(q[0], f1, r, conds); self.unify_expr(q[1], f2, r, conds)
+                    self.unify_expr(q[0], f1, r, conds, qc0); self.unify_expr(q[1], f2, r, conds, qc1)
             return
         if isinstance(q, str):
             if r.bound(q):
@@ -293,28 +298,44 @@ class Extractor:
             return
         cp0 = None if ppath is None else ppath + (0,)
         cp1 = None if ppath is None else ppath + (1,)
-        self.unify(p[0], s, q[0], r, conds, ppath=cp0, choices=choices)
-        self.unify(p[1], s, q[1], r, conds, ppath=cp1, choices=choices)
+        self.unify(p[0], s, q[0], r, conds, ppath=cp0, choices=choices, qpath=qc0)
+        self.unify(p[1], s, q[1], r, conds, ppath=cp1, choices=choices, qpath=qc1)
 
-    def unify_expr(self, q, e, r, conds):
-        """pattern q under env r equals expression e (structurally, all nodes free)"""
+    def unify_expr(self, q, e, r, conds, rpath=None):
+        """pattern q under env r equals expression e.  A compound q is read freely (e is a J whose children match)
+        unless its root-pattern path `rpath` is in self.rdec: then q's value is DECODED - op(q[0], q[1]) under r
+        equals e - recorded as a deferred guard, resolved once r's variables are bound (the both-compound
+        24200 shape: the encoding x = J(op(w, z'), z') has its inner product decoded)."""
         e = subst(e)
         if isinstance(q, str):
             r.bind(q, e, conds); return
+        if rpath is not None and rpath in self.rdec:
+            self.rdefer.append((q, e, r)); return
+        c0 = None if rpath is None else rpath + (0,)
+        c1 = None if rpath is None else rpath + (1,)
         if e[0] == 'F':
             f1, f2 = self.fresh(), self.fresh(); assign(e, ('J', f1, f2))
-            self.unify_expr(q[0], f1, r, conds); self.unify_expr(q[1], f2, r, conds); return
+            self.unify_expr(q[0], f1, r, conds, c0); self.unify_expr(q[1], f2, r, conds, c1); return
         if e[0] == 'J':
-            self.unify_expr(q[0], e[1], r, conds); self.unify_expr(q[1], e[2], r, conds); return
+            self.unify_expr(q[0], e[1], r, conds, c0); self.unify_expr(q[1], e[2], r, conds, c1); return
         conds.append(('TG', e))
-        self.unify_expr(q[0], ('A1', e), r, conds)
-        self.unify_expr(q[1], ('A2', e), r, conds)
+        self.unify_expr(q[0], ('A1', e), r, conds, c0)
+        self.unify_expr(q[1], ('A2', e), r, conds, c1)
+
+    def resolve_rdefer(self, conds):
+        """deferred root-side decodes: op(q[0], q[1]) under r must now be determined"""
+        pending = self.rdefer; self.rdefer = []
+        for q, e, r in pending:
+            v = self.val(q, r)
+            if v is None or has_free(v): raise Infeasible()
+            conds.append(('OPEQ', v, e))
 
     def one_rule(self, choices):
         nodes = [('A',) + path for path, _ in positions(self.A)] + [('B',) + path for path, _ in positions(self.B)]
         D = {p for p, m in choices.items() if p[0] in ('A', 'B') and m in ('lazy', 'struct', 'exist')}
         env = Env(); conds = []
         SUBST.clear(); self.nfree = 0; self.used_lazy = set(); self.soft = []
+        self.rdec = set(choices.get(('RD',), ())); self.rdefer = []
         deferred = []
         for pat, root, side in ((self.A, ('U',), 'A'), (self.B, ('V',), 'B')):
             if isinstance(pat, str): env.bind(pat, root, conds)
@@ -336,17 +357,29 @@ class Extractor:
         encpat = self.B if self.lform else self.A
         encnodes = [p for p, _ in positions(encpat)] if not isinstance(encpat, str) else []
         out = []; late = []
+        # root-side decoded node sets: internal nodes of A and B below their roots, at most 2 at a time
+        rnodes = [('A',) + path for path, _ in positions(self.A) if path] + [('B',) + path for path, _ in positions(self.B) if path]
+        rdsets = [()] + [(n,) for n in rnodes] + [c for c in itertools.combinations(rnodes, 2)]
         for mode in itertools.product(modes, repeat=len(nodes)):
-            choices = dict(zip(nodes, mode))
-            try:
-                conds, x, used = self.one_rule(choices)
-            except Infeasible:
-                continue
-            tag = ','.join((''.join(map(str, p)) or 'e') + m[0] for p, m in choices.items() if m != 'free') or 'free'
-            out.append((conds, x, tag))
-            if softdrop and self.last_soft:
-                soft = set(self.last_soft)
-                late.append(([c for c in conds if c not in soft], x, tag + '~'))
+            base = dict(zip(nodes, mode))
+            rds = [()] if all(m == 'free' for m in mode) else rdsets
+            used = None
+            for rd in rds:
+                choices = dict(base)
+                if rd: choices[('RD',)] = rd
+                try:
+                    conds, x, used_rd = self.one_rule(choices)
+                except Infeasible:
+                    continue
+                if not rd: used = used_rd
+                tag = ','.join((''.join(map(str, p)) or 'e') + m[0] for p, m in base.items() if m != 'free') or 'free'
+                if rd: tag += '|rd:' + ';'.join(''.join(map(str, p)) for p in rd)
+                out.append((conds, x, tag))
+                if softdrop and self.last_soft:
+                    soft = set(self.last_soft)
+                    late.append(([c for c in conds if c not in soft], x, tag + '~'))
+            choices = base
+            tag = ','.join((''.join(map(str, p)) or 'e') + m[0] for p, m in base.items() if m != 'free') or 'free'
             if not level2 or not used: continue
             used = sorted(used)[:2]
             subs = list(itertools.product(['free', 'lazy'], repeat=len(encnodes)))

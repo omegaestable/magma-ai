@@ -368,9 +368,105 @@ theorem op_R6 (u B A x : M) (hu : tg u = 2) (hoc : oc u = A) (hB : B = op A u) (
             · rename_i h1 h2 h3 h4 h5 h; exfalso; apply h
               exact ⟨⟨rfl, rfl, rfl, hu⟩, g3, g2, by simp only [a1_J_eq]; rw [hB, hoc], by simp only [a1_J_eq, a2_J_eq]; rw [hoc, hA]⟩
 
+theorem sz_pos (t : M) : 1 ≤ sz t := by cases t <;> simp [sz] <;> omega
+
+theorem op_zx_ne_x (x z : M) : op z x ≠ x := by
+  intro h
+  rcases TRsz z x with hf | ⟨-, -, hsr⟩
+  · rw [hf] at h
+    have := congrArg sz h; simp only [sz_J] at this; have := sz_pos z; omega
+  · rw [h] at hsr; omega
+
+theorem op_self (t : M) : op t t = J t t := by
+  rcases TRsz t t with h | ⟨-, hlt, -⟩
+  · exact h
+  · omega
+
+theorem no_core_CD (x y z t : M) (hBf : op (op z x) y = J (op z x) y)
+    (hBeq : op (op z x) y = t) (ht : sz t ≤ sz (op x y))
+    (hCty : tg y = 2) (hCsx : sz x < sz y) (hCsC : sz (op x y) < sz y) : False := by
+  have hBsize : sz y + 2 ≤ sz (op (op z x) y) := by
+    rw [hBf]; simp only [sz_J]; have := sz_pos (op z x); omega
+  rw [hBeq] at hBsize
+  omega
+
+theorem no_a2a2C (x y z : M) (hBf : op (op z x) y = J (op z x) y)
+    (hEq : op (op z x) y = a2 (a2 (op x y))) : False := by
+  have hBsize : sz y + 2 ≤ sz (op (op z x) y) := by
+    rw [hBf]; simp only [sz_J]; have := sz_pos (op z x); omega
+  rw [hEq] at hBsize
+  rcases OC x y with hCf | ⟨-, -, hCsC, -⟩
+  · rw [hCf] at hBsize; simp only [a2_J_eq] at hBsize
+    have := sz_a2 y; omega
+  · have := sz_a2 (a2 (op x y)); have := sz_a2 (op x y); omega
+
 /-- the outer product ((z*x)*y) * (x*y) is always free -/
 theorem Dfree (x y z : M) : op (op (op z x) y) (op x y) = J (op (op z x) y) (op x y) := by
-  sorry
+  have hB := OC (op z x) y
+  have hC := OC x y
+  rcases TR (op (op z x) y) (op x y) with h | h1 | h2 | h3 | h4 | h5 | h6
+  · exact h
+  · exfalso
+    obtain ⟨hP1, hRes⟩ := h1
+    obtain ⟨_, _, _, _, _, _, hBeq⟩ := hP1
+    rcases hB with hBf | ⟨hBty, hBsA, hBsB, hBoc⟩
+    · exact no_a2a2C x y z hBf hBeq
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact op_zx_ne_x x z (hBoc.trans hCoc.symm)
+  · obtain ⟨hP2, hExtra, hRes⟩ := h2
+    obtain ⟨_, _, _, hBeq⟩ := hP2
+    have htC : sz (a2 (a1 (op x y))) ≤ sz (op x y) := by
+      have := sz_a2 (a1 (op x y)); have := sz_a1 (op x y); omega
+    rcases hB with hBf | ⟨hBty, hBsA, hBsB, hBoc⟩
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact (no_core_CD x y z _ hBf hBeq htC hCty hCsx hCsC).elim
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact (op_zx_ne_x x z (hBoc.trans hCoc.symm)).elim
+  · exfalso
+    obtain ⟨hP3, hRes⟩ := h3
+    obtain ⟨_, _, _, _, hBeq⟩ := hP3
+    rcases hB with hBf | ⟨hBty, hBsA, hBsB, hBoc⟩
+    · exact no_a2a2C x y z hBf hBeq
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact op_zx_ne_x x z (hBoc.trans hCoc.symm)
+  · obtain ⟨hP4, hE1, hE2, hRes⟩ := h4
+    obtain ⟨_, _, hBeq, _⟩ := hP4
+    have htC : sz (a2 (a1 (op x y))) ≤ sz (op x y) := by
+      have := sz_a2 (a1 (op x y)); have := sz_a1 (op x y); omega
+    rcases hB with hBf | ⟨hBty, hBsA, hBsB, hBoc⟩
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact (no_core_CD x y z _ hBf hBeq htC hCty hCsx hCsC).elim
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact (op_zx_ne_x x z (hBoc.trans hCoc.symm)).elim
+  · exfalso
+    obtain ⟨hP5, hRes⟩ := h5
+    obtain ⟨_, _, hBeq, _, _, _⟩ := hP5
+    rcases hB with hBf | ⟨hBty, hBsA, hBsB, hBoc⟩
+    · exact no_a2a2C x y z hBf hBeq
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · sorry
+      · exact op_zx_ne_x x z (hBoc.trans hCoc.symm)
+  · exfalso
+    obtain ⟨hP6, hRes⟩ := h6
+    obtain ⟨_, _, hBeq, _⟩ := hP6
+    rcases hB with hBf | ⟨hBty, hBsA, hBsB, hBoc⟩
+    · exact no_a2a2C x y z hBf hBeq
+    · rcases hC with hCf | ⟨hCty, hCsx, hCsC, hCoc⟩
+      · rw [hCf] at hBeq; simp only [a2_J_eq] at hBeq
+        -- REMAINING: B (= op (op z x) y) decoded, C free, B = a2 y.
+        -- op z x = oc y (subterm of y); B = op (oc y) y is forced to fire one of TR's
+        -- own rules (its "free" case contradicts sz B < sz y directly), landing B on
+        -- a1(a2y)/a2(a1(a1y))/oc(oc y) -- all deeper subterms of y than a2 y itself,
+        -- but no pure size argument found separates that value from a2 y; would need a
+        -- genuine strong induction (see REMAINING in the session report).
+        sorry
+      · exact op_zx_ne_x x z (hBoc.trans hCoc.symm)
 
 /-- THE LAW: x = y * (((z * x) * y) * (x * y)) -/
 theorem law (x y z : M) : op (y) (op (op (op (z) (x)) (y)) (op (x) (y))) = x := by

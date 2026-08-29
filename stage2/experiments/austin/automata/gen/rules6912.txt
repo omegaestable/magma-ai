@@ -11,5 +11,6 @@ R8 [B1l,B11v|B1:flff] J?v & u = v.1 & J?u & J?op(u.1, u) & J?op(v.2, op(u.1, u).
 R9 [B1s,B11v] J?v & u = v.1 & J?u & J?op(u.1, u) & J?op(u.1, u).2 & J?op(u.1, u).2.1 & op(u.1, u).2.1.1 = op(u.1, u).2.1.2 & J?op(u.1, u).2.2 & v.2 = op(u.1, u).2.2.1 & op(u.1, u).1 = op(u.1, u).2.2.2 & J?op(u.1, u).1 & op(u.1, u).1.1 = op(u.1, u).1.2 & op(op(op(u.1, u).1.1, op(u.1, u).1.1), op(u.1, u)) == v.2 -> u.1
 R10 [Bl,B11v] J?u & u.1 = u.2 & J?op(u.1, u) & J?op(u.1, u).1 & op(u.1, u).1.1 = op(u.1, u).1.2 & J?op(u.1, u).2 & v = op(u.1, u).2.1 & u = op(u.1, u).2.2 & op(u, op(op(u.1, u.1), op(u.1, u))) == v -> u.1
 R11 [B11s~] J?v & u = v.1 & J?v.2 & J?v.2.1 & v.2.1.1 = v.2.1.2 & J?u & J?u.2 & J?u.2.1 & u.2.1.1 = u.2.1.2 & J?u.2.2 & v.2.2 = u.2.2.1 & u.1 = u.2.2.2 -> u.1
-R12 [B1s,B11v~] J?v & u = v.1 & J?u & J?op(u.1, u) & J?op(u.1, u).2 & J?op(u.1, u).2.1 & op(u.1, u).2.1.1 = op(u.1, u).2.1.2 & J?op(u.1, u).2.2 & v.2 = op(u.1, u).2.2.1 & op(u.1, u).1 = op(u.1, u).2.2.2 & J?op(u.1, u).1 & op(u.1, u).1.1 = op(u.1, u).1.2 -> u.1
-R13 [Bl,B11v~] J?u & u.1 = u.2 & J?op(u.1, u) & J?op(u.1, u).1 & op(u.1, u).1.1 = op(u.1, u).1.2 & J?op(u.1, u).2 & v = op(u.1, u).2.1 & u = op(u.1, u).2.2 -> u.1
+R12 [B11s|rd:B11~] J?v & u = v.1 & J?v.2 & J?v.2.1 & v.2.1.1 = v.2.1.2 & J?u & J?u.2 & J?u.2.1 & u.2.1.1 = u.2.1.2 & op(v.2.2, u.1) == u.2.2 -> u.1
+R13 [B1s,B11v~] J?v & u = v.1 & J?u & J?op(u.1, u) & J?op(u.1, u).2 & J?op(u.1, u).2.1 & op(u.1, u).2.1.1 = op(u.1, u).2.1.2 & J?op(u.1, u).2.2 & v.2 = op(u.1, u).2.2.1 & op(u.1, u).1 = op(u.1, u).2.2.2 & J?op(u.1, u).1 & op(u.1, u).1.1 = op(u.1, u).1.2 -> u.1
+R14 [Bl,B11v~] J?u & u.1 = u.2 & J?op(u.1, u) & J?op(u.1, u).1 & op(u.1, u).1.1 = op(u.1, u).1.2 & J?op(u.1, u).2 & v = op(u.1, u).2.1 & u = op(u.1, u).2.2 -> u.1

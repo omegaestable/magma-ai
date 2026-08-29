@@ -235,7 +235,7 @@ JUDGE_MAX_FALSE_CERT_BYTES = 20_000
 # Our own caps sit just under the judge's, so a cert that passes locally cannot
 # be rejected on size.
 MAX_LEAN_CODE_BYTES = JUDGE_MAX_CODE_LENGTH - 500
-MAX_FALSE_CERT_BYTES = JUDGE_MAX_FALSE_CERT_BYTES - 500
+MAX_FALSE_CERT_BYTES = JUDGE_MAX_FALSE_CERT_BYTES - 250
 VALID_VERDICTS = {"true", "false"}
 AFFINE_LINEAR_SIZES = (2, 3, 4, 5, 7, 8, 9)
 # Orders above 10, reachable only since `false_certificate_list` (2026-07-31).

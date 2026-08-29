@@ -53,7 +53,12 @@ def main():
     m = re.search(r'\n(?=(theorem |/--|def |abbrev |end submission))', A2[i + 1:]); j = i + 1 + m.start()
     old = A2[i:j]
     lines = old.split('\n')
-    tail = [l for l in lines[1:] if l.strip() and not l.strip().startswith(('intro h', 'have := h', 'revert this', 'change ¬'))]
+    tail = [l for l in lines[1:] if l.strip() and not l.strip().startswith(('intro h', 'have := h', 'have:=h', 'revert this', 'change ¬'))]
+    if not tail:
+        # one-line proofs: `intro h; have := h ...; revert this; change ...; <closing tactics>`
+        parts = [p.strip() for p in old.split(';')]
+        k = max(i for i, p in enumerate(parts) if p.startswith('change'))
+        tail = ['  ' + '; '.join(parts[k + 1:])]
     newrhs = 'theorem rhs : ¬ @EquationRHS M inst := by\n  intro h\n  have := h %s\n  revert this\n  change ¬ %s = %s\n%s' % (
         ' '.join('(%s)' % lt(inst[v]) for v in order), lt(inst[g[0]]), lp(g[1]), '\n'.join(tail))
     A2 = A2[:i] + newrhs + A2[j:]

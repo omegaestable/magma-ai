@@ -68,10 +68,12 @@ def P10 (u v : M) : Prop := tg u = 2 ∧ a1 u = a2 u
 instance (u v : M) : Decidable (P10 u v) := by unfold P10; infer_instance
 def P11 (u v : M) : Prop := tg v = 2 ∧ u = a1 v ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ a1 (a1 (a2 v)) = a2 (a1 (a2 v)) ∧ tg u = 2 ∧ tg (a2 u) = 2 ∧ tg (a1 (a2 u)) = 2 ∧ a1 (a1 (a2 u)) = a2 (a1 (a2 u)) ∧ tg (a2 (a2 u)) = 2 ∧ a2 (a2 v) = a1 (a2 (a2 u)) ∧ a1 u = a2 (a2 (a2 u))
 instance (u v : M) : Decidable (P11 u v) := by unfold P11; infer_instance
-def P12 (u v : M) : Prop := tg v = 2 ∧ u = a1 v ∧ tg u = 2
+def P12 (u v : M) : Prop := tg v = 2 ∧ u = a1 v ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ a1 (a1 (a2 v)) = a2 (a1 (a2 v)) ∧ tg u = 2 ∧ tg (a2 u) = 2 ∧ tg (a1 (a2 u)) = 2 ∧ a1 (a1 (a2 u)) = a2 (a1 (a2 u))
 instance (u v : M) : Decidable (P12 u v) := by unfold P12; infer_instance
-def P13 (u v : M) : Prop := tg u = 2 ∧ a1 u = a2 u
+def P13 (u v : M) : Prop := tg v = 2 ∧ u = a1 v ∧ tg u = 2
 instance (u v : M) : Decidable (P13 u v) := by unfold P13; infer_instance
+def P14 (u v : M) : Prop := tg u = 2 ∧ a1 u = a2 u
+instance (u v : M) : Decidable (P14 u v) := by unfold P14; infer_instance
 def op (u v : M) : M :=
   let p1 := if hs1 : msr (a1 u) (u) < msr u v then op (a1 u) (u) else J u v
   let p2 := if hs2 : msr (a2 (a2 v)) (a1 u) < msr u v then op (a2 (a2 v)) (a1 u) else J u v
@@ -95,8 +97,9 @@ def op (u v : M) : M :=
   else if P9 u v ∧ msr (a1 u) (u) < msr u v ∧ msr (a1 (a1 (p1))) (a1 (a1 (p1))) < msr u v ∧ msr (p7) (p1) < msr u v ∧ tg (p1) = 2 ∧ tg (a2 (p1)) = 2 ∧ tg (a1 (a2 (p1))) = 2 ∧ a1 (a1 (a2 (p1))) = a2 (a1 (a2 (p1))) ∧ tg (a2 (a2 (p1))) = 2 ∧ a2 v = a1 (a2 (a2 (p1))) ∧ a1 (p1) = a2 (a2 (a2 (p1))) ∧ tg (a1 (p1)) = 2 ∧ a1 (a1 (p1)) = a2 (a1 (p1)) ∧ a2 v = p8 then a1 u
   else if P10 u v ∧ msr (a1 u) (u) < msr u v ∧ msr (a1 u) (a1 u) < msr u v ∧ msr (p9) (p1) < msr u v ∧ msr (u) (p10) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ a1 (a1 (p1)) = a2 (a1 (p1)) ∧ tg (a2 (p1)) = 2 ∧ v = a1 (a2 (p1)) ∧ u = a2 (a2 (p1)) ∧ v = p11 then a1 u
   else if P11 u v then a1 u
-  else if P12 u v ∧ msr (a1 u) (u) < msr u v ∧ tg (p1) = 2 ∧ tg (a2 (p1)) = 2 ∧ tg (a1 (a2 (p1))) = 2 ∧ a1 (a1 (a2 (p1))) = a2 (a1 (a2 (p1))) ∧ tg (a2 (a2 (p1))) = 2 ∧ a2 v = a1 (a2 (a2 (p1))) ∧ a1 (p1) = a2 (a2 (a2 (p1))) ∧ tg (a1 (p1)) = 2 ∧ a1 (a1 (p1)) = a2 (a1 (p1)) then a1 u
-  else if P13 u v ∧ msr (a1 u) (u) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ a1 (a1 (p1)) = a2 (a1 (p1)) ∧ tg (a2 (p1)) = 2 ∧ v = a1 (a2 (p1)) ∧ u = a2 (a2 (p1)) then a1 u
+  else if P12 u v ∧ msr (a2 (a2 v)) (a1 u) < msr u v ∧ a2 (a2 u) = p2 then a1 u
+  else if P13 u v ∧ msr (a1 u) (u) < msr u v ∧ tg (p1) = 2 ∧ tg (a2 (p1)) = 2 ∧ tg (a1 (a2 (p1))) = 2 ∧ a1 (a1 (a2 (p1))) = a2 (a1 (a2 (p1))) ∧ tg (a2 (a2 (p1))) = 2 ∧ a2 v = a1 (a2 (a2 (p1))) ∧ a1 (p1) = a2 (a2 (a2 (p1))) ∧ tg (a1 (p1)) = 2 ∧ a1 (a1 (p1)) = a2 (a1 (p1)) then a1 u
+  else if P14 u v ∧ msr (a1 u) (u) < msr u v ∧ tg (p1) = 2 ∧ tg (a1 (p1)) = 2 ∧ a1 (a1 (p1)) = a2 (a1 (p1)) ∧ tg (a2 (p1)) = 2 ∧ v = a1 (a2 (p1)) ∧ u = a2 (a2 (p1)) then a1 u
   else J u v
 termination_by msr u v
 decreasing_by
@@ -115,7 +118,7 @@ decreasing_by
 
 def inst : Magma M := { op := op }
 
-def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v ∨ P5 u v ∨ P6 u v ∨ P7 u v ∨ P8 u v ∨ P9 u v ∨ P10 u v ∨ P11 u v ∨ P12 u v ∨ P13 u v
+def Pre (u v : M) : Prop := P1 u v ∨ P2 u v ∨ P3 u v ∨ P4 u v ∨ P5 u v ∨ P6 u v ∨ P7 u v ∨ P8 u v ∨ P9 u v ∨ P10 u v ∨ P11 u v ∨ P12 u v ∨ P13 u v ∨ P14 u v
 
 theorem op_free {u v : M} (h : ¬ Pre u v) : op u v = J u v := by
   rw [op.eq_1]; simp only [Pre, not_or] at h; simp [h]
@@ -125,7 +128,7 @@ theorem rhs : ¬ @EquationRHS M inst := by
   have := h (g 1) (g 0) (g 2)
   revert this
   change ¬ g 1 = op (op (op (op (g 0) (g 0)) (g 0)) (g 1)) (op (g 0) (g 2))
-  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13]
+  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, P11, P12, P13, P14]
 
 
 /-- THE LAW: x = y * (y * ((z * z) * (x * y))) -/
