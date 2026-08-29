@@ -13,3 +13,17 @@
 {"id": "research_order5_hard_0088", "eq1_id": 41252, "eq2_id": 20034, "judge_status": "accepted", "judge_seconds": 12.3, "code_bytes": 11556, "errors": [], "when": "2026-08-28 16:04"}
 {"id": "research_order5_hard_0100", "eq1_id": 25087, "eq2_id": 4916, "judge_status": "accepted", "judge_seconds": 46.0, "code_bytes": 2695, "errors": [], "when": "2026-08-28 18:40", "kind": "pwl"}
 {"id": "research_order5_hard_0043", "eq1_id": 20911, "eq2_id": 20034, "judge_status": "accepted", "judge_seconds": 29.4, "code_bytes": 2741, "errors": [], "when": "2026-08-28 18:42", "kind": "pwl-dual"}
+{"id": "research_order5_hard_0082", "eq1_id": 5107, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 8.6, "code_bytes": 15092, "errors": [], "when": "2026-08-29 01:30", "kind": "recursive"}
+{"id": "research_order5_hard_0059", "eq1_id": 5295, "eq2_id": 30591, "judge_status": "accepted", "judge_seconds": 6.9, "code_bytes": 17274, "errors": [], "when": "2026-08-29 03:40", "kind": "recursive"}
+{"id": "research_order5_hard_0015", "eq1_id": 5012, "eq2_id": 15535, "judge_status": "accepted", "judge_seconds": 6.2, "code_bytes": 14495, "errors": [], "when": "2026-08-29 03:45", "kind": "recursive"}
+{"id": "research_order5_hard_0019", "eq1_id": 5012, "eq2_id": 20034, "judge_status": "accepted", "judge_seconds": 5.8, "code_bytes": 14495, "errors": [], "when": "2026-08-29 03:45", "kind": "recursive"}
+{"id": "research_order5_hard_0041", "eq1_id": 9345, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 4.2, "code_bytes": 7931, "errors": [], "when": "2026-08-29 04:05", "kind": "recursive-hand"}
+{"id": "research_order5_hard_0066", "eq1_id": 5141, "eq2_id": 4916, "judge_status": "accepted", "judge_seconds": 4.8, "code_bytes": 19405, "errors": [], "when": "2026-08-29 04:10", "kind": "recursive"}
+{"id": "research_order5_hard_0004", "eq1_id": 41253, "eq2_id": 4916, "judge_status": "accepted", "judge_seconds": 4.5, "code_bytes": 14642, "errors": [], "when": "2026-08-29 04:30", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0014", "eq1_id": 40909, "eq2_id": 28770, "judge_status": "accepted", "judge_seconds": 4.6, "code_bytes": 17420, "errors": [], "when": "2026-08-29 04:30", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0067", "eq1_id": 40951, "eq2_id": 4916, "judge_status": "accepted", "judge_seconds": 6.3, "code_bytes": 15233, "errors": [], "when": "2026-08-29 04:31", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0035", "eq1_id": 36713, "eq2_id": 25964, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 8078, "errors": [], "when": "2026-08-29 04:31", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0083", "eq1_id": 36713, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 4.3, "code_bytes": 8078, "errors": [], "when": "2026-08-29 04:32", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0089", "eq1_id": 36713, "eq2_id": 15535, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 8078, "errors": [], "when": "2026-08-29 04:32", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0076", "eq1_id": 13992, "eq2_id": 30591, "judge_status": "accepted", "judge_seconds": 5.4, "code_bytes": 13821, "errors": [], "when": "2026-08-29 04:40", "kind": "recursive-hand"}
+{"id": "research_order5_hard_0085", "eq1_id": 13992, "eq2_id": 22455, "judge_status": "accepted", "judge_seconds": 6.0, "code_bytes": 13821, "errors": [], "when": "2026-08-29 04:40", "kind": "recursive-hand"}
