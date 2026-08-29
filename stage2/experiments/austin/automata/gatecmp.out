@@ -16,3 +16,12 @@
 {"eq": 18137, "nrules": 4, "extract_secs": 0.0, "msr": {"fails": 0, "kinds": {}, "secs": 15.5}, "lex": {"fails": 0, "kinds": {}, "secs": 18.9}}
 {"eq": 39214, "nrules": 13, "extract_secs": 0.0, "msr": {"fails": 1, "kinds": {"critical": 1}, "secs": 35.5}, "lex": {"fails": 1, "kinds": {"critical": 1}, "secs": 35.4}}
 {"eq": 12883, "nrules": 29, "extract_secs": 0.1, "msr": {"fails": 1, "kinds": {"exh9/1": 1}, "secs": 206.3}, "lex": {"fails": 1, "kinds": {"exh9/1": 1}, "secs": 210.2}}
+{"eq": 9663, "nrules": 68, "extract_secs": 0.0, "msr": {"fails": 27, "kinds": {"exh9/1": 23, "closure": 2, "critical": 1, "deep": 1}, "secs": 407.8}, "lex": {"fails": 45, "kinds": {"exh9/1": 1, "deep": 7, "critical": 37}, "secs": 313.5}}
+{"eq": 38565, "nrules": 25, "extract_secs": 0.1, "msr": {"fails": 0, "kinds": {}, "secs": 82.6}, "lex": {"fails": 0, "kinds": {}, "secs": 81.5}}
+{"eq": 36487, "nrules": 68, "extract_secs": 0.0, "msr": {"fails": 27, "kinds": {"exh9/1": 23, "closure": 2, "critical": 1, "deep": 1}, "secs": 377.3}, "lex": {"fails": 45, "kinds": {"exh9/1": 1, "deep": 7, "critical": 37}, "secs": 291.3}}
+{"eq": 32294, "nrules": 82, "extract_secs": 0.2, "msr": {"fails": 0, "kinds": {}, "secs": 394.7}, "lex": {"fails": 0, "kinds": {}, "secs": 326.6}}
+{"eq": 36524, "nrules": 75, "extract_secs": 0.1, "msr": {"fails": 0, "kinds": {}, "secs": 745.2}, "lex": {"fails": 0, "kinds": {}, "secs": 477.7}}
+{"eq": 12087, "nrules": 12, "extract_secs": 0.0, "msr": {"fails": 0, "kinds": {}, "secs": 48.4}, "lex": {"fails": 0, "kinds": {}, "secs": 79.5}}
+{"eq": 23354, "nrules": 7, "extract_secs": 0.0, "msr": {"fails": 0, "kinds": {}, "secs": 12.1}, "lex": {"fails": 0, "kinds": {}, "secs": 13.0}}
+{"eq": 11081, "nrules": 28, "extract_secs": 0.0, "msr": {"fails": 0, "kinds": {}, "secs": 226.0}, "lex": {"fails": 0, "kinds": {}, "secs": 132.8}}
+{"eq": 13764, "nrules": 82, "extract_secs": 0.2, "msr": {"fails": 0, "kinds": {}, "secs": 378.1}, "lex": {"fails": 0, "kinds": {}, "secs": 314.3}}

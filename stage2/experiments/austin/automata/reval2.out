@@ -4,3 +4,8 @@
 12087 OK rules 12 -> 3 full {'nrules': 12, 'fails': 0, 'kinds': {}}  secs 379.8 
 32281 FAIL rules None -> None full {'nrules': 26, 'fails': 134, 'kinds': {'value:deep': 21, 'value:fuzz': 13, 'value:closure': 39, 'value:critical': 61}} {'nrules': 26, 'fails': 134, 'kinds': {'value:deep': 21, 'value:fuzz': 13, 'value:closure': 39, 'value:critical': 61}} secs 468.6 
 34889 FAIL rules None -> None full {'nrules': 4, 'fails': 192, 'kinds': {'value:exh9/1': 3, 'value:exh5/2': 4, 'value:deep': 114, 'value:closure': 63, 'value:fuzz': 5, 'value:critical': 3}} {'nrules': 4, 'fails': 192, 'kinds': {'value:exh9/1': 3, 'value:exh5/2': 4, 'value:deep': 114, 'value:closure': 63, 'value:fuzz': 5, 'value:critical': 3}} secs 36.8 
+11081 None rules None -> 28 full None  secs 1855.0 
+13764 None rules None -> 82 full None  secs 1855.0 
+9663 None rules None -> 68 full None  secs 1777.2 
+36524 None rules None -> None full None  secs 1657.4 no output
+10222 None rules None -> None full None  secs 1776.8 no output
