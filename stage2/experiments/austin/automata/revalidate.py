@@ -20,14 +20,23 @@ import leangen
 from freemodel import normalise, catalog, size
 from laws import parse_eq
 
-def run_tests(law, rules, seeds, N, NF, secs=240):
+def run_tests(law, rules, seeds, N, NF, secs=240, exhaustive=True):
+    import smallcheck as sc
     fails = []
+    if exhaustive:
+        for ms, g in ((9, 1), (5, 2)):
+            n, f = sc.exhaustive(cf.Closed(law, rules), law, ms, g, limit=25)
+            fails += [(s, r, 'exh%d/%d' % (ms, g), 0) for s, r in f]
     for sd in seeds:
         C = cf.Closed(law, rules)
         t, f = cf.deep_tests(C, law, N, secs, sd)
         fails += [(s, r, 'deep', sd) for s, r in f]
         t2, f2 = fz.fuzz(cf.Closed(law, rules), law, rules, NF, seed=sd + 100)
         fails += [(s, r, 'fuzz', sd) for s, r in f2]
+        t3, f3 = fz.closure_fuzz(cf.Closed(law, rules), law, NF, seed=sd + 200)
+        fails += [(s, r, 'closure', sd) for s, r in f3]
+        t4, f4 = fz.critical_fuzz(cf.Closed(law, rules), law, NF, seed=sd + 300)
+        fails += [(s, r, 'critical', sd) for s, r in f4]
     return fails
 
 def check_pool(law, rules, pool):
@@ -71,7 +80,11 @@ def main():
         if not real:
             chosen = (rules, fails); break
     if chosen is None:
+        # emit anyway: the full (noexist) rule set is the proof agent's starting point for a repair
         report['status'] = 'FAIL'
+        rules = X.rules(exist=False)
+        res = leangen.emit(eq, out, rules_override=rules)
+        report['emit'] = res
         print(json.dumps(report), flush=True)
         return
     rules, pool = chosen

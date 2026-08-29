@@ -1,0 +1,293 @@
+[
+ {
+  "law": 6912,
+  "dual": 39214,
+  "own": [
+   [
+    "research_order5_hard_0049",
+    28770,
+    "x = y * (y * ((z * z) * (x * y)))",
+    "x = (((y * y) * y) * x) * (y * z)"
+   ],
+   [
+    "research_order5_hard_0091",
+    15535,
+    "x = y * (y * ((z * z) * (x * y)))",
+    "x = y * (((x * (z * z)) * y) * y)"
+   ]
+  ],
+  "dual_rows": [
+   [
+    "research_order5_hard_0026",
+    41082,
+    "x = (((y * x) * (z * z)) * y) * y",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ]
+  ],
+  "dualized": false
+ },
+ {
+  "law": 11081,
+  "dual": 35036,
+  "own": [
+   [
+    "research_order5_hard_0003",
+    41082,
+    "x = y * ((x * (y * x)) * (z * y))",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ],
+   [
+    "research_order5_hard_0030",
+    22818,
+    "x = y * ((x * (y * x)) * (z * y))",
+    "x = (y * (z * y)) * ((x * x) * y)"
+   ]
+  ],
+  "dual_rows": [
+   [
+    "research_order5_hard_0073",
+    17522,
+    "x = ((y * z) * ((x * y) * x)) * y",
+    "x = (y * z) * (x * (z * (z * z)))"
+   ],
+   [
+    "research_order5_hard_0074",
+    41082,
+    "x = ((y * z) * ((x * y) * x)) * y",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ]
+  ],
+  "dualized": false
+ },
+ {
+  "law": 13764,
+  "dual": 32294,
+  "own": [
+   [
+    "research_order5_hard_0008",
+    22455,
+    "x = y * ((x * ((z * y) * y)) * y)",
+    "x = (y * (x * x)) * ((y * z) * y)"
+   ],
+   [
+    "research_order5_hard_0081",
+    20034,
+    "x = y * ((x * ((z * y) * y)) * y)",
+    "x = (y * y) * ((z * (x * x)) * z)"
+   ]
+  ],
+  "dual_rows": [
+   [
+    "research_order5_hard_0064",
+    22818,
+    "x = (y * ((y * (y * z)) * x)) * y",
+    "x = (y * (z * y)) * ((x * x) * y)"
+   ]
+  ],
+  "dualized": false
+ },
+ {
+  "law": 12087,
+  "dual": 33884,
+  "own": [
+   [
+    "research_order5_hard_0024",
+    28770,
+    "x = y * (((y * x) * z) * (x * z))",
+    "x = (((y * y) * y) * x) * (y * z)"
+   ],
+   [
+    "research_order5_hard_0097",
+    22818,
+    "x = y * (((y * x) * z) * (x * z))",
+    "x = (y * (z * y)) * ((x * x) * y)"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": false
+ },
+ {
+  "law": 23354,
+  "dual": 23337,
+  "own": [
+   [
+    "research_order5_hard_0027",
+    17522,
+    "x = ((y * x) * y) * (x * (x * z))",
+    "x = (y * z) * (x * (z * (z * z)))"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": false
+ },
+ {
+  "law": 40037,
+  "dual": 5834,
+  "own": [
+   [
+    "research_order5_hard_0078",
+    25964,
+    "x = (((y * (x * y)) * z) * x) * z",
+    "x = (y * ((x * x) * y)) * (z * z)"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": true
+ },
+ {
+  "law": 9663,
+  "dual": 36487,
+  "own": [
+   [
+    "research_order5_hard_0018",
+    22818,
+    "x = y * ((z * y) * (x * (x * y)))",
+    "x = (y * (z * y)) * ((x * x) * y)"
+   ]
+  ],
+  "dual_rows": [
+   [
+    "research_order5_hard_0051",
+    17522,
+    "x = (((y * x) * x) * (y * z)) * y",
+    "x = (y * z) * (x * (z * (z * z)))"
+   ],
+   [
+    "research_order5_hard_0098",
+    22818,
+    "x = (((y * x) * x) * (y * z)) * y",
+    "x = (y * (z * y)) * ((x * x) * y)"
+   ]
+  ],
+  "dualized": false
+ },
+ {
+  "law": 10222,
+  "dual": 35836,
+  "own": [
+   [
+    "research_order5_hard_0005",
+    20034,
+    "x = y * ((x * y) * ((z * y) * y))",
+    "x = (y * y) * ((z * (x * x)) * z)"
+   ]
+  ],
+  "dual_rows": [
+   [
+    "research_order5_hard_0095",
+    25964,
+    "x = ((y * (y * z)) * (y * x)) * y",
+    "x = (y * ((x * x) * y)) * (z * z)"
+   ]
+  ],
+  "dualized": false
+ },
+ {
+  "law": 36524,
+  "dual": 9680,
+  "own": [
+   [
+    "research_order5_hard_0063",
+    41082,
+    "x = (((y * x) * y) * (y * z)) * y",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": true
+ },
+ {
+  "law": 32281,
+  "dual": 13849,
+  "own": [
+   [
+    "research_order5_hard_0006",
+    41082,
+    "x = (y * ((y * (y * x)) * z)) * z",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ],
+   [
+    "research_order5_hard_0032",
+    15535,
+    "x = (y * ((y * (y * x)) * z)) * z",
+    "x = y * (((x * (z * z)) * y) * y)"
+   ],
+   [
+    "research_order5_hard_0068",
+    17522,
+    "x = (y * ((y * (y * x)) * z)) * z",
+    "x = (y * z) * (x * (z * (z * z)))"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": true
+ },
+ {
+  "law": 34889,
+  "dual": 11082,
+  "own": [
+   [
+    "research_order5_hard_0010",
+    22818,
+    "x = ((y * y) * ((x * z) * x)) * z",
+    "x = (y * (z * y)) * ((x * x) * y)"
+   ],
+   [
+    "research_order5_hard_0036",
+    17522,
+    "x = ((y * y) * ((x * z) * x)) * z",
+    "x = (y * z) * (x * (z * (z * z)))"
+   ],
+   [
+    "research_order5_hard_0070",
+    30591,
+    "x = ((y * y) * ((x * z) * x)) * z",
+    "x = (y * (y * ((z * z) * x))) * y"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": true
+ },
+ {
+  "law": 12294,
+  "dual": 33856,
+  "own": [
+   [
+    "research_order5_hard_0093",
+    41082,
+    "x = y * (((z * y) * x) * (x * y))",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": false
+ },
+ {
+  "law": 38565,
+  "dual": 7763,
+  "own": [
+   [
+    "research_order5_hard_0077",
+    41082,
+    "x = ((y * ((z * x) * z)) * y) * y",
+    "x = ((((y * y) * z) * x) * x) * z"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": true
+ },
+ {
+  "law": 10218,
+  "dual": 35685,
+  "own": [
+   [
+    "research_order5_hard_0079",
+    30591,
+    "x = y * ((x * y) * ((z * x) * y))",
+    "x = (y * (y * ((z * z) * x))) * y"
+   ]
+  ],
+  "dual_rows": [],
+  "dualized": false
+ }
+]

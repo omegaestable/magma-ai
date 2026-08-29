@@ -27,3 +27,14 @@
 {"id": "research_order5_hard_0089", "eq1_id": 36713, "eq2_id": 15535, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 8078, "errors": [], "when": "2026-08-29 04:32", "kind": "recursive-dual"}
 {"id": "research_order5_hard_0076", "eq1_id": 13992, "eq2_id": 30591, "judge_status": "accepted", "judge_seconds": 5.4, "code_bytes": 13821, "errors": [], "when": "2026-08-29 04:40", "kind": "recursive-hand"}
 {"id": "research_order5_hard_0085", "eq1_id": 13992, "eq2_id": 22455, "judge_status": "accepted", "judge_seconds": 6.0, "code_bytes": 13821, "errors": [], "when": "2026-08-29 04:40", "kind": "recursive-hand"}
+{"id": "research_order5_hard_0029", "eq1_id": 32280, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 40.0, "code_bytes": 13967, "errors": [], "when": "2026-08-29 09:13", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0016", "eq1_id": 40914, "eq2_id": 4916, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 8279, "errors": [], "when": "2026-08-29 09:26", "kind": "recursive-dualized"}
+{"id": "research_order5_hard_0023", "eq1_id": 40914, "eq2_id": 28770, "judge_status": "accepted", "judge_seconds": 4.3, "code_bytes": 8279, "errors": [], "when": "2026-08-29 09:26", "kind": "recursive-dualized"}
+{"id": "research_order5_hard_0092", "eq1_id": 11280, "eq2_id": 25964, "judge_status": "accepted", "judge_seconds": 4.4, "code_bytes": 13888, "errors": [], "when": "2026-08-29 09:26", "kind": "recursive"}
+{"id": "research_order5_hard_0058", "eq1_id": 5833, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 4.3, "code_bytes": 12724, "errors": [], "when": "2026-08-29 09:34", "kind": "recursive"}
+{"id": "research_order5_hard_0084", "eq1_id": 40070, "eq2_id": 17522, "judge_status": "accepted", "judge_seconds": 4.2, "code_bytes": 12870, "errors": [], "when": "2026-08-29 09:34", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0072", "eq1_id": 38249, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 9148, "errors": [], "when": "2026-08-29 09:34", "kind": "recursive-dualized-repaired"}
+{"id": "research_order5_hard_0071", "eq1_id": 9667, "eq2_id": 25964, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 10173, "errors": [], "when": "2026-08-29 09:37", "kind": "recursive-repaired"}
+{"id": "research_order5_hard_0060", "eq1_id": 36638, "eq2_id": 28770, "judge_status": "accepted", "judge_seconds": 4.1, "code_bytes": 10319, "errors": [], "when": "2026-08-29 09:37", "kind": "recursive-dual"}
+{"id": "research_order5_hard_0094", "eq1_id": 7701, "eq2_id": 15535, "judge_status": "accepted", "judge_seconds": 4.0, "code_bytes": 14094, "errors": [], "when": "2026-08-29 09:42", "kind": "recursive-repaired"}
+{"id": "research_order5_hard_0011", "eq1_id": 40057, "eq2_id": 28770, "judge_status": "accepted", "judge_seconds": 4.8, "code_bytes": 19439, "errors": [], "when": "2026-08-29 09:43", "kind": "recursive-dualized-repaired"}

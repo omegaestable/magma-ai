@@ -189,14 +189,16 @@ class Extractor:
             return
         # structural: unify (P under env) with (A under r), (Q under env) with (B under r)
         # process the side that is bound first so the other side's variables get determined
-        order = [(P, self.A), (Q, self.B)]
-        if vP is None and vQ is not None: order = [(Q, self.B), (P, self.A)]
-        for pp, qq in order:
-            self.unify(pp, env, qq, r, conds)
+        order = [(P, self.A, path + (0,)), (Q, self.B, path + (1,))]
+        if vP is None and vQ is not None: order = [(Q, self.B, path + (1,)), (P, self.A, path + (0,))]
+        for pp, qq, ppath in order:
+            self.unify(pp, env, qq, r, conds, ppath=ppath, choices=choices)
         vP2, vQ2 = self.val(P, env, path + (0,), choices, conds), self.val(Q, env, path + (1,), choices, conds)
         if vP2 is None or vQ2 is None or has_free(vP2) or has_free(vQ2):
             return                  # a free decoder/payload: the structural conditions already say it all (vacuous)
-        conds.append(('OPEQ', ('OP', vP2, vQ2), w))
+        c = ('OPEQ', ('OP', vP2, vQ2), w)
+        conds.append(c)
+        self.soft.append(c)         # implied by the structure when the inner products are free: droppable (see rules())
 
     def decoder_of(self, enc, w, path, conds, choices):
         """the decoder inside an encoding `enc` of `w`: read the root pattern against `enc` with x := w; the
@@ -229,8 +231,15 @@ class Extractor:
             if r is not None: return r
         return None
 
-    def unify(self, p, s, q, r, conds):
-        """eval(p, s) = eval(q, r): p is a law pattern under env s, q a root-pattern under env r."""
+    def unify(self, p, s, q, r, conds, ppath=None, choices=None):
+        """eval(p, s) = eval(q, r): p is a law pattern under env s, q a root-pattern under env r.
+        A compound law-side node whose mode (choices[ppath]) is not `free` is DECODED: it is unified as its
+        nested-op value (when determined), not decomposed as a free product — the mode the 5837/33020/23357
+        holes needed (a decoded product inside the struct-decoded root of the encoding)."""
+        if not isinstance(p, str) and ppath is not None and choices is not None and choices.get(ppath, 'free') != 'free':
+            e = self.val(p, s, ppath, choices, conds)
+            if e is not None:
+                self.unify_expr(q, e, r, conds); return
         if isinstance(p, str) and isinstance(q, str):
             bp, bq = s.bound(p), r.bound(q)
             if bp and bq: conds.append(('EQ', s.get(p), r.get(q)))
@@ -282,8 +291,10 @@ class Extractor:
                     f1, f2 = self.fresh(), self.fresh(); r.bind(q, ('J', f1, f2), conds)
                     self.unify_expr(p[0], f1, s, conds); self.unify_expr(p[1], f2, s, conds)
             return
-        self.unify(p[0], s, q[0], r, conds)
-        self.unify(p[1], s, q[1], r, conds)
+        cp0 = None if ppath is None else ppath + (0,)
+        cp1 = None if ppath is None else ppath + (1,)
+        self.unify(p[0], s, q[0], r, conds, ppath=cp0, choices=choices)
+        self.unify(p[1], s, q[1], r, conds, ppath=cp1, choices=choices)
 
     def unify_expr(self, q, e, r, conds):
         """pattern q under env r equals expression e (structurally, all nodes free)"""
@@ -303,7 +314,7 @@ class Extractor:
         nodes = [('A',) + path for path, _ in positions(self.A)] + [('B',) + path for path, _ in positions(self.B)]
         D = {p for p, m in choices.items() if p[0] in ('A', 'B') and m in ('lazy', 'struct', 'exist')}
         env = Env(); conds = []
-        SUBST.clear(); self.nfree = 0; self.used_lazy = set()
+        SUBST.clear(); self.nfree = 0; self.used_lazy = set(); self.soft = []
         deferred = []
         for pat, root, side in ((self.A, ('U',), 'A'), (self.B, ('V',), 'B')):
             if isinstance(pat, str): env.bind(pat, root, conds)
@@ -311,15 +322,20 @@ class Extractor:
         self.run_deferred(deferred, env, D, conds, choices)
         x = env.get('x')
         if x is None or has_free(x): raise Infeasible()
+        soft = [(c[0],) + tuple(subst(e) for e in c[1:]) for c in self.soft]
         conds = self.simplify([(c[0],) + tuple(subst(e) for e in c[1:]) for c in conds])
+        self.last_soft = [c for c in conds if c in soft]
         return conds, subst(x), set(self.used_lazy)
 
-    def rules(self, exist=False, level2=True, cap2=64):
+    def rules(self, exist=False, level2=True, cap2=64, softdrop=True):
+        """softdrop: for every struct-mode rule also emit, LAST in the order, the variant without the redundant
+        evaluation guard (the guard is implied by the structure whenever the inner products are free; keeping only
+        the guarded form loses readings whose guard pair is not below the msr gate — 6912, y = S*(a*S))."""
         nodes = [('A',) + path for path, _ in positions(self.A)] + [('B',) + path for path, _ in positions(self.B)]
         modes = (['free', 'lazy', 'struct', 'vdec'] + (['exist'] if exist else [])) if (self.lform or self.rform) else ['free', 'struct']
         encpat = self.B if self.lform else self.A
         encnodes = [p for p, _ in positions(encpat)] if not isinstance(encpat, str) else []
-        out = []
+        out = []; late = []
         for mode in itertools.product(modes, repeat=len(nodes)):
             choices = dict(zip(nodes, mode))
             try:
@@ -328,6 +344,9 @@ class Extractor:
                 continue
             tag = ','.join((''.join(map(str, p)) or 'e') + m[0] for p, m in choices.items() if m != 'free') or 'free'
             out.append((conds, x, tag))
+            if softdrop and self.last_soft:
+                soft = set(self.last_soft)
+                late.append(([c for c in conds if c not in soft], x, tag + '~'))
             if not level2 or not used: continue
             used = sorted(used)[:2]
             subs = list(itertools.product(['free', 'lazy'], repeat=len(encnodes)))
@@ -344,7 +363,7 @@ class Extractor:
                 tag2 = tag + '|' + ';'.join(''.join(map(str, p)) + ':' + ''.join(m[0] for m in sv) for p, sv in zip(used, combo))
                 out.append((conds2, x2, tag2))
         seen = set(); uniq = []
-        for r in out:
+        for r in out + late:
             key = (tuple(r[0]), r[1])
             if key not in seen: seen.add(key); uniq.append(r)
         return uniq
@@ -390,9 +409,18 @@ class Extractor:
                 if c not in out: out.append(c)
         return out
 
+GATE = 'msr'   # 'msr': max^2 + sum (the 5107 template);  'lex': lexicographic (size of the ENCODING = right arg, size of the decoder)
+
 def msr(a, b):
     m = max(size(a), size(b))
     return m * m + size(a) + size(b)
+
+def gate_ok(a, b, u, v):
+    """may op(a, b) be evaluated inside op(u, v)?  (the well-founded recursion's guard)"""
+    if GATE == 'lex':
+        sb, sv = size(b), size(v)
+        return sb < sv or (sb == sv and size(a) < size(u))
+    return msr(a, b) < msr(u, v)
 
 def nested_op(e):
     if e[0] == 'OP': return True
@@ -419,7 +447,7 @@ class Closed:
         if k == 'OP':
             a = self.ev(e[1], u, v); b = self.ev(e[2], u, v)
             if a is None or b is None: return None
-            if msr(a, b) >= msr(u, v): return None   # the Lean definition's size gate (lex (max, sum))
+            if not gate_ok(a, b, u, v): return None   # the Lean definition's size gate
             return self.op(a, b)
         if k == 'J':
             a = self.ev(e[1], u, v); b = self.ev(e[2], u, v)

@@ -1,4 +1,4 @@
-"""smallcheck.py <eq_id> [maxsize=5] [gens=2] [--closed]
+"""smallcheck.py <eq_id> [maxsize=5] [gens=2] [--closed] [--values]
 
 Exhaustive check of the law on ALL assignments of its variables to terms of size <= maxsize over `gens`
 generators, in the semantic free model (`freemodel.Free`) or, with --closed, in the closed-form package of
@@ -26,6 +26,24 @@ def terms_upto(maxsize, gens):
     for n in sorted(by): out += by[n]
     return out
 
+def exhaustive(C, law, maxsize, gens, limit=None):
+    """all assignments of the (L-form) law's variables to terms of size <= maxsize over `gens` generators,
+    evaluated in the closed form C; returns (n, fails)"""
+    vs = pvars(law[1]); pool = terms_upto(maxsize, gens)
+    def ev(p, s):
+        if isinstance(p, str): return s[p]
+        return C.op(ev(p[0], s), ev(p[1], s))
+    fails = []; n = 0
+    for vals in itertools.product(pool, repeat=len(vs)):
+        s = dict(zip(vs, vals)); n += 1
+        try:
+            r = ev(law[1], s)
+        except RecursionError:
+            fails.append((s, 'recursion')); continue
+        if r != s['x']: fails.append((s, r))
+        if limit and len(fails) >= limit: break
+    return n, fails
+
 def dual_pat(p):
     return p if isinstance(p, str) else (dual_pat(p[1]), dual_pat(p[0]))
 
@@ -51,6 +69,13 @@ def main():
         return opf(b, a) if dualized else opf(a, b)
     vs = pvars(orig[1])
     pool = terms_upto(maxsize, gens)
+    if '--values' in sys.argv:
+        # keep only VALUE terms: every J-node is the free product of its children under the model's op
+        def is_value(t):
+            if t[0] == 'g': return True
+            return is_value(t[1]) and is_value(t[2]) and opf(t[1], t[2]) == t
+        pool = [t for t in pool if is_value(t)]
+        print('value pool', len(pool))
     t0 = time.time(); fails = []; n = 0
     for vals in itertools.product(pool, repeat=len(vs)):
         s = dict(zip(vs, vals)); n += 1
