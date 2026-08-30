@@ -222,12 +222,55 @@ ARMS['G SF constructive attack'] = G_pool
 # H. random control, deep
 H_pool = []
 rng = random.Random(20260830)
-for _ in range(600):
+for _ in range(2000):
     H_pool.append((rnd(rng, 4), rnd(rng, 4), rnd(rng, 4)))
-for _ in range(600):
+for _ in range(2000):
     e = enc(rnd(rng, 2), rnd(rng, 2), rnd(rng, 2))
     H_pool.append((rnd(rng, 2), enc(e, e, rnd(rng, 2)), rnd(rng, 2)))
+for _ in range(1500):
+    e = enc(rnd(rng, 2), rnd(rng, 2), rnd(rng, 2))
+    f = safe(openc, e, e, rnd(rng, 2))
+    if f is not None and sz(f) <= MAXSZ:
+        H_pool.append((e, f, rnd(rng, 2)))
+        H_pool.append((rnd(rng, 2), enc(f, f, rnd(rng, 2)), e))
 ARMS['H random control'] = H_pool
+
+# I. THE `AFJ` ATTACK.  Plant `J z u0` as the decoder of an encoding that the (C,D) chain rebuilds:
+#      k = J z u0,  Q0 = enc k r w,  D = enc Q0 Q0 v,  y = enc u0 u0 D,  x = u0
+#    then Q = u0, so J z Q = k exactly, a1 (a1 (a2 y)) = Q0, op (op Q0 D) D = Q0 = enc k r w, and
+#    `op (J z Q) (op (op C D) D)` DECODES.  This is the arm that refutes the lemma `SF`'s two
+#    residues would need; `SF` itself survives because the R2 guard EQUATION then fails.
+I_pool = []
+I_probe = []
+for u0 in [G(5), J(G(5), G(6)), enc(G(5), G(6), G(4)), J(J(G(4), G(5)), G(6))]:
+    for z in [G(0), J(G(0), G(1)), G(7)]:
+        for r in [G(1), J(G(1), G(2)), G(8)]:
+            for w in [G(2), G(9)]:
+                for v in [G(3), G(4)]:
+                    k = J(z, u0)
+                    Q0 = safe(enc, k, r, w)
+                    if Q0 is None:
+                        continue
+                    D = enc(Q0, Q0, v)
+                    y = enc(u0, u0, D)
+                    if sz(y) > MAXSZ:
+                        continue
+                    I_pool.append((u0, y, z))
+                    I_probe.append((u0, y, z, k))
+ARMS['I AFJ attack'] = I_pool
+
+# J. standalone `AFJ` (`op (J u v) (op (op C D) D)` free for ARBITRARY u,v,C,D) -- reported
+#    separately below, because it is a different quantifier pattern from the per-triple claims.
+J_probe = []
+for u in [G(0), J(G(0), G(1))]:
+    for vv in [G(5), J(G(5), G(6)), enc(G(5), G(6), G(4))]:
+        for r in [G(1), J(G(1), G(2))]:
+            for w in [G(2), G(9)]:
+                for v2 in [G(3), G(4)]:
+                    K = J(u, vv)
+                    Q0 = enc(K, r, w)
+                    Dd = enc(Q0, Q0, v2)
+                    J_probe.append((K, Q0, Dd))
 
 # ----------------------------------------------------------------------------- run
 if __name__ == '__main__':
@@ -250,6 +293,35 @@ if __name__ == '__main__':
         if k in ('n', 'skip_big'):
             continue
         print('   %-22s %d' % (k, total[k]))
+    print()
+    # arm I: is the guard PRODUCT free, and does the guard EQUATION nevertheless fail?
+    gp_dec = gp_free = eq_holds = key_hit = 0
+    for (x, y, z, k) in I_probe:
+        Q = op(op(x, y), y)
+        AJ = J(z, Q)
+        if AJ == k:
+            key_hit += 1
+        D = a2(y)
+        C = a1(a1(a2(y)))
+        Cc = op(op(C, D), D)
+        g = op(AJ, Cc)
+        if g == J(AJ, Cc):
+            gp_free += 1
+        else:
+            gp_dec += 1
+        if a1(y) == g:
+            eq_holds += 1
+    print('arm I probe (%d): J z Q hits the planted key %d, guard PRODUCT decoded %d / free %d, '
+          'guard EQUATION `a1 y = op A Cc` holds %d'
+          % (len(I_probe), key_hit, gp_dec, gp_free, eq_holds))
+    # standalone AFJ
+    sa_dec = 0
+    for (K, C, D) in J_probe:
+        Cc = op(op(C, D), D)
+        if op(K, Cc) != J(K, Cc):
+            sa_dec += 1
+    print('standalone AFJ probe (%d): `op (J u v) (op (op C D) D)` DECODED %d times'
+          % (len(J_probe), sa_dec))
     print()
     for k, (arm, x, y, z) in witness.items():
         print('%s  first witness (arm %s):' % (k, arm))

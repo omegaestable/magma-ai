@@ -231,3 +231,25 @@ what an agent does NOT have). Add:
   would have spent the session proving something untrue — which is exactly what session 8 did seven
   times. **State the falsification as an acceptable, valued outcome in the prompt**, or the agent will
   treat it as failure and push through.
+
+---
+
+## 9. Leads captured at the moment the agents were stopped
+
+The session ended on a token budget, not on a natural boundary. Each agent's last statement is
+recorded verbatim below because several are **partial findings that would cost hours to rediscover**.
+Treat every one as an unverified lead — none was confirmed by the orchestrator, and by this session's
+own rail 60 an unvalidated claim is not evidence.
+
+| law | the agent's last statement | how to read it |
+| --- | --- | --- |
+| **38316** | *"the model is missing a `V1-W2` rule that would make the hardest cell trivial. Let me test it."* | **Untested.** And note rail 60's warning applies exactly here: on 8485 the rule that closed the hard cell was the rule that broke the model. Test the proposed `V1-W2` rule against the *other* chain products (rung 8, forced firing) before believing it. |
+| **23357** | *"`X` is false for 23357, so 23354's `core_no_fix` can't be ported. Let me empirically test all the lemmas I plan to prove BEFORE writing any Lean proof for them."* | Consistent with the library's existing warning that 23354's architecture ports but its **lemmas may not**. The stated method — test every planned lemma empirically first — is the right one and should be the default. |
+| **17286** | *"the `dite` instance mismatch after `simp` is the classic trap — let me restructure with abstract helper lemmas instead."* | A Lean-mechanics obstacle, not a mathematical one. But heed the library's *"Do not state a top-product lemma with abstract `v` and abstract gates (law 17286)"* — that is a recorded negative result for this same law, and "restructure with abstract helper lemmas" is how you walk back into it. |
+| **32281** | *"The exception reproduces **exactly** in the Lean-exact `op`: `hk` is false, R3 fires at the top, and A and S are both free there. `oR3` is unavoidable."* | The most concrete lead of the six, and it is a *model* problem surfacing under what was scoped as a byte problem. A rule firing at the top with both arguments free is the 8485 signature (rail 60). **Verify whether 32281's model is actually sound before spending more Lean effort on it.** |
+| **10218** | *"90 of 140 rules pin `u` inside `v` (`Pdig`), 50 don't — and `p10218.lean`'s whole size-lemma scaffold depends on `Pdig`."* | Structurally important: it partitions the 140-rule set by exactly the property the existing Lean scaffold assumes, which is a principled starting point for finding the sound subset that is known to exist. |
+| **anchored carrier** | *"Let me write up the decisive findings while those run."* | The write-up did not land. Its working files are `gen/_anch_img.py`, `gen/_sep11081.py`, `gen/_sep12087.py`, `gen/_x9663_sep.py`, `gen/sepfind.py`, and `gen/NOTES_ANCHORED_CARRIER.md` (modified this session). **Read those before re-commissioning the question** — the word "decisive" is the agent's, not verified. |
+
+**Do not resume these as if the leads were established.** Re-derive each cheaply first; four of the six
+touch the exact failure mode (a rule firing where its locator is not guaranteed) that this session
+proved fatal for 8485.

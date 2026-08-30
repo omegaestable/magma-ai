@@ -295,40 +295,51 @@ theorem NZ {c t : M} (hs : sz c < sz t) (h : op c t = t) : False := by
     · rw [h] at hr
       omega
 
+/-- `find` returns the sentinel once every candidate's certification is refuted.  This is the
+    CONVERSE the handover asked for, obtained from `findOK` + the size bound instead of a
+    second induction: any returned candidate is smaller than `T` and reproduces `P`. -/
+theorem findSent {u T w P : M} (h : ∀ r : M, sz r < sz T → op r w = P → False) :
+    find u T w P = J u u := by
+  rcases findOK u T w P with hf | ⟨-, hc2, hs⟩
+  · exact hf
+  · exact (h _ hs hc2).elim
+
+/-- `opTail` is free when branch R's inner pair fails (under its own guard) and `find` bails. -/
+theorem opTailF {u v : M} (hc : Cd v)
+    (hg : tg (a2 (a2 v)) = 2 → tg (a1 v) = 2 → tg (a2 (a1 v)) = 2 → a1 (a1 v) = a1 (a2 (a1 v)) →
+          ¬ (op u (a1 (a2 (a2 v))) = a2 (a2 (a2 v))
+             ∧ op (a2 (a2 v)) (a1 (a1 v)) = a2 (a2 (a1 v))))
+    (hf : find u (a2 (a2 v)) (a1 v) (a2 (a2 v)) = J u u) : opTail u v hc = J u v := by
+  rw [opTail.eq_1]
+  by_cases hr : tg (a2 (a2 v)) = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2
+                ∧ a1 (a1 v) = a1 (a2 (a1 v))
+  · rw [dif_pos hr, if_neg (hg hr.1 hr.2.1 hr.2.2.1 hr.2.2.2), hf]; simp
+  · rw [dif_neg hr, hf]; simp
+
+/-- `op` is free when branch U's guard fails and `opTail` is free. -/
+theorem opFree {u v : M} (hc : Cd v)
+    (hb : ¬ (tg u = 2 ∧ op (a2 u) (a1 v) = a2 (a2 v)))
+    (ht : opTail u v hc = J u v) : op u v = J u v := by
+  rw [op.eq_1, dif_pos hc]
+  by_cases hu : tg u = 2
+  · rw [dif_pos hu, if_neg (fun h => hb ⟨hu, h⟩)]; exact ht
+  · rw [dif_neg hu]; exact ht
+
 /-- the diagonal cell of F2 (`x = z`, the payload slot is `z` itself).  Every branch dies:
     U and the search by `NZ`, and branch R by its OWN two inner conditions, which both become
     statements about `op z (a1 z)`. -/
 theorem FDiag (z : M) : op z (J z (J z z)) = J z (J z (J z z)) := by
-  have hcv : Cd (J z (J z z)) := ⟨rfl, rfl, rfl⟩
-  have tail : opTail z (J z (J z z)) hcv = J z (J z (J z z)) := by
-    rw [opTail.eq_1]
-    simp only [a1_J_eq, a2_J_eq]
-    by_cases hr : tg z = 2 ∧ tg z = 2 ∧ tg (a2 z) = 2 ∧ a1 z = a1 (a2 z)
-    · rw [dif_pos hr]
-      have hgn : ¬ (op z (a1 z) = a2 z ∧ op z (a1 z) = a2 (a2 z)) := by
-        rintro ⟨g1, g2⟩
-        have e := g1.symm.trans g2
-        have := sz_a2_lt hr.2.2.1
-        have := congrArg sz e
-        omega
-      rw [if_neg hgn]
-      rcases findOK z z z z with hf | ⟨-, hc2, hs⟩
-      · rw [hf]; simp only [if_pos rfl]
-      · exact absurd hc2 (fun h => absurd (NZ hs h) (fun q => q))
-    · rw [dif_neg hr]
-      rcases findOK z z z z with hf | ⟨-, hc2, hs⟩
-      · rw [hf]; simp only [if_pos rfl]
-      · exact absurd hc2 (fun h => absurd (NZ hs h) (fun q => q))
-  rw [op.eq_1, dif_pos hcv]
-  by_cases hu : tg z = 2
-  · rw [dif_pos hu]
-    have hb : ¬ (op (a2 z) (a1 (J z (J z z))) = a2 (a2 (J z (J z z)))) := by
-      simp only [a1_J_eq, a2_J_eq]
-      exact fun h => NZ (sz_a2_lt hu) h
-    rw [if_neg hb]
-    exact tail
-  · rw [dif_neg hu]
-    exact tail
+  refine opFree (⟨rfl, rfl, rfl⟩ : Cd (J z (J z z))) ?_ (opTailF _ ?_ ?_)
+  · rintro ⟨hu, h⟩
+    exact NZ (sz_a2_lt hu) h
+  · intro _ _ h3 _
+    rintro ⟨g1, g2⟩
+    simp only [a1_J_eq, a2_J_eq] at g1 g2 h3
+    have e := g1.symm.trans g2
+    have := sz_a2_lt h3
+    have := congrArg sz e
+    omega
+  · exact findSent (fun r hs hq => NZ hs hq)
 
 /-- F2 : the outer chain product is free.  `Cd (J z P)` reduces to `tg P = 2 ∧ z = a1 P`;
     `RS x z` then kills the reconstruction and the search readings of `P` by size, leaving
