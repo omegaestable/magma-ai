@@ -130,7 +130,7 @@ with the state measured at cut-off. Compile each before trusting it (`SESSION9_E
 
 | law | rows | file at cut-off | bytes | sorries |
 | --- | --- | --- | --- | --- |
-| **23357 / 23653** | 0048, 0080 | `gen/_w9_23357.lean` (agent's) / `gen/_w3_23357_cert4.lean` (base) | 13,251 / 11,262 | 1 / 1 |
+| **23357 / 23653** | 0048, 0080 | ~~`_w3_23357_cert4.lean`~~ **REFUTED MODEL, see §11** → use `gen/_x23357_cert.lean` | 12,808 | 1 |
 | **38316** | 0055, 0065 | `gen/q38316.lean` (agent's) / `gen/w38316.lean` (base) | 18,593 / 16,200 | 6 / 1 |
 | **17286 / 28626** | 0025, 0040, 0037, 0038 | `gen/_x17286_mut.lean` | 12,659 | 4 |
 | **32281** | 0006, 0032, 0068 | `gen/w135_C.lean`, `w135e.lean`, `w135d.lean` (base) | 19,625 / 18,628 / 19,874 | 8 / 10 / 10 |
@@ -143,14 +143,15 @@ not the agent files. Verify both before choosing.
 The four base files each compile `exit=0` today with only `sorry` warnings. Confirmed this session:
 
 * `w38316.lean` — 16,200 B, **1 sorry**, `theorem law`, 1 s compile. 3,800 B headroom.
-* `_w3_23357_cert4.lean` — 11,262 B, **1 sorry**, `theorem law`, 1 s. 8,738 B headroom.
+* ~~`_w3_23357_cert4.lean` — 11,262 B, 1 sorry.~~ **ITS MODEL IS FALSE — line 1 of the file says
+  "REFUTED MODEL … DO NOT SHIP". See §11.** The replacement is `gen/_x23357_cert.lean` (12,808 B, 1 sorry).
 * `_x17286_mut.lean` — 10,141 B, **2 sorries**, 1 s. 9,859 B headroom.
 * `w135d.lean` — 19,874 B, 5 sorries, 2 s. **126 B headroom — the binding constraint here is bytes,
   not mathematics.** Apply `Z`/`Y`/`ZP`/`mx`/`mxl` before proving anything.
 
-In `w38316.lean` and `_w3_23357_cert4.lean` the single remaining `sorry` **is `theorem law` itself** —
-all scaffolding, `inst`, `rhs` and `submission` already compile. Those two are the cheapest 4 rows on
-the board.
+In `w38316.lean` the single remaining `sorry` **is `theorem law` itself** — all scaffolding, `inst`,
+`rhs` and `submission` already compile. **`_w3_23357_cert4.lean` looked identical and its model is
+false (§11)** — which is the whole lesson: that shape is necessary for a cheap row, not sufficient.
 
 ### Also in flight
 * **9663 / 36487 / 12294** (4 rows) — two H3 cells left, each "a one-line reading"; diagnostics at
@@ -211,8 +212,9 @@ is well under the 260.4 s last recorded for the same battery.
 ## 8. Next session, in order
 
 1. **The harvest scan.** 30 seconds. It was empty this time; that is information, not a reason to skip it.
-2. **`w38316.lean` and `_w3_23357_cert4.lean`** — 4 rows, one `theorem law` each, everything else
-   compiling, 3.8 KB and 8.7 KB of headroom. Cheapest work on the board by a wide margin.
+2. **`w38316.lean`** — 2 rows, one `theorem law`, everything else compiling, 3.8 KB headroom.
+   **Validate its model before proving** (§11). For 23357 use `gen/_x23357_cert.lean`, not
+   `_w3_23357_cert4.lean`, and derive C3 first (§11).
 3. **`_x17286_mut.lean`** — 4 rows, 2 sorries, 9.9 KB headroom. Heed the two library sections that
    will otherwise cost hours: `<helper>.induct` is unusable inside a mutual block, and the size lemma
    whose 420-instance clean measurement was retracted because the junk variable was unbounded.
@@ -316,3 +318,64 @@ reduction of `SFg` → generalized `SFa` **still unverified**.
 Start from **`w135_C.lean`** (15,147 B, 7 sorries, compiles) or **`w135d.lean`** (19,874 B, 5 sorries,
 the session-8 base). Not from `w135a`/`w135b` (undecomposed) and not from `w135f` (26,631 B, 6.6 KB
 over cap, mid-restructure).
+
+---
+
+## 11. Law 23357's model is FALSE — and the orchestration error that sent an agent at it
+
+### The finding
+
+`gen/_w3_23357_cert4.lean`'s 4-rule model **does not satisfy law 23357**. `theorem law` at line 222 is
+not hard to prove; it is **unprovable, because it is false**. Demonstrated at the Lean level: the model
+text copied verbatim into `gen/_w3_23357_refchk.lean` (4,420 B, `exit=0`) and the law `#eval`'d on two
+census witnesses against the file's own `op` — **`false` both times**.
+
+`f4` had passed `rv.run_tests`, an 8,673-family hunter, 3x20k deep tests **and** a 12,000-chain level-k
+descent. It was refuted by the **constructed-guard** method: `_w3_23357_ctor.out` shows **1680/1680**
+C1 triples and **840/840** C2 triples failing, with positive controls confirming the target cells were
+actually produced. Mechanism: f4's `RD`/`As` guards certify by **recomputation**, which silently
+requires an inner product to be free; draw that inner pair from decoding pairs and the guard breaks
+with no remaining rule covering the cell. Partial repairs (`f4+B1s`, `f4+A0s,B1s`, the 6-rule `g6`)
+all pass C1 and fail C2 840/840.
+
+**That makes nine of nine** models that were inherited as validated and then actually re-checked, and
+turned out false.
+
+### The error, which is mine and is worth more than the finding
+
+I built an agent task around this file and called it "the cheapest work on the board". **Line 1 of the
+file reads `-- REFUTED MODEL: ... DO NOT SHIP.`** I never read it. I "verified the file" by *compiling*
+it — `exit=0`, one sorry, 11,262 B — and by trusting session 8's handover table.
+
+> **A compile answers "does this build?", not "should this exist?".** They are different questions and
+> only one of them was asked. The `exit=0 / one sorry / sorry is on theorem law` signature is
+> **necessary but not sufficient** for a cheap row — `w38316.lean` and `_w3_23357_cert4.lean` had a
+> byte-for-byte identical signature and one of them was refuted on disk.
+>
+> **Read line 1 of a file before building a task around it.** Cost of not doing so: one premium-model
+> agent session. Cost of doing so: one `head -1`.
+
+Note the timestamps, because they explain how the session-8 handover got it wrong honestly: the
+validation outputs were written at 21:24 on 08-29 and the refutation at 21:29-21:42 — the "fully
+validated" claim was **true as measured and superseded within twenty minutes**. Prefer the file's own
+header over any handover's table; the header travels with the artifact.
+
+### The viable path for these 2 rows
+
+**`full12`** — spliced certificate `gen/_x23357_cert.lean`, **12,808 B, one sorry (`law`, line 213),
+compiles, ~6.7 KB headroom**. It is the only rule set on record surviving *every* oracle: `run_tests`
+0 fails, the hunter, 3x20k deep (`_x23357_val12.out`), **and C1 0/1680, C2 0/840**. Generator
+`gen/_x23357_rep.py`; rules R1-R12 printed in `_x23357_rep.out`.
+
+**Named precondition, do not skip it:** derive **C3** — one constructed family per remaining `full12`
+guard (recipe at the top of `gen/_w3_23357_ctor.py`). The structural `Bs`/`B1s` rules certify by shape
+at a **fixed accessor depth**, which is precisely rail 58's infinite-hierarchy risk, so this is a real
+check rather than a formality.
+
+Model-independent lemmas that transfer out of the dead `cert4` to any successor: **`SZM`** (state it
+from `TR`, never from `SZ`), **`NEFREE`**, **`TOP1`**, **`TOP4G`**, and the `dif_pos` raw-accessor
+mechanics note. **`Ufree`** and **`CHAIN2B`** remain empirically solid (24,000-chain and 44,202-triple
+censuses). Two lemmas that do **not** transfer, both refuted for 23357: **`X`** ("every decode returns
+`a1 v`" — the `Bs` rules return `a2 (a1 u)`) and **`NOSELF`** (`op u v ≠ v`).
+
+Row 0080 (dual 23653) is blocked on the base; `dualcert.py` transplants once a base certificate exists.
