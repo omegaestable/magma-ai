@@ -1,4 +1,34 @@
-# Latest handoff — competition-ready repository; resume solver work (2026-08-30)
+# Latest handoff — competition-ready repository; controlled order-5 work (2026-08-30)
+
+## Operator rail — current and authoritative
+
+The previous order-5 hard research session is closed as a failed/capped
+session. Discard its agent choreography, fan-out plans, unfinished claims, and
+any token-cap accounting. Do not resume agents, branches, or background work
+from that session.
+
+Work from one controlled process only. The order-5 hard rail is:
+
+1. Keep the packaged solver frozen until a concrete carrier/proof change is
+   identified; do not spend another session adding free-carrier rules.
+2. Treat the free-model `2^k` rule explosion as the blocker. The active lever
+   is a restricted/image-of-`op` carrier, beginning with row `9663`; this is a
+   research hypothesis until an independently judge-accepted certificate
+   exists.
+3. Every candidate must compile, pass the local checks, and then be accepted
+   by the real judge before it enters a fixture or score claim. Zero-sorry is
+   not acceptance evidence; a zero-token or cap-exhausted run is not evidence.
+4. Use a positive token budget with an explicit per-run cap. Stop when the cap
+   is reached; record the stop and preserve the raw output, but do not extend
+   or silently restart the run.
+5. On failure, write one concise dated result and return to this rail. No new
+   agent fan-out, speculative row-id policy, or handoff rewrite is authorized
+   by the old session.
+
+The only live next action is to inspect the existing zero-sorry candidates for
+the four one-lemma-set families, classify proof versus refutation, and judge
+one candidate at a time. If that yields nothing, stop; do not burn another
+hard-session budget on the same free-carrier approach.
 
 ## Readiness result
 
@@ -308,8 +338,8 @@ copy the entire graph or paper prose into the solver.
 3. Replace tool claims with tested behavior: `verify_certs.py` does not itself
    write the ledger; `append_ledger.py` does. A zero-sorry Lean file can be a
    refutation, not a proof. `_orch_minim.py` status is not soundness evidence.
-4. Resume existing agents/sessions where possible. Before a new fan-out, record
-   owner, branch, files, process id, result path, and stop/recovery instructions.
+4. Do not resume abandoned agents or fan out parallel workers. Record only the
+   single active process, its explicit budget, result path, and stop condition.
 
 ### Phase D — graph and mathematics pass
 
@@ -442,11 +472,11 @@ it is from. Never write a predicted number as a measured one.
 
 ## What this pass was
 
-A seven-agent diagnosis-then-implementation pass over the whole system —
+A previous multi-worker diagnosis-then-implementation pass over the whole system —
 rules/compliance, the FALSE side, the completion engine, Lean certificate
 rendering, runner pacing, LLM-mined laws, and the LLM lane itself — with a
-separate agent for documentation and rails. Branches `impl/<key>`; the agent
-table is in `NEXT_SESSION_BRIEF.md` §2.
+separate documentation and rails work. Its coordination notes are historical
+only and are not an execution plan.
 
 ## The findings that changed how we think, not just what we ship
 
