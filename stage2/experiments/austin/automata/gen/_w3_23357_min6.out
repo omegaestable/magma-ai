@@ -1,0 +1,2 @@
+BASELINE 6 rules  ok=False  hunt 1
+  tags ['free', 'Bs|rd:A0', 'Bs|ex:Qa', 'Bs|ex:Qb', 'A0s,B1s|rd:A0', 'As']

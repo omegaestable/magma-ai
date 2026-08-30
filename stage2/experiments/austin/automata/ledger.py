@@ -4,7 +4,7 @@ sys.path.insert(0, here)
 from laws import load_rows
 rows = load_rows()
 latest = {}
-for line in open(os.path.join(here, '..', 'certs', 'ledger.jsonl'), encoding='utf-8'):
+for line in open(os.path.join(here, 'certs', 'ledger.jsonl'), encoding='utf-8'):
     r = json.loads(line)
     if r['judge_status'] == 'accepted' or r['id'] not in latest:
         latest[r['id']] = r

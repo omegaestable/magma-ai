@@ -1,0 +1,19 @@
+theorem op_cases (u v : M) : ∃ p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 : M,
+    p1 = (if hs1 : msr (a1 (a1 (a2 v))) (a2 v) < msr u v then op (a1 (a1 (a2 v))) (a2 v) else J u v) ∧
+    p2 = (if hs2 : msr (p1) (a2 v) < msr u v then op (p1) (a2 v) else J u v) ∧
+    p3 = (if hs3 : msr (u) (p2) < msr u v then op (u) (p2) else J u v) ∧
+    p4 = (if hs4 : msr (a1 (a1 (a2 (a2 v)))) (a2 (a2 v)) < msr u v then op (a1 (a1 (a2 (a2 v)))) (a2 (a2 v)) else J u v) ∧
+    p5 = (if hs5 : msr (p4) (a2 (a2 v)) < msr u v then op (p4) (a2 (a2 v)) else J u v) ∧
+    p6 = (if hs6 : msr (a1 (a2 v)) (p5) < msr u v then op (a1 (a2 v)) (p5) else J u v) ∧
+    p7 = (if hs7 : msr (u) (p6) < msr u v then op (u) (p6) else J u v) ∧
+    p8 = (if hs8 : msr (u) (J (p7) (p5)) < msr u v then op (u) (J (p7) (p5)) else J u v) ∧
+    p9 = (if hs9 : msr (p8) (a2 v) < msr u v then op (p8) (a2 v) else J u v) ∧
+    p10 = (if hs10 : msr (p9) (a2 v) < msr u v then op (p9) (a2 v) else J u v) ∧
+    p11 = (if hs11 : msr (u) (p10) < msr u v then op (u) (p10) else J u v) ∧
+    op u v = (
+  if P1 u v then a1 (a1 (a2 (a1 v)))
+  else if P2 u v ∧ msr (a1 (a1 (a2 v))) (a2 v) < msr u v ∧ msr (p1) (a2 v) < msr u v ∧ msr (u) (p2) < msr u v ∧ a1 v = p3 then a1 (a1 (a2 v))
+  else if P3 u v ∧ msr (a1 (a1 (a2 (a2 v)))) (a2 (a2 v)) < msr u v ∧ msr (p4) (a2 (a2 v)) < msr u v ∧ msr (a1 (a2 v)) (p5) < msr u v ∧ msr (u) (p6) < msr u v ∧ msr (u) (J (p7) (p5)) < msr u v ∧ msr (p8) (a2 v) < msr u v ∧ msr (p9) (a2 v) < msr u v ∧ msr (u) (p10) < msr u v ∧ a1 v = p11 then p8
+  else J u v
+    ) :=
+  ⟨_, _, _, _, _, _, _, _, _, _, _, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, op.eq_1 u v⟩

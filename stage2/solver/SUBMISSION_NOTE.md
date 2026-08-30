@@ -41,21 +41,30 @@ The main engines, in dispatch order:
 
 ## Generated data payloads (disclosure)
 
-The solver contains **four compressed data blobs and no binary executables**.
-In the submitted `solver.py`, the four largest data tables — `DISTILLED_CERTS`,
-`FP_WITNESS_TABLES`, `O5_WITNESS_TABLES` and `WITNESS_TABLES` — are stored as
-strings produced by serialising the plain Python literal to JSON, compressing
-it with zlib (level 9) and encoding the result with base85 (`base64.b85encode`);
-a six-line helper at the top of the data section (`_unpack_table`) reverses
-exactly that at import time using only the standard library. Nothing else in
-the file is compressed or encoded. The packing is a pure size measure (the
-certificate library alone is ~100 KB as text and ~15 KB packed, against the
-500 KB cap) and is applied by the build script
-`stage2/solver/minify_submission.py`, which decodes each blob again and
-compares it to the source literal before writing the artifact. The readable
-literals live in the source tree (`stage2/solver/solver.py`) in plain
-Python/Lean text. Every payload below is reproducible from the sources named.
-Sizes are of the unpacked text, measured 2026-08-28.
+The solver contains **one compressed data blob and no binary executables**.
+In the submitted `solver.py`, the sixteen largest data tables — `DISTILLED_CERTS`,
+`FP_WITNESS_TABLES`, `O5_WITNESS_TABLES`, `WITNESS_TABLES`, the anchored- and
+right-spine projection block libraries, the product-constant block libraries, the
+mined-lemma library and the LLM prompt/protocol texts — are carried together in a
+single string, produced by serialising the plain Python literals (each table as
+JSON, or as its own `repr` where the literal's tuple/list types must survive
+exactly), compressing the result with LZMA (`preset=9 | lzma.PRESET_EXTREME`) and
+encoding it with base85 (`base64.b85encode`). A twelve-line helper at the top of
+the data section (`_unpack_all`) reverses exactly that at import time using only
+the standard library, and each table is then a plain dictionary lookup. Nothing
+else in the file is compressed or encoded.
+
+The packing is a pure size measure against the 500 KB cap — the certificate
+library alone is ~585 KB as text and ~50 KB packed — and is applied by the build
+script `stage2/solver/minify_submission.py`, which decodes every blob again and
+compares it to the source literal, and compares the artifact's parse tree to the
+source's, before writing the artifact. One shared blob rather than one per table
+because the tables share vocabulary and a separate LZMA stream restarts the
+dictionary each time (measured 2026-08-29: 77,635 B as separate blobs against
+72,920 B shared). The readable literals live in the source tree
+(`stage2/solver/solver.py`) in plain Python/Lean text. Every payload below is
+reproducible from the sources named. Sizes are of the unpacked text, measured
+2026-08-29.
 
 - **`DISTILLED_CERTS` — 69 complete Lean certificates (~158 KB of source, the
   single largest payload).** Keyed by the renaming-invariant canonical text of

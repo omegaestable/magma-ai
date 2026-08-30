@@ -1,0 +1,575 @@
+import JudgeProblem
+inductive submission.M:Type where
+ | g:Nat→submission.M
+ | J:submission.M→submission.M→submission.M
+ deriving DecidableEq
+namespace submission
+open M
+def tg:M→Nat
+ | .g _=>1
+ | .J _ _=>2
+def a1:M→M
+ | .J x _=>x
+ | t=>t
+def a2:M→M
+ | .J _ x=>x
+ | t=>t
+def sz:M→Nat
+ | .g _=>1
+ | .J b0 b1=>sz b0+sz b1+1
+def Z (u:M):sz (a1 u)≤sz u:=by cases u<;>simp[a1,sz]<;>omega
+def T (u:M):sz (a2 u)≤sz u:=by cases u<;>simp[a2,sz]<;>omega
+def H (t:M) (h:tg t=2):∃ b0 b1,t=M.J b0 b1:=by cases t<;>simp_all[tg]
+def U (t:M) (h:tg t=2):sz t=sz (a1 t)+sz (a2 t)+1:=by obtain⟨a,b,rfl⟩:=H _ h;simp[sz,a1,a2]
+@[simp] def Pe (n:Nat):tg (M.g n)=1:=rfl
+@[simp] def Pd (b0 b1:M):tg (M.J b0 b1)=2:=rfl
+@[simp] def S (b0 b1:M):a1 (M.J b0 b1)=b0:=rfl
+@[simp] def P (b0 b1:M):a2 (M.J b0 b1)=b1:=rfl
+@[simp] def Pf (n:Nat):a1 (M.g n)=M.g n:=rfl
+@[simp] def Pg (n:Nat):a2 (M.g n)=M.g n:=rfl
+def W (u v:M):Nat:=max (sz u) (sz v)*max (sz u) (sz v)+sz u+sz v
+def K {a b u v:M} (h:max (sz a) (sz b)<max (sz u) (sz v)):W a b<W u v:=by
+ unfold W
+ have h1:sz a+sz b≤2*max (sz a) (sz b):=by omega
+ have h2:=Nat.mul_le_mul h h
+ simp only[Nat.mul_succ,Nat.succ_mul] at h2
+ omega
+def O (u v:M):Prop:=tg v=2∧tg (a1 v)=2∧tg (a2 (a1 v))=2∧u=a2 v
+instance (u v:M):Decidable (O u v):=by unfold O;infer_instance
+def R (u v:M):Prop:=tg v=2∧tg (a1 v)=2∧u=a2 v
+instance (u v:M):Decidable (R u v):=by unfold R;infer_instance
+def D (u v:M):Prop:=tg v=2∧u=a2 v∧tg u=2∧tg (a1 u)=2∧tg (a2 u)=2
+instance (u v:M):Decidable (D u v):=by unfold D;infer_instance
+def Q (u v:M):Prop:=tg v=2∧u=a2 v∧tg u=2∧tg (a1 u)=2
+instance (u v:M):Decidable (Q u v):=by unfold Q;infer_instance
+def op (u v:M):M:=
+ let p1:=if _:W (u) (a1 (a1 v))<W u v then op (u) (a1 (a1 v)) else J u v
+ let p2:=if _:W (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))<W u v then op (a1 (a2 (a1 v))) (a2 (a2 (a1 v))) else J u v
+ let p3:=if _:W (a1 (a1 v)) (a2 (a1 v))<W u v then op (a1 (a1 v)) (a2 (a1 v)) else J u v
+ let p4:=if _:W (a1 v) (u)<W u v then op (a1 v) (u) else J u v
+ let p5:=if _:W (a2 (p1)) (p1)<W u v then op (a2 (p1)) (p1) else J u v
+ let p6:=if _:W (u) (a2 (a1 u))<W u v then op (u) (a2 (a1 u)) else J u v
+ let p7:=if _:W (a2 (a1 u)) (a1 u)<W u v then op (a2 (a1 u)) (a1 u) else J u v
+ let p8:=if _:W (a1 (a2 u)) (a2 (a2 u))<W u v then op (a1 (a2 u)) (a2 (a2 u)) else J u v
+ let p9:=if _:W (a1 u) (a2 u)<W u v then op (a1 u) (a2 u) else J u v
+ let a0:=if _:W (a2 (p7)) (p7)<W u v then op (a2 (p7)) (p7) else J u v
+ if O u v∧W (u) (a1 (a1 v))<W u v∧W (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))<W u v∧W (a1 (a1 v)) (a2 (a1 v))<W u v∧W (a1 v) (u)<W u v∧a2 (a2 (a1 v))=p1∧a2 (a1 v)=p2∧a1 v=p3∧v=p4 then a1 (a1 v)
+ else if R u v∧W (u) (a1 (a1 v))<W u v∧W (a2 (p1)) (p1)<W u v∧W (a1 (a1 v)) (a2 (a1 v))<W u v∧W (a1 v) (u)<W u v∧tg (p1)=2∧a2 (a1 v)=p5∧a1 v=p3∧v=p4 then a1 (a1 v)
+ else if D u v∧W (u) (a2 (a1 u))<W u v∧W (a2 (a1 u)) (a1 u)<W u v∧W (a1 (a2 u)) (a2 (a2 u))<W u v∧W (a1 u) (a2 u)<W u v∧W (a1 v) (u)<W u v∧J (u) (a2 (a1 u))=p6∧a2 (a2 u)=p7∧a2 u=p8∧u=p9∧a1 v=p7∧v=p4 then a2 (a1 u)
+ else if Q u v∧W (u) (a2 (a1 u))<W u v∧W (a2 (a1 u)) (a1 u)<W u v∧W (a2 (p7)) (p7)<W u v∧W (a1 u) (a2 u)<W u v∧W (a1 v) (u)<W u v∧J (u) (a2 (a1 u))=p6∧tg (p7)=2∧a2 u=a0∧u=p9∧a1 v=p7∧v=p4 then a2 (a1 u)
+ else J u v
+termination_by W u v
+decreasing_by all_goals assumption
+def inst:Magma M:={ op:=op }
+def rhs:¬ @EquationRHS M inst:=by
+ intro h
+ have:=h (g 0) (g 0) (g 0)
+ revert this
+ change ¬ g 0=op (op (g 0) (op (g 0) (op (op (g 0) (g 0)) (g 0)))) (g 0)
+ simp (config:={decide:=true}) [op.eq_1]
+def V (t:M):1≤sz t:=by cases t<;>simp[sz]<;>omega
+@[simp] def Pc (a b:M):sz (M.J a b)=sz a+sz b+1:=rfl
+def Y {t:M} (h:tg t=2):sz (a1 t)<sz t:=by obtain⟨a,b,rfl⟩:=H _ h;simp only[S,Pc];have:=V b;omega
+def E {t:M} (h:tg t=2):sz (a2 t)<sz t:=by obtain⟨a,b,rfl⟩:=H _ h;simp only[P,Pc];have:=V a;omega
+def G (u v:M):∃ p1 p2 p3 p4 p5 p6 p7 p8 p9 a0:M,
+  p1=(if _:W (u) (a1 (a1 v))<W u v then op (u) (a1 (a1 v)) else J u v) ∧
+  p2=(if _:W (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))<W u v then op (a1 (a2 (a1 v))) (a2 (a2 (a1 v))) else J u v) ∧
+  p3=(if _:W (a1 (a1 v)) (a2 (a1 v))<W u v then op (a1 (a1 v)) (a2 (a1 v)) else J u v) ∧
+  p4=(if _:W (a1 v) (u)<W u v then op (a1 v) (u) else J u v) ∧
+  p5=(if _:W (a2 (p1)) (p1)<W u v then op (a2 (p1)) (p1) else J u v) ∧
+  p6=(if _:W (u) (a2 (a1 u))<W u v then op (u) (a2 (a1 u)) else J u v) ∧
+  p7=(if _:W (a2 (a1 u)) (a1 u)<W u v then op (a2 (a1 u)) (a1 u) else J u v) ∧
+  p8=(if _:W (a1 (a2 u)) (a2 (a2 u))<W u v then op (a1 (a2 u)) (a2 (a2 u)) else J u v) ∧
+  p9=(if _:W (a1 u) (a2 u)<W u v then op (a1 u) (a2 u) else J u v) ∧
+  a0=(if _:W (a2 (p7)) (p7)<W u v then op (a2 (p7)) (p7) else J u v) ∧
+  op u v=(
+ if O u v∧W (u) (a1 (a1 v))<W u v∧W (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))<W u v∧W (a1 (a1 v)) (a2 (a1 v))<W u v∧W (a1 v) (u)<W u v∧a2 (a2 (a1 v))=p1∧a2 (a1 v)=p2∧a1 v=p3∧v=p4 then a1 (a1 v)
+ else if R u v∧W (u) (a1 (a1 v))<W u v∧W (a2 (p1)) (p1)<W u v∧W (a1 (a1 v)) (a2 (a1 v))<W u v∧W (a1 v) (u)<W u v∧tg (p1)=2∧a2 (a1 v)=p5∧a1 v=p3∧v=p4 then a1 (a1 v)
+ else if D u v∧W (u) (a2 (a1 u))<W u v∧W (a2 (a1 u)) (a1 u)<W u v∧W (a1 (a2 u)) (a2 (a2 u))<W u v∧W (a1 u) (a2 u)<W u v∧W (a1 v) (u)<W u v∧J (u) (a2 (a1 u))=p6∧a2 (a2 u)=p7∧a2 u=p8∧u=p9∧a1 v=p7∧v=p4 then a2 (a1 u)
+ else if Q u v∧W (u) (a2 (a1 u))<W u v∧W (a2 (a1 u)) (a1 u)<W u v∧W (a2 (p7)) (p7)<W u v∧W (a1 u) (a2 u)<W u v∧W (a1 v) (u)<W u v∧J (u) (a2 (a1 u))=p6∧tg (p7)=2∧a2 u=a0∧u=p9∧a1 v=p7∧v=p4 then a2 (a1 u)
+ else J u v
+  ):=
+ ⟨_,_,_,_,_,_,_,_,_,_,rfl,rfl,rfl,rfl,rfl,rfl,rfl,rfl,rfl,rfl,op.eq_1 u v⟩
+def X (u v:M):op u v=J u v∨(tg v=2∧a2 v=u ∧
+  ((tg (a1 v)=2∧op u v=a1 (a1 v)∧op (a1 (a1 v)) (a2 (a1 v))=a1 v ∧
+    ((tg (a2 (a1 v))=2∧op u (a1 (a1 v))=a2 (a2 (a1 v)) ∧
+      op (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))=a2 (a1 v)) ∨
+     (tg (op u (a1 (a1 v)))=2 ∧
+      op (a2 (op u (a1 (a1 v)))) (op u (a1 (a1 v)))=a2 (a1 v)))) ∨
+   (tg u=2∧tg (a1 u)=2∧op u v=a2 (a1 u)∧op (a2 (a1 u)) (a1 u)=a1 v))):=by
+ obtain⟨_,_,_,_,_,_,_,_,_,_,af,az,am,aj,ag,aw,ah,a7,au,ad,ap⟩:=
+  G u v
+ rw[ap]
+ split
+ ·rename_i h
+  have c1:=h.2.2.2.2.2.1
+  have c2:=h.2.2.2.2.2.2.1
+  have c3:=h.2.2.2.2.2.2.2.1
+  rw[dif_pos h.2.1] at af
+  rw[dif_pos h.2.2.1] at az
+  rw[dif_pos h.2.2.2.1] at am
+  rw[af] at c1
+  rw[az] at c2
+  rw[am] at c3
+  exact Or.inr ⟨h.1.1,h.1.2.2.2.symm,Or.inl ⟨h.1.2.1,rfl,c3.symm,
+   Or.inl ⟨h.1.2.2.1,c1.symm,c2.symm⟩⟩⟩
+ ·split
+  ·rename_i h
+   have tq:=h.2.2.2.2.2.1
+   have c5:=h.2.2.2.2.2.2.1
+   have c3:=h.2.2.2.2.2.2.2.1
+   have g5:=h.2.2.1
+   rw[dif_pos h.2.1] at af
+   rw[af] at tq g5 ag
+   rw[dif_pos g5] at ag
+   rw[ag] at c5
+   rw[dif_pos h.2.2.2.1] at am
+   rw[am] at c3
+   exact Or.inr ⟨h.1.1,h.1.2.2.symm,Or.inl ⟨h.1.2.1,rfl,c3.symm,Or.inr ⟨tq,c5.symm⟩⟩⟩
+  ·split
+   ·rename_i h
+    have c7:=h.2.2.2.2.2.2.2.2.2.2.1
+    rw[dif_pos h.2.2.1] at ah
+    rw[ah] at c7
+    exact Or.inr ⟨h.1.1,h.1.2.1.symm,Or.inr ⟨h.1.2.2.1,h.1.2.2.2.1,rfl,c7.symm⟩⟩
+   ·split
+    ·rename_i h
+     have c7:=h.2.2.2.2.2.2.2.2.2.2.1
+     rw[dif_pos h.2.2.1] at ah
+     rw[ah] at c7
+     exact Or.inr ⟨h.1.1,h.1.2.1.symm,Or.inr ⟨h.1.2.2.1,h.1.2.2.2,rfl,c7.symm⟩⟩
+    ·exact Or.inl rfl
+def I {u v:M} (h:sz v≤sz u):op u v=J u v:=by
+ rcases X u v with hz | ⟨tv,av,-⟩
+ ·exact hz
+ ·exfalso;have q:=E tv;rw[av] at q;omega
+def N {u v:M} (h:op u v≠J u v):sz (op u v)<sz v:=by
+ rcases X u v with hz | ⟨tv,av,hd⟩
+ ·exact absurd hz h
+ ·have q1:=E tv
+  rw[av] at q1
+  rcases hd with⟨t1,hr,-,-⟩ | ⟨tu,ar,hr,-⟩
+  ·rw[hr];have:=Y t1;have:=Y tv;omega
+  ·rw[hr];have:=E ar;have:=Y tu;omega
+def NY {u w:M} (hw:sz w<sz (a1 u)) (hu:sz (a1 u)<sz u)
+  (h:a2 (a2 w)=J u (a1 w)):False:=by
+ have e:=congrArg sz h
+ simp only[Pc] at e
+ have:=T w;have:=T (a2 w);omega
+def NX {u w:M} (hw:sz w<sz (a1 u)) (hu:sz (a1 u)<sz u)
+  (h:op (a1 w) (J u (a1 w))=a2 w):False:=by
+ have b1:=Z w
+ have b2:=T w
+ rcases X (a1 w) (J u (a1 w)) with hz | ⟨-,-,hA | hB⟩
+ ·rw[hz] at h;have e:=congrArg sz h;simp only[Pc] at e;omega
+ ·obtain⟨-,hr,-,-⟩:=hA
+  simp only[S] at hr
+  rw[hr] at h
+  have e:=congrArg sz h;omega
+ ·obtain⟨-,-,hr,hq⟩:=hB
+  simp only[S] at hq
+  rw[hr] at h
+  rw[h] at hq
+  by_cases hz:op (a2 w) (a1 (a1 w))=J (a2 w) (a1 (a1 w))
+  ·rw[hz] at hq
+   have e:=congrArg a1 hq
+   simp only[S] at e
+   have e2:=congrArg sz e;omega
+  ·have q:=N hz
+   rw[hq] at q
+   have b3:=Z (a1 w);omega
+def A (u v:M) (t0:tg v=2) (t1:tg (a1 v)=2) (t2:tg (a2 (a1 v))=2)
+  (hv:a2 v=u)
+  (k1:op u (a1 (a1 v))=a2 (a2 (a1 v)))
+  (k2:op (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))=a2 (a1 v))
+  (k3:op (a1 (a1 v)) (a2 (a1 v))=a1 v)
+  (k4:op (a1 v) u=v):op u v=a1 (a1 v):=by
+ obtain⟨_,_,_,_,_,_,_,_,_,_,af,az,am,aj,-,-,-,-,-,-,ap⟩:=
+  G u v
+ have s0:=Y t0
+ have bd:=E t0
+ rw[hv] at bd
+ have s1:=Y t1
+ have cd:=E t1
+ have s2:=Y t2
+ have cm:=E t2
+ have g1:W u (a1 (a1 v))<W u v:=K (by omega)
+ have g2:W (a1 (a2 (a1 v))) (a2 (a2 (a1 v)))<W u v:=K (by omega)
+ have g3:W (a1 (a1 v)) (a2 (a1 v))<W u v:=K (by omega)
+ have g4:W (a1 v) u<W u v:=K (by omega)
+ rw[dif_pos g1] at af
+ rw[dif_pos g2] at az
+ rw[dif_pos g3] at am
+ rw[dif_pos g4] at aj
+ rw[ap]
+ split
+ ·rfl
+ ·rename_i h
+  exact absurd ⟨⟨t0,t1,t2,hv.symm⟩,g1,g2,g3,g4,k1.symm.trans af.symm,
+   k2.symm.trans az.symm,k3.symm.trans am.symm,k4.symm.trans aj.symm⟩ h
+def B (u v:M) (t0:tg v=2) (t1:tg (a1 v)=2) (hv:a2 v=u)
+  (ci:tg (op u (a1 (a1 v)))=2)
+  (k0:sz (op u (a1 (a1 v)))<sz v)
+  (k2:op (a2 (op u (a1 (a1 v)))) (op u (a1 (a1 v)))=a2 (a1 v))
+  (k3:op (a1 (a1 v)) (a2 (a1 v))=a1 v)
+  (k4:op (a1 v) u=v):op u v=a1 (a1 v):=by
+ obtain⟨_,_,_,_,_,_,_,_,_,_,af,-,am,aj,ag,-,-,-,-,-,ap⟩:=
+  G u v
+ have s0:=Y t0
+ have bd:=E t0
+ rw[hv] at bd
+ have s1:=Y t1
+ have cd:=E t1
+ have s6:=T (op u (a1 (a1 v)))
+ have g1:W u (a1 (a1 v))<W u v:=K (by omega)
+ have g3:W (a1 (a1 v)) (a2 (a1 v))<W u v:=K (by omega)
+ have g4:W (a1 v) u<W u v:=K (by omega)
+ have g5:W (a2 (op u (a1 (a1 v)))) (op u (a1 (a1 v)))<W u v:=
+  K (by omega)
+ rw[dif_pos g1] at af
+ rw[af] at ag
+ rw[dif_pos g5] at ag
+ rw[dif_pos g3] at am
+ rw[dif_pos g4] at aj
+ rw[ap]
+ split
+ ·rfl
+ ·split
+  ·rfl
+  ·rename_i h1 h2
+   exact absurd ⟨⟨t0,t1,hv.symm⟩,g1,(by rw[af];exact g5),g3,g4,
+    (by rw[af];exact ci),k2.symm.trans ag.symm,k3.symm.trans am.symm,
+    k4.symm.trans aj.symm⟩ h2
+def C (u v:M) (t0:tg v=2) (hv:a2 v=u) (t1:tg u=2) (t2:tg (a1 u)=2)
+  (t3:tg (a2 u)=2)
+  (k1:op u (a2 (a1 u))=J u (a2 (a1 u)))
+  (k2:op (a2 (a1 u)) (a1 u)=a2 (a2 u))
+  (k3:op (a1 (a2 u)) (a2 (a2 u))=a2 u)
+  (k4:op (a1 u) (a2 u)=u)
+  (k5:a1 v=a2 (a2 u))
+  (k6:op (a1 v) u=v)
+  (k7:sz (a1 v)<sz (a1 u)):op u v=a2 (a1 u):=by
+ obtain⟨_,_,_,_,_,_,_,_,_,_,af,-,-,aj,ag,aw,ah,a7,au,-,ap⟩:=
+  G u v
+ have s0:=Y t0
+ have bd:=E t0
+ rw[hv] at bd
+ have q1:=Y t1
+ have cf:=E t1
+ have q2:=Y t2
+ have ce:=E t2
+ have q3:=Y t3
+ have cn:=E t3
+ have q4:=Z (a1 v)
+ have hb:sz (a1 (a1 v))≤sz u:=by omega
+ have g6:W u (a2 (a1 u))<W u v:=K (by omega)
+ have g7:W (a2 (a1 u)) (a1 u)<W u v:=K (by omega)
+ have g8:W (a1 (a2 u)) (a2 (a2 u))<W u v:=K (by omega)
+ have g9:W (a1 u) (a2 u)<W u v:=K (by omega)
+ have g4:W (a1 v) u<W u v:=K (by omega)
+ rw[dif_pos g6] at aw
+ rw[dif_pos g7] at ah
+ rw[dif_pos g8] at a7
+ rw[dif_pos g9] at au
+ rw[dif_pos g4] at aj
+ rw[ap]
+ split
+ ·rename_i h
+  exfalso
+  have c1:=h.2.2.2.2.2.1
+  rw[dif_pos h.2.1] at af
+  rw[af,I hb] at c1
+  exact NY k7 q1 c1
+ ·split
+  ·rename_i h
+   exfalso
+   have c5:=h.2.2.2.2.2.2.1
+   have g5:=h.2.2.1
+   rw[dif_pos h.2.1] at af
+   rw[af,I hb] at g5 ag
+   rw[dif_pos g5] at ag
+   rw[ag] at c5
+   simp only[P] at c5
+   exact NX k7 q1 c5.symm
+  ·split
+   ·rfl
+   ·rename_i h1 h2 h3
+    exact absurd ⟨⟨t0,hv.symm,t1,t2,t3⟩,g6,g7,g8,g9,g4,
+     k1.symm.trans aw.symm,k2.symm.trans ah.symm,k3.symm.trans a7.symm,
+     k4.symm.trans au.symm,k5.trans (k2.symm.trans ah.symm),
+     k6.symm.trans aj.symm⟩ h3
+def F (u v:M) (t0:tg v=2) (hv:a2 v=u) (t1:tg u=2) (t2:tg (a1 u)=2)
+  (k1:op u (a2 (a1 u))=J u (a2 (a1 u)))
+  (ch:tg (op (a2 (a1 u)) (a1 u))=2)
+  (k3:op (a2 (op (a2 (a1 u)) (a1 u))) (op (a2 (a1 u)) (a1 u))=a2 u)
+  (k4:op (a1 u) (a2 u)=u)
+  (k5:a1 v=op (a2 (a1 u)) (a1 u))
+  (k6:op (a1 v) u=v)
+  (k7:sz (a1 v)<sz (a1 u)):op u v=a2 (a1 u):=by
+ obtain⟨_,_,_,_,_,_,_,_,_,_,af,-,-,aj,ag,aw,ah,-,au,ad,ap⟩:=
+  G u v
+ have s0:=Y t0
+ have bd:=E t0
+ rw[hv] at bd
+ have q1:=Y t1
+ have cf:=E t1
+ have q2:=Y t2
+ have ce:=E t2
+ have q4:=Z (a1 v)
+ have q5:=T (a1 v)
+ have hb:sz (a1 (a1 v))≤sz u:=by omega
+ have g6:W u (a2 (a1 u))<W u v:=K (by omega)
+ have g7:W (a2 (a1 u)) (a1 u)<W u v:=K (by omega)
+ have g9:W (a1 u) (a2 u)<W u v:=K (by omega)
+ have g4:W (a1 v) u<W u v:=K (by omega)
+ have bc:W (a2 (op (a2 (a1 u)) (a1 u))) (op (a2 (a1 u)) (a1 u))<W u v:=by rw[← k5];exact K (by omega)
+ rw[dif_pos g6] at aw
+ rw[dif_pos g7] at ah
+ rw[ah] at ad
+ rw[dif_pos bc] at ad
+ rw[dif_pos g9] at au
+ rw[dif_pos g4] at aj
+ rw[ap]
+ split
+ ·rename_i h
+  exfalso
+  have c1:=h.2.2.2.2.2.1
+  rw[dif_pos h.2.1] at af
+  rw[af,I hb] at c1
+  exact NY k7 q1 c1
+ ·split
+  ·rename_i h
+   exfalso
+   have c5:=h.2.2.2.2.2.2.1
+   have g5:=h.2.2.1
+   rw[dif_pos h.2.1] at af
+   rw[af,I hb] at g5 ag
+   rw[dif_pos g5] at ag
+   rw[ag] at c5
+   simp only[P] at c5
+   exact NX k7 q1 c5.symm
+  ·split
+   ·rfl
+   ·split
+    ·rfl
+    ·rename_i h1 h2 h3 h4
+     exact absurd ⟨⟨t0,hv.symm,t1,t2⟩,g6,g7,(by rw[ah];exact bc),g9,g4,
+      k1.symm.trans aw.symm,(by rw[ah];exact ch),k3.symm.trans ad.symm,
+      k4.symm.trans au.symm,k5.trans ah.symm,k6.symm.trans aj.symm⟩ h4
+def L (x y z s1 s2 s3 s4:M)
+  (e1:s1=op y x) (e2:s2=op z s1) (e3:s3=op x s2) (e4:s4=op s3 y) :
+  op y s4=x:=by
+ by_cases h3:op x s2=J x s2
+ ·have E3:=e3.trans h3
+  by_cases h2:op z s1=J z s1
+  ·have E2:=e2.trans h2
+   have h4:op s3 y=J s3 y:=by
+    by_cases hh:op s3 y=J s3 y
+    ·exact hh
+    ·exfalso
+     rcases X s3 y with hz | ⟨ty,ay,-⟩
+     ·exact hh hz
+     ·have qy:=U y ty
+      rw[ay,E3,E2] at qy
+      simp only[Pc] at qy
+      have w1:=V (a1 y)
+      have w2:=V z
+      have w3:=V s1
+      have w4:=V x
+      by_cases h1:op y x=J y x
+      ·have E1:=e1.trans h1
+       have e:=congrArg sz E1
+       simp only[Pc] at e
+       omega
+      ·rcases X y x with a5 | ⟨tx,ax,-⟩
+       ·exact h1 a5
+       ·have d:=E tx
+        rw[ax] at d
+        omega
+   rw[e4,h4,E3,E2]
+   exact A y (J (J x (J z s1)) y) rfl rfl rfl rfl e1.symm h2
+    (by rw[← E2];exact h3) (by rw[← E2,← E3];exact h4)
+  ·rcases X z s1 with a6 | ⟨t1,an,hD⟩
+   ·exact absurd a6 h2
+   ·have h4:op s3 y=J s3 y:=by
+     by_cases hh:op s3 y=J s3 y
+     ·exact hh
+     ·exfalso
+      rcases X s3 y with hz | ⟨ty,ay,-⟩
+      ·exact hh hz
+      ·have qy:=U y ty
+       rw[ay,E3] at qy
+       simp only[Pc] at qy
+       have w1:=V (a1 y)
+       have w4:=V x
+       have w5:=V s2
+       by_cases h1:op y x=J y x
+       ·have E1:=e1.trans h1
+        have a3:=(congrArg a1 E1).trans (S y x)
+        have a8:=(congrArg a2 E1).trans (P y x)
+        rw[a8] at an
+        rcases hD with hA | hB
+        ·obtain⟨tv,ab,aa,ac⟩:=hA
+         rw[a3] at tv ab aa ac
+         have ae:=e2.trans ab
+         rcases ac with⟨ti,aq,a9⟩ | ⟨ti,hi⟩
+         ·rw[← an,← ae,← e3,ay] at aq
+          rw[ay] at ti
+          have hd:=E ti
+          rw[← aq] at hd
+          omega
+         ·rw[← an,← ae,← e3,ay] at hi
+          rw[← ae,ay] at aa
+          have ck:=(congrArg a2 E3).trans (P x s2)
+          rw[ck] at hi
+          have cj:=aa.symm.trans hi
+          rw[← cj] at ay
+          have e:=congrArg sz ay
+          have:=E ty
+          omega
+        ·obtain⟨tu,ar,ab,hq⟩:=hB
+         rw[a3] at hq
+         have ae:=e2.trans ab
+         rw[← ae] at hq
+         rw[← an] at tu ar ae hq
+         have d1:=E ar
+         rw[← ae] at d1
+         have d2:=Y tu
+         by_cases hf:op s2 (a1 x)=J s2 (a1 x)
+         ·rw[hf] at hq
+          have e:=congrArg sz hq
+          simp only[Pc] at e
+          omega
+         ·have wq:=N hf
+          rw[hq] at wq
+          omega
+       ·rcases X y x with a5 | ⟨tx,ax,-⟩
+        ·exact h1 a5
+        ·have d:=E tx
+         rw[ax] at d
+         omega
+    have k0:sz s1<sz x+sz s2+sz y+2:=by
+     have w5:=V s2
+     by_cases h1:op y x=J y x
+     ·have E1:=e1.trans h1
+      have e:=congrArg sz E1
+      simp only[Pc] at e
+      omega
+     ·have wq:=N h1
+      rw[← e1] at wq
+      omega
+    rw[e4,h4,E3]
+    refine B y (J (J x s2) y) rfl rfl rfl ?_ ?_ ?_ h3 (by rw[← E3];exact h4)
+    ·show tg (op y x)=2
+     rw[← e1];exact t1
+    ·show sz (op y x)<sz (J (J x s2) y)
+     rw[← e1];simp only[Pc];omega
+    ·show op (a2 (op y x)) (op y x)=s2
+     rw[← e1,an];exact e2.symm
+ ·rcases X x s2 with hz | ⟨t2,ak,-⟩
+  ·exact absurd hz h3
+  ·have bb:sz s3<sz s2:=by rw[e3];exact N h3
+   have w3:sz x<sz s2:=by
+    have q:=U s2 t2
+    rw[ak] at q
+    have:=V (a1 s2)
+    omega
+   have h2:¬ (op z s1=J z s1):=by
+    intro hc
+    have E2:=e2.trans hc
+    rw[E2] at ak
+    simp only[P] at ak
+    rw[ak] at e1
+    by_cases hf:op y x=J y x
+    ·rw[hf] at e1
+     have e:=congrArg sz e1
+     simp only[Pc] at e
+     have:=V y
+     omega
+    ·have q:=N hf
+     rw[← e1] at q
+     omega
+   rcases X z s1 with a6 | ⟨t1,an,cl⟩
+   ·exact absurd a6 h2
+   ·have w2:sz s2<sz s1:=by rw[e2];exact N h2
+    have h1:op y x=J y x:=by
+     by_cases hf:op y x=J y x
+     ·exact hf
+     ·exfalso
+      have q:=N hf
+      rw[← e1] at q
+      omega
+    have E1:=e1.trans h1
+    have a3:=(congrArg a1 E1).trans (S y x)
+    have a8:=(congrArg a2 E1).trans (P y x)
+    rw[a8] at an
+    rcases cl with hA | hB
+    ·obtain⟨tv,ab,aa,ac⟩:=hA
+     rw[a3] at tv ab aa ac
+     have ae:=e2.trans ab
+     rw[← ae] at aa
+     rcases ac with⟨ti,aq,a9⟩ | ⟨ti,hi⟩
+     ·rw[← an,← ae,← e3] at aq
+      have h4:op s3 y=J s3 y:=by
+       by_cases hh:op s3 y=J s3 y
+       ·exact hh
+       ·exfalso
+        rcases X s3 y with a4 | ⟨cc,ay,-⟩
+        ·exact hh a4
+        ·rw[ay] at aq ti
+         have hd:=E ti
+         rw[← aq] at hd
+         omega
+      rw[e4,h4]
+      refine (C y (J s3 y) rfl rfl tv (by rw[← ae];exact t2) ti ?_ ?_ a9 ?_
+       aq h4 ?_).trans ?_
+      ·rw[← ae,ak];exact h1
+      ·rw[← ae,ak,← e3];exact aq
+      ·rw[← ae];exact aa
+      ·rw[← ae];exact bb
+      ·rw[← ae];exact ak
+     ·rw[← an,← ae,← e3] at ti hi
+      have h4:op s3 y=J s3 y:=by
+       by_cases hh:op s3 y=J s3 y
+       ·exact hh
+       ·exfalso
+        rcases X s3 y with a4 | ⟨cc,ay,-⟩
+        ·exact hh a4
+        ·rw[ay] at hi
+         by_cases ba:op (a2 s3) s3=J (a2 s3) s3
+         ·rw[ba] at hi
+          have e:=congrArg sz hi
+          simp only[Pc] at e
+          have:=V (a2 s3)
+          omega
+         ·have q:=N ba
+          rw[hi] at q
+          omega
+      rw[e4,h4]
+      refine (F y (J s3 y) rfl rfl tv (by rw[← ae];exact t2) ?_ ?_ ?_ ?_ ?_ h4
+       ?_).trans ?_
+      ·rw[← ae,ak];exact h1
+      ·rw[← ae,ak,← e3];exact ti
+      ·rw[← ae,ak,← e3];exact hi
+      ·rw[← ae];exact aa
+      ·rw[← ae,ak];exact e3
+      ·rw[← ae];exact bb
+      ·rw[← ae];exact ak
+    ·obtain⟨tu,ar,ab,-⟩:=hB
+     exfalso
+     have ae:=e2.trans ab
+     rw[← an] at tu ar ae
+     have d1:=E ar
+     rw[← ae] at d1
+     have d2:=Y tu
+     omega
+def law (x y z:M):op (y) (op (op (x) (op (z) (op (y) (x)))) (y))=x:=
+ L x y z (op y x) (op z (op y x)) (op x (op z (op y x)))
+  (op (op x (op z (op y x))) y) rfl rfl rfl rfl
+def lhs:@EquationLHS M inst:=by
+ intro x y z
+ exact (law x y z).symm
+end submission
+def submission:Goal:=
+ Exists.intro submission.M (Exists.intro submission.inst
+  (And.intro submission.lhs submission.rhs))

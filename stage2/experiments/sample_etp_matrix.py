@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import random
 import sys
@@ -34,9 +35,18 @@ sys.path.insert(0, str(REPO_ROOT / "stage2" / "experiments"))
 from spotcheck import ETPMatrix, load_coverage, coverage_key, ETP_SOURCE  # noqa: E402
 
 
-def load_exclusions(paths: list[Path]) -> set[str]:
+def expand_exclusion_paths(patterns: list[str]) -> list[Path]:
+    """Expand shell-independent globs, preserving explicit path failures."""
+    paths: list[Path] = []
+    for pattern in patterns:
+        matches = sorted(glob.glob(pattern))
+        paths.extend(Path(match) for match in (matches or [pattern]))
+    return list(dict.fromkeys(paths))
+
+
+def load_exclusions(patterns: list[str]) -> set[str]:
     exclude: set[str] = set()
-    for path in paths:
+    for path in expand_exclusion_paths(patterns):
         text = path.read_text(encoding="utf-8")
         rows = ([json.loads(line) for line in text.splitlines() if line.strip()]
                 if path.suffix == ".jsonl" else json.loads(text))
@@ -84,9 +94,10 @@ def main() -> int:
     ap.add_argument("--count", type=int, default=5000)
     ap.add_argument("--seed", type=int, default=20260820)
     ap.add_argument("--out", type=Path, required=True)
-    ap.add_argument("--exclude", type=Path, nargs="*", default=[],
+    ap.add_argument("--exclude", nargs="*", default=[],
                     help="jsonl/json files whose (eq1_id, eq2_id) pairs "
-                         "must not be redrawn (e.g. a prior batch's sample)")
+                         "must not be redrawn; glob patterns are expanded by "
+                         "this tool on every shell")
     args = ap.parse_args()
 
     exclude = load_exclusions(args.exclude)

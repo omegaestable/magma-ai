@@ -1,0 +1,12 @@
+s3      3 rules  run_tests fails 219 {'exh9/1': 25, 'exh5/2': 25, 'deep': 96, 'fuzz': 9, 'critical': 63, 'closure': 1} (13s)
+    first: {'y': ('J', ('g', 0), ('g', 0)), 'x': ('g', 0), 'z': ('g', 0)}
+s4      4 rules  run_tests fails 215 {'exh9/1': 25, 'exh5/2': 25, 'deep': 96, 'fuzz': 5, 'critical': 63, 'closure': 1} (16s)
+    first: {'y': ('J', ('g', 0), ('g', 0)), 'x': ('g', 0), 'z': ('g', 0)}
+s3as    3 rules  run_tests fails 126 {'exh9/1': 25, 'exh5/2': 25, 'deep': 4, 'fuzz': 63, 'closure': 8, 'critical': 1} (17s)
+    first: {'y': ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), 'x': ('g', 0), 'z': ('J', ('g', 0), ('J', ('g', 0), ('g', 0)))}
+s4as    4 rules  run_tests fails 126 {'exh9/1': 25, 'exh5/2': 25, 'deep': 4, 'fuzz': 63, 'closure': 8, 'critical': 1} (20s)
+    first: {'y': ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), 'x': ('g', 0), 'z': ('J', ('g', 0), ('J', ('g', 0), ('g', 0)))}
+s2      2 rules  run_tests fails 258 {'exh9/1': 25, 'exh5/2': 25, 'deep': 98, 'fuzz': 46, 'critical': 63, 'closure': 1} (9s)
+    first: {'y': ('J', ('g', 0), ('g', 0)), 'x': ('g', 0), 'z': ('g', 0)}
+sR      1 rules  run_tests fails 449 {'exh9/1': 25, 'exh5/2': 25, 'deep': 263, 'fuzz': 63, 'closure': 10, 'critical': 63} (3s)
+    first: {'y': ('g', 0), 'x': ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), 'z': ('g', 0)}

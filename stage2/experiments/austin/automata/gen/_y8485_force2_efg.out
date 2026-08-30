@@ -1,0 +1,3 @@
+variant f: 4 rules;  FULL extraction: 83 rules
+E-H3 (y = enc(j,w,x): y an encoding BY x)      junk=False seed=7   n=80   BAD=0    top-rule census={0: 80}
+E-H3 (y = enc(j,w,x): y an encoding BY x)      junk=False seed=23  n=80   BAD=0    top-rule census={0: 79, 2: 1}

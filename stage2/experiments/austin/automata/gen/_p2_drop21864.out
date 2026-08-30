@@ -1,0 +1,9 @@
+### drop 2,8
+drop [2, 8]
+  candidate                      rules=11  FAILS total 0 value 0  (37.1s)
+### drop 2,8,11
+drop [2, 8, 11]
+  candidate                      rules=10  FAILS total 0 value 0  (31.5s)
+### drop 2,8,11,6,12
+drop [2, 6, 8, 11, 12]
+  candidate                      rules=8   FAILS total 2 value 2  (29.4s)

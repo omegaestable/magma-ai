@@ -1,0 +1,14 @@
+    [free] J?u & J?u.1 & u.1.1 = u.2 & J?v & u.1.2 = v.1 & J?v.2 & u.1.1 = v.2.1 -> u.1.2
+    [LD] J?u & J?u.1 & u.1.1 = u.2 & J?u.1.2 & J?u.1.2.1 & u.1.2.1.1 = u.1.2.2 & v = u.1.2.1.2 -> u.1.2
+    [RD] J?u & J?u.1 & u.1.1 = u.2 & J?u.1.2 & op(u.1.2.2, v) == u.1.2.1 -> u.1.2
+    [A0s,B1s|rd:A0] J?u & J?v & op(u.2, v.1) == u.1 & J?u.2 & op(u.2.2, v.2) == u.2.1 -> v.1
+    [As] J?v & J?v.2 & op(op(v.2.1, v.1), v.2.1) == u -> v.1
+a5  5 rules  STRONG ok=True  hunt 10404 clean, 38s
+  DROP LD       -> 4 rules
+  KEEP RD       (run_tests 63 {'y': ('g', 0), 'x': ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), 'z': ('J', ('g', 0), ('g', 0))})
+  KEEP A0s,B1s|rd:A0 (run_tests 126 {'y': ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), 'x': ('g', 0), 'z': ('J', ('g', 0), ('J', ('g', 0), ('g', 0)))})
+  KEEP As       (run_tests 120 {'y': ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), 'x': ('J', ('g', 0), ('J', ('g', 0), ('g', 0))), 'z': ('g', 0)})
+FINAL ['free', 'RD', 'A0s,B1s|rd:A0', 'As']
+  deep20k seed 2026: fails 0 (6s)
+  deep20k seed 8291: fails 0 (6s)
+  deep20k seed 77771: fails 0 (7s)

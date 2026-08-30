@@ -1,0 +1,71 @@
+theorem sz_pos (t : M) : 1 ≤ sz t := by cases t <;> simp [sz] <;> omega
+theorem sA1 {t : M} (h : tg t = 2) : sz (a1 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a1]; have := sz_pos b; omega
+theorem sA2 {t : M} (h : tg t = 2) : sz (a2 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a2]; have := sz_pos a; omega
+theorem mx {a b u v : M} (h : msr a b < msr u v) : max (sz a) (sz b) ≤ max (sz u) (sz v) := by
+  apply Classical.byContradiction; intro hc
+  have := msr_lt_of_max_lt (a := u) (b := v) (u := a) (v := b) (by omega)
+  omega
+
+theorem op_cases (u v : M) : ∃ p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 : M,
+    p1 = (if hs1 : msr (a1 (a1 (a2 v))) (a2 v) < msr u v then op (a1 (a1 (a2 v))) (a2 v) else J u v) ∧
+    p2 = (if hs2 : msr (p1) (a2 v) < msr u v then op (p1) (a2 v) else J u v) ∧
+    p3 = (if hs3 : msr (u) (p2) < msr u v then op (u) (p2) else J u v) ∧
+    p4 = (if hs4 : msr (a1 (a1 (a2 (a2 v)))) (a2 (a2 v)) < msr u v then op (a1 (a1 (a2 (a2 v)))) (a2 (a2 v)) else J u v) ∧
+    p5 = (if hs5 : msr (p4) (a2 (a2 v)) < msr u v then op (p4) (a2 (a2 v)) else J u v) ∧
+    p6 = (if hs6 : msr (a1 (a2 v)) (p5) < msr u v then op (a1 (a2 v)) (p5) else J u v) ∧
+    p7 = (if hs7 : msr (u) (p6) < msr u v then op (u) (p6) else J u v) ∧
+    p8 = (if hs8 : msr (u) (J (p7) (p5)) < msr u v then op (u) (J (p7) (p5)) else J u v) ∧
+    p9 = (if hs9 : msr (p8) (a2 v) < msr u v then op (p8) (a2 v) else J u v) ∧
+    p10 = (if hs10 : msr (p9) (a2 v) < msr u v then op (p9) (a2 v) else J u v) ∧
+    p11 = (if hs11 : msr (u) (p10) < msr u v then op (u) (p10) else J u v) ∧
+    op u v = (
+  if P1 u v then a1 (a1 (a2 (a1 v)))
+  else if P2 u v ∧ msr (a1 (a1 (a2 v))) (a2 v) < msr u v ∧ msr (p1) (a2 v) < msr u v ∧ msr (u) (p2) < msr u v ∧ a1 v = p3 then a1 (a1 (a2 v))
+  else if P3 u v ∧ msr (a1 (a1 (a2 (a2 v)))) (a2 (a2 v)) < msr u v ∧ msr (p4) (a2 (a2 v)) < msr u v ∧ msr (a1 (a2 v)) (p5) < msr u v ∧ msr (u) (p6) < msr u v ∧ msr (u) (J (p7) (p5)) < msr u v ∧ msr (p8) (a2 v) < msr u v ∧ msr (p9) (a2 v) < msr u v ∧ msr (u) (p10) < msr u v ∧ a1 v = p11 then p8
+  else J u v
+    ) :=
+  ⟨_, _, _, _, _, _, _, _, _, _, _, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, op.eq_1 u v⟩
+
+/-- the digest: free, or `v = J u _`, or `a1 v` is an `op u _` under a gate -/
+theorem DG (u v : M) : op u v = J u v ∨ (tg v = 2 ∧ tg (a1 v) = 2 ∧ u = a1 (a1 v)) ∨
+    (tg v = 2 ∧ ∃ q, msr u q < msr u v ∧ a1 v = op u q) := by
+  obtain ⟨p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, hp1, hp2, hp3, hp4, hp5, hp6, hp7, hp8, hp9, hp10, hp11, hop⟩ := op_cases u v
+  rw [hop]
+  split
+  · rename_i h; exact Or.inr (Or.inl ⟨h.1, h.2.1, h.2.2.1⟩)
+  · split
+    · rename_i h
+      obtain ⟨h2, g1, g2, g3, he⟩ := h
+      rw [dif_pos g1] at hp1; subst hp1
+      rw [dif_pos g2] at hp2; subst hp2
+      rw [dif_pos g3] at hp3; subst hp3
+      exact Or.inr (Or.inr ⟨h2.1, _, g3, he⟩)
+    · split
+      · rename_i h
+        obtain ⟨h3, g1, g2, g3, g4, g5, g6, g7, g8, he⟩ := h
+        rw [dif_pos g1] at hp4; subst hp4
+        rw [dif_pos g2] at hp5; subst hp5
+        rw [dif_pos g3] at hp6; subst hp6
+        rw [dif_pos g4] at hp7; subst hp7
+        rw [dif_pos g5] at hp8; subst hp8
+        rw [dif_pos g6] at hp9; subst hp9
+        rw [dif_pos g7] at hp10; subst hp10
+        rw [dif_pos g8] at hp11; subst hp11
+        exact Or.inr (Or.inr ⟨h3.1, _, g8, he⟩)
+      · exact Or.inl rfl
+
+theorem SUn (n : Nat) : ∀ u v : M, msr u v < n → op u v ≠ J u v → sz u < sz v := by
+  induction n with
+  | zero => intro u v h; omega
+  | succ n ih =>
+    intro u v hn hne
+    rcases DG u v with h | ⟨h1, h2, h3⟩ | ⟨h1, q, hg, he⟩
+    · exact absurd h hne
+    · have e1 := sz_a1 (a1 v); have e2 := sA1 h1; rw [h3]; omega
+    · have hv := sA1 h1
+      have hm := mx hg
+      by_cases hf : op u q = J u q
+      · rw [hf] at he; have := congrArg sz he; simp only [sz] at this; omega
+      · have := ih u q (by omega) hf; omega

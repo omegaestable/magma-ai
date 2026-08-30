@@ -1,0 +1,11 @@
+constructed 97000 assignments
+attempts per target: {'P<-R1free': 10000, 'Q<-R1free': 10000, 'R<-R1free': 10000, 'S-probe': 40000, 'P<-R2:zP@x22': 5000, 'Q<-R2:zP@x22': 5000, 'R<-R2:zP@x22': 5000, 'P<-R3:zP@u22': 3000, 'Q<-R3:zP@u22': 5000, 'R<-R3:zP@u22': 3000, 'Q<-R4:zP@u221': 1000}
+
+REACHABLE CELLS (P,Q,R,S,top):
+  (-1, -1, -1, -1, 0)        57980   free free free free R1free
+  (-1, 0, -1, -1, 2)         19980   free R1free free free R3:zP@u22
+  (0, -1, -1, -1, 1)         18000   R1free free free free R2:zP@x22
+  (-1, 0, -1, -1, 1)          1000   free R1free free free R2:zP@x22
+  (-1, 0, 0, -1, 2)             40   free R1free R1free free R3:zP@u22
+
+FAILURES: 0

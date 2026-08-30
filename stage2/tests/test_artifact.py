@@ -71,12 +71,24 @@ def _proxy_module():
     return proxy
 
 
+def _minifier_module():
+    """Import the build script, so the test cannot drift from what it packs."""
+    import importlib.util  # noqa: PLC0415
+
+    spec = importlib.util.spec_from_file_location("minify_submission_under_test", MINIFIER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_packed_tables_round_trip_to_the_source_literals(artifact):
-    """The minifier packs `DISTILLED_CERTS` and the witness tables into
-    zlib+base85 blobs (2026-08-28, ~96 KB saved). The packer's own check
-    already compares the decoded blob to the source literal; this repeats it
-    from the *shipped file*, through the same `_unpack_table` the sandbox will
-    run, so a helper or blob edited by hand after packaging cannot pass."""
+    """The minifier packs every `PACKED_TABLES` entry into ONE lzma+base85 blob
+    (2026-08-29; four separate blobs plus twelve verbatim literals before that,
+    24 KB larger). The packer's own check already compares the decoded blob to
+    the source literal; this repeats it from the *shipped file*, through the same
+    `_unpack_all` the sandbox will run, so a helper or blob edited by hand after
+    packaging cannot pass. It iterates the minifier's own table list rather than
+    a copy, so adding a table cannot silently escape the check."""
     import importlib.util  # noqa: PLC0415
 
     import solver  # noqa: PLC0415
@@ -85,8 +97,9 @@ def test_packed_tables_round_trip_to_the_source_literals(artifact):
     spec = importlib.util.spec_from_file_location("packed_solver_under_test", artifact)
     packed = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(packed)
-    for name in ("DISTILLED_CERTS", "FP_WITNESS_TABLES", "O5_WITNESS_TABLES",
-                 "WITNESS_TABLES"):
+    names = _minifier_module().PACKED_TABLES
+    assert len(names) >= 15, f"only {len(names)} tables packed; the set shrank"
+    for name in names:
         want, got = getattr(solver, name), getattr(packed, name)
         assert type(got) is type(want), name
         assert got == want, f"{name} in the artifact differs from the source"
@@ -97,8 +110,24 @@ def test_packed_tables_round_trip_to_the_source_literals(artifact):
                + packed.WITNESS_TABLES)
     # Non-vacuity: the artifact really is packed, not a copy of the source.
     text = artifact.read_text(encoding="utf-8")
-    assert "_unpack_table(" in text
+    assert "_unpack_all(" in text
     assert "DISTILLED_CERTS: dict" not in text
+
+
+def test_prompt_is_never_packed(artifact):
+    """RC: `PROMPT` is 3,338 B and packs to 2,210, so it is a standing
+    temptation - and packing it empties the Solo LLM lane in silence, because
+    `pipeline/proxy.py:_extract_prompt_from_solver` accepts only a top-level
+    `PROMPT = <str constant>`. Caught once, 2026-08-29, by the extractor test
+    below; pinned here at the cause so the next person sees it at the table."""
+    assert "PROMPT" not in _minifier_module().PACKED_TABLES
+    tree = ast.parse(artifact.read_text(encoding="utf-8"))
+    literals = [node.value for node in tree.body
+                if isinstance(node, ast.Assign) and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == "PROMPT"]
+    assert len(literals) == 1, "PROMPT is not a single top-level assignment"
+    assert isinstance(literals[0], ast.Constant) and isinstance(literals[0].value, str)
 
 
 def test_artifact_is_under_the_judges_byte_cap(artifact):

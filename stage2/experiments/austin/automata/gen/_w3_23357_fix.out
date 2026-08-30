@@ -1,0 +1,6 @@
+full12   law=True   TOP RULE = B1s
+min6     law=True   TOP RULE = Bs|ex:Qa
+f4+B1s          5 rules  witness law=True  top=B1s              run_tests fails 0 (30s)
+f4+A0sB1s       5 rules  witness law=True  top=A0s,B1s          run_tests fails 0 (29s)
+f4+B1srd        5 rules  witness law=False top=FREE             run_tests fails 0 (29s)
+f4+B1s+A0sB1s   6 rules  witness law=True  top=B1s              run_tests fails 0 (39s)

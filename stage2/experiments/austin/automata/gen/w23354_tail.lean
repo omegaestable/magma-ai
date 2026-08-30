@@ -1,0 +1,10 @@
+
+theorem lhs : @EquationLHS M inst := by
+  intro x y z
+  exact (law x y z).symm
+
+end submission
+
+def submission : Goal :=
+  Exists.intro submission.M (Exists.intro submission.inst
+    (And.intro submission.lhs submission.rhs))

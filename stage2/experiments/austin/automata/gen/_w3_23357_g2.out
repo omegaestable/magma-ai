@@ -1,0 +1,13 @@
+pool 412   decoding pairs 151
+tested 5436   B decoded in 5436   (inner op y1 x1 free in 0)
+   ('AF', 'UF', 'BD', 'VF') 5376
+   ('AD', 'UF', 'BD', 'VF') 60
+LAW FAILURES: 5436
+  x = g7
+  y = ((((g3*g2)*g3)*(g2*(g3*g0)))*((g3*g2)*g3))
+  z = ((g2*(g3*g0))*(((g3*g2)*g3)*g0))
+  got (((((((g3*g2)*g3)*(g2*(g3*g0)))*((g3*g2)*g3))*g7)*((((g3*g2)*g3)*(g2*(g3*g0)))*((g3*g2)*g3)))*(g7*(g2*(g3*g0))))
+  x = g8
+  y = ((((g3*g2)*g3)*(g2*(g3*g0)))*((g3*g2)*g3))
+  z = ((g2*(g3*g0))*(((g3*g2)*g3)*g0))
+  got (((((((g3*g2)*g3)*(g2*(g3*g0)))*((g3*g2)*g3))*g8)*((((g3*g2)*g3)*(g2*(g3*g0)))*((g3*g2)*g3)))*(g8*(g2*(g3*g0))))

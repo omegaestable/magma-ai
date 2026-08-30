@@ -132,7 +132,7 @@ which stays the reference for them.
 | **Full combined evaluation set** — every published labelled file deduplicated by (eq1, eq2): `normal`+`hard1`+`hard2`+`hard3`+`sample_200`+`stress_test`+the four `evaluation_*` mirrors = **2,869 pairs** (+100 unlabelled research rows = 2,969; `sample_20`, `hard.jsonl`, the marathon example add nothing new) | **2869 / 2869 solved, 0 failed**, solver time 403.7 s (sum of per-row seconds), wall-clock 1m46.0s on 16 workers, 0.14 s/problem; 0 crashes / 0 oracle failures / 0 label mismatches. The research rows are 0/100 (`DEEP_SESSION_5_AUSTIN_HANDOVER.md`). A "2130/2130" figure quoted from the competition Zulip matches no union of the published files |
 | Extended official battery, first full pass (`--all` incl. `stress_test_200`) | **2089/2089 solved, 0 oracle failures, 260.4 s solver time (sum of per-row seconds; per-set wall on 16 workers: hard1 1.3 s, hard2 24.6 s, hard3 11.6 s, normal 14.0 s, sample_20 1.9 s, sample_200 7.4 s, stress_test_200 12.7 s)** |
 | Organizers' stress test (`stress_test_200`: 50 order-4 normal/hard/extra-hard + 50 order-5 normal, 100 T / 100 F) | **200 / 200, 0 oracle failures, all labels matched, 12.7 s** — promoted into `audit_corpus.py --all` the same day (it was under the gitignored `stage2/results/*.jsonl`) |
-| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **46 / 100 accepted by the real judge (2026-08-29 deep session 7; was 37 that morning, 10 the previous evening)** — see `stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md`. Earlier state: **10 / 100** — the first infinite models of any Table-2 law: 8 rows by *tag automata* (term models with a few projection rules, found by a complete symbolic verifier + CEGIS search; 11116 ×3, 5066 ×2, 4952, and the duals 34888, 41252) and 2 by a *piecewise-linear model over ℚ* (25087 and its dual 20911). All ten ship as `false:distilled:aus_e*` (packed +5.8 KB; artifact **379,836 B**), byte-pinned (fixture 183 pins), gate **482–483 passed / 2–3 skipped** across two `-n auto` runs (skips: the spot-check placeholder and the documented timing route-drift flaps — `pytest -rs` lists them; none from the new pins; the fixture+golden files alone read 237 passed, 0 skipped). The remaining 90: the free model's repair hierarchy is infinite (its limit is a *recursive* fixed point — for 5107 a 4-rule model plus one structurally recursive auxiliary, 0/3,000 biased random failures, not yet certifiable: needs an inductive verifier and a recursive-op Lean template); 10 hypotheses are bad-orientation and must be solved on the dual (rail 39). Dead today: Prover9 300 s on 169 TRUE-side problems (169 timeouts), exact critical-pair completion (diverges), bounded-unfolding verification of recursive models (191k leaves at depth 2). Everything: `stage2/results/2026-08-28-austin-tag-automata.md`, tooling `stage2/experiments/austin/automata/`. Selectable with `--set research_order5_hard`, deliberately outside `--all` |
+| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **60 / 100 accepted by the real judge (2026-08-29 deep session 8; 46 that morning, 37 the morning before, 10 the evening before that)** — see `stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`, and **read `stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md` before it**. Session 8 shipped 27859 (2 rows), 34889 (3), 33020/12883 (3), 12073 (2), 13764/32294 (3) and 23354 (1), all re-judged independently; artifact **456,604 B** with all 60 served, fixture 238 pins, `test_judge_verified` 230 passed / 0 skipped. **The dominant finding is rail 58**: `closedform`'s free model emits 2^k rules and reads the payload off a fixed accessor path, so for the hard laws the required rule set is *infinite* — the fix is a different **carrier**, not more rules (13764: 67 rules / 54,402 B definition block → 5 rules / ~2,300 B, three rows). **Eleven models were falsified**, seven after passing ~10^6 validation chains, and the oracle ladder grew from five rungs to twelve; nothing false reached the judge. Four laws are now closed by *proof* (22591, 11081/35036, 12234, 12087) and five independently name one escape — **a carrier restricted to the terms the model itself builds**, worth ~25 rows; its first measurement is that the image of `op` is 4.1% of the term algebra. Selectable with `--set research_order5_hard`, deliberately outside `--all` |
 | Full-deterministic question | **Keep the LLM lane** (optional in both modes, gated off without a proxy, kernel-checks everything, 5 judge-accepted TRUE certs since 2026-08-27 vs 0/433 before, ~+0.1 % expected on the order-5 quarter); same doc, §1 |
 
 The three solver changes: completion probe before egg probe (rail 34); the two
@@ -1047,6 +1047,108 @@ detail in `stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md` § "Session 7").
     window against the scale of the redundancy before concluding that data must be deleted;
     rail 1's "never delete coverage to save bytes" needs this as its constructive half.
 
+Rails 52–56 were measured on 2026-08-29 (deep session 8, the Austin set 46 → ...;
+detail in `stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`).
+
+52. **Re-validate every model you inherit. Seven of seven were false.** Every free-model rule
+    set that session 8 inherited from session 7 and actually re-checked turned out to be
+    wrong — 12087 ("3 rules, validated twice": **2000/2000 bad**), 17286 and 38316 (both
+    recorded as "1 sorry away"), 40037 (refuted **in Lean**), 11081's minimised 6-rule set
+    (logged CLEAN by a 7,220-test battery; a 54,360-test one kills it), 10218's 3-rule set
+    (**73 fails in 15 s**), and 32281's 2-rule set (**one exception in 202,599** decoded
+    pairs). Three of them were on files a handover described as finished. Two requirements
+    follow, and both find holes nothing else does. **(a) Vary the junk variable.** Every one
+    of these laws has an argument no rule constrains; a pool built out of encodings never
+    contains a large term there. Law 17286 measured a size lemma at **0 violations over 420
+    constructed decoded pairs**, planned six proof leaves on it, and then refuted it — the
+    gap is *unbounded* through that variable. Its agent's formulation is the rule to keep:
+    *when someone hands you a measured claim, treat the pool's construction as part of the
+    claim.* **(b) Make each rule fire at every product of the law's chain, not only its own.**
+    A rule whose precondition constrains only `a1 v` (or only `u`), with `v` pinned solely by
+    a recomputation guard, fires elsewhere in the chain; the witness must be *constructed* by
+    chained encoding from the rule's own precondition. Law 40037's model survived
+    `rv.run_tests`, `deep_tests` 20,000 × 3 **and a 1,560,896-assignment exhaustive sweep**.
+    This is the sixth and seventh escalation of this project's validation standard (rails 37,
+    38, 50), and each was forced by a model that passed the previous one.
+53. **"Near-clean, 1–2 semantic instances" is not a class — a low failure count means the
+    witnesses are BIG.** `gen/SEMANTIC_TABLE.md` had that bucket, read as "an extractor hole
+    that is nearly repaired". All three members resolved so far are **Track C identity laws**:
+    34889 (2 fails) forces *every square is idempotent* and shipped 3 rows on the E-quotient
+    carrier in ~2 hours; 6912 (1 fail) forces `(b*b) = (a*a)` — *all squares equal* — which
+    refutes the free term algebra over ≥ 2 generators; 39214 is 6912's dual. 6912's
+    two-generator witnesses need terms of size ≥ 9, which is why `smallcheck 6912 5 2` reads
+    0 fails and `trace.py 6912 --n 400` reads "no failure found". **Derive the forced identity
+    by literal substitution before doing any rule work** (`gen/_x6912_derive2.py` is the
+    method). The E-quotient is wider than the playbook says — 34889 needs only the weaker
+    *squares are idempotent* — but it is not automatic: for 6912 it is refuted by a forced
+    collision, and for all seven "existential decoder" laws substituting every variable by `x`
+    gives `x = W*W`, so all-squares-equal trivialises. Derive, then test; assume neither.
+54. **A greedy minimisation is only as sound as the census it minimises against.** Law 12087's
+    greedy pass over the 16-cell case tree drove its 7-rule set down to a 4-rule set the same
+    agent had proved false that morning — the tree does not filter on the two products
+    actually decoding. Four different oracles each rejected a set the other three accepted, so
+    acceptance for that law is the *conjunction* of `sc.exhaustive`, `rv.run_tests`,
+    `deep_tests` 20k×3 and the both-decoded census. Corollary already in the tooling: an
+    `_orch_min<eq>.json` with no `status` key was written by a non-validating minimiser — treat
+    it as unvalidated (10218's was, and its 3-rule set is false).
+55. **`PROMPT` must never be packed, and `stage2/tests/test_artifact.py` is why you find out.**
+    It is 3,338 B and packs to 2,210, so it is a standing temptation. But
+    `pipeline/proxy.py:_extract_prompt_from_solver` reads it out of the *artifact* by AST and
+    accepts **only** a top-level `PROMPT = <str constant>`; packing it makes the extractor
+    return `""` and the **Solo LLM lane runs on an empty prompt with no error anywhere**.
+    Caught within a minute of the change by that test file. Now pinned twice — a comment at the
+    packer's table where the next person will add an entry, and `test_prompt_is_never_packed`.
+    The general form: **before you transform the artifact, ask what the organizers read out of
+    it**, not only what your own code reads.
+56. **One shared compression blob, not one per table — and squeezing is not idempotent.**
+    (a) `minify_submission.py` packed four data tables, each in its own lzma stream, and shipped
+    every other data literal verbatim. A separate stream restarts the dictionary and these
+    tables share vocabulary: 97,166 B before, 77,635 B as separate blobs, **72,920 B shared**.
+    Fifteen tables now go into one blob (a `"lit"` kind carries any literal as its `repr`,
+    rebuilt with `ast.literal_eval`, so tuple/list/str types survive exactly); artifact
+    **459,379 → 435,942 B**, import cost +0.21 s, all 16 tables byte-identical. This is rail 51
+    one level up: after fixing the *window*, fix the *dictionary reuse*.
+    (b) `squeeze.py` is **NOT idempotent**. Squeezing an already-squeezed file yields a smaller
+    file that does **not** compile (measured on an accepted 33020 certificate: 19,877 → 18,952 B,
+    18 errors) and the breakage reads as a name collision — it cost an agent real time. One cause
+    was `len(ind) // 2` halving an already-1-space indent to zero, deleting the indentation a
+    multi-line `:=by` block depends on; the tactic-joining and operator-spacing passes are
+    one-shot by construction. Guarded and warned now. **Squeeze the readable source once, and
+    compile whatever you judge.**
+57. **Measure the artifact, and measure the marginal cost of what you are about to add.**
+    Session 7's handover recorded "423,307 B, 76.7 KB headroom"; running the packager over HEAD
+    the next morning read **459,379 B, 40,621 B** — HEAD had grown ~36 KB in between. The
+    marginal cost of a distilled certificate, measured rather than extrapolated, is **1,421 B
+    for the first row of a new law and 64 B for each sibling row** (a sibling differs only in
+    `def rhs`, and lzma sees that), so 100 Austin certificates project to ≈ 479 KB. A headroom
+    figure copied from a previous session is not a measurement.
+58. **The extractor's free model is the wrong carrier for the hard laws, and the fix is a
+    carrier, not a proof technique.** `closedform` emits one rule per free/decoded
+    combination of the law's chain — 2^k rules — and reads the payload off a **fixed
+    accessor path**. For several laws the required rule set is therefore **infinite**: each
+    extra level of encoding nested in the argument moves the payload one level deeper, and the
+    rule reading at depth d is refuted by the level-(k+1) instance. Law 17286's form of the
+    argument is the crispest — its rule reads at depth 3 and **level k needs depth 3k+2**.
+    Four laws hit this in one session (12087, 11081, 17286, and 13764 before it changed course);
+    12087's 7-, 13- and 11-rule sets went from 0/500 bad at level 1 to **500/500 at level 2**.
+    **13764 is the one that got out, and its construction is the template**: replace the free
+    model with a hand-built term algebra carrying a second constructor (`M ::= g n | J a b |
+    E a b`), express the whole model as **three decidable predicates** instead of N rules, make
+    `op` a 4-branch `if`-chain with one `let` and one recursive call, and **replace the
+    structural guard with a recursive re-run of the encoding** — which is what makes it
+    independent of nesting depth. **67 rules → 5; a 54,402-byte definition block → ~2,300 B;
+    certificate judged at 13,588 B with 6.4 KB spare; three rows.** The general form, which
+    overturns `PLAYBOOK_PROOF.md` §3's implicit promise: **the digest compresses a rule *set*;
+    only a different *carrier* compresses a *definition block*. When the definition block alone
+    is over the cap, stop minimising and change the carrier.** Two riders. (a) The recursion is
+    well-founded only on the v-side branch — `sz (op a b) < sz b` is **false in general**, so
+    the gate must name that family rather than appeal to a global size argument. (b) What
+    survives a carrier change: the size preamble, `op_cases`, the `Z` combinator, `mx`/`mxl`,
+    and the `Enc`/`RF` scaffolding (a recursive decoder is Enc-directed); what does not is any
+    lemma tied to the current `if`-chain. Tools: `gen/_x13764_lab.py`, `gen/NOTES_13764.md`,
+    Lean template `gen/rec18137b.lean`, full write-up in
+    `stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md`.
+
 Rails 42–46 were measured from the 2026-08-29 order-4 campaigns
 (`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`).
 
@@ -1268,7 +1370,10 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
-| **Deep session 7: Austin 46 → 100 (THE CURRENT PLAN)** | **`stage2/docs/DEEP_SESSION_7_AUSTIN_HANDOVER.md`** — the 54 open rows are four problems, with an agent doctrine and the measured dead ends |
+| **Deep session 8 results doc** | `stage2/results/2026-08-29-deep-session-8-austin-60-and-the-carrier-result.md` — the four green checks, what shipped, and the carrier result in one page |
+| **The Austin method — READ THIS FIRST for any Austin work** | **`stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md`** — ~85 KB: the twelve-rung oracle ladder, the recursive-decoder and anchored carriers, every Lean invariant and byte lever, indexed by what you are doing |
+| **Deep session 8: Austin 46 → 60, and the plan for 60 → 100** | **`stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`** — the per-law state of all 40 open rows ordered by distance from a certificate, six corrections to session 7, and the revised agent doctrine |
+| Deep session 7: Austin 37 → 46 (history) | `stage2/docs/DEEP_SESSION_7_AUSTIN_HANDOVER.md` — superseded in six places; its banner says which |
 | Identity laws: the theorem, three carriers, three refutations | `stage2/experiments/austin/automata/gen/PLAYBOOK_QUOTIENT.md` |
 | Austin Lean proof method / model repair method | `.../automata/gen/PLAYBOOK_PROOF.md`, `.../gen/PLAYBOOK_REPAIR.md` |
 | Deep session 6: Austin 37 → 46 (history + the construction) | `stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md` |
@@ -1297,16 +1402,32 @@ failure-ledger union is 652 rows (603 TRUE, 49 FALSE). The latest ledger is the
 active fast-tier target; the full union is the promotion target. Details are in
 `stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`.
 
-**The organizers' Austin research set (`research_order5_hard`, 2026-08-29):**
-**46/100 judge-accepted and shipped** (2026-08-29 deep session 7; the 37 below was the same day's morning state) (`stage2/results/2026-08-29-austin-wave-37.md`: generated free-model skeletons are usually false — level-2 decoder holes — and fable proof agents repair and prove them, 10/16; sonnet agents 0/8; five laws are quotient laws; the 20 KB FALSE cap binds — `squeeze.py`, and `macro` is banned). Earlier state, 2026-08-28: **10/100** (evening session) — two constructions work and are fully
-automated end to end (search → complete symbolic verification → Lean → real
-judge): tag automata (`stage2/experiments/austin/automata/`) and
-piecewise-linear models over ℚ. The 90 open rows are the laws whose free
-model has an infinite repair hierarchy; the next lever is an *inductive*
-verifier plus a recursive-op Lean template for the fixed-point models (5107's
-is written down and empirically validated), and a wider ℚ-PWL sweep. Read
-`stage2/results/2026-08-28-austin-tag-automata.md` first. Do not re-run table
-search, z3, affine templates, Prover9, or exact critical-pair completion on it.
+**The organizers' Austin research set (`research_order5_hard`, 2026-08-29 deep session 8):**
+**60/100 judge-accepted and shipped.** The 40 open rows are now fully characterised, and the shape of
+the problem changed: it is one obstruction, not forty laws. Read
+`stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md` first, then
+`stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`.
+
+* **11 rows need only Lean** — 17286/28626 (4), 32281 (3), 38316 (2), 23357/23653 (2) each have a
+  compiling certificate file and a named list of remaining lemmas. No research. Do these first.
+* **13 rows are closed by proof**: the free term algebra is refuted for 22591 (`a = I3(a)` in seven
+  substitution instances, no freeness assumed), 11081/35036 (seven carriers, nineteen rule sets, covering
+  projection, reconstruction *and* recomputation decodes), 12234 (structural proof, four failure
+  positions), 12087 (mark narrowly ⇒ the root reading is unanchored; mark broadly ⇒ the free cells break)
+  and 21864/24199 (a search decoder moves the existential decoder into the *certificate* rather than
+  removing it).
+* **Five laws independently name one escape** — a carrier restricted to the terms the model itself builds,
+  where a **well-formedness invariant is a root-vs-inner position separator**. `op` is a function of
+  `(u,v)` alone, so a term algebra cannot supply one. **Worth ~25 rows; build it once.** First
+  measurement: the image of `op` is **4.1%** of the term algebra, but 9663's open-cell witness is itself
+  op-built, so the invariant must be finer than "is an output of `op`".
+* **Eleven models were falsified**, seven after passing ~10^6 validation chains, and nothing false reached
+  the judge. Do not trust a clean sweep: `_orch_minim.py`'s `status: "ok"` is **not** a soundness
+  certificate, a forcing suite needs its own positive control, and a branch that never fires is untested
+  rather than unneeded.
+
+Still dead, unchanged: table search, z3, affine templates, Prover9, exact critical-pair completion, and
+everything in session 6's "Not on any track".
 
 **Updated 2026-08-27 after the improvement pass.** Order-4: the four-law
 frontier is closed as a family (`650`, `2923`, `3569`, `2854`); what remains is

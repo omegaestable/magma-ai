@@ -1,0 +1,74 @@
+R4       side=z seed=5 bigjunk=False levels=0 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           247
+      ('AD', 'UF', 'BD', 'VF')           3
+R4       side=z seed=19 bigjunk=False levels=0 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=True  levels=0 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           247
+      ('AD', 'UF', 'BD', 'VF')           3
+R4       side=z seed=19 bigjunk=True  levels=0 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=False levels=1 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=19 bigjunk=False levels=1 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=True  levels=1 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=19 bigjunk=True  levels=1 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=False levels=2 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=19 bigjunk=False levels=2 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=True  levels=2 hits=247   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           247
+R4       side=z seed=19 bigjunk=True  levels=2 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=False levels=3 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=19 bigjunk=False levels=3 hits=250   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           250
+R4       side=z seed=5 bigjunk=True  levels=3 hits=240   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           240
+R4       side=z seed=19 bigjunk=True  levels=3 hits=248   BAD=0
+      ('AF', 'UF', 'BD', 'VF')           248
+R4       side=u seed=5 bigjunk=False levels=0 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           247
+      ('AD', 'UF', 'BD', 'VF')           3
+R4       side=u seed=19 bigjunk=False levels=0 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           249
+      ('AD', 'UD', 'BF', 'VF')           1
+R4       side=u seed=5 bigjunk=True  levels=0 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=19 bigjunk=True  levels=0 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           249
+      ('AD', 'UD', 'BF', 'VF')           1
+R4       side=u seed=5 bigjunk=False levels=1 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           227
+      ('AD', 'UF', 'BD', 'VF')           23
+R4       side=u seed=19 bigjunk=False levels=1 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           238
+      ('AD', 'UF', 'BD', 'VF')           12
+R4       side=u seed=5 bigjunk=True  levels=1 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           248
+      ('AD', 'UF', 'BD', 'VF')           2
+R4       side=u seed=19 bigjunk=True  levels=1 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           239
+      ('AD', 'UF', 'BD', 'VF')           11
+R4       side=u seed=5 bigjunk=False levels=2 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=19 bigjunk=False levels=2 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=5 bigjunk=True  levels=2 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=19 bigjunk=True  levels=2 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=5 bigjunk=False levels=3 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=19 bigjunk=False levels=3 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=5 bigjunk=True  levels=3 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+R4       side=u seed=19 bigjunk=True  levels=3 hits=250   BAD=0
+      ('AD', 'UF', 'BF', 'VF')           250
+TOTAL BAD 0

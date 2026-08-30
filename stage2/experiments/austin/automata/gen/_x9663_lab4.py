@@ -1,0 +1,184 @@
+# -*- coding: utf-8 -*-
+"""Law 9663 -- FOUR-constructor carrier.  x = y * ((z*y) * (x*(x*y)))
+Chain: P = x*y ; Q = x*P ; A = z*y ; C = A*Q ; root y*C = x.
+
+COUNT THE PRODUCTS THE LAW RE-READS.  13764 re-reads one and needs two constructors; 9663 re-reads
+TWO (`P` and `Q`), so one tag is overloaded -- it marks both the (x,P) pair marker and the code
+container, and DEC cannot tell them apart (the T,D,T,F,T cell, 292 of 296 L1 fails).
+
+  M ::= g n | J a b | E a b | F a b        tg: g->1, J->2, E->3, F->4;  a1/a2 total.
+  E = the (x,P) pair marker;  F = the CODE CONTAINER that the root reads.
+
+  DEC   tg v != 1, tg (a2 v) = 4, op (a1 (a2 v)) u = a2 (a2 v)      ->  a1 (a2 v)
+  TAGF  tg v != 1, a1 v = u, op u (a2 v) = v                        ->  F u v
+  TAGE  tg v != 1                                                   ->  E u v
+  else                                                              ->  J u v
+
+Every recursive argument is a proper subterm of v, so the gate  sz(arg1)+sz(arg2) < sz u + sz v
+is UNCONDITIONAL (the 27859 shape): DEC uses a1 (a2 v), TAGF uses a2 v.
+"""
+import sys, random
+sys.setrecursionlimit(100000)
+TAG = {'g': 1, 'J': 2, 'E': 3, 'F': 4}
+def tg(t): return TAG[t[0]]
+def a1(t): return t[1] if t[0] != 'g' else t
+def a2(t): return t[2] if t[0] != 'g' else t
+def sz(t): return 1 if t[0] == 'g' else sz(t[1]) + sz(t[2]) + 1
+def G(n): return ('g', n)
+def J(a, b): return ('J', a, b)
+def E(a, b): return ('E', a, b)
+def F(a, b): return ('F', a, b)
+def show(t, d=0):
+    if t[0] == 'g': return 'g%d' % t[1]
+    if d > 7: return '<%d>' % sz(t)
+    return '%s(%s,%s)' % (t[0], show(t[1], d + 1), show(t[2], d + 1))
+
+PROF = {}
+R2ON = True
+
+def R2(u, v, d):
+    """payload out of u, certified by re-running the encoding (13764 W6); both args subterms of u."""
+    if not R2ON or tg(u) == 1: return None
+    Q = a2(u)
+    if tg(Q) == 1: return None
+    P = a2(Q)
+    if tg(P) == 1: return None
+    p, x = a1(Q), a2(P)
+    if op(p, x, d + 1) != P: return None
+    if op(x, p, d + 1) != a2(v): return None
+    return x
+
+# R4 (x := a1 u, re-run certified) was VACUOUS: identical fail counts with and without it on
+# every oracle (rail: two versions with the same counts differ by a guard that certifies nothing).
+
+# R5 (x := a2 v, gated on a1 u = x) was tried and REJECTED: it made deep seed=19 go 0 -> 1 while
+# leaving seed=5 at 1.  A rule that does not strictly reduce the count on every oracle is not a fix.
+
+# R5 (x := a2 v, gated on a1 u = x and op x x = a2 u) was tried TWICE and REJECTED both times:
+# unanchored and with the anchor `op (a1 u) (a2 u) = u` it gives IDENTICAL counts (the anchor is
+# vacuous here) and it is NET NEGATIVE -- it fixes 1 of the 2 TAGF2 failures and creates 5 new
+# ones in the TAGF arm.  The TAGF2 cell is still open; see NOTES_IDENTITY.
+
+# R5 (x := a2 v) was tried in FOUR forms: unanchored; anchored on `op (a1 u) (a2 u) = u`;
+# gated on `op x u` being the marker over (x,u); and with the TRUE certification
+# `op x (op x u) = a2 v`.  ALL FOUR GIVE IDENTICAL COUNTS -- R5's firing set is invariant
+# under every guard, so the problem is its POSITION, not its guard: it fires at the
+# Q = op x P slot (cell .,S,.,.,E) where the correct behaviour is TAGE.  Net negative
+# (fixes 1 TAGF2, breaks 5 TAGF).  Do not re-try R5 without a root-vs-Q separator.
+
+def op(u, v, d=0):
+    if d > 60: return J(u, v)
+    if tg(v) != 1:
+        Q = a2(v)
+        # DEC.  tg Q = 4 is the ANCHOR: only the model produces an F node, so a free product can
+        # never forge a container.  a1 Q is a proper subterm of v, so the gate is unconditional.
+        # (A version accepting any tg Q != 1 was tried; it needed a second anchor
+        #  `op (a1 Q) (a2 Q) = Q` to stop a junk F node forging the container, and with the relaxed
+        #  R2 below BOTH are vacuous -- identical counts with and without, on every oracle.)
+        if tg(Q) == 4 and op(a1(Q), u, d + 1) == a2(Q):
+            PROF[(u, v)] = 'D'; return a1(Q)
+    x = R2(u, v, d)
+    if x is not None:
+        PROF[(u, v)] = 'R'; return x
+    if tg(v) != 1 and a1(v) == u and op(u, a2(v), d + 1) == v:
+        PROF[(u, v)] = 'F'; return F(u, v)
+    if tg(v) != 1:
+        PROF[(u, v)] = 'E'; return E(u, v)
+    PROF[(u, v)] = None
+    return J(u, v)
+
+def chain(x, y, z):
+    P = op(x, y); Q = op(x, P); A = op(z, y); C = op(A, Q); R = op(y, C)
+    return P, Q, A, C, R
+def prof(x, y, z):
+    P, Q, A, C, R = chain(x, y, z)
+    g = lambda a, b: PROF.get((a, b)) or '.'
+    return (g(x, y), g(x, P), g(z, y), g(A, Q), g(y, C))
+def enc(y, x, z):
+    return op(op(z, y), op(x, op(x, y)))
+
+def terms(maxsize, gens, cons=('J', 'E', 'F')):
+    by = {1: [G(i) for i in range(gens)]}
+    for n in range(3, maxsize + 1, 2):
+        by[n] = []
+        for a in range(1, n - 1, 2):
+            b = n - 1 - a
+            if b in by:
+                for s in by[a]:
+                    for t in by[b]:
+                        for c in cons: by[n].append((c, s, t))
+    out = []
+    for n in sorted(by): out += by[n]
+    return out
+
+def sweep(name, gen, N):
+    bad = []; cells = {}; n = 0
+    for x, y, z in gen:
+        n += 1
+        try:
+            pr = prof(x, y, z); r = chain(x, y, z)[4]
+        except RecursionError:
+            bad.append((x, y, z)); continue
+        c = cells.setdefault(pr, [0, 0]); c[0] += 1
+        if r != x: c[1] += 1; bad.append((x, y, z))
+        if n >= N: break
+    print('  %-30s n=%-8d BAD=%-6d cells=%d' % (name, n, len(bad), len(cells)), flush=True)
+    for k in sorted(cells, key=lambda k: -cells[k][1])[:5]:
+        if cells[k][1] or len(cells) <= 5:
+            print('       %-18s %8d  %d bad' % (','.join(k), cells[k][0], cells[k][1]), flush=True)
+    for x, y, z in sorted(bad, key=lambda t: sum(sz(q) for q in t))[:1]:
+        print('     BAD prof=%s' % ','.join(prof(x, y, z)), flush=True)
+        print('       x=%s' % show(x)[:100], flush=True); print('       y=%s' % show(y)[:100], flush=True)
+        print('       z=%s -> %s' % (show(z)[:80], show(chain(x, y, z)[4])[:80]), flush=True)
+    return len(bad)
+
+def g_L1(ms, gens):
+    pool = terms(ms, gens)
+    for x in pool:
+        for y in pool:
+            for z in pool: yield x, y, z
+
+def rt(rng, dd, gens):
+    if dd <= 0 or rng.random() < 0.3: return G(rng.randrange(gens))
+    return (rng.choice(('J', 'E', 'F')), rt(rng, dd - 1, gens), rt(rng, dd - 1, gens))
+
+def g_deep(seed, maxd, gens):
+    rng = random.Random(seed)
+    while True: yield rt(rng, maxd, gens), rt(rng, maxd, gens), rt(rng, maxd, gens)
+
+def g_H3(seed, gens):
+    """H3: y is a GENUINE encoding by x -- y = enc(j, w, x), so x sits in the junk slot."""
+    rng = random.Random(seed)
+    while True:
+        x = rt(rng, 2, gens); j = rt(rng, 2, gens); w = rt(rng, 2, gens)
+        try: y = enc(j, w, x)
+        except RecursionError: continue
+        yield x, y, rt(rng, 2, gens)
+
+def g_desc(levels, seed, bigjunk, gens):
+    rng = random.Random(seed)
+    small = [rt(rng, 2, gens) for _ in range(80)]
+    big = [rt(rng, 6, gens) for _ in range(80)]
+    junk = big if bigjunk else small
+    while True:
+        x = rng.choice(small); p = rng.choice(small)
+        try:
+            for _ in range(levels): p = enc(x, p, rng.choice(junk))
+            y = enc(x, p, rng.choice(junk))
+            if op(x, y) != p: continue
+        except RecursionError: continue
+        yield x, y, rng.choice(small + junk)
+
+if __name__ == '__main__':
+    R2ON = 'noR2' not in sys.argv
+    print('=== 9663 FOUR-constructor carrier, R2=%s ===' % R2ON)
+    tot = 0
+    tot += sweep('L1 exh size<=5 2gen', g_L1(5, 2), 10 ** 9)
+    for sd in (5, 19, 23):
+        tot += sweep('deep seed=%d' % sd, g_deep(sd, 5, 3), 20000)
+    for sd in (5, 19):
+        tot += sweep('H3 (y = enc by x) seed=%d' % sd, g_H3(sd, 3), 20000)
+    for lv in (0, 1, 2, 3):
+        for bj in (False, True):
+            tot += sweep('descent lv=%d bigjunk=%s' % (lv, bj), g_desc(lv, 7, bj, 3), 400)
+    print('TOTAL BAD %d' % tot)

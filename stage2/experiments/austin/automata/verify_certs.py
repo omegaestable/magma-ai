@@ -1,6 +1,8 @@
 """verify_certs.py [--only <row,row,...>] [--workers N]
 
-Re-judge every certs/<row>.lean against the REAL judge and rewrite certs/ledger.jsonl's accepted set.
+Re-judge every certs/<row>.lean against the REAL judge and write the verdicts to verify_certs.json.
+It does NOT touch certs/ledger.jsonl -- run `append_ledger.py` for that, which appends and never
+replaces (rail 16: a tool that REPLACES a pin file costs the pins it does not know about).
 This is the orchestrator's gate: an agent's claim of acceptance is not evidence, the judge is.
 Runs `workers` judge processes at a time (each takes a jlock slot; keep workers <= JUDGE_SLOTS).
 """

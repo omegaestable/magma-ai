@@ -43,6 +43,16 @@ sys.path.insert(0, str(REPO_ROOT / "vendor" / "stage2-official"))
 # The judge renders Lean source containing ◇; a cp1252 console kills the run.
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
+# Detached Windows runners do not reliably inherit elan's shim directory.
+# Keep the judge command self-contained instead of requiring every caller to
+# remember a shell-local PATH edit (CLAUDE.md rail 48).
+if os.name == "nt":
+    elan_bin = Path.home() / ".elan" / "bin"
+    if elan_bin.is_dir():
+        path_entries = os.environ.get("PATH", "").split(os.pathsep)
+        if str(elan_bin) not in path_entries:
+            os.environ["PATH"] = str(elan_bin) + os.pathsep + os.environ.get("PATH", "")
+
 # Judge the way the deployment judges. `verify_answer` falls back to
 # `judge/verify.py`'s module constants (50,000 / 10,000 / 120 s) when no config
 # is passed, but the runner always passes `pipeline/config.json`'s `judge` block

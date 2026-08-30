@@ -1,0 +1,15 @@
+pool 783  decoding pairs 168
+
+--- family C1 : 1680 constructed triples ---
+  f4           tested 1680  BAD 1680   | control: cell with BD produced 1680  {('AF', 'UF', 'BD', 'VF'): 1680}
+     smallest bad: x=g7  y=((((g1*g1)*g1)*(g1*(g1*g2)))*((g1*g1)*g1))  z=((g1*(g1*g2))*(((g1*g1)*g1)*g0))
+  g5=f4+B1s    tested 1680  BAD 0      | control: cell with BD produced 1680  {('AF', 'UF', 'BD', 'VF'): 1680}
+  g6           tested 1680  BAD 0      | control: cell with BD produced 1680  {('AF', 'UF', 'BD', 'VF'): 1680}
+  full12       tested 1680  BAD 0      | control: cell with BD produced 1680  {('AF', 'UF', 'BD', 'VF'): 1680}
+
+--- family C2 : 840 constructed triples ---
+  f4           tested 840   BAD 840    | control: cell with VD produced 840  {('AF', 'UF', 'BF', 'VD'): 840}
+     smallest bad: x=((((g1*g1)*g1)*(g1*(g1*g2)))*((g1*g1)*g1))  y=(g1*(g1*g2))  z=(((g1*g1)*g1)*g0)
+  g5=f4+B1s    tested 840   BAD 840    | control: cell with VD produced 840  {('AF', 'UF', 'BF', 'VD'): 840}
+  g6           tested 840   BAD 840    | control: cell with VD produced 840  {('AF', 'UF', 'BF', 'VD'): 840}
+  full12       tested 840   BAD 0      | control: cell with VD produced 840  {('AF', 'UF', 'BF', 'VD'): 840}

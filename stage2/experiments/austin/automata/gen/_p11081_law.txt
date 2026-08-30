@@ -1,0 +1,3 @@
+theorem law (x y z : M) : op (y) (op (op (x) (op (y) (x))) (op (z) (y))) = x := by
+  rw [Bfree x y, Dfree x y z]
+  exact FIRE (SZV x y z) rfl rfl rfl (CKlem z y)

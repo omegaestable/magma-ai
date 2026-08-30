@@ -1,0 +1,15 @@
+law ('x', (('y', ('z', 'x')), ('x', ('x', 'y'))))  rules 10 : GEN[:2] + GEN[3:5] + [R4c,R5c,RA,R6e,RB,RD]
+  R1  [free] J?u & J?u.2 & J?v & u.2.2 = v.1 & J?v.2 & u.2.2 = v.2.1 & u.1 = v.2.2 -> u.2.2
+  R2  [B1s] J?u & J?u.2 & J?v & u.2.2 = v.1 & op(u.2.2, u.1) == v.2 -> u.2.2
+  R3  [A1s] J?u & J?v & J?v.2 & v.1 = v.2.1 & u.1 = v.2.2 & J?v.1 & u.2 = v.1.1 & J?v.1.2 & u.2 = v.1.2.1 -> v.1
+  R4  [A1s,B1s] J?u & J?v & J?v.1 & u.2 = v.1.1 & J?v.1.2 & u.2 = v.1.2.1 & op(v.1, u.1) == v.2 -> v.1
+  R5  [A1s|l2] J?u & J?v & J?v.2 & v.1 = v.2.1 & u.1 = v.2.2 & J?v.1 & u.2 = v.1.1 & J?u.2 & J?u.2.2 & u.2.2.2 = v.1.2 -> v.1
+  R6  [A1s,B1s|l2] J?u & J?v & J?v.1 & u.2 = v.1.1 & J?u.2 & J?u.2.2 & u.2.2.2 = v.1.2 & op(v.1, u.1) == v.2 -> v.1
+  R7  [Arec] J?v & J?v.2 & v.1 = v.2.1 & J?v.1 & u = v.1.1 & op(v.2.2, J(u, J(u, v.1.2))) == u -> v.1
+  R8  [As|E2b] J?v & J?v.2 & v.1 = v.2.1 & J?v.2.2 & J?v.2.2.2 & u = v.2.2.2.2 & J?v.1 & v.1.1 = J(u, J(u, v.2.2.1)) & v.1.2 = v.2.2.1 -> v.1
+  R9  [As|yEnc] J?v & J?v.2 & v.1 = v.2.1 & J?v.2.2 & J?u & u.1 = v.2.2.2 & J?u.2 & u.2.1 = v.2.2.2 & J?op(u, op(u, v.2.2.1)) & op(u, op(u, v.2.2.1)).2 = v.1 -> v.1
+  R10 [B1s|yrec|Arec2] J?v & J?v.1 & u = v.1.1 & J?v.1.2 & J?v.1.2.1 & op(v.1, J(v.2, J(v.2, v.1.1))) == v.2 & op(v.1.2, op(v.1.2.1, u)) == J(v.2, J(v.2, v.1.1)) -> v.1
+FAILS total 0  value 0  {}   (34.6s)
+  deep20k seed 77: tested 20000 fails 0
+  deep20k seed 78: tested 20000 fails 1
+  deep20k seed 91: tested 20000 fails 0

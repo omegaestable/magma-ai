@@ -1,0 +1,50 @@
+rand     lvl=0 hits=600   BAD=0 | free=589 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+rand     lvl=1 hits=600   BAD=0 | free=576 RD=0 A0s,B1s|rd:A0=1 As=0   VACUOUS-FOR: RD,As
+rand     lvl=2 hits=600   BAD=0 | free=572 RD=0 A0s,B1s|rd:A0=0 As=1   VACUOUS-FOR: RD,A0s,B1s|rd:A0
+rand     lvl=3 hits=600   BAD=0 | free=585 RD=1 A0s,B1s|rd:A0=1 As=0   VACUOUS-FOR: As
+coincide lvl=0 hits=600   BAD=0 | free=419 RD=0 A0s,B1s|rd:A0=0 As=1   VACUOUS-FOR: RD,A0s,B1s|rd:A0
+coincide lvl=1 hits=600   BAD=0 | free=419 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+coincide lvl=2 hits=600   BAD=0 | free=406 RD=0 A0s,B1s|rd:A0=1 As=1   VACUOUS-FOR: RD
+coincide lvl=3 hits=600   BAD=0 | free=389 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+encA     lvl=0 hits=600   BAD=0 | free=573 RD=4 A0s,B1s|rd:A0=1 As=597
+encA     lvl=1 hits=600   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=0 As=600   VACUOUS-FOR: RD,A0s,B1s|rd:A0
+encA     lvl=2 hits=596   BAD=0 | free=596 RD=1 A0s,B1s|rd:A0=0 As=596   VACUOUS-FOR: A0s,B1s|rd:A0
+encA     lvl=3 hits=592   BAD=0 | free=592 RD=1 A0s,B1s|rd:A0=0 As=592   VACUOUS-FOR: A0s,B1s|rd:A0
+encB     lvl=0 hits=600   BAD=0 | free=582 RD=1 A0s,B1s|rd:A0=567 As=0   VACUOUS-FOR: As
+encB     lvl=1 hits=600   BAD=0 | free=599 RD=1 A0s,B1s|rd:A0=595 As=0   VACUOUS-FOR: As
+encB     lvl=2 hits=600   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=600 As=0   VACUOUS-FOR: RD,As
+encB     lvl=3 hits=599   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=599 As=0   VACUOUS-FOR: RD,As
+encV     lvl=0 hits=600   BAD=0 | free=567 RD=331 A0s,B1s|rd:A0=1 As=0   VACUOUS-FOR: As
+encV     lvl=1 hits=600   BAD=0 | free=583 RD=388 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: A0s,B1s|rd:A0,As
+encV     lvl=2 hits=600   BAD=0 | free=573 RD=367 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: A0s,B1s|rd:A0,As
+encV     lvl=3 hits=600   BAD=0 | free=586 RD=395 A0s,B1s|rd:A0=1 As=0   VACUOUS-FOR: As
+H3y_V    lvl=0 hits=600   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3y_V    lvl=1 hits=599   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3y_V    lvl=2 hits=600   BAD=0 | free=601 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3y_V    lvl=3 hits=599   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3y_U    lvl=0 hits=600   BAD=0 | free=580 RD=5 A0s,B1s|rd:A0=1 As=2
+H3y_U    lvl=1 hits=600   BAD=0 | free=510 RD=45 A0s,B1s|rd:A0=22 As=46
+H3y_U    lvl=2 hits=600   BAD=0 | free=588 RD=5 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: A0s,B1s|rd:A0,As
+H3y_U    lvl=3 hits=600   BAD=0 | free=592 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3z      lvl=0 hits=600   BAD=0 | free=597 RD=1 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: A0s,B1s|rd:A0,As
+H3z      lvl=1 hits=600   BAD=0 | free=603 RD=0 A0s,B1s|rd:A0=0 As=1   VACUOUS-FOR: RD,A0s,B1s|rd:A0
+H3z      lvl=2 hits=599   BAD=0 | free=601 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3z      lvl=3 hits=599   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=0 As=1   VACUOUS-FOR: RD,A0s,B1s|rd:A0
+H3x      lvl=0 hits=600   BAD=0 | free=599 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3x      lvl=1 hits=600   BAD=0 | free=602 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3x      lvl=2 hits=599   BAD=0 | free=599 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3x      lvl=3 hits=600   BAD=0 | free=600 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+H3xu     lvl=0 hits=600   BAD=0 | free=584 RD=5 A0s,B1s|rd:A0=1 As=0   VACUOUS-FOR: As
+H3xu     lvl=1 hits=600   BAD=0 | free=569 RD=23 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: A0s,B1s|rd:A0,As
+H3xu     lvl=2 hits=600   BAD=0 | free=581 RD=5 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: A0s,B1s|rd:A0,As
+H3xu     lvl=3 hits=600   BAD=0 | free=576 RD=0 A0s,B1s|rd:A0=0 As=0   VACUOUS-FOR: RD,A0s,B1s|rd:A0,As
+
+TOTAL BAD 0
+
+=== which rule fires AT THE TOP, per chain cell (this is the Lean case analysis) ===
+  ('AF', 'UF', 'BF', 'VF') 16695    {'free': 16695}
+  ('AD', 'UF', 'BF', 'VF') 2446     {'As': 2446}
+  ('AF', 'UF', 'BD', 'VF') 2418     {'A0s,B1s|rd:A0': 2418}
+  ('AF', 'UF', 'BF', 'VD') 2401     {'RD': 2401}
+  ('AF', 'UF', 'BD', 'VD') 12       {'RD': 12}
+  ('AD', 'UF', 'BD', 'VF') 10       {'A0s,B1s|rd:A0': 10}

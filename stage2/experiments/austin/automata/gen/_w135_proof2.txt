@@ -1,0 +1,60 @@
+
+/-- the full one-unfold digest: free, or R1, or R2 (with its gate), or R3 (recursive, with its gate) -/
+theorem TR (u v : M) : op u v = J u v ∨ (P1 u v ∧ op u v = a1 (a1 (a2 (a1 v)))) ∨
+    (tg v = 2 ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧ op u v = a1 (a1 (a2 v)) ∧
+      msr u (op (op (a1 (a1 (a2 v))) (a2 v)) (a2 v)) < msr u v ∧
+      a1 v = op u (op (op (a1 (a1 (a2 v))) (a2 v)) (a2 v))) ∨
+    (tg v = 2 ∧ ∃ q, msr u q < msr u v ∧ op u v = op u q ∧
+      msr u (op (op (op u q) (a2 v)) (a2 v)) < msr u v ∧
+      a1 v = op u (op (op (op u q) (a2 v)) (a2 v))) := by
+  obtain ⟨p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, hp1, hp2, hp3, hp4, hp5, hp6, hp7, hp8, hp9, hp10, hp11, hop⟩ := op_cases u v
+  rw [hop]
+  split
+  · rename_i h; exact Or.inr (Or.inl ⟨h, rfl⟩)
+  · split
+    · rename_i h
+      obtain ⟨h2, g1, g2, g3, he⟩ := h
+      rw [dif_pos g1] at hp1; subst hp1
+      rw [dif_pos g2] at hp2; subst hp2
+      rw [dif_pos g3] at hp3; subst hp3
+      exact Or.inr (Or.inr (Or.inl ⟨h2.1, h2.2.1, h2.2.2, rfl, g3, he⟩))
+    · split
+      · rename_i h
+        obtain ⟨h3, g1, g2, g3, g4, g5, g6, g7, g8, he⟩ := h
+        rw [dif_pos g1] at hp4; subst hp4
+        rw [dif_pos g2] at hp5; subst hp5
+        rw [dif_pos g3] at hp6; subst hp6
+        rw [dif_pos g4] at hp7; subst hp7
+        rw [dif_pos g5] at hp8; subst hp8
+        rw [dif_pos g6] at hp9; subst hp9
+        rw [dif_pos g7] at hp10; subst hp10
+        rw [dif_pos g8] at hp11; subst hp11
+        exact Or.inr (Or.inr (Or.inr ⟨h3.1, _, g5, rfl, g8, he⟩))
+      · exact Or.inl rfl
+
+theorem SUn (n : Nat) : ∀ u v : M, msr u v < n → op u v ≠ J u v → sz u < sz v := by
+  induction n with
+  | zero => intro u v h; omega
+  | succ n ih =>
+    intro u v hn hne
+    have key : ∀ q : M, tg v = 2 → msr u q < msr u v → a1 v = op u q → sz u < sz v := by
+      intro q h1 hg he
+      have hv := sA1 h1
+      have hm := mx hg
+      by_cases hf : op u q = J u q
+      · rw [hf] at he; have := congrArg sz he; simp only [sz] at this; omega
+      · have := ih u q (by omega) hf; omega
+    rcases TR u v with h | ⟨h1, -⟩ | ⟨h1, -, -, -, hg, he⟩ | ⟨h1, q, -, -, hg, he⟩
+    · exact absurd h hne
+    · have e1 := sz_a1 (a1 v); have e2 := sA1 h1.1; rw [h1.2.2.1]; omega
+    · exact key _ h1 hg he
+    · exact key _ h1 hg he
+
+theorem SU {u v : M} (h : op u v ≠ J u v) : sz u < sz v := SUn (msr u v + 1) u v (Nat.lt_succ_self _) h
+
+theorem Wf {u v : M} (h : sz v ≤ sz u) : op u v = J u v := by
+  apply Classical.byContradiction; intro hc; have := SU hc; omega
+
+theorem oR1 {u v : M} (h : P1 u v) : op u v = a1 (a1 (a2 (a1 v))) := by
+  obtain ⟨p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, -, -, -, -, -, -, -, -, -, -, -, hop⟩ := op_cases u v
+  rw [hop, if_pos h]

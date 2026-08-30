@@ -1,0 +1,14 @@
+law 38316: x = ((y * ((x * z) * y)) * x) * y   (normalised: x = ('y', ('x', (('y', ('z', 'x')), 'y'))))   DUALIZED: rules/op are for the dual L-form law; the served magma is op flipped
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [V0-W1-q0] J?v & op(v.2.1, u) == v.2 & J?v.2.1 & v.2.1.1 = u & op(u, v.2.1.2) == v.2.1 & op(v.2.1.2.1, v.1) == v.2.1.2 -> v.1
+R2 [V0-W1-q1] J?v & op(v.2.1, u) == v.2 & J?v.2.1 & v.2.1.1 = u & op(u, v.2.1.2) == v.2.1 & op(v.1.2.2, v.1) == v.2.1.2 -> v.1
+R3 [V0-W2] J?v & op(v.2.1, u) == v.2 & op(v.2.1, v.1) == J(v.2.1, v.1) & op(u, J(v.2.1, v.1)) == v.2.1 -> v.1
+R4 [V0-W3-q0] J?v & op(v.2.1, u) == v.2 & J?v.1 & op(u, v.1.1) == v.2.1 & op(v.1.1.1, v.1) == v.1.1 -> v.1
+R5 [V0-W3-q1] J?v & op(v.2.1, u) == v.2 & J?v.1 & op(u, v.1.1) == v.2.1 & op(v.1.2.2, v.1) == v.1.1 -> v.1
+R6 [V1-W3-q0] J?v & op(u.2.2, u) == v.2 & J?v.1 & op(u, v.1.1) == u.2.2 & op(v.1.1.1, v.1) == v.1.1 -> v.1
+R7 [V1-W3-q1] J?v & op(u.2.2, u) == v.2 & J?v.1 & op(u, v.1.1) == u.2.2 & op(v.1.2.2, v.1) == v.1.1 -> v.1
+R8 [V1-s-W1q0] J?v & J?u & J?u.2 & v.2 = u.1 & op(u.2.2, u) == v.2 & op(u.2.2, v.1) == J(u.2.2, v.1) & J?v.1 & v.1.2 = u & op(v.1.1, u) == v.1 & J?v.1.1 & v.1.1.1 = u & op(u, v.1.1.2) == v.1.1 & op(v.1.1.2.1, u.2.2) == v.1.1.2 -> v.1
+R9 [V1-s-W1q1] J?v & J?u & J?u.2 & v.2 = u.1 & op(u.2.2, u) == v.2 & op(u.2.2, v.1) == J(u.2.2, v.1) & J?v.1 & v.1.2 = u & op(v.1.1, u) == v.1 & J?v.1.1 & v.1.1.1 = u & op(u, v.1.1.2) == v.1.1 & op(u.2.2.2.2, u.2.2) == v.1.1.2 -> v.1
+R10 [V1-s-W2] J?v & J?u & J?u.2 & v.2 = u.1 & op(u.2.2, u) == v.2 & op(u.2.2, v.1) == J(u.2.2, v.1) & J?v.1 & v.1.2 = u & op(v.1.1, u) == v.1 & op(v.1.1, u.2.2) == J(v.1.1, u.2.2) & op(u, J(v.1.1, u.2.2)) == v.1.1 -> v.1
+R11 [V1-s-W3q0] J?v & J?u & J?u.2 & v.2 = u.1 & op(u.2.2, u) == v.2 & op(u.2.2, v.1) == J(u.2.2, v.1) & J?v.1 & v.1.2 = u & op(v.1.1, u) == v.1 & J?u.2.2 & op(u, u.2.2.1) == v.1.1 & op(u.2.2.1.1, u.2.2) == u.2.2.1 -> v.1
+R12 [V1-s-W3q1] J?v & J?u & J?u.2 & v.2 = u.1 & op(u.2.2, u) == v.2 & op(u.2.2, v.1) == J(u.2.2, v.1) & J?v.1 & v.1.2 = u & op(v.1.1, u) == v.1 & J?u.2.2 & op(u, u.2.2.1) == v.1.1 & op(u.2.2.2.2, u.2.2) == u.2.2.1 -> v.1

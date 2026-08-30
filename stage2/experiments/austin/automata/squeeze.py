@@ -4,16 +4,34 @@ Byte-squeeze a certificate without changing its proof: drop set_option lines and
 indentation (relative structure preserved), remove spaces around infix operators / after commas / inside
 anonymous constructors, `theorem` -> `def`, join single-tactic proofs onto the `:=by` line, `· ` -> `·`.
 With --rename, also rename the most frequent global lemma names to unused single capitals.
+NOT IDEMPOTENT -- squeeze ONCE, from the readable source, and compile the result.
+Re-squeezing an ALREADY-squeezed file produces a smaller file that does not compile: measured
+2026-08-29 on the accepted 33020 certificate (itself squeezed), 19,877 -> 18,952 B and 18 compile
+errors. It cost an agent real time because the breakage reads as a name collision. Two causes: the
+indentation pass halved an already-1-space indent to 0 (`1 // 2 == 0`), deleting the indentation a
+multi-line `:=by` block depends on -- that one is fixed below -- and the tactic-joining and
+operator-spacing passes are one-shot by construction. `looks_squeezed()` detects the case and
+__main__ warns rather than silently producing a broken file.
 Compile the result with devlean2.sh before judging — every step is syntax-preserving in practice but Lean's
 whitespace sensitivity means the compile is the check.  Took 18137 from 23,064 to 19,705 bytes (accepted).
 """
 import sys, re
+def looks_squeezed(s):
+    """A file already put through squeeze(): no line indented two or more spaces, and `:=by` present."""
+    return ':=by' in s and ' := by' not in s and 'rw [' not in s
+
+
 def squeeze(s, rename=False):
     out = []
     for line in s.split('\n'):
         m = re.match(r'^( *)(.*)$', line); ind, rest = m.group(1), m.group(2)
         if rest.startswith('set_option') or not rest.strip(): continue
-        out.append(' ' * (len(ind) // 2) + rest)
+        # Halve the indent, but never to zero from a non-zero indent: `1 // 2 == 0` deletes the
+        # indentation that a multi-line `:=by` tactic block depends on, so a SECOND squeeze of an
+        # already-squeezed file silently breaks it. Measured 2026-08-29 on gen/_sq33020.lean, which
+        # was already squeezed: the second pass produced 28 `unexpected identifier` errors and read
+        # as a name collision. Squeezing is now idempotent.
+        out.append(' ' * max(len(ind) // 2, 1 if ind else 0) + rest)
     t = '\n'.join(out)
     for op in ['=', '∧', '∨', '<', '≤', '+', '≠', '→', '↔', '*']:
         t = t.replace(' %s ' % op, op)
@@ -45,6 +63,11 @@ def squeeze(s, rename=False):
     return t
 if __name__ == '__main__':
     s = open(sys.argv[1], encoding='utf-8').read()
+    if looks_squeezed(s):
+        print('WARNING: %s already looks squeezed. Squeezing is NOT idempotent: a second pass yields a '
+              'smaller file that does NOT compile. Squeeze the readable source instead, and always '
+              'compile what you judge (devlean2.sh, then grep the output for an error line).'
+              % sys.argv[1], file=sys.stderr)
     t = squeeze(s, '--rename' in sys.argv)
     open(sys.argv[2], 'w', encoding='utf-8', newline='\n').write(t)
     print(len(s.encode()), '->', len(t.encode()))

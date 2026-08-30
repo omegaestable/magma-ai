@@ -1,5 +1,13 @@
 # Deep session 7 → 8 — the Austin research set, 46 → 100 (handover)
 
+> **Superseded in five places by `DEEP_SESSION_8_AUSTIN_HANDOVER.md` (2026-08-29). Read that file's §1
+> before acting on this one.** In short: the byte budget here (423,307 B / 76.7 KB headroom) is wrong —
+> HEAD measures 459,379 B; law **33020 already has a complete zero-sorry proof on disk**, 2,127 B over the
+> cap, worth 3 rows; law **12087's "3 rules, validated twice" is FALSE** (2000/2000 bad — the smallest
+> sound set is 7 rules); `verify_certs.py` does **not** write the ledger despite its docstring; and the P2
+> existential decoder now has a **closed form**, so it is not the open-ended research problem §1 describes.
+> Law 27859 (P1) is shipped: 48/100.
+
 Written 2026-08-29, late. Read `CLAUDE.md` first, then this file. The previous handover
 (`DEEP_SESSION_6_AUSTIN_HANDOVER.md`) is still the reference for the *construction* and for the per-law
 history; its "Session 7" section records what changed. **This file is the plan.**

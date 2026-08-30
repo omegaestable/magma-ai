@@ -1,0 +1,27 @@
+########## 22591 ##########
+law 22591  vars=['y', 'x', 'z']  gens=2  pool=22  maxsz=60
+  round 0: 10648 instances (0 over size), 12030 terms, 1374 classes, congruence closed (0.0s)
+  round 1: 21952 instances (0 over size), 24214 terms, 2252 classes, congruence closed (0.1s)
+  round 2: 39304 instances (0 over size), 42594 terms, 3278 classes, congruence closed (0.2s)
+  NO generator merge at this bound (pool<=5, maxsz=60) -- NOT evidence of non-triviality
+  largest classes: [1157, 1157, 1157] ; smallest merged pair in a class:
+    g1  ~  ((g0*(g0*g1))*((g1*g1)*g0))
+    g0  ~  ((g0*(g0*g0))*((g0*g0)*g0))
+########## 21865 ##########
+law 21865  vars=['y', 'z', 'x']  gens=2  pool=22  maxsz=60
+  round 0: 10648 instances (0 over size), 21334 terms, 10482 classes, congruence closed (0.1s)
+  round 1: 21952 instances (0 over size), 43949 terms, 21743 classes, congruence closed (0.2s)
+  round 2: 39304 instances (0 over size), 98239 terms, 48387 classes, congruence closed (0.4s)
+  NO generator merge at this bound (pool<=5, maxsz=60) -- NOT evidence of non-triviality
+  largest classes: [1439, 1422, 1421] ; smallest merged pair in a class:
+    g1  ~  ((g0*(g0*g1))*(g1*(g1*g0)))
+    (g1*(g1*g1))  ~  ((g0*g1)*((g1*(g1*g1))*g1))
+########## 21866 ##########
+law 21866  vars=['y', 'z', 'x', 'w']  gens=2  pool=22  maxsz=60
+  round 0: 234256 instances (0 over size), 244902 terms, 10254 classes, congruence closed (1.4s)
+  round 1: 614656 instances (0 over size), 636592 terms, 20846 classes, congruence closed (4.1s)
+  round 2: 1336336 instances (0 over size), 1767307 terms, 48304 classes, congruence closed (12.2s)
+  NO generator merge at this bound (pool<=5, maxsz=60) -- NOT evidence of non-triviality
+  largest classes: [50674, 50673, 50637] ; smallest merged pair in a class:
+    g0  ~  ((g0*(g0*g0))*(g0*(g0*g0)))
+    g1  ~  ((g0*(g0*g1))*(g1*(g1*g0)))

@@ -1,0 +1,49 @@
+
+theorem mxl {a b c d : M} (h1 : sz a < sz d) (h2 : sz b < sz d) :
+    max (sz a) (sz b) < max (sz c) (sz d) := by
+  rw [Nat.max_def, Nat.max_def]; split <;> split <;> omega
+
+theorem oR2 {u v : M} (h1 : ¬ P1 u v) (h2 : P2 u v)
+    (g1 : msr (a1 (a1 (a2 v))) (a2 v) < msr u v)
+    (g2 : msr (op (a1 (a1 (a2 v))) (a2 v)) (a2 v) < msr u v)
+    (g3 : msr u (op (op (a1 (a1 (a2 v))) (a2 v)) (a2 v)) < msr u v)
+    (he : a1 v = op u (op (op (a1 (a1 (a2 v))) (a2 v)) (a2 v))) : op u v = a1 (a1 (a2 v)) := by
+  obtain ⟨p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, hp1, hp2, hp3, -, -, -, -, -, -, -, -, hop⟩ := op_cases u v
+  rw [dif_pos g1] at hp1; subst hp1
+  rw [dif_pos g2] at hp2; subst hp2
+  rw [dif_pos g3] at hp3; subst hp3
+  rw [hop, if_neg h1, if_pos ⟨h2, g1, g2, g3, he⟩]
+
+/-- the top product when `P = op x y` decoded, `x` sits at `a1 (a1 y)`, and `A` is free. -/
+theorem TOP {x y z : M} (hy : tg y = 2) (hay : tg (a1 y) = 2) (hx : a1 (a1 y) = x)
+    (hPs : sz (op x y) < sz y) (hQ : sz (a2 (a1 (op (op x y) y))) < sz y)
+    (hAf : op z (op (op x y) y) = J z (op (op x y) y)) :
+    op z (J (J z (op (op x y) y)) y) = x := by
+  have hxy : sz x ≤ sz y := by
+    rw [← hx]; have := sz_a1 (a1 y); have := sz_a1 y; omega
+  have hs : sz (J (J z (op (op x y) y)) y) = sz z + sz (op (op x y) y) + sz y + 2 := by
+    simp only [sz]; omega
+  have g1 : msr (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)) <
+      msr z (J (J z (op (op x y) y)) y) := by
+    simp only [a1_J_eq, a2_J_eq, hx]
+    exact msr_lt_of_max_lt (mxl (by omega) (by omega))
+  have g2 : msr (op (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)))
+      (a2 (J (J z (op (op x y) y)) y)) < msr z (J (J z (op (op x y) y)) y) := by
+    simp only [a1_J_eq, a2_J_eq, hx]
+    exact msr_lt_of_max_lt (mxl (by omega) (by omega))
+  have g3 : msr z (op (op (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)))
+      (a2 (J (J z (op (op x y) y)) y))) < msr z (J (J z (op (op x y) y)) y) := by
+    simp only [a1_J_eq, a2_J_eq, hx]
+    exact msr_lt_of_max_lt (mxl (by have := sz_pos y; have := sz_pos (op (op x y) y); omega)
+      (by have := sz_pos y; have := sz_pos z; omega))
+  have hn : ¬ P1 z (J (J z (op (op x y) y)) y) := by
+    intro h
+    obtain ⟨-, -, -, -, -, -, h7⟩ := h
+    simp only [a1_J_eq, a2_J_eq] at h7
+    have := congrArg sz h7; omega
+  have hg : a1 (J (J z (op (op x y) y)) y) =
+      op z (op (op (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)))
+        (a2 (J (J z (op (op x y) y)) y))) := by
+    simp only [a1_J_eq, a2_J_eq, hx]; exact hAf.symm
+  have hr := oR2 (u := z) (v := J (J z (op (op x y) y)) y) hn ⟨rfl, hy, hay⟩ g1 g2 g3 hg
+  rw [hr]; simp only [a2_J_eq, hx]

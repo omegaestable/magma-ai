@@ -1,0 +1,17 @@
+
+theorem law (x y z : M) : op (z) (op (op (z) (op (op (x) (y)) (y))) (y)) = x := by
+  rw [AF x y z, SF x y z]
+  by_cases hP : op x y = J x y
+  · rw [hP, Wf (u := J x y) (v := y) (by simp only [sz]; have := sz_pos x; omega)]
+    exact oR1 ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  · have hPs := (RS x y).resolve_left hP
+    have hQ : sz (a2 (a1 (op (op x y) y))) < sz y := by
+      rcases RS (op x y) y with h | h
+      · rw [h]; simp only [a1_J_eq]; have := sz_a2 (op x y); omega
+      · have := sz_a1 (op (op x y) y); have := sz_a2 (a1 (op (op x y) y)); omega
+    /- **HOLE 3**: `op x y` decoded puts `x` at `a1 (a1 y)`.  TRUE on 202,598 of the 202,599 decoded
+       pairs the model produces; the one exception is the level-2 cell where R2's own gate product
+       decodes, and there the top product is answered by the recursive rule R3 instead of by `TOP`. -/
+    have hk : tg y = 2 ∧ tg (a1 y) = 2 ∧ a1 (a1 y) = x := by
+      sorry
+    exact TOP hk.1 hk.2.1 hk.2.2 hPs hQ (AF x y z)

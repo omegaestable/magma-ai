@@ -1,0 +1,5 @@
+pool 442  z-candidates 318
+tested 44202 triples with A decoded
+   ('AD', 'UF', 'BF', 'VF') 43992
+   ('AD', 'UF', 'BD', 'VF') 210
+cell 2b (A and V both decoded) hits: 0

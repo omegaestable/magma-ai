@@ -46,8 +46,29 @@ PACKED_TABLES = {
     "FP_WITNESS_TABLES": "tables",
     "O5_WITNESS_TABLES": "tables",
     "WITNESS_TABLES": "tables",
+    # "lit": any top-level literal, carried as its `repr` and rebuilt with
+    # `ast.literal_eval`, so tuple/list/str types survive exactly. Added
+    # 2026-08-29: these twelve were the largest data literals the packer was
+    # still shipping verbatim (30,516 B of source between them).
+    "_ANCHORED_RIGHT_PROJECTION_BLOCKS": "lit",
+    "_ANCHORED_LEFT_PROJECTION_BLOCKS": "lit",
+    "_PRODUCT_CONSTANT_BLOCKS_3565": "lit",
+    "_PRODUCT_CONSTANT_BLOCKS_3967": "lit",
+    "PROTOCOL_FALSE_FIRST": "lit",
+    "_PRODUCT_CONSTANT_BLOCKS_3983": "lit",
+    "_PRODUCT_CONSTANT_BLOCKS_3577": "lit",
+    "_RIGHT_SPINE_CROSSED_BLOCKS": "lit",
+    "MINED_LEMMA_LIBRARY_TEXT": "lit",
+    "PROTOCOL_DERIVATION_EXCLUSION": "lit",
+    "PROTOCOL_TERMS": "lit",
 }
-UNPACK_HELPER = "_unpack_table"
+# `PROMPT` is deliberately NOT here, though it is 3,338 B and would pack to 2,210.
+# `pipeline/proxy.py:_extract_prompt_from_solver` reads it out of the artifact by
+# AST and accepts ONLY a top-level `PROMPT = <str constant>`; packing it makes the
+# extractor return "" and the Solo LLM lane runs on an empty prompt with no error
+# anywhere. `test_artifact.py` pins both halves of that.
+UNPACK_HELPER = "_unpack_all"
+PACKED_DICT = "_PACKED"
 # The helper shipped in the artifact. Local imports keep the solver's own import
 # block untouched; `lzma`, `base64` and `json` are all stdlib in
 # python:3.11-slim.
@@ -56,12 +77,17 @@ UNPACK_HELPER = "_unpack_table"
 # across two 19 KB certificates. Measured on the 46-entry table: zlib level 9 +
 # base85 = 112,379 B; lzma preset 9|EXTREME + base85 = 50,155 B.
 UNPACK_SOURCE = """\
-def _unpack_table(blob, kind):
-    import base64, json, lzma
-    data = json.loads(lzma.decompress(base64.b85decode(blob)).decode("utf-8"))
-    if kind == "certs":
-        return {(a, b): (c, d, e) for a, b, c, d, e in data}
-    return tuple((name, table) for name, table in data)
+def _unpack_all(blob):
+    import ast, base64, json, lzma
+    out = {}
+    for name, kind, data in json.loads(lzma.decompress(base64.b85decode(blob)).decode("utf-8")):
+        if kind == "certs":
+            out[name] = {(a, b): (c, d, e) for a, b, c, d, e in data}
+        elif kind == "tables":
+            out[name] = tuple((n, t) for n, t in data)
+        else:
+            out[name] = ast.literal_eval(data)
+    return out
 """
 
 
@@ -162,27 +188,46 @@ def _assigned_name(node: ast.AST) -> str | None:
     return None
 
 
-def _encode_table(name: str, value: object) -> str:
+def _flatten_table(name: str, value: object) -> object:
+    """The JSON-safe form of one table, per its `PACKED_TABLES` kind."""
     kind = PACKED_TABLES[name]
     if kind == "certs":
         if not (isinstance(value, dict) and all(
                 isinstance(k, tuple) and len(k) == 2 and isinstance(v, tuple)
                 and len(v) == 3 for k, v in value.items())):
             raise SystemExit(f"{name}: expected dict[(str, str)] -> (str, str, str)")
-        flat = [[*k, *v] for k, v in value.items()]
-    else:
+        return [[*k, *v] for k, v in value.items()]
+    if kind == "tables":
         if not (isinstance(value, tuple) and all(
                 isinstance(entry, tuple) and len(entry) == 2
                 and isinstance(entry[1], list) for entry in value)):
             raise SystemExit(f"{name}: expected tuple[(str, list), ...]")
-        flat = [[entry_name, table] for entry_name, table in value]
+        return [[entry_name, table] for entry_name, table in value]
+    # "lit": carry the repr, which `ast.literal_eval` rebuilds with exact types.
+    text = repr(value)
+    rebuilt = ast.literal_eval(text)
+    if rebuilt != value or type(rebuilt) is not type(value):
+        raise SystemExit(f"{name}: literal does not round-trip through repr")
+    return text
+
+
+def _encode_all(values: dict[str, object], order: list[str]) -> str:
+    """One blob for every packed table.
+
+    A separate lzma stream per table restarts the dictionary each time, which
+    costs real bytes when the tables share vocabulary (Lean preambles, block
+    text, prompt prose). Measured 2026-08-29 over the sixteen tables: 77,635 B
+    as separate blobs against 72,920 B shared, and 97,166 B for the state this
+    replaced (four blobs plus twelve verbatim literals) -- 24,246 B saved.
+    """
+    flat = [[name, PACKED_TABLES[name], _flatten_table(name, values[name])] for name in order]
     payload = json.dumps(flat, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     blob = base64.b85encode(lzma.compress(payload, preset=9 | lzma.PRESET_EXTREME)).decode("ascii")
-    return f'{name} = {UNPACK_HELPER}("{blob}", "{kind}")'
+    return f'{PACKED_DICT} = {UNPACK_HELPER}("{blob}")'
 
 
 def pack_tables(minified: str) -> tuple[str, dict[str, object]]:
-    """Replace each `PACKED_TABLES` literal with a packed blob.
+    """Replace each `PACKED_TABLES` literal with a lookup into one packed blob.
 
     Runs on the minified text (its line numbers are the ones edited) and
     returns the packed text plus the literal values, which `check` compares
@@ -201,13 +246,18 @@ def pack_tables(minified: str) -> tuple[str, dict[str, object]]:
     missing = set(PACKED_TABLES) - {name for _, _, name, _ in targets}
     if missing:
         raise SystemExit(f"packed tables not found at top level: {sorted(missing)}")
+    seen = [name for _, _, name, _ in targets]
+    if len(set(seen)) != len(seen):
+        raise SystemExit(f"packed table assigned more than once: {sorted(set(seen))}")
     values = {name: value for _, _, name, value in targets}
-    # Bottom-up so earlier line numbers stay valid; the helper goes in front of
-    # the first packed assignment, which is the earliest use.
-    for lineno, end_lineno, name, value in sorted(targets, reverse=True):
-        lines[lineno - 1:end_lineno] = [_encode_table(name, value)]
+    order = [name for _, _, name, _ in sorted(targets)]
+    # Bottom-up so earlier line numbers stay valid; the helper and the shared
+    # blob go in front of the first packed assignment, which is the earliest use.
+    for lineno, end_lineno, name, _ in sorted(targets, reverse=True):
+        lines[lineno - 1:end_lineno] = [f'{name} = {PACKED_DICT}["{name}"]']
     first = min(lineno for lineno, _, _, _ in targets)
-    lines[first - 1:first - 1] = UNPACK_SOURCE.splitlines() + [""]
+    lines[first - 1:first - 1] = (
+        UNPACK_SOURCE.splitlines() + ["", _encode_all(values, order), ""])
     return "\n".join(lines) + "\n", values
 
 
@@ -217,7 +267,8 @@ def _decode_packed(packed: str) -> dict[str, object]:
     namespace: dict[str, object] = {}
     for node in tree.body:
         is_helper = isinstance(node, ast.FunctionDef) and node.name == UNPACK_HELPER
-        if is_helper or _assigned_name(node) in PACKED_TABLES:
+        name = _assigned_name(node)
+        if is_helper or name == PACKED_DICT or name in PACKED_TABLES:
             exec(compile(ast.Module(body=[node], type_ignores=[]), "<packed>", "exec"),
                  namespace)
     return {name: namespace[name] for name in PACKED_TABLES}
@@ -227,6 +278,7 @@ def _drop_packed(tree: ast.Module) -> ast.Module:
     tree.body = [
         node for node in tree.body
         if _assigned_name(node) not in PACKED_TABLES
+        and _assigned_name(node) != PACKED_DICT
         and not (isinstance(node, ast.FunctionDef) and node.name == UNPACK_HELPER)]
     return tree
 
