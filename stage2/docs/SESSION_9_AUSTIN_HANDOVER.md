@@ -379,3 +379,54 @@ censuses). Two lemmas that do **not** transfer, both refuted for 23357: **`X`** 
 `a1 v`" — the `Bs` rules return `a2 (a1 u)`) and **`NOSELF`** (`op u v ≠ v`).
 
 Row 0080 (dual 23653) is blocked on the base; `dualcert.py` transplants once a base certificate exists.
+
+---
+
+## 12. Final state of 23357 (end of session) — measured, not guessed
+
+**Score: 60/100. Nothing shipped this session.** What is below is the exact starting point for the
+next attempt on 23357 (2 rows), all of it measured in the last hour.
+
+### The full12 census — the Lean case analysis, verbatim
+`gen/_s9_23357_h3full.py` (the session-8 forcing census ported to the 12-rule model; run it with
+`python gen/_s9_23357_h3full.py`, ~2 min). **24,000 chains, 10 families incl. H3, levels 0-3, TOTAL BAD 0.**
+Which rule fires at the top, per chain cell (A=op y x, U=op A y, B=op y z, V=op x B):
+
+| cell (A,U,B,V) | hits | top rule (Lean `P` index) |
+| --- | --- | --- |
+| AF UF BF VF | 16,707 | `P1` (free) — `TOP1` from dead cert4 proves it, seven `rfl`s |
+| AD UF BF VF | 2,454 | `P9` (A0s) — guard `a1 u = op (a2 u) (a1 v)` is `A = op y x` by `rfl`, gate by size |
+| AF UF BF VD | 2,404 | `P4` (Bs) |
+| AF UF BD VF | 2,384 | `P2` (B1s) |
+| AD UF BD VF | 11 | `P10` (A0s,B1s) |
+| AF UF BD VD | 3 | `P6` (Bs\|ex:Qa) ×2, `P4` ×1 |
+
+**`U` is free in every cell** (`Ufree`) and **`AD` never co-occurs with `VD`** (`CHAIN2B`). Both are
+needed as lemmas and neither is a size argument — see below.
+
+### The byte reality
+`squeeze.py --rename` takes the base `_x23357_cert.lean` **12,808 → 11,067 B**. So the real budget
+for the `law` proof is **≈ 8.9 KB squeezed** (≈ 11-12 KB readable). 23354's shipped proof of its
+*easier* law (`Rfree`+`Ffree`+`ONESIDE`+`I`+`RGT`+`H`+`law`) is ≈ 13 KB squeezed. **It is not clear
+the proof fits**; measure after each lemma.
+
+### Why `Ufree` is the hard lemma (worked, not guessed)
+`U = op A y` decoded via an L-rule with `A` free forces `y = J x w`, and then the eight L-rules at
+`(J (J x w) x, J x w)` fall to size arguments **except `P3`**, whose guard is
+`a1 x = op (a2 x) x` — 23354's `core_no_fix`. In full12 that is *not* refutable by `X` (false here):
+**an R-rule at `(a2 x, x)` returns `a1 x` trivially**, so the guard is satisfiable whenever an R-rule
+fires there, and refuting it recurses into `x`'s structure (`P9` at `(a2 x, x)` forces
+`a2 x = J s s`, `s = op s (a1 x)`, which recurses again). **It needs strong induction on `sz x`**
+in the shape of 23354's `H`/`ONESIDE`, rewritten for a model where L-rules return `a2 (a1 u)`.
+`CHAIN2B` has the same character. Budget both as inductive lemmas, not case splits.
+
+Cheap general lemma that closes most non-`P3` sub-cases in one line each:
+`BIG {p q t} (h : op p q = t) (hp : sz p < sz t) (hq : sz q < sz t) : t = J p q` — from `SZM`.
+
+### What to lift from the dead `_w3_23357_cert4.lean` (model-independent, compile today)
+`SZM` (lines 171-188), `NEFREE` (191), `TOP1` (195), `TOP4G`/`TOP4S` (205-220). `X`, `NOSELF`,
+`core_no_fix` do **not** hold for full12.
+
+### Do not
+Do not touch `_w3_23357_cert4.lean`'s model (refuted, §11). Do not spend agents on this law without
+first reading the byte reality above — a proof that does not fit is worth zero rows.
