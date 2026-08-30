@@ -286,12 +286,33 @@ Two things stand out and neither was known when the byte-pressure task was writt
 1. **`w135_C.lean` is 15,147 B — 4,727 B *below* the base file** — because the agent deleted the dead
    `SF`/`SFa`/`SFb`/`SFc` after `UD` subsumed them. **The 126-byte crisis may already be over.** The
    task was scoped as "bytes first, maths second"; `UD` appears to have solved both at once.
-2. **`w135a.lean` and `w135b.lean` carry ONE sorry each at 9,201 B and 10,246 B.** They predate this
-   session. Nobody in session 8 or 9 examined them, and on the face of it they are closer to a
-   certificate than the 19,874 B / 5-sorry file the whole task was built around. **Check what that
-   single sorry is before doing anything else on this law** — this is rail 47's lesson (a finished-
-   looking file sitting unexamined on disk) in a form the harvest scan missed, because the scan only
-   flags files with *zero* sorries and a `def submission`.
+2. ~~**`w135a.lean` and `w135b.lean` carry ONE sorry each and are closer to a certificate.**~~
+   **CHECKED, AND FALSE — a lower sorry count meant LESS work done, not more.** Both compile
+   `exit=0` (9,220 B and 10,265 B) with their single `sorry` on **`theorem law` itself**, which
+   superficially matches the `w38316` / `_w3_23357_cert4` shape that makes those two rows cheap. But
+   these are the **undecomposed** versions: `w135a` carries only `sz_a1`/`sA1`/`mx`, and `w135b` adds
+   `SU`/`oR1`/`op_cases`/`P1`. The 5 sorries in `w135d` are `law` **broken into named sub-lemmas** —
+   i.e. session 8's progress, not its debt.
+
+   > **Generalisable, and it nearly cost the next session a day: sorry count is not distance to a
+   > certificate.** Decomposing one hard goal into five tractable ones *raises* the count while moving
+   > forward. Compare the *helper library* — what is available to prove the goal with — not the number
+   > of holes. The rail-47 harvest scan is safe from this (it demands zero sorries *and* a
+   > `def submission`), but any eyeball ranking by sorry count is not.
+
+   I wrote the opposite in this file an hour earlier on the file listing alone; the correction cost one
+   `grep` and two compiles.
 
 `w135f.lean` at 26,631 B is 6.6 KB over the cap and has more sorries than it started with; it is a
 mid-restructure snapshot, not a candidate.
+
+### 32281, the corrected reading
+
+`UD` is real and it bought bytes: **`w135_C.lean` compiles at 15,147 B**, 4,727 B below the session-8
+base, after the dead `SF`/`SFa`/`SFb`/`SFc` were deleted. The byte crisis that framed the task is
+very likely over. What remains is the mathematics: 7 sorries in `w135_C`, with `UD`'s claimed one-line
+reduction of `SFg` → generalized `SFa` **still unverified**.
+
+Start from **`w135_C.lean`** (15,147 B, 7 sorries, compiles) or **`w135d.lean`** (19,874 B, 5 sorries,
+the session-8 base). Not from `w135a`/`w135b` (undecomposed) and not from `w135f` (26,631 B, 6.6 KB
+over cap, mid-restructure).
