@@ -1,0 +1,7 @@
+law 11081: x = y * ((x * (y * x)) * (z * y))   (normalised: x = ('y', (('x', ('y', 'x')), ('z', 'y'))))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?v & J?v.1 & J?v.1.2 & u = v.1.2.1 & v.1.1 = v.1.2.2 & J?v.2 & u = v.2.2 -> v.1.1
+R2 [B1l] J?v & J?v.1 & J?v.1.2 & u = v.1.2.1 & v.1.1 = v.1.2.2 & J?u & J?u.1 & J?u.1.2 & op(u.1.2.1, u) == v.2 -> v.1.1
+R3 [B1l|B1:fflf] J?v & J?v.1 & J?v.1.2 & u = v.1.2.1 & v.1.1 = v.1.2.2 & J?u & J?u.1 & v.2 = u.1.1 & J?u.2 & op(u.2.2, v.2) == u.1.2 & op(u.2.2, u) == v.2 -> v.1.1
+R4 [B01l] J?v & J?v.1 & J?v.2 & u = v.2.2 & op(u, v.1.1) == v.1.2 -> v.1.1
+R5 [B01l,B1l] J?v & J?v.1 & op(u, v.1.1) == v.1.2 & J?u & J?u.1 & J?u.1.2 & op(u.1.2.1, u) == v.2 -> v.1.1

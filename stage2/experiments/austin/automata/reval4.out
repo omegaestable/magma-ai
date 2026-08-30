@@ -1,0 +1,9 @@
+38565 OK rules 30 -> 3 full {'nrules': 30, 'fails': 0, 'kinds': {}}  secs 980.6 
+12294 None rules None -> None full None  secs 1500.0 timeout
+10218 None rules None -> None full None  secs 1500.0 timeout
+8485 None rules None -> None full None  secs 1500.0 timeout
+# ORCHESTRATOR NOTE (session 7): the extraction blow-up is FIVE laws, not two.
+# revalidate.py times out with no output on 10222, 36524, 12294, 10218, 8485 (6 open rows).
+# 38565 finished: 30 rules minimised to 3, 0 failures on the full validator.
+# Semantic free model (smallcheck <eq> 9 1): 8485 0 fails, 10218 0 fails, 12294 22 fails, 10222 45 fails.
+# So 8485 and 10218 are pure extractor problems; 12294 and 10222 also need a different carrier.

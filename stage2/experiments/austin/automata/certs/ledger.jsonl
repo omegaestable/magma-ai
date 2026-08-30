@@ -40,3 +40,12 @@
 {"id": "research_order5_hard_0011", "eq1_id": 40057, "eq2_id": 28770, "judge_status": "accepted", "judge_seconds": 4.8, "code_bytes": 19439, "errors": [], "when": "2026-08-29 09:43", "kind": "recursive-dualized-repaired"}
 {"id": "research_order5_hard_0042", "eq1_id": 18137, "eq2_id": 25964, "judge_status": "accepted", "judge_seconds": 41.8, "code_bytes": 19705, "errors": [], "when": "2026-08-29 14:20", "kind": "recursive-predicate-compressed"}
 {"id": "research_order5_hard_0053", "eq1_id": 27863, "eq2_id": 30591, "judge_status": "accepted", "judge_seconds": 5.6, "code_bytes": 19820, "errors": [], "when": "2026-08-29 14:23", "kind": "recursive-predicate-dual"}
+{"id": "research_order5_hard_0034", "eq1_id": 6878, "eq2_id": 28770, "judge_status": "accepted", "judge_seconds": 16.7, "code_bytes": 19205, "errors": [], "when": "2026-08-29 session7"}
+{"id": "research_order5_hard_0044", "eq1_id": 39126, "eq2_id": 22455, "judge_status": "accepted", "judge_seconds": 12.6, "code_bytes": 19353, "errors": [], "when": "2026-08-29 session7"}
+{"id": "research_order5_hard_0075", "eq1_id": 39126, "eq2_id": 30591, "judge_status": "accepted", "judge_seconds": 12.4, "code_bytes": 19353, "errors": [], "when": "2026-08-29 session7"}
+{"id": "research_order5_hard_0002", "eq1_id": 39163, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 4.7, "code_bytes": 19360, "errors": [], "when": "2026-08-29 session7"}
+{"id": "research_order5_hard_0021", "eq1_id": 5837, "eq2_id": 22818, "judge_status": "accepted", "judge_seconds": 41.8, "code_bytes": 19171, "errors": [], "when": "2026-08-29 17:00"}
+{"id": "research_order5_hard_0001", "eq1_id": 24200, "eq2_id": 22455, "judge_status": "accepted", "judge_seconds": 41.8, "code_bytes": 18464, "errors": [], "when": "2026-08-29 17:00"}
+{"id": "research_order5_hard_0077", "eq1_id": 38565, "eq2_id": 41082, "judge_status": "accepted", "judge_seconds": 4.0, "code_bytes": 14014, "errors": [], "when": "2026-08-29 17:00"}
+{"id": "research_order5_hard_0087", "eq1_id": 24200, "eq2_id": 30591, "judge_status": "accepted", "judge_seconds": 5.5, "code_bytes": 18476, "errors": [], "when": "2026-08-29 17:00"}
+{"id": "research_order5_hard_0045", "eq1_id": 5837, "eq2_id": 25964, "judge_status": "accepted", "judge_seconds": 10.3, "code_bytes": 19171, "errors": [], "when": "2026-08-29 17:00"}

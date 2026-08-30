@@ -1,0 +1,15 @@
+rules 49
+deep 4000 fails 0
+exh9/1 12167 23
+exh5/2 10648 0
+cycles 0 secs 210.6
+--- firing counts ---
+R1   free                                        63615
+R2   B11l                                          257
+R3   B1l,B11v                                        1
+R7   B0l                                           240
+R10  B0l|B0:flff                                     1
+R11  B0l,B11l                                      111
+R15  B0l,B1l,B11v                                    1
+--- never fired ---
+R4, R5, R6, R8, R9, R12, R13, R14, R16, R17, R18, R19, R20, R21, R22, R23, R24, R25, R26, R27, R28, R29, R30, R31, R32, R33, R34, R35, R36, R37, R38, R39, R40, R41, R42, R43, R44, R45, R46, R47, R48, R49

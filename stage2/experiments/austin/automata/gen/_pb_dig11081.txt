@@ -1,0 +1,56 @@
+
+theorem sz_pos (t : M) : 1 ≤ sz t := by cases t <;> simp [sz] <;> omega
+theorem sz_a1_lt {t : M} (h : tg t = 2) : sz (a1 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a1]; have := sz_pos b; omega
+theorem sz_a2_lt {t : M} (h : tg t = 2) : sz (a2 t) < sz t := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ h; simp [sz, a2]; have := sz_pos a; omega
+
+theorem TRpre (u v : M) : op u v = J u v ∨ Pre u v := by
+  by_cases h : Pre u v
+  · exact Or.inr h
+  · exact Or.inl (op_free h)
+
+theorem Pdig {u v : M} (h : Pre u v) : tg u = 2 ∨ (tg v = 2 ∧ u = a2 (a2 v)) := by
+  rcases h with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h
+  · exact Or.inr ⟨h.1, h.2.2.2.2.2.2⟩
+  · exact Or.inl h.2.2.2.2.2.1
+  · exact Or.inl h.2.2.2.2.2.1
+  · exact Or.inl h.2.2.2.2.2.1
+  · exact Or.inl h.2.2.2.2.2.1
+  · exact Or.inl h.2.2.2.2.2.1
+  · exact Or.inl h.2.2.2.2.2.1
+  · exact Or.inr ⟨h.1, h.2.2.2⟩
+  · exact Or.inl h.2.2.1
+  · exact Or.inl h.2.2.1
+  · exact Or.inl h.2.2.1
+  · exact Or.inl h.2.2.1
+  · exact Or.inl h.2.2.1
+  · exact Or.inl h.2.2.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+  · exact Or.inl h.1
+
+theorem Wdig (u v : M) : op u v = J u v ∨ tg u = 2 ∨ sz u < sz v := by
+  rcases TRpre u v with hf | hp
+  · exact Or.inl hf
+  · rcases Pdig hp with h | ⟨h1, h2⟩
+    · exact Or.inr (Or.inl h)
+    · refine Or.inr (Or.inr ?_)
+      have e1 := sz_a2_lt h1
+      have e2 := sz_a2 (a2 v)
+      rw [h2]; omega
+
+/-- the dead-code killer: all 24 rules are dead on a product whose left argument is
+    a generator at least as big as the right one. -/
+theorem Wfree {u v : M} (h1 : tg u ≠ 2) (h2 : sz v ≤ sz u) : op u v = J u v := by
+  rcases Wdig u v with hf | h | h
+  · exact hf
+  · exact absurd h h1
+  · omega

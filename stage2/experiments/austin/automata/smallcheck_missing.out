@@ -1,0 +1,33 @@
+== 32281
+== 34889
+== 36524
+== 38565
+{"eq": 32281, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 3.9}
+== 40037
+{"eq": 40037, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 1, "conflicts": 0, "secs": 4.3}
+== 33020
+{"eq": 34889, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 2, "conflicts": 0, "secs": 8.5}
+== 38316
+{"eq": 33020, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 7.0}
+== 23354
+{"eq": 38565, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 148.1}
+== 28626
+== 23357
+== 23653
+== 35836
+{"eq": 35836, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 45, "conflicts": 0, "secs": 3.4}
+== 36487
+{"eq": 36487, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 23, "conflicts": 0, "secs": 20.3}
+== 9663
+{"eq": 9663, "dualized": false, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 23, "conflicts": 0, "secs": 23.3}
+== 32294
+== 35036
+{"eq": 35036, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 21.9}
+== 12883
+{"eq": 32294, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 114.0}
+== 39214
+{"eq": 12883, "dualized": false, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 7.8}
+== 5837
+{"eq": 5837, "dualized": false, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 0, "conflicts": 0, "secs": 2.9}
+{"eq": 39214, "dualized": true, "maxsize": 9, "gens": 1, "assignments": 12167, "fails": 1, "conflicts": 0, "secs": 7.7}
+DONE

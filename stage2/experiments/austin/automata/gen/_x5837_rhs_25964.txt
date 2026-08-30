@@ -1,0 +1,6 @@
+theorem rhs : ¬ @EquationRHS M inst := by
+  intro h
+  have := h (g 1) (g 0) (g 2)
+  revert this
+  change ¬ g 1 = op (op (g 0) (op (op (g 1) (g 1)) (g 0))) (op (g 2) (g 2))
+  simp (config := {decide := true}) [op.eq_1, sz, P1, P2, P3, P4, P5, P6, P7, P8]

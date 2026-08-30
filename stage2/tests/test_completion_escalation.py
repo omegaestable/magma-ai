@@ -56,6 +56,18 @@ NEGATIVE_CONTROLS = [
      "x ◇ y = ((x ◇ y) ◇ y) ◇ x"),
 ]
 
+# Dual order-4 collapse families from the seven-campaign miss union.  The
+# equations are regression fixtures only: production dispatch uses their
+# structural shape, never the ETP ids that identified the cluster.
+ORDER4_HELPER_COLLAPSE_CONTROLS = [
+    ("left-overlap",
+     "x = (y ◇ y) ◇ (x ◇ (x ◇ z))",
+     "x = y ◇ (z ◇ (x ◇ y))"),
+    ("right-overlap",
+     "x = ((y ◇ x) ◇ x) ◇ (z ◇ z)",
+     "x = (y ◇ z) ◇ (w ◇ u)"),
+]
+
 
 @pytest.fixture(scope="module")
 def solver_source() -> str:
@@ -101,6 +113,149 @@ def test_positive_controls_need_the_escalation(solver):
         eq2 = solver.parse_equation(eq2_text)
         got = solver.completion_prove(eq1, eq2, time_budget=5.0, escalate=False)
         assert got is None, f"{row_id}: cheap pass unexpectedly served the row"
+
+
+@pytest.mark.parametrize(
+    "motif,eq1_text,eq2_text", ORDER4_HELPER_COLLAPSE_CONTROLS,
+    ids=[row[0] for row in ORDER4_HELPER_COLLAPSE_CONTROLS])
+def test_order4_helper_collapse_closes_dual_overlap_families(
+        solver, motif, eq1_text, eq2_text):
+    """The bounded early helper route must close both dual overlap motifs."""
+    solver.clear_term_caches()
+    eq1 = solver.parse_equation(eq1_text)
+    eq2 = solver.parse_equation(eq2_text)
+    started = time.monotonic()
+    got = solver.completion_helper_collapse_route(eq1, eq2)
+    elapsed = time.monotonic() - started
+    assert got is not None, f"{motif}: helper collapse was lost"
+    route, code = got
+    assert route == "true:completion:helper_collapse"
+    assert elapsed < 2.0, f"{motif}: helper probe overran ({elapsed:.2f}s)"
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+    assert oracles.find_judge_banned_token(code) is None
+    assert len(code.encode("utf-8")) <= solver.MAX_LEAN_CODE_BYTES
+
+
+def test_order4_helper_collapse_is_structurally_gated(solver):
+    goal = solver.parse_equation("x ◇ y = y ◇ x")
+    non_bare_order4 = solver.parse_equation(
+        "x ◇ (y ◇ z) = (w ◇ u) ◇ u")
+    bare_order5 = solver.parse_equation(
+        "x = (y ◇ y) ◇ (x ◇ (x ◇ (z ◇ w)))")
+    assert solver.completion_helper_collapse_route(non_bare_order4, goal) is None
+    assert solver.completion_helper_collapse_route(bare_order5, goal) is None
+
+
+def test_order4_helper_collapse_does_not_claim_known_false_control(solver):
+    """A four-operation bare-side FALSE row must remain unserved."""
+    solver.clear_term_caches()
+    eq1 = solver.parse_equation(NEGATIVE_CONTROLS[0][1])
+    eq2 = solver.parse_equation(NEGATIVE_CONTROLS[0][2])
+    assert solver.completion_helper_collapse_route(eq1, eq2) is None
+
+
+@pytest.mark.parametrize(
+    "motif,eq1_text,eq2_text", [
+        ("left-anchor",
+         "x = x ◇ (y ◇ ((z ◇ x) ◇ y))",
+         "x = (((x ◇ x) ◇ x) ◇ x) ◇ x"),
+        ("right-anchor",
+         "x = ((y ◇ (x ◇ z)) ◇ y) ◇ x",
+         "x = x ◇ (y ◇ (x ◇ x))"),
+    ])
+def test_order4_anchored_join_closes_dual_projection_motifs(
+        solver, motif, eq1_text, eq2_text):
+    solver.clear_term_caches()
+    eq1 = solver.parse_equation(eq1_text)
+    eq2 = solver.parse_equation(eq2_text)
+    assert solver._order4_anchored_bare_hypothesis(eq1)
+    started = time.monotonic()
+    got = solver.completion_anchored_join_route(eq1, eq2)
+    elapsed = time.monotonic() - started
+    assert got is not None, f"{motif}: anchored join was lost"
+    route, code = got
+    assert route == "true:distilled:anchored_projection"
+    assert elapsed < 2.0
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+    assert len(code.encode("utf-8")) <= solver.MAX_LEAN_CODE_BYTES
+
+
+def test_order4_anchored_join_gate_is_dual_and_shape_based(solver):
+    left = solver.parse_equation("x = x ◇ (y ◇ ((z ◇ x) ◇ y))")
+    right = solver.parse_equation("x = ((y ◇ (x ◇ z)) ◇ y) ◇ x")
+    assert solver._order4_anchored_bare_hypothesis(left)
+    assert solver._order4_anchored_bare_hypothesis(right)
+    assert not solver._order4_anchored_bare_hypothesis(
+        solver.parse_equation("x = y ◇ (x ◇ (x ◇ (x ◇ x)))"))
+    assert not solver._order4_anchored_bare_hypothesis(
+        solver.parse_equation("x ◇ y = (y ◇ (z ◇ w)) ◇ x"))
+    # Same root anchor and multiplicities, but a different nesting/repetition
+    # pattern; this known-FALSE-shaped neighbour must not pay the long route.
+    assert not solver._order4_anchored_bare_hypothesis(
+        solver.parse_equation("x = x ◇ (y ◇ ((y ◇ z) ◇ x))"))
+
+
+@pytest.mark.parametrize("eq1_text,eq2_text", [
+    ("x ◇ y = y ◇ ((z ◇ x) ◇ x)", "x ◇ y = z ◇ w"),
+    ("x ◇ y = y ◇ ((z ◇ w) ◇ x)", "x ◇ y = y ◇ x"),
+    ("x ◇ y = (y ◇ (y ◇ z)) ◇ x", "x ◇ x = (y ◇ y) ◇ x"),
+    ("x ◇ y = (y ◇ (z ◇ w)) ◇ x", "x ◇ x = y ◇ (z ◇ y)"),
+])
+def test_distilled_product_constant_motifs_close_goals(
+        solver, eq1_text, eq2_text):
+    solver.clear_term_caches()
+    eq1 = solver.parse_equation(eq1_text)
+    eq2 = solver.parse_equation(eq2_text)
+    started = time.monotonic()
+    got = solver.distilled_product_constant_route(eq1, eq2)
+    elapsed = time.monotonic() - started
+    assert got is not None
+    route, code = got
+    assert route.startswith("true:distilled:product_constant:")
+    assert elapsed < 2.0
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+    assert len(code.encode("utf-8")) <= solver.MAX_LEAN_CODE_BYTES
+
+
+def test_distilled_product_constant_requires_the_full_motif(solver):
+    neighbour = solver.parse_equation("x ◇ y = y ◇ ((z ◇ x) ◇ z)")
+    goal = solver.parse_equation("x ◇ y = z ◇ w")
+    assert solver.distilled_product_constant_route(neighbour, goal) is None
+
+
+@pytest.mark.parametrize("eq1_text,eq2_text,motif", [
+    ("x = y ◇ (x ◇ (x ◇ (x ◇ x)))",
+     "x = y ◇ (z ◇ (w ◇ (u ◇ x)))", "right_power"),
+    ("x = (((x ◇ x) ◇ x) ◇ x) ◇ y",
+     "x = (((x ◇ y) ◇ z) ◇ w) ◇ u", "left_power"),
+    ("x = y ◇ (x ◇ (x ◇ (z ◇ x)))",
+     "x = y ◇ (z ◇ (w ◇ (u ◇ x)))", "right_inner_free"),
+    ("x = y ◇ (x ◇ (z ◇ (y ◇ x)))",
+     "x = y ◇ (z ◇ (w ◇ (u ◇ x)))", "right_crossed"),
+    ("x = (((x ◇ y) ◇ x) ◇ x) ◇ z",
+     "x = (((x ◇ y) ◇ z) ◇ w) ◇ u", "left_inner_free"),
+])
+def test_distilled_spine_constancy_closes_hard_spine_classes(
+        solver, eq1_text, eq2_text, motif):
+    solver.clear_term_caches()
+    eq1 = solver.parse_equation(eq1_text)
+    eq2 = solver.parse_equation(eq2_text)
+    started = time.monotonic()
+    got = solver.distilled_spine_constancy_route(eq1, eq2)
+    elapsed = time.monotonic() - started
+    assert got is not None
+    route, code = got
+    assert route == f"true:distilled:spine_constancy:{motif}"
+    assert elapsed < 2.0
+    oracles.check_true_lemma_chain_certificate(code, eq1, eq2)
+    assert oracles.find_judge_banned_token(code) is None
+    assert len(code.encode("utf-8")) <= solver.MAX_LEAN_CODE_BYTES
+
+
+def test_distilled_spine_constancy_requires_a_proven_motif(solver):
+    goal = solver.parse_equation("x = y ◇ (z ◇ (w ◇ (u ◇ x)))")
+    neighbour = solver.parse_equation("x = y ◇ (x ◇ (z ◇ (z ◇ x)))")
+    assert solver.distilled_spine_constancy_route(neighbour, goal) is None
 
 
 # --------------------------------------------------------------------------

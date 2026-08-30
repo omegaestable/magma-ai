@@ -1,0 +1,16 @@
+deep20k seed 2026: tested 20000 fails 0  (48.5s)
+deep20k seed 8291: tested 20000 fails 0  (90.8s)
+deep20k seed 77771: tested 20000 fails 0  (113.8s)
+--- validated removal ---
+  DROP  B1s|rd:A0        (fired 0) -> 11 rules
+  KEEP  Bs|rd:A0         (fired 0)  12 fails
+  DROP  A0s              (fired 0) -> 10 rules
+  DROP  A0s,B1s          (fired 0) -> 9 rules
+  KEEP  A0s,B1s|rd:A0    (fired 0)  45 fails
+  KEEP  As               (fired 0)  75 fails
+  KEEP  Bs|ex:Qa         (fired 0)  3 fails
+  KEEP  Bs|ex:Qb         (fired 0)  2 fails
+  DROP  Bs|ex:Qc         (fired 0) -> 8 rules
+  DROP  Bs               (fired 1) -> 7 rules
+  DROP  B1s              (fired 2) -> 6 rules
+minimised 12 -> 6 rules, dropped ['B1s|rd:A0', 'A0s', 'A0s,B1s', 'Bs|ex:Qc', 'Bs', 'B1s']

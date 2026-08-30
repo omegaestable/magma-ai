@@ -1,5 +1,18 @@
 # Latest handoff — 2026-08-28 (deterministic pass: 4x faster, 96 KB lighter)
 
+## 2026-08-29 order-4 sweep addendum
+
+The latest order-4 campaign is **399,618 / 400,000 solved (99.9045%)** across
+three campaign batches, leaving **382 skips** (362 labelled TRUE and 20 labelled
+FALSE). Across the audited Aug 20 + Aug 25–29 campaigns there are **930,000
+row evaluations / 929,955 unique IDs**; the historical failure-ledger union is
+652 rows (603 TRUE, 49 FALSE). There were 0 crashes, oracle failures, or label
+mismatches in the latest run. Every latest miss has a four-operation hypothesis
+and 293/382 have a bare-variable side. The active improvement plan and
+ready-to-paste implementation prompt are
+`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`; this supersedes the older
+order-4 frontier numbers elsewhere in this historical handoff.
+
 Evidence: `stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`.
 No LLM calls. **Official 1869/1869 and HF 800/800, both isolated, 0 lost / 0
 gained / 0 flips / 0 oracle failures by row id; official solver time

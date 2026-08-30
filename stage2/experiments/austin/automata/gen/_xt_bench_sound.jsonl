@@ -1,0 +1,9 @@
+{"eq": 32281, "mod": "closedform2+sound", "dualized": true, "nrules": 25, "extract_s": 4.42, "validate_s": 38.1, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}
+{"eq": 33020, "mod": "closedform2+sound", "dualized": true, "nrules": 17, "extract_s": 3.2, "validate_s": 24.9, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}
+{"eq": 34889, "mod": "closedform2+sound", "dualized": true, "nrules": 3, "extract_s": 1.77, "validate_s": 2.9, "fails": 3, "value_fails": 3, "kinds": {"value:exh9/1": 2, "value:deep": 1}, "dropped": ["B0l~"]}
+{"eq": 40037, "mod": "closedform2+sound", "dualized": true, "nrules": 6, "extract_s": 1.58, "validate_s": 7.5, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}
+{"eq": 12087, "mod": "closedform2+sound", "dualized": false, "nrules": 11, "extract_s": 2.99, "validate_s": 20.7, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}
+{"eq": 11081, "mod": "closedform2+sound", "dualized": false, "nrules": 22, "extract_s": 5.27, "validate_s": 34.4, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}
+{"eq": 24200, "mod": "closedform2+sound", "dualized": false, "nrules": 15, "extract_s": 3.53, "validate_s": 6.9, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}
+{"eq": 8485, "mod": "closedform2+sound", "dualized": false, "nrules": 34, "extract_s": 8.18, "validate_s": 97.4, "fails": 1, "value_fails": 1, "kinds": {"value:critical": 1}, "dropped": []}
+{"eq": 10218, "mod": "closedform2+sound", "dualized": false, "nrules": 63, "extract_s": 11.62, "validate_s": 97.5, "fails": 0, "value_fails": 0, "kinds": {}, "dropped": []}

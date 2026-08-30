@@ -16,9 +16,9 @@ construction cannot carry) — not a budget.
 
 | | |
 | --- | --- |
-| Accepted / shipped | **37 / 100** (`certs/ledger.jsonl`; 37 `DISTILLED_CERTS` entries; 37 fixture pins) |
-| Artifact | 444,643 B (55 KB headroom), gate 514 passed / 2 skipped, spotcheck 90/90 |
-| Open | 63 rows, 40 hypotheses; up to duality **27 distinct laws** (the ledger below) |
+| Accepted / shipped | **46 / 100** (`certs/ledger.jsonl`; 46 `DISTILLED_CERTS` entries; 46 fixture pins) — updated 2026-08-29 evening, session 7 |
+| Artifact | **423,307 B (76.7 KB headroom)** measured on HEAD + the 46 certificates, after the packer moved to lzma |
+| Open | 54 rows, 29 hypotheses; up to duality **20 distinct laws** |
 | Accepted construction | the **free model** (readings) as a finite recursive rule system, certified by the 5107 template; dual rows by transplant (`dualcert.py`, both directions) |
 
 ## The mathematics, stated once
@@ -133,3 +133,130 @@ lexicographic gate; tactic macros; sonnet proofs; the `exist` mode and `cap2=100
 # exhaustive small-term check of the closed form / the semantic model
 .\.venv\Scripts\python.exe stage2/experiments/austin/automata/smallcheck.py 11081 9 1 --closed
 ```
+
+---
+
+# Session 7 (2026-08-29, evening) — 37 → 46, and the open set re-sorted
+
+Nine rows shipped, each re-verified by an independent second judge pass (`verify_certs.py`, 9/9 accepted):
+
+| rows | law | how |
+| --- | --- | --- |
+| 0034, 0044, 0075 | 6878 / 39126 | `gen/rec6878_rep.lean` was already a **complete, correct, macro-free proof** sitting on disk at 22,681 B against the 20,000 B cap. `squeeze.py --rename` took it to 19,205 B, accepted unchanged; `dualcert.py` transplanted it to both dual rows |
+| 0002 | 39163 | the five tactic macros replaced by ordinary lemmas; 19,360 B, accepted on judge call 1 of 20 |
+| 0001, 0087 | 24200 | proved. The invariant this document asked for ("T2 and T4 always free") was proved **in general** as `FREE (a b) : op (op a b) b = J (op a b) b`, not just along the chain |
+| 0021, 0045 | 5837 | all six sorries closed; `main` rewritten rather than patched |
+| 0077 | 38565 | model 30 rules → 3; **the 3-rule set was FALSE** and the agent found it — see the validation section |
+
+## Four corrections to this document's own diagnoses, each measured
+
+1. **The `revalidate.py` "extraction timeout" is not extraction.** `Extractor.rules()` costs **0.2–0.3 s** on
+   every one of 10222 / 36524 / 12294 / 10218 / 8485. What it returns is **83–218 rules**; `Closed.op` is
+   O(rules) per call, so one deep test costs 25–63 ms, and the full validator — re-run once per rule by the
+   minimiser — is quadratic in the rule count. **Capping `cap2` buys nothing**: extraction is under two
+   seconds at any `cap2`, and with subsumption the rule count stops depending on it at all. The fix is fewer
+   rules. See `gen/EXTRACTOR_NOTES.md` and `gen/SEMANTIC_TABLE.md`.
+2. **The identity-law class is bigger than five.** `python smallcheck.py <eq> 9 1` runs the law over all
+   12,167 one-generator assignments in the SEMANTIC free model; `--closed` does the same in the extracted
+   rule system. Semantic-clean plus extracted-broken means an extractor hole; semantic-broken means no rule
+   set can work. Measured for every open law in `gen/SEMANTIC_TABLE.md`. **9663 / 36487 (3 rows),
+   10222 / 35836 (2 rows) and 12294 (1 row) are identity laws**, not repair tasks — 9663 is filed here as
+   "49 rules, one fuzz failure", which was the extracted system faithfully agreeing with a wrong model.
+   Conversely **32281 (0 semantic fails against 134 extracted), 33020 / 12883 (0 against a wholly false
+   skeleton) and 34889 (2 against 192) are pure extractor holes** — nine rows filed here as broken models.
+3. **21866 is not in the identity class either.** 18,515 failures at one generator and 7,744 at two
+   generators, against 13–68 with **zero** two-generator failures for the identity laws. Its distinguishing
+   feature: `w` occurs exactly once, so the reading is existential in `w`. That is plausibly
+   *under-determination* — resolvable by choosing a canonical witness — rather than a forced identity, which
+   would make it easier, not harder. Nobody has tested that.
+4. **A real, general bug in the extractor, now fixed** in `gen/closedform2.py` (a drop-in replacement;
+   `closedform.py` untouched): `decoder_expr` / `decoder_of` hardcoded the decoder variable as the literal
+   name **`y`**. The decoder is the variable on the bare side of the law, which after `normalise` +
+   `dual_pat` is `z` for **32281, 34889 and 40037** — all three dualised. Every lazy-decode rule for those
+   laws located the decoder at the wrong position, which is exactly their extracted-versus-semantic gap.
+   `closedform2` also prunes subsumed rules: 10222 168→88, 12294 218→132, 10218 140→63, 8485 83→38,
+   12234 169→61, 6878 98→44, 39163 100→60.
+
+## The validation standard has to rise again — the 38565 finding
+
+38565's model passed `revalidate.py` (OK, 30 rules → 3, 0 failures), then **126 hand-built coincidence
+instances, `rv.run_tests` on 9 seeds, and 13 × 20,000 deep tests** — and was still FALSE. The hole was found
+only by writing the **free/decoded case tree** of the law's own evaluation chain and building an instance per
+cell. For 38565 the chain is `s1 = op x z`, `s2 = op z s1`, `s3 = op s2 y`, `s4 = op y s3`, and the missing
+cell was `(s1 DECODED and s3 DECODED)`, which occurs **0 times in 30,000 random draws** of any shape the
+fuzzers generate. To force `op(a,b)` to decode, set `b` to the free encoding of the law's right-hand side with
+`y := a`, then nest that construction for a second decoded product (`gen/_x38565_dd.py`).
+
+**New standard, before any proof work: enumerate the 2^k free/decoded combinations of the k chain products,
+build one instance per reachable combination by chained encoding, and check every one.** The deep and fuzz
+suites only ever reach the one or two shallow cells. The same finding condemns validated removal on its own:
+it drops exactly the rules whose only witnesses live in the deep cells.
+
+## Method artifacts written this session — read these before assigning any agent
+
+| file | what it is |
+| --- | --- |
+| `gen/PLAYBOOK_PROOF.md` | the Lean method distilled from the accepted certificates, 27 snippets all compiled. **Section 3 is the lever for heavy laws**: `TRpre` / `Pdig` / `Wdig` collapse a 24-rule model to a ~1,900-byte digest with no per-rule lemma, and `gen/_pb_common.py` computes the digest precondition. It also establishes a hard wall — `split` fails with "maximum number of steps exceeded" past about ten rules and there is no option to raise it, so the digest is not an optimisation, it is the only route |
+| `gen/PLAYBOOK_REPAIR.md` | the repair method, self-validated by re-doing law 9667's repair end to end. Its section 9 decision rule is what re-sorted the open set |
+| `gen/EXTRACTOR_NOTES.md`, `gen/closedform2.py` | the extractor fixes above, with before/after rule counts |
+| `gen/SEMANTIC_TABLE.md` | semantic versus extracted failure counts for every open law, and the track each belongs to |
+| `gen/IDENTITY_INSTANCES.md` | the smallest failing instances of every semantically-broken law |
+| `jlock.py` | pins `JUDGE_LEAN_PATH` and caps concurrent Lean judges (`JUDGE_SLOTS`, default 5). **Parallel judging is safe now** — two simultaneous calls measured 13 s each |
+| `verify_certs.py` | re-judges every `certs/*.lean` against the real judge. An agent's claim of acceptance is not evidence |
+| `xtrans.py` | the cross-model transplant screen |
+| `gen/_orch_minim.py` | extract, then minimise, then full-validate, for the huge rule sets |
+
+## Byte budget: solved, with room
+
+`minify_submission.py` now packs with **lzma (preset 9 | EXTREME) instead of zlib**. The certificate table is
+about 600 KB of Lean whose entries share a long preamble, and zlib's 32 KB window cannot see across two 19 KB
+certificates. Measured on the 46-entry table: **zlib + base85 112,379 B, lzma + base85 50,155 B**. The
+artifact built from HEAD plus all 46 certificates is **423,307 B, 76.7 KB headroom** — smaller than the
+444,643 B this session started from, while carrying nine more certificates. `lzma` is stdlib. Verified: the
+packed artifact imports and all 46 certificates round-trip byte-exact. `SUBMISSION_NOTE.md` should name lzma
+alongside zlib.
+
+## The quotient construction — three independent designs converged
+
+Three agents attacked the identity laws from different directions (tag constructors on the free magma;
+normal forms of a completed rewrite system; a carrier that is not the free magma) and **all three concluded
+that every square must be identified with a single element**. Two produced carriers for 12073
+(`x = y ◇ (((y◇x)◇x)◇(z◇z))`):
+
+* normal-form, no quotient type: `M ::= g n | K | E t | J a b`, with `K` the normal form of every square and
+  `E u` the normal form of `u ◇ K`, and `op` computing straight into normal form;
+* tag: `M ::= g n | E | J u v` with `E` a single **0-ary** constructor identified with every square — *not*
+  the argument-carrying `K y` this document proposed — and `op` a six-branch ordered chain over a
+  well-founded measure.
+
+The third derived it as a theorem: with `S_z = z◇z`, `psi_y(x) = (y◇x)◇x` and `E(y,z) = psi_y(y)◇S_z`, the
+substitutions `x := y` and then `x := E(y,z')` give `psi_y(E) = y`, hence `E(y,z') = y◇(y◇S_z)`, so `E` does
+not depend on `z'`. Their full reports are in the workflow journal at
+`.claude/projects/.../subagents/workflows/wf_511b985a-b21/journal.jsonl`.
+
+**The synthesis agent that was to verify these and write `gen/PLAYBOOK_QUOTIENT.md` died on the session
+limit; that file does not exist.** Writing it — re-running each claimed model under the case-tree standard
+above before trusting any of them — is the first job of the next session, and it is worth 17 rows.
+
+## Where the remaining 54 rows stand
+
+* **Track A — model validated, proof outstanding (13 rows):** 12087 (3-rule model, 2 rows), 23354 (3-rule,
+  1 row, blocked on `core_no_fix` by strong induction), 12234 (1), 38316 (2), 17286 / 28626 (4),
+  11081 / 35036 (4 — 24 rules, use PLAYBOOK_PROOF section 3), 13764 / 32294 (3 — 67 rules, whose definition
+  block alone is 54,402 B, 2.7× the cap, so minimise first or the law is unreachable).
+* **Track B — extractor holes (15 rows):** 32281 (3), 33020 / 12883 (3), 34889 (3) — re-extract with
+  `closedform2` first, the hardcoded-`y` bug is theirs — plus 40037 (1), 8485 (1), 10218 (1), 36524 (1),
+  6912 / 39214 (3, gate-cut), 21864 / 24199 (2).
+* **Track C — identity laws (17 rows):** 12073 (2), 27859 (2), 21865 (2), 22591 (3), 9663 / 36487 (3),
+  10222 / 35836 (2), 12294 (1), 21866 (2 — the outlier, see correction 3).
+
+## Two things that cost this session, so they need not cost the next
+
+* **`fable` ran out of credits mid-run and killed 16 agents at once**, then the session limit killed 22 more.
+  Agents that write findings to `gen/` as they go lose nothing; agents that report only at the end lose
+  everything. Prefer prompts that persist incrementally. Replacing the `fable` override with the session
+  model worked — the 24200 and 5837 proofs came from that second wave.
+* **A concurrent session was editing `stage2/solver/solver.py`** — 609 lines of new anchored-projection
+  routes appeared mid-session. Three `test_judge_verified` pins (`etp_2923_156`, `etp_3983_3800`,
+  `etp_3983_4296`) fail in the working tree and pass at HEAD; they belong to that work, not to the Austin
+  certificates. Check `git status` for a foreign diff before blaming the gate.

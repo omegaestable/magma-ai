@@ -1,0 +1,8 @@
+ruleset live7 nrules 7 seeds [3, 4, 5]
+  R1 [free] J?v & J?v.1 & u = v.1.2 & J?v.2 & J?v.2.2 & v.2.1 = v.2.2.1 & u = v.2.2.2 -> v.2.1
+  R2 [B11l] J?v & J?v.1 & u = v.1.2 & J?v.2 & op(v.2.1, u) == v.2.2 -> v.2.1
+  R3 [B1l,B11v] J?v & J?v.1 & u = v.1.2 & J?u & J?u.1 & J?op(u.1.2, u) & J?op(u.1.2, u).1 & op(op(u.1.2, u).1.2, op(u.1.2, u)) == v.2 & u.1.2 = op(u.1.2, u).1.2 -> u.1.2
+  R4 [B0l] J?v & J?v.2 & J?v.2.2 & v.2.1 = v.2.2.1 & u = v.2.2.2 & J?u & J?u.1 & op(u.1.2, u) == v.1 -> v.2.1
+  R5 [B0l|B0:flff] J?v & J?v.2 & J?v.2.2 & v.2.1 = v.2.2.1 & u = v.2.2.2 & J?u & J?u.2 & v.1 = u.2.1 & J?u.2.2 & v.1 = u.2.2.1 & J?u.2.2.2 & J?u.2.2.2.1 & op(u.2.2.2.1.2, u.2.2.2) == u.1 & op(u.2.2.2, u) == v.1 -> v.2.1
+  R6 [B0l,B11l] J?v & J?v.2 & J?u & J?u.1 & op(u.1.2, u) == v.1 & op(v.2.1, u) == v.2.2 -> v.2.1
+  R7 [B0l,B1l,B11v] J?v & J?u & J?u.1 & op(u.1.2, u) == v.1 & J?op(u.1.2, u) & J?op(u.1.2, u).1 & op(op(u.1.2, u).1.2, op(u.1.2, u)) == v.2 & u.1.2 = op(u.1.2, u).1.2 -> u.1.2

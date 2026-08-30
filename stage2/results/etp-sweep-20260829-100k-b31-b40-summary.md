@@ -1,0 +1,136 @@
+# Sweep report: etp-sweep-20260829-100k-b31-b40
+
+- rows: **100000**
+- solved: **99899 (99.899%)**
+- soundness events (oracle failure / label mismatch): **0**
+- crashes: **0**
+- skips: **101**
+- solver-claimed verdicts: {'false': 49994, 'true': 49905}
+- TRUE certs with no independent verification (vacuous battery, unsupported shape): 443, 547
+- seconds: total 17541.7, mean 0.175, p50 0.005, p95 0.329, p99 0.666, slowest solved 59.098
+
+## Route families
+
+- `witness`: 46866
+- `completion`: 23641
+- `singleton`: 23172
+- `spine`: 1757
+- `constancy`: 1202
+- `linear`: 1142
+- `universal_identity`: 431
+- `rewrite`: 301
+- `absorption_context_bridge`: 262
+- `enum_fin3`: 184
+- `absorption_closure`: 81
+- `equational_closure`: 69
+- `tail_square_singleton`: 66
+- `derived_cp_closure`: 52
+- `egg_collapse`: 40
+- `sandwich_repeat_singleton`: 35
+- `deep_repeat_singleton`: 33
+- `paired_tail_singleton`: 32
+- `wrapped_tail_singleton`: 31
+- `affine`: 30
+- `mirrored_alternating_front_self_collapse`: 30
+- `outer_sandwich_singleton`: 29
+- `nested_square_singleton`: 29
+- `lemma_chain`: 27
+- `reverse_deep_repeat_singleton`: 27
+
+## Failure clustering by hypothesis law
+
+- eq1 `2095`: 23 failures
+- eq1 `1517`: 21 failures
+- eq1 `650`: 8 failures
+- eq1 `2923`: 8 failures
+- eq1 `3577`: 7 failures
+- eq1 `3565`: 7 failures
+- eq1 `3967`: 7 failures
+- eq1 `3983`: 6 failures
+- eq1 `463`: 3 failures
+
+Failure shapes: {'eq1_bare_variable_side': 73, 'eq1_vars': {4: 13, 3: 80, 2: 8}, 'eq1_ops': {4: 101}}
+
+## Failure ledger
+
+- `etp_3983_4265` [skip, label=true, 60.023s] eq1 `x ◇ y = (y ◇ (z ◇ w)) ◇ x` => eq2 `x ◇ y = ((z ◇ w) ◇ u) ◇ w`
+- `etp_1517_828` [skip, label=true, 60.083s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = x ◇ ((x ◇ y) ◇ (z ◇ x))`
+- `etp_3051_3086` [skip, label=true, 60.011s] eq1 `x = (((x ◇ x) ◇ x) ◇ x) ◇ y` => eq2 `x = (((x ◇ y) ◇ z) ◇ x) ◇ y`
+- `etp_1517_3376` [skip, label=true, 60.065s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x ◇ y = y ◇ (z ◇ (w ◇ z))`
+- `etp_3577_4113` [skip, label=true, 60.11s] eq1 `x ◇ y = y ◇ ((z ◇ w) ◇ x)` => eq2 `x ◇ x = ((y ◇ z) ◇ w) ◇ y`
+- `etp_2095_4359` [skip, label=true, 60.021s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ (y ◇ z) = x ◇ (z ◇ w)`
+- `etp_650_2477` [skip, label=true, 60.003s] eq1 `x = x ◇ (y ◇ ((z ◇ x) ◇ y))` => eq2 `x = (x ◇ ((y ◇ z) ◇ x)) ◇ y`
+- `etp_2923_2351` [skip, label=true, 59.996s] eq1 `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x` => eq2 `x = (y ◇ (y ◇ (z ◇ y))) ◇ x`
+- `etp_487_4118` [skip, label=true, 60.026s] eq1 `x = y ◇ (x ◇ (z ◇ (y ◇ x)))` => eq2 `x ◇ y = ((x ◇ x) ◇ x) ◇ y`
+- `etp_463_3877` [skip, label=true, 60.0s] eq1 `x = y ◇ (x ◇ (x ◇ (x ◇ x)))` => eq2 `x ◇ x = (y ◇ (x ◇ x)) ◇ x`
+- `etp_1517_140` [skip, label=true, 60.083s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = y ◇ ((z ◇ y) ◇ z)`
+- `etp_3565_3876` [skip, label=true, 60.089s] eq1 `x ◇ y = y ◇ ((z ◇ x) ◇ x)` => eq2 `x ◇ x = (x ◇ (y ◇ z)) ◇ w`
+- `etp_2095_3507` [skip, label=true, 60.017s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ x = y ◇ ((z ◇ w) ◇ u)`
+- `etp_2095_3436` [skip, label=true, 60.013s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ y = z ◇ (w ◇ (y ◇ y))`
+- `etp_1517_1776` [skip, label=true, 60.041s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (y ◇ z) ◇ ((y ◇ y) ◇ x)`
+- `etp_1517_3113` [skip, label=true, 60.042s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (((y ◇ x) ◇ y) ◇ x) ◇ y`
+- `etp_650_862` [skip, label=true, 60.005s] eq1 `x = x ◇ (y ◇ ((z ◇ x) ◇ y))` => eq2 `x = x ◇ ((y ◇ z) ◇ (z ◇ z))`
+- `etp_3577_43` [skip, label=true, 60.177s] eq1 `x ◇ y = y ◇ ((z ◇ w) ◇ x)` => eq2 `x ◇ y = y ◇ x`
+- `etp_650_423` [skip, label=true, 60.003s] eq1 `x = x ◇ (y ◇ ((z ◇ x) ◇ y))` => eq2 `x = x ◇ (x ◇ (y ◇ (z ◇ y)))`
+- `etp_3565_4474` [skip, label=true, 60.005s] eq1 `x ◇ y = y ◇ ((z ◇ x) ◇ x)` => eq2 `x ◇ (y ◇ y) = (x ◇ y) ◇ z`
+- `etp_2923_1847` [skip, label=true, 60.006s] eq1 `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x` => eq2 `x = (x ◇ (y ◇ x)) ◇ (x ◇ x)`
+- `etp_3067_3079` [skip, label=true, 60.015s] eq1 `x = (((x ◇ y) ◇ x) ◇ x) ◇ z` => eq2 `x = (((x ◇ y) ◇ y) ◇ y) ◇ y`
+- `etp_2850_4585` [skip, label=true, 60.0s] eq1 `x = ((x ◇ (x ◇ x)) ◇ y) ◇ y` => eq2 `(x ◇ x) ◇ x = (x ◇ y) ◇ y`
+- `etp_2095_2022` [skip, label=true, 60.13s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (y ◇ (z ◇ w)) ◇ (z ◇ w)`
+- `etp_2923_52` [skip, label=true, 60.005s] eq1 `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x` => eq2 `x = x ◇ (y ◇ (x ◇ x))`
+- `etp_1517_515` [skip, label=true, 60.044s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = y ◇ (y ◇ (y ◇ (y ◇ z)))`
+- `etp_2095_4329` [skip, label=true, 60.044s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ (y ◇ x) = z ◇ (x ◇ w)`
+- `etp_3577_3491` [skip, label=true, 60.089s] eq1 `x ◇ y = y ◇ ((z ◇ w) ◇ x)` => eq2 `x ◇ x = y ◇ ((z ◇ x) ◇ x)`
+- `etp_2308_4094` [skip, label=true, 60.13s] eq1 `x = (y ◇ (x ◇ (y ◇ z))) ◇ z` => eq2 `x ◇ x = ((y ◇ y) ◇ y) ◇ y`
+- `etp_511_614` [skip, label=false, 60.0s] eq1 `x = y ◇ (y ◇ (y ◇ (x ◇ y)))` => eq2 `x = x ◇ (x ◇ ((x ◇ x) ◇ x))`
+- `etp_3967_4511` [skip, label=true, 60.026s] eq1 `x ◇ y = (y ◇ (y ◇ z)) ◇ x` => eq2 `x ◇ (y ◇ z) = (x ◇ y) ◇ y`
+- `etp_2923_1832` [skip, label=true, 59.996s] eq1 `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x` => eq2 `x = (x ◇ (x ◇ x)) ◇ (x ◇ x)`
+- `etp_3967_3685` [skip, label=true, 60.004s] eq1 `x ◇ y = (y ◇ (y ◇ z)) ◇ x` => eq2 `x ◇ x = (y ◇ y) ◇ (x ◇ y)`
+- `etp_2923_3824` [skip, label=true, 60.007s] eq1 `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x` => eq2 `x ◇ y = (z ◇ z) ◇ (y ◇ y)`
+- `etp_1517_281` [skip, label=true, 60.033s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = ((y ◇ y) ◇ x) ◇ y`
+- `etp_650_3729` [skip, label=true, 60.002s] eq1 `x = x ◇ (y ◇ ((z ◇ x) ◇ y))` => eq2 `x ◇ y = (x ◇ y) ◇ (z ◇ z)`
+- `etp_1517_2506` [skip, label=true, 60.126s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (y ◇ ((x ◇ y) ◇ y)) ◇ x`
+- `etp_2095_166` [skip, label=true, 60.122s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (y ◇ x) ◇ (x ◇ x)`
+- `etp_2095_1842` [skip, label=true, 60.102s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (x ◇ (x ◇ y)) ◇ (y ◇ z)`
+- `etp_1517_3228` [skip, label=true, 60.159s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (((y ◇ z) ◇ w) ◇ x) ◇ y`
+- `etp_2095_389` [skip, label=true, 60.012s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ y = (y ◇ y) ◇ z`
+- `etp_3967_4456` [skip, label=true, 60.049s] eq1 `x ◇ y = (y ◇ (y ◇ z)) ◇ x` => eq2 `x ◇ (y ◇ x) = (z ◇ y) ◇ x`
+- `etp_1517_134` [skip, label=true, 60.033s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = y ◇ ((z ◇ x) ◇ x)`
+- `etp_3967_4345` [skip, label=true, 60.037s] eq1 `x ◇ y = (y ◇ (y ◇ z)) ◇ x` => eq2 `x ◇ (y ◇ y) = y ◇ (z ◇ x)`
+- `etp_2923_153` [skip, label=true, 60.007s] eq1 `x = ((y ◇ (x ◇ z)) ◇ y) ◇ x` => eq2 `x = (x ◇ x) ◇ (y ◇ x)`
+- `etp_2095_2288` [skip, label=true, 60.057s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (x ◇ (y ◇ (z ◇ w))) ◇ w`
+- `etp_2095_4464` [skip, label=true, 60.021s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ (y ◇ x) = (z ◇ w) ◇ x`
+- `etp_1517_1683` [skip, label=true, 60.083s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (y ◇ x) ◇ ((x ◇ x) ◇ z)`
+- `etp_1517_3996` [skip, label=true, 60.126s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x ◇ y = (z ◇ (x ◇ z)) ◇ x`
+- `etp_3577_4644` [skip, label=true, 60.052s] eq1 `x ◇ y = y ◇ ((z ◇ w) ◇ x)` => eq2 `(x ◇ y) ◇ x = (z ◇ x) ◇ w`
+- `etp_2381_1958` [skip, label=false, 60.09s] eq1 `x = (y ◇ (z ◇ (y ◇ x))) ◇ x` => eq2 `x = (y ◇ (z ◇ x)) ◇ (x ◇ x)`
+- `etp_3967_367` [skip, label=true, 60.062s] eq1 `x ◇ y = (y ◇ (y ◇ z)) ◇ x` => eq2 `x ◇ x = (y ◇ y) ◇ x`
+- `etp_1517_293` [skip, label=true, 60.008s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = ((y ◇ z) ◇ x) ◇ w`
+- `etp_3565_4402` [skip, label=true, 60.017s] eq1 `x ◇ y = y ◇ ((z ◇ x) ◇ x)` => eq2 `x ◇ (x ◇ y) = (x ◇ z) ◇ y`
+- `etp_2095_2520` [skip, label=true, 60.046s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (y ◇ ((x ◇ z) ◇ y)) ◇ w`
+- `etp_2095_202` [skip, label=true, 60.061s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (y ◇ z) ◇ (w ◇ u)`
+- `etp_3967_4559` [skip, label=true, 60.01s] eq1 `x ◇ y = (y ◇ (y ◇ z)) ◇ x` => eq2 `x ◇ (y ◇ z) = (w ◇ x) ◇ z`
+- `etp_3577_4616` [skip, label=true, 60.051s] eq1 `x ◇ y = y ◇ ((z ◇ w) ◇ x)` => eq2 `(x ◇ x) ◇ y = (z ◇ x) ◇ z`
+- `etp_3577_4679` [skip, label=true, 60.041s] eq1 `x ◇ y = y ◇ ((z ◇ w) ◇ x)` => eq2 `(x ◇ y) ◇ z = (y ◇ z) ◇ x`
+- `etp_650_2457` [skip, label=true, 60.006s] eq1 `x = x ◇ (y ◇ ((z ◇ x) ◇ y))` => eq2 `x = (x ◇ ((y ◇ x) ◇ x)) ◇ y`
+- `etp_1517_2531` [skip, label=true, 60.152s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (y ◇ ((y ◇ x) ◇ x)) ◇ y`
+- `etp_1517_871` [skip, label=true, 60.094s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = y ◇ ((x ◇ x) ◇ (x ◇ z))`
+- `etp_3565_4615` [skip, label=true, 60.012s] eq1 `x ◇ y = y ◇ ((z ◇ x) ◇ x)` => eq2 `(x ◇ x) ◇ y = (z ◇ x) ◇ y`
+- `etp_3342_3862` [skip, label=false, 60.006s] eq1 `x ◇ y = y ◇ (x ◇ (x ◇ x))` => eq2 `x ◇ x = (x ◇ (x ◇ x)) ◇ x`
+- `etp_1979_2024` [skip, label=false, 60.005s] eq1 `x = (y ◇ (z ◇ y)) ◇ (y ◇ x)` => eq2 `x = (y ◇ (z ◇ w)) ◇ (w ◇ x)`
+- `etp_1517_2890` [skip, label=true, 60.0s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = ((x ◇ (y ◇ z)) ◇ z) ◇ x`
+- `etp_650_828` [skip, label=true, 60.0s] eq1 `x = x ◇ (y ◇ ((z ◇ x) ◇ y))` => eq2 `x = x ◇ ((x ◇ y) ◇ (z ◇ x))`
+- `etp_3983_3480` [skip, label=true, 60.059s] eq1 `x ◇ y = (y ◇ (z ◇ w)) ◇ x` => eq2 `x ◇ x = y ◇ ((x ◇ z) ◇ w)`
+- `etp_1517_2216` [skip, label=true, 60.076s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = ((y ◇ z) ◇ w) ◇ (x ◇ u)`
+- `etp_3983_3993` [skip, label=true, 60.076s] eq1 `x ◇ y = (y ◇ (z ◇ w)) ◇ x` => eq2 `x ◇ y = (z ◇ (x ◇ y)) ◇ y`
+- `etp_2095_509` [skip, label=true, 60.067s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = y ◇ (y ◇ (x ◇ (z ◇ w)))`
+- `etp_1276_4332` [skip, label=false, 60.0s] eq1 `x = y ◇ (((x ◇ x) ◇ x) ◇ y)` => eq2 `x ◇ (y ◇ x) = z ◇ (y ◇ z)`
+- `etp_3565_3834` [skip, label=true, 60.01s] eq1 `x ◇ y = y ◇ ((z ◇ x) ◇ x)` => eq2 `x ◇ y = (z ◇ z) ◇ (w ◇ w)`
+- `etp_1517_507` [skip, label=true, 60.062s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = y ◇ (y ◇ (x ◇ (z ◇ y)))`
+- `etp_2095_3906` [skip, label=true, 60.011s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x ◇ x = (y ◇ (z ◇ z)) ◇ y`
+- `etp_3983_4150` [skip, label=true, 60.09s] eq1 `x ◇ y = (y ◇ (z ◇ w)) ◇ x` => eq2 `x ◇ y = ((x ◇ z) ◇ w) ◇ y`
+- `etp_2095_1250` [skip, label=true, 60.097s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = x ◇ (((y ◇ y) ◇ x) ◇ z)`
+- `etp_1517_1745` [skip, label=true, 60.047s] eq1 `x = (y ◇ y) ◇ (x ◇ (x ◇ z))` => eq2 `x = (y ◇ y) ◇ ((z ◇ y) ◇ w)`
+- `etp_2095_1518` [skip, label=true, 60.069s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (y ◇ y) ◇ (x ◇ (y ◇ x))`
+- `etp_2095_3139` [skip, label=true, 60.099s] eq1 `x = ((y ◇ x) ◇ x) ◇ (z ◇ z)` => eq2 `x = (((y ◇ y) ◇ x) ◇ x) ◇ x`
+- ... 21 more in the ledger jsonl

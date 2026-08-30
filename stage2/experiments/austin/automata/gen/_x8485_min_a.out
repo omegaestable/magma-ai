@@ -1,0 +1,7 @@
+variant a : 4 rules
+    [free] J?v & J?v.2 & J?v.2.1 & J?v.2.1.1 & v.1 = v.2.1.1.2 & u = v.2.1.2 & u = v.2.2 -> v.1
+    [zP@x212] J?v & J?v.1 & J?v.1.2 & J?v.1.2.1 & op(op(op(v.1.2.1.2, v.1), u), u) == v.2 -> v.1
+    [zP@u22] J?v & J?u & J?u.2 & J?u.2.2 & op(op(op(u.2.2.1, v.1), u), u) == v.2 -> v.1
+    [zP@u221] J?v & J?u & J?u.2 & J?u.2.2 & J?u.2.2.1 & op(op(op(u.2.2.1.1, v.1), u), u) == v.2 -> v.1
+exh9/1 tested 12167 fails 0  8.8s
+exh5/2 tested 10648 fails 0  2.8s

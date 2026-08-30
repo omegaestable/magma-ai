@@ -1,0 +1,30 @@
+variant h : 2 rules
+    [free] J?v & J?v.2 & J?v.2.1 & J?v.2.1.1 & v.1 = v.2.1.1.2 & u = v.2.1.2 & u = v.2.2 -> v.1
+    [zP@x22] J?v & J?v.1 & J?v.1.2 & op(op(op(v.1.2.2, v.1), u), u) == v.2 -> v.1
+exh9/1 tested 12167 fails 0  1.5s
+exh5/2 tested 10648 fails 0  1.2s
+deep 3 tested 3000 fails 1 (rec 0)  1.3s
+fuzz 3 tested 12000 fails 0 (rec 0)  2.1s
+clos 3 tested 12000 fails 0 (rec 0)  3.8s
+crit 3 tested 2433 fails 21 (rec 0)  0.5s
+deep 4 tested 3000 fails 0 (rec 0)  1.4s
+fuzz 4 tested 12000 fails 0 (rec 0)  2.0s
+clos 4 tested 12000 fails 0 (rec 0)  2.8s
+crit 4 tested 1483 fails 21 (rec 0)  0.3s
+deep 5 tested 3000 fails 1 (rec 0)  1.2s
+fuzz 5 tested 12000 fails 0 (rec 0)  2.3s
+clos 5 tested 12000 fails 0 (rec 0)  2.5s
+crit 5 tested 2408 fails 21 (rec 0)  0.5s
+TOTAL value fails 65
+  FAIL deep seed 3 sizes {'y': 13, 'x': 1, 'z': 1}
+     {'y': "('J', ('g', 1), ('J', ('J', ('J', ('g', 1), ('g', 1)), ('J', ('g', 1), ('g', 1))), ('J', ('g', 1), ('g', 1))))", 'x': "('g', 1)", 'z': "('g', 1)"}
+  FAIL crit seed 3 sizes {'y': 19, 'x': 1, 'z': 1}
+     {'y': "('J', ('J', ('g', 0), ('g', 3)), ('J', ('J', ('J', ('J', ('g', 0), ('g', 0)), ('J', ('g', 0), ('g', 3))), ('J', ('g', 3), ('g', 0))), ('J', ('g', 3), ('g', 0))))", 'x': "('g', 0)", 'z': "('g', 3)"}
+  FAIL crit seed 3 sizes {'y': 13, 'x': 1, 'z': 1}
+     {'y': "('J', ('g', 3), ('J', ('J', ('J', ('g', 3), ('g', 3)), ('J', ('g', 3), ('g', 1))), ('J', ('g', 3), ('g', 1))))", 'x': "('g', 1)", 'z': "('g', 3)"}
+  FAIL crit seed 3 sizes {'y': 13, 'x': 1, 'z': 1}
+     {'y': "('J', ('g', 0), ('J', ('J', ('J', ('g', 1), ('g', 0)), ('J', ('g', 1), ('g', 0))), ('J', ('g', 1), ('g', 0))))", 'x': "('g', 0)", 'z': "('g', 1)"}
+  FAIL crit seed 3 sizes {'y': 19, 'x': 1, 'z': 1}
+     {'y': "('J', ('J', ('g', 0), ('g', 0)), ('J', ('J', ('J', ('J', ('g', 1), ('g', 1)), ('J', ('g', 0), ('g', 0))), ('J', ('g', 1), ('g', 0))), ('J', ('g', 1), ('g', 0))))", 'x': "('g', 0)", 'z': "('g', 1)"}
+  FAIL crit seed 3 sizes {'y': 17, 'x': 1, 'z': 1}
+     {'y': "('J', ('J', ('g', 1), ('g', 1)), ('J', ('J', ('J', ('g', 1), ('J', ('g', 1), ('g', 1))), ('J', ('g', 1), ('g', 1))), ('J', ('g', 1), ('g', 1))))", 'x': "('g', 1)", 'z': "('g', 1)"}

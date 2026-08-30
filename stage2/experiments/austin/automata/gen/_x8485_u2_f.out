@@ -1,0 +1,10 @@
+after exhaustive: {(True, False): 8892}
+  ... 4000, distinct pairs 53246, classes {(True, False): 12821, (False, True): 3}
+  ... 8000, distinct pairs 70307, classes {(True, False): 16721, (False, True): 10}
+  ... 12000, distinct pairs 87347, classes {(True, False): 20615, (False, True): 17}
+  ... 16000, distinct pairs 104464, classes {(True, False): 24533, (False, True): 21}
+  ... 20000, distinct pairs 121580, classes {(True, False): 28457, (False, True): 23}
+(A = u = a2 (a2 v), B = a2 v = a1 u)  counts:
+   A=True B=False : 28457
+   A=False B=True : 23
+   NOT-A example A=False B=True u=('J', ('g', 0), ('J', ('J', ('J', ('g', 0), ('g', 0)), ('g', 0)), ('g', 0))) v=('J', ('J', ('g', 0), ('J', ('J', ('J', ('J', ('g', 1), ('J', ('J', ('J', ('g', 1), ('g', 1)), ('g', 0)), ('g', 0))), ('g', 0)), ('g', 2)), ('g', 2))), ('g', 0))

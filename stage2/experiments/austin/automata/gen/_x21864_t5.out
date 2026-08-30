@@ -1,0 +1,16 @@
+law ('x', (('y', ('z', 'x')), ('x', ('x', 'y'))))  rules 11 : [R1,R2,R3,R4,R5,R4c,R5c,RA,R6d,R6e,RB]
+  R1  [free] J?u & J?u.2 & J?v & u.2.2 = v.1 & J?v.2 & u.2.2 = v.2.1 & u.1 = v.2.2 -> u.2.2
+  R2  [B1s] J?u & J?u.2 & J?v & u.2.2 = v.1 & op(u.2.2, u.1) == v.2 -> u.2.2
+  R3  [Bs] J?u & J?u.2 & op(u.2.2, op(u.2.2, u.1)) == v -> u.2.2
+  R4  [A1s] J?u & J?v & J?v.2 & v.1 = v.2.1 & u.1 = v.2.2 & J?v.1 & u.2 = v.1.1 & J?v.1.2 & u.2 = v.1.2.1 -> v.1
+  R5  [A1s,B1s] J?u & J?v & J?v.1 & u.2 = v.1.1 & J?v.1.2 & u.2 = v.1.2.1 & op(v.1, u.1) == v.2 -> v.1
+  R6  [A1s|l2] J?u & J?v & J?v.2 & v.1 = v.2.1 & u.1 = v.2.2 & J?v.1 & u.2 = v.1.1 & J?u.2 & J?u.2.2 & u.2.2.2 = v.1.2 -> v.1
+  R7  [A1s,B1s|l2] J?u & J?v & J?v.1 & u.2 = v.1.1 & J?u.2 & J?u.2.2 & u.2.2.2 = v.1.2 & op(v.1, u.1) == v.2 -> v.1
+  R8  [Arec] J?v & J?v.2 & v.1 = v.2.1 & J?v.1 & u = v.1.1 & op(v.2.2, J(u, J(u, v.1.2))) == u -> v.1
+  R9  [As|E2a] J?v & J?v.2 & v.1 = v.2.1 & J?v.2.2 & J?v.2.2.2 & u = v.2.2.2.2 & J?v.1 & v.1.1 = J(u, J(u, v.2.2.1)) & J?v.1.2 & v.1.2.1 = J(u, J(u, v.2.2.1)) -> v.1
+  R10 [As|E2b] J?v & J?v.2 & v.1 = v.2.1 & J?v.2.2 & J?v.2.2.2 & u = v.2.2.2.2 & J?v.1 & v.1.1 = J(u, J(u, v.2.2.1)) & v.1.2 = v.2.2.1 -> v.1
+  R11 [As|yEnc] J?v & J?v.2 & v.1 = v.2.1 & J?v.2.2 & J?u & u.1 = v.2.2.2 & J?u.2 & u.2.1 = v.2.2.2 & J?op(u, op(u, v.2.2.1)) & op(u, op(u, v.2.2.1)).2 = v.1 -> v.1
+FAILS total 1  value 1  {'exh9/1:value': 1}   (63.1s)
+  1  A1:free A:R11 B1:R1 B:free | final=free ok=[] cut=False [exh9/1] {'y': '(g0*(g0*g0))', 'z': 'g0', 'x': '(g0*((g0*(g0*g0))*g0))'}
+      u=g0
+      v=((g0*((g0*(g0*g0))*g0))*g0)

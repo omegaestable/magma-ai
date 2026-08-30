@@ -1,0 +1,28 @@
+======================================================================
+LAW 12073
+squares op(z,z) over 471 terms -> 1 distinct value(s): ['E']
+exh<=9/1gen            n=302500     fails=0      6.2s
+exh<=5/2gen            n=4356       fails=0      0.1s
+exh<=5/3gen            n=21904      fails=0      0.2s
+exh x<=11 rest<=5      n=71236      fails=0      1.2s
+exh y<=11 rest<=5      n=71236      fails=0      1.1s
+deep seed3             n=20000      fails=0      0.4s
+closure seed3          n=12000      fails=0      0.2s
+critical seed3         n=12000      fails=0      0.3s
+deep seed4             n=20000      fails=0      0.5s
+closure seed4          n=12000      fails=0      0.2s
+critical seed4         n=12000      fails=0      0.2s
+deep seed5             n=20000      fails=0      0.4s
+closure seed5          n=12000      fails=0      0.2s
+critical seed5         n=12000      fails=0      0.3s
+deep seed7             n=20000      fails=0      0.4s
+closure seed7          n=12000      fails=0      0.2s
+critical seed7         n=12000      fails=0      0.3s
+deep seed11            n=20000      fails=0      0.5s
+closure seed11         n=12000      fails=0      0.2s
+critical seed11        n=12000      fails=0      0.3s
+deep seed13            n=20000      fails=0      0.5s
+closure seed13         n=12000      fails=0      0.2s
+critical seed13        n=12000      fails=0      0.2s
+VALIDATED
+LAW 12073 -> VALIDATED   (14 s)

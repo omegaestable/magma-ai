@@ -1,0 +1,18 @@
+FAIL 1: sizes x=53 y=33 z=33 ; S free? True ; paths: ['u', 'v.122', 'v.212', 'v.22']
+FAIL 2: sizes x=21 y=47 z=9 ; S free? True ; paths: ['v.122']
+FAIL 3: sizes x=21 y=29 z=9 ; S free? True ; paths: ['u.1', 'u.222111', 'v.122', 'v.2121', 'v.221']
+FAIL 4: sizes x=21 y=21 z=9 ; S free? True ; paths: ['u.22', 'v.122', 'v.21222', 'v.2222']
+failures 11
+  v.122        11
+  __ANY        11
+  u            1
+  v.212        1
+  v.22         1
+  u.222111     1
+  u.1          1
+  v.221        1
+  v.2121       1
+  u.22         1
+  v.21222      1
+  v.2222       1
+  u.21111      1

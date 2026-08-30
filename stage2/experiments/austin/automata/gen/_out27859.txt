@@ -1,0 +1,13 @@
+law 27859 x = ((y * (y * x)) * x) * (z * z) -> ('x', ((('y', ('y', 'x')), 'x'), ('z', 'z')))
+(a) carrier<=7 g1: pool 102, 1061208 assignments, 0 fails  [7.0s]
+(a) carrier<=6 g2: pool 66, 287496 assignments, 0 fails  [2.0s]
+(a) carrier<=4 g3: pool 20, 8000 assignments, 0 fails  [0.0s]
+(b) (y,x) over carrier<=9 g1: pool 550, 1815000 assignments, 0 fails  [13.3s]
+(b) (y,x) over carrier<=7 g2: pool 471, 1331046 assignments, 0 fails  [10.9s]
+(c) J-terms<=9 g1: pool 23, 12167 assignments, 0 fails  [0.0s]
+(c) J-terms<=5 g2: pool 22, 10648 assignments, 0 fails  [0.0s]
+(d) seed 195016: deep 0/20000 fails, closure 0/10000, critical 0/10000  [1.5s]
+(d) seed 362268: deep 0/20000 fails, closure 0/10000, critical 0/10000  [2.5s]
+(e) research_order5_hard_0050 goal 4916 (x = y * (x * (x * (y * (z * z))))): {'x': 'g0', 'y': 'g0', 'z': 'g0'}  ->  LHS g0  !=  RHS (g0.(g0.(g0.(g0.S))))
+(e) research_order5_hard_0099 goal 25964 (x = (y * ((x * x) * y)) * (z * z)): {'x': 'g0', 'y': 'g0', 'z': 'g0'}  ->  LHS g0  !=  RHS (S.g0)
+{"eq": 27859, "law": "x = ((y * (y * x)) * x) * (z * z)", "module": "nf27859", "exh_carrier_7_1": {"pool": 102, "n": 1061208, "fails": 0}, "exh_carrier_6_2": {"pool": 66, "n": 287496, "fails": 0}, "exh_carrier_4_3": {"pool": 20, "n": 8000, "fails": 0}, "exh_pair_9_1": {"pool": 550, "n": 1815000, "fails": 0}, "exh_pair_7_2": {"pool": 471, "n": 1331046, "fails": 0}, "exh_jterm9_1": {"pool": 23, "n": 12167, "fails": 0}, "exh_jterm5_2": {"pool": 22, "n": 10648, "fails": 0}, "fuzz_195016": {"deep": [20000, 0], "closure": [10000, 0], "critical": [10000, 0]}, "fuzz_362268": {"deep": [20000, 0], "closure": [10000, 0], "critical": [10000, 0]}, "goals": {"research_order5_hard_0050": {"eq2": 4916, "eq2_text": "x = y * (x * (x * (y * (z * z))))", "assign": {"x": "g0", "y": "g0", "z": "g0"}, "lhs": "g0", "rhs": "(g0.(g0.(g0.(g0.S))))"}, "research_order5_hard_0099": {"eq2": 25964, "eq2_text": "x = (y * ((x * x) * y)) * (z * z)", "assign": {"x": "g0", "y": "g0", "z": "g0"}, "lhs": "g0", "rhs": "(S.g0)"}}}

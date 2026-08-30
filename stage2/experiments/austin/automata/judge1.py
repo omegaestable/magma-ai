@@ -2,6 +2,7 @@
 import json, sys, subprocess, os, time
 sys.path.insert(0, os.path.dirname(__file__))
 from laws import load_rows, ROOT
+import jlock
 
 lean = open(sys.argv[1], encoding='utf-8').read()
 key = sys.argv[2]
@@ -27,9 +28,10 @@ with open(inp, 'w', encoding='utf-8') as f:
     f.write(json.dumps({'id': row['id'], 'equation1': row['equation1'].replace('*', '◇'), 'equation2': row['equation2'].replace('*', '◇'),
                         'eq1_id': row['eq1_id'], 'eq2_id': row['eq2_id'], 'verdict': verdict, 'code': lean}, ensure_ascii=False) + '\n')
 t0 = time.time()
-env = dict(os.environ, PYTHONIOENCODING='utf-8')
-p = subprocess.run([ROOT + '/.venv/Scripts/python.exe', ROOT + '/stage2/experiments/judge_cert_text.py', '--in', inp, '--out', out],
-                   capture_output=True, text=True, env=env, cwd=ROOT, encoding='utf-8', errors='replace')
+env = jlock.judge_env()
+with jlock.Slot():
+    p = subprocess.run([ROOT + '/.venv/Scripts/python.exe', ROOT + '/stage2/experiments/judge_cert_text.py', '--in', inp, '--out', out],
+                       capture_output=True, text=True, env=env, cwd=ROOT, encoding='utf-8', errors='replace')
 print(p.stdout[-3000:], p.stderr[-3000:])
 rows_out = [json.loads(l) for l in open(out, encoding='utf-8')]
 for f in (inp, out):

@@ -1,0 +1,8 @@
+law 23354: x = ((y * x) * y) * (x * (x * z))   (normalised: x = ((('y', 'x'), 'y'), ('x', ('x', 'z'))))
+deep tests: all rules 0/3000 fails; kept rules 0/3000 fails
+R1 [free] J?u & J?u.1 & u.1.1 = u.2 & J?v & u.1.2 = v.1 & J?v.2 & u.1.2 = v.2.1 -> u.1.2
+R2 [B1s] J?u & J?u.1 & u.1.1 = u.2 & J?v & u.1.2 = v.1 & J?u.1.2 & J?u.1.2.1 & v.2 = u.1.2.1.2 & u.1.2.1.1 = u.1.2.2 -> u.1.2
+R3 [A0s] J?u & J?v & J?v.2 & v.1 = v.2.1 & op(u.2, v.1) == u.1 -> v.1
+R4 [B1s|rd:A0] J?u & J?u.1 & u.1.1 = u.2 & J?v & u.1.2 = v.1 & J?u.1.2 & op(u.1.2.2, v.2) == u.1.2.1 -> u.1.2
+R5 [U2xV2] J?u & J?v & op(u.2, v.1) == u.1 & J?v.1 & J?v.1.1 & v.1.1.1 = v.1.2 & v.1.1.2 = v.2 -> v.1
+R6 [U2xV3] J?u & J?v & op(u.2, v.1) == u.1 & J?v.1 & op(v.1.2, v.2) == v.1.1 -> v.1

@@ -132,7 +132,7 @@ which stays the reference for them.
 | **Full combined evaluation set** — every published labelled file deduplicated by (eq1, eq2): `normal`+`hard1`+`hard2`+`hard3`+`sample_200`+`stress_test`+the four `evaluation_*` mirrors = **2,869 pairs** (+100 unlabelled research rows = 2,969; `sample_20`, `hard.jsonl`, the marathon example add nothing new) | **2869 / 2869 solved, 0 failed**, solver time 403.7 s (sum of per-row seconds), wall-clock 1m46.0s on 16 workers, 0.14 s/problem; 0 crashes / 0 oracle failures / 0 label mismatches. The research rows are 0/100 (`DEEP_SESSION_5_AUSTIN_HANDOVER.md`). A "2130/2130" figure quoted from the competition Zulip matches no union of the published files |
 | Extended official battery, first full pass (`--all` incl. `stress_test_200`) | **2089/2089 solved, 0 oracle failures, 260.4 s solver time (sum of per-row seconds; per-set wall on 16 workers: hard1 1.3 s, hard2 24.6 s, hard3 11.6 s, normal 14.0 s, sample_20 1.9 s, sample_200 7.4 s, stress_test_200 12.7 s)** |
 | Organizers' stress test (`stress_test_200`: 50 order-4 normal/hard/extra-hard + 50 order-5 normal, 100 T / 100 F) | **200 / 200, 0 oracle failures, all labels matched, 12.7 s** — promoted into `audit_corpus.py --all` the same day (it was under the gitignored `stage2/results/*.jsonl`) |
-| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **10 / 100 accepted by the real judge (evening session, was 0)** — the first infinite models of any Table-2 law: 8 rows by *tag automata* (term models with a few projection rules, found by a complete symbolic verifier + CEGIS search; 11116 ×3, 5066 ×2, 4952, and the duals 34888, 41252) and 2 by a *piecewise-linear model over ℚ* (25087 and its dual 20911). All ten ship as `false:distilled:aus_e*` (packed +5.8 KB; artifact **379,836 B**), byte-pinned (fixture 183 pins), gate **482–483 passed / 2–3 skipped** across two `-n auto` runs (skips: the spot-check placeholder and the documented timing route-drift flaps — `pytest -rs` lists them; none from the new pins; the fixture+golden files alone read 237 passed, 0 skipped). The remaining 90: the free model's repair hierarchy is infinite (its limit is a *recursive* fixed point — for 5107 a 4-rule model plus one structurally recursive auxiliary, 0/3,000 biased random failures, not yet certifiable: needs an inductive verifier and a recursive-op Lean template); 10 hypotheses are bad-orientation and must be solved on the dual (rail 39). Dead today: Prover9 300 s on 169 TRUE-side problems (169 timeouts), exact critical-pair completion (diverges), bounded-unfolding verification of recursive models (191k leaves at depth 2). Everything: `stage2/results/2026-08-28-austin-tag-automata.md`, tooling `stage2/experiments/austin/automata/`. Selectable with `--set research_order5_hard`, deliberately outside `--all` |
+| Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **46 / 100 accepted by the real judge (2026-08-29 deep session 7; was 37 that morning, 10 the previous evening)** — see `stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md`. Earlier state: **10 / 100** — the first infinite models of any Table-2 law: 8 rows by *tag automata* (term models with a few projection rules, found by a complete symbolic verifier + CEGIS search; 11116 ×3, 5066 ×2, 4952, and the duals 34888, 41252) and 2 by a *piecewise-linear model over ℚ* (25087 and its dual 20911). All ten ship as `false:distilled:aus_e*` (packed +5.8 KB; artifact **379,836 B**), byte-pinned (fixture 183 pins), gate **482–483 passed / 2–3 skipped** across two `-n auto` runs (skips: the spot-check placeholder and the documented timing route-drift flaps — `pytest -rs` lists them; none from the new pins; the fixture+golden files alone read 237 passed, 0 skipped). The remaining 90: the free model's repair hierarchy is infinite (its limit is a *recursive* fixed point — for 5107 a 4-rule model plus one structurally recursive auxiliary, 0/3,000 biased random failures, not yet certifiable: needs an inductive verifier and a recursive-op Lean template); 10 hypotheses are bad-orientation and must be solved on the dual (rail 39). Dead today: Prover9 300 s on 169 TRUE-side problems (169 timeouts), exact critical-pair completion (diverges), bounded-unfolding verification of recursive models (191k leaves at depth 2). Everything: `stage2/results/2026-08-28-austin-tag-automata.md`, tooling `stage2/experiments/austin/automata/`. Selectable with `--set research_order5_hard`, deliberately outside `--all` |
 | Full-deterministic question | **Keep the LLM lane** (optional in both modes, gated off without a proxy, kernel-checks everything, 5 judge-accepted TRUE certs since 2026-08-27 vs 0/433 before, ~+0.1 % expected on the order-5 quarter); same doc, §1 |
 
 The three solver changes: completion probe before egg probe (rail 34); the two
@@ -991,6 +991,62 @@ Rails 38–41 were measured on 2026-08-28 (evening, the Austin session —
     generator closes, not when it yields, so a sibling call sees the elevated
     depth and hits the limit. Thread the depth as an argument.
 
+Rails 47–51 were measured on 2026-08-29 (deep session 7, the Austin set 37 → 46;
+detail in `stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md` § "Session 7").
+
+47. **Harvest the working tree before generating anything new.** Three research rows
+    (0034, 0044, 0075) shipped in the first fifteen minutes of the session out of
+    `gen/rec6878_rep.lean` — a complete, correct, macro-free proof that had been sitting
+    on disk at 22,681 bytes against a 20,000-byte cap. `squeeze.py --rename` took it to
+    19,205 B, the judge accepted it unchanged, and `dualcert.py` transplanted it to both
+    dual rows. A fourth row (0002, law 39163) was one macro-removal away for the same
+    reason. The scan that finds these is two lines: every `gen/*.lean` with zero `sorry`s,
+    with its byte count and a banned-token grep. **A proof that is over the byte cap is a
+    finished proof, not a failed one** — the handover recorded both files as "unshippable"
+    rather than as "one squeeze away". Run the scan at the start of any session that
+    inherits a working tree.
+48. **`JUDGE_LEAN_PATH` makes the local judge safe to run in parallel.**
+    `vendor/stage2-official/judge/verify.py:_get_lake_lean_path` shells out to `lake env`
+    (30 s timeout) unless `JUDGE_LEAN_PATH` is set — which is why this file has always said
+    never to judge concurrently with a heavy job. Setting it from the cached `leanpath.txt`
+    removes the subprocess, and the judge's artifact directory is already content-hashed per
+    (problem, answer digest), so concurrent calls cannot collide on disk.
+    `stage2/experiments/austin/automata/jlock.py` does both: pins the path and caps
+    concurrent Lean judges with a file semaphore (`JUDGE_SLOTS`, default 5). Measured: two
+    certificates judged simultaneously, 12.6 s and 12.4 s, both accepted, against 18.7 s for
+    one alone. The old rail was about `lake env`, not about the judge.
+49. **Separate "the model is wrong" from "the extractor is incomplete" before assigning any
+    work — one exhaustive check does it.** For the Austin free-model construction,
+    `smallcheck.py <eq> 9 1` evaluates the law on all 12,167 one-generator terms of size ≤ 9
+    in the *semantic* model, and `--closed` does the same in the *extracted* rule system.
+    Semantic clean plus extracted broken means the mathematics is fine and the fix is generic;
+    semantic broken means no rule set can help and the carrier must change. Measured on the
+    open set: 32281 is 0 semantic failures against 134 extracted, 33020 is 0 against a wholly
+    false skeleton, 34889 is 2 against 192 — three laws (nine rows) the handover had filed as
+    broken models are extractor holes. In the other direction 9663/36487, 10222/35836 and
+    12294 fail semantically and belong with the identity laws, not with the repair track. The
+    check costs 2–30 s per law. The general form: **when a pipeline has a mathematical object
+    and a finite approximation of it, test both before deciding what is broken.**
+50. **Random testing cannot reach a deep case-tree cell; enumerate the cells instead.**
+    Law 38565's model passed `revalidate.py`, then 126 hand-built coincidence instances,
+    `rv.run_tests` on 9 seeds and 13 × 20,000 deep tests — and was still FALSE. The hole was
+    the cell where two *specific* products of the law's own evaluation chain are both decoded,
+    which occurs **0 times in 30,000 random draws** of any shape the fuzzers generate. Found
+    only by writing the free/decoded case tree of the k chain products and constructing one
+    instance per reachable cell by chained encoding. This is the fourth escalation of this
+    project's validation standard (3,000 random → `run_tests` → 20k deep on three seeds → the
+    case tree) and each escalation was forced by a model that passed the previous one. **A
+    sampler cannot find a cell whose measure is zero; only construction can.**
+51. **A compression window smaller than the redundancy is a silent tax.**
+    `minify_submission.py` packed the artifact's data tables with zlib level 9. The
+    certificate table is ~600 KB of Lean whose entries share a long common preamble, and
+    zlib's window is 32 KB — it cannot see across two 19 KB certificates. Switching to lzma
+    (`preset=9|lzma.PRESET_EXTREME`, also stdlib) took that table from 112,379 to 50,155
+    bytes and the artifact from 525,660 (over the 500,000 cap) to **423,307 B, 76.7 KB
+    headroom** — smaller than before nine certificates were added. Check the compressor's
+    window against the scale of the redundancy before concluding that data must be deleted;
+    rail 1's "never delete coverage to save bytes" needs this as its constructive half.
+
 Rails 42–46 were measured from the 2026-08-29 order-4 campaigns
 (`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`).
 
@@ -1212,7 +1268,10 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
-| **Deep session 6: Austin 37 → 100 (the current plan)** | **`stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md`** |
+| **Deep session 7: Austin 46 → 100 (THE CURRENT PLAN)** | **`stage2/docs/DEEP_SESSION_7_AUSTIN_HANDOVER.md`** — the 54 open rows are four problems, with an agent doctrine and the measured dead ends |
+| Identity laws: the theorem, three carriers, three refutations | `stage2/experiments/austin/automata/gen/PLAYBOOK_QUOTIENT.md` |
+| Austin Lean proof method / model repair method | `.../automata/gen/PLAYBOOK_PROOF.md`, `.../gen/PLAYBOOK_REPAIR.md` |
+| Deep session 6: Austin 37 → 46 (history + the construction) | `stage2/docs/DEEP_SESSION_6_AUSTIN_HANDOVER.md` |
 | Deep session 5: the Austin problem session | `stage2/docs/DEEP_SESSION_5_AUSTIN_HANDOVER.md` |
 | **Next session plan (the deep sweeps)** | **`stage2/docs/NEXT_SESSION_BRIEF.md`** |
 | **Order-4 miss elimination (2026-08-29)** | **`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`** |
@@ -1239,7 +1298,7 @@ active fast-tier target; the full union is the promotion target. Details are in
 `stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`.
 
 **The organizers' Austin research set (`research_order5_hard`, 2026-08-29):**
-**37/100 judge-accepted and shipped** (`stage2/results/2026-08-29-austin-wave-37.md`: generated free-model skeletons are usually false — level-2 decoder holes — and fable proof agents repair and prove them, 10/16; sonnet agents 0/8; five laws are quotient laws; the 20 KB FALSE cap binds — `squeeze.py`, and `macro` is banned). Earlier state, 2026-08-28: **10/100** (evening session) — two constructions work and are fully
+**46/100 judge-accepted and shipped** (2026-08-29 deep session 7; the 37 below was the same day's morning state) (`stage2/results/2026-08-29-austin-wave-37.md`: generated free-model skeletons are usually false — level-2 decoder holes — and fable proof agents repair and prove them, 10/16; sonnet agents 0/8; five laws are quotient laws; the 20 KB FALSE cap binds — `squeeze.py`, and `macro` is banned). Earlier state, 2026-08-28: **10/100** (evening session) — two constructions work and are fully
 automated end to end (search → complete symbolic verification → Lean → real
 judge): tag automata (`stage2/experiments/austin/automata/`) and
 piecewise-linear models over ℚ. The 90 open rows are the laws whose free

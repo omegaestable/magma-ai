@@ -50,10 +50,14 @@ import solver as S  # noqa: E402
 # one is looked up from module globals at call time, so wrapping the attribute
 # on the module instruments the real dispatch without touching the solver.
 ENGINE_NAMES = (
+    "completion_anchored_join_route",
+    "distilled_product_constant_route",
+    "distilled_spine_constancy_route",
     "find_counterexample",
     "constraint_countermodel",
-    "egg_probe_route",
     "completion_probe_route",
+    "completion_helper_collapse_route",
+    "egg_probe_route",
     "equational_closure_route",
     "deep_absorption_closure_route",
     "derived_cp_closure_route",

@@ -1,0 +1,28 @@
+======================================================================
+LAW 22591
+squares op(z,z) over 471 terms -> 471 distinct value(s)
+exh<=7/1gen            n=1061208    fails=0      7.1s
+exh<=5/2gen            n=287496     fails=0      1.6s
+exh x<=9 rest<=3       n=19800      fails=0      0.1s
+exh y<=9 rest<=3       n=19800      fails=0      0.1s
+exh z<=9 rest<=3       n=19800      fails=0      0.1s
+deep seed3             n=20000      fails=0      0.5s
+closure seed3          n=12000      fails=0      0.3s
+critical seed3         n=12000      fails=0      0.3s
+deep seed4             n=20000      fails=0      0.5s
+closure seed4          n=12000      fails=0      0.2s
+critical seed4         n=12000      fails=0      0.3s
+deep seed5             n=20000      fails=0      0.5s
+closure seed5          n=12000      fails=0      0.2s
+critical seed5         n=12000      fails=0      0.3s
+deep seed7             n=20000      fails=0      0.5s
+closure seed7          n=12000      fails=0      0.3s
+critical seed7         n=12000      fails=0      0.3s
+deep seed11            n=20000      fails=0      0.5s
+closure seed11         n=12000      fails=0      0.3s
+critical seed11        n=12000      fails=0      0.3s
+deep seed13            n=20000      fails=0      0.4s
+closure seed13         n=12000      fails=0      0.2s
+critical seed13        n=12000      fails=0      0.3s
+VALIDATED
+LAW 22591 -> VALIDATED   (15 s)

@@ -85,6 +85,15 @@ z3 harvest (§3.3) and the collapse escalation. Report it as **stratified**.
 
 ### 3.2 Order-4 at scale, and at the tiers we ship
 
+**Superseded for current order-4 work by the 2026-08-29 aggregate baseline.**
+Use
+`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md` as the active plan: it freezes
+930,000 audited order-4 row evaluations / 929,955 unique IDs, with the latest
+400k campaign at 399,618/400,000 solved and 382 misses (362 TRUE, 20 FALSE).
+The historical miss union is 652 rows (603 TRUE, 49 FALSE), and the plan ranks
+the general helper-law and witness work. The older 110k concentration below is
+historical evidence for why the first family-focused levers were chosen.
+
 The order-4 frontier concentration (four laws = 70% of misses) was measured at
 110,000 rows and rose with sample size. Re-measure it after pass 2's mined laws
 and pacing changes: the 19/51 residual rows the mined laws close are exactly

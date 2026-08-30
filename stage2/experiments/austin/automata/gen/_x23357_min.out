@@ -1,0 +1,6 @@
+deep20k seed 2026: tested 20000 fails 0  (32.7s)
+deep20k seed 8291: tested 20000 fails 0  (60.5s)
+deep20k seed 77771: tested 20000 fails 0  (98.4s)
+--- validated removal ---
+  DROP  B1s|rd:A0        (fired 0) -> 10 rules
+  KEEP  Bs|rd:A0         (fired 0)  12 fails

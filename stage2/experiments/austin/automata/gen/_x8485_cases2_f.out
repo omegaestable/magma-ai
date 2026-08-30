@@ -1,0 +1,18 @@
+exhaustive triples 30305
+  FFFF1     30253 
+  1FFF2        52 
+  ... 2000 random done, cells 5, bad 0
+  ... 4000 random done, cells 5, bad 0
+  ... 6000 random done, cells 5, bad 0
+  ... 8000 random done, cells 5, bad 0
+  ... 10000 random done, cells 5, bad 0
+  ... 12000 random done, cells 6, bad 0
+  ... 14000 random done, cells 6, bad 0
+ALL cells (zx,Py,Qy,xR,yS) count [bad]
+  FFFF1     45065 
+  1FFF2       192 
+  11FF2        22 
+  2FFF2        21 
+  12FF2         3 
+  111F2         2 
+total bad 0

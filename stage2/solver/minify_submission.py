@@ -31,9 +31,9 @@ import ast
 import base64
 import io
 import json
+import lzma
 import sys
 import tokenize
-import zlib
 from pathlib import Path
 
 DOCSTRING_OWNERS = (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
@@ -49,12 +49,16 @@ PACKED_TABLES = {
 }
 UNPACK_HELPER = "_unpack_table"
 # The helper shipped in the artifact. Local imports keep the solver's own import
-# block untouched; `zlib`, `base64` and `json` are all stdlib in
+# block untouched; `lzma`, `base64` and `json` are all stdlib in
 # python:3.11-slim.
+# lzma rather than zlib since 2026-08-29: the certificate table is ~600 KB of Lean
+# whose entries share a long common preamble, and zlib's 32 KB window cannot see
+# across two 19 KB certificates. Measured on the 46-entry table: zlib level 9 +
+# base85 = 112,379 B; lzma preset 9|EXTREME + base85 = 50,155 B.
 UNPACK_SOURCE = """\
 def _unpack_table(blob, kind):
-    import base64, json, zlib
-    data = json.loads(zlib.decompress(base64.b85decode(blob)).decode("utf-8"))
+    import base64, json, lzma
+    data = json.loads(lzma.decompress(base64.b85decode(blob)).decode("utf-8"))
     if kind == "certs":
         return {(a, b): (c, d, e) for a, b, c, d, e in data}
     return tuple((name, table) for name, table in data)
@@ -173,7 +177,7 @@ def _encode_table(name: str, value: object) -> str:
             raise SystemExit(f"{name}: expected tuple[(str, list), ...]")
         flat = [[entry_name, table] for entry_name, table in value]
     payload = json.dumps(flat, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    blob = base64.b85encode(zlib.compress(payload, 9)).decode("ascii")
+    blob = base64.b85encode(lzma.compress(payload, preset=9 | lzma.PRESET_EXTREME)).decode("ascii")
     return f'{name} = {UNPACK_HELPER}("{blob}", "{kind}")'
 
 
