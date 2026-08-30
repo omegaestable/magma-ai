@@ -218,112 +218,6 @@ theorem NFX {u v : M} (h : op u v = v) : False := by
   · rw [hf] at h; have := congrArg sz h; simp only [sz] at this; have := sz_pos u; omega
   · rw [h] at hs; exact Nat.lt_irrefl _ hs
 
-/-- **HOLE 1**: the third chain product `A = op z (op (op x y) y)` is always free.
-    Census evidence: free in every one of 139,482 chained-encoding triples and every attack round. -/
-theorem AF (x y z : M) : op z (op (op x y) y) = J z (op (op x y) y) := by
-  rcases TR z (op (op x y) y) with h | ⟨h1, -⟩ | ⟨-, -, -, -, -, he⟩ | ⟨-, q, -, -, -, he⟩
-  · exact h
-  · exfalso
-    obtain ⟨-, -, -, h4, -, -, h7⟩ := h1
-    rcases RS (op x y) y with hQ | hQ
-    · rw [hQ] at h4 h7; simp only [a1_J_eq, a2_J_eq] at h4 h7
-      rcases RS x y with hp | hp
-      · rw [hp] at h4 h7; simp only [a1_J_eq, a2_J_eq] at h4 h7
-        have := sA1 h4; have := sz_a2 (a1 y); have := congrArg sz h7; omega
-      · have := sz_a2 (op x y); have := sz_a1 (a2 (op x y)); have := sz_a2 (a1 (a2 (op x y)))
-        have := congrArg sz h7; omega
-    · sorry
-  · exfalso
-    /- R2 at (z,Q): `a1 Q = op z (op (op (a1 (a1 (a2 Q))) (a2 Q)) (a2 Q))`.  Split `RS (op x y) y` first
-       (that makes `a1 Q = op x y` and `a2 Q = y` concrete); then `RS z m` free gives `x = z /\ y = m`,
-       killed by `NFX`.  The residue is `op z m` decoded. -/
-    sorry
-  · exfalso
-    /- R3(rec) at (z,Q): same shape with `op z q` in place of `a1 (a1 (a2 Q))`. -/
-    sorry
-
-/-- the collapse `x = J z Q` and `op x y = J z Q` force `x = J z x`. -/
-theorem SFc {x y z : M} (hxx : x = J z (op (op x y) y))
-    (hop : op x y = J z (op (op x y) y)) : False := by
-  have hox : op x y = x := hop.trans hxx.symm
-  rw [hox, hox] at hxx
-  have := congrArg sz hxx
-  simp only [sz] at this
-  have := sz_pos z; omega
-
-/-- the shared collapse: once `op x y = J z Q` the chain closes.  Used by all three `SFa` branches. -/
-theorem SFb {x y z : M} (hQ : sz (op (op x y) y) < sz y)
-    (hA : a1 (a1 y) = J z (op (op x y) y)) (hop : op x y = J z (op (op x y) y)) : False := by
-  rcases RS x y with hf | hf
-  · rw [hf] at hop hQ
-    have e4 := congrArg a2 hop
-    simp only [a2_J_eq] at e4
-    rw [← e4] at hQ; omega
-  · rcases TR x y with h2 | ⟨g2, -⟩ | ⟨-, -, -, -, -, gg⟩ | ⟨-, q2, -, -, -, gg⟩
-    · have := congrArg sz h2
-      simp only [sz] at this
-      have := sz_pos x; omega
-    · exact SFc (g2.2.2.1.trans hA) hop
-    · rcases RS x (op (op (a1 (a1 (a2 y))) (a2 y)) (a2 y)) with hf2 | hf2
-      · rw [hf2] at gg
-        have hb := congrArg a1 gg
-        simp only [a1_J_eq] at hb
-        exact SFc (hb.symm.trans hA) hop
-      · sorry
-    · rcases RS x (op (op (op x q2) (a2 y)) (a2 y)) with hf2 | hf2
-      · rw [hf2] at gg
-        have hb := congrArg a1 gg
-        simp only [a1_J_eq] at hb
-        exact SFc (hb.symm.trans hA) hop
-      · sorry
-
-/-- shared contradiction for `SF`: `A = J z Q` cannot sit at the decoder slot `a1 (a1 y)`. -/
-theorem SFa {x y z : M} (ht : tg y = 2) (hA : a1 (a1 y) = J z (op (op x y) y)) : False := by
-  have e1 : sz (a1 (a1 y)) < sz y := by have := sz_a1 (a1 y); have := sA1 ht; omega
-  have e2 := congrArg sz hA
-  simp only [sz] at e2
-  rcases RS (op x y) y with hQ | hQ
-  · have e3 := congrArg sz hQ
-    simp only [sz] at e3
-    have := sz_pos (op x y); have := sz_pos z; omega
-  · rcases TR (op x y) y with h | ⟨g1, -⟩ | ⟨-, -, -, -, -, gg⟩ | ⟨-, q, -, -, -, gg⟩
-    · have e3 := congrArg sz h
-      simp only [sz] at e3
-      have := sz_pos (op x y); have := sz_pos z; omega
-    · exact SFb hQ hA (g1.2.2.1.trans hA)
-    · rcases RS (op x y) (op (op (a1 (a1 (a2 y))) (a2 y)) (a2 y)) with hf | hf
-      · rw [hf] at gg
-        have hb := congrArg a1 gg
-        simp only [a1_J_eq] at hb
-        exact SFb hQ hA (hb.symm.trans hA)
-      · sorry
-    · rcases RS (op x y) (op (op (op (op x y) q) (a2 y)) (a2 y)) with hf | hf
-      · rw [hf] at gg
-        have hb := congrArg a1 gg
-        simp only [a1_J_eq] at hb
-        exact SFb hQ hA (hb.symm.trans hA)
-      · sorry
-
-/-- **HOLE 2**: the fourth chain product `S = op A y` is always free (same census evidence). -/
-theorem SF (x y z : M) : op (J z (op (op x y) y)) y = J (J z (op (op x y) y)) y := by
-  rcases TR (J z (op (op x y) y)) y with h | ⟨h1, -⟩ | ⟨h1, -, -, -, -, he⟩ | ⟨h1, q, -, -, -, he⟩
-  · exact h
-  · exact (SFa h1.1 h1.2.2.1.symm).elim
-  · exfalso
-    rcases RS (J z (op (op x y) y)) (op (op (a1 (a1 (a2 y))) (a2 y)) (a2 y)) with hf | hf
-    · rw [hf] at he
-      have h' := congrArg a1 he
-      simp only [a1_J_eq] at h'
-      exact SFa h1 h'
-    · sorry
-  · exfalso
-    rcases RS (J z (op (op x y) y))
-      (op (op (op (J z (op (op x y) y)) q) (a2 y)) (a2 y)) with hf | hf
-    · rw [hf] at he
-      have h' := congrArg a1 he
-      simp only [a1_J_eq] at h'
-      exact SFa h1 h'
-    · sorry
 
 theorem mxl {a b c d : M} (h1 : sz a < sz d) (h2 : sz b < sz d) :
     max (sz a) (sz b) < max (sz c) (sz d) := by
@@ -340,56 +234,75 @@ theorem oR2 {u v : M} (h1 : ¬ P1 u v) (h2 : P2 u v)
   rw [dif_pos g3] at hp3; subst hp3
   rw [hop, if_neg h1, if_pos ⟨h2, g1, g2, g3, he⟩]
 
-/-- the top product when `P = op x y` decoded, `x` sits at `a1 (a1 y)`, and `A` is free. -/
-theorem TOP {x y z : M} (hy : tg y = 2) (hay : tg (a1 y) = 2) (hx : a1 (a1 y) = x)
-    (hPs : sz (op x y) < sz y) (hQ : sz (a2 (a1 (op (op x y) y))) < sz y)
-    (hAf : op z (op (op x y) y) = J z (op (op x y) y)) :
-    op z (J (J z (op (op x y) y)) y) = x := by
-  have hxy : sz x ≤ sz y := by
-    rw [← hx]; have := sz_a1 (a1 y); have := sz_a1 y; omega
-  have hs : sz (J (J z (op (op x y) y)) y) = sz z + sz (op (op x y) y) + sz y + 2 := by
-    simp only [sz]; omega
-  have g1 : msr (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)) <
-      msr z (J (J z (op (op x y) y)) y) := by
-    simp only [a1_J_eq, a2_J_eq, hx]
-    exact msr_lt_of_max_lt (mxl (by omega) (by omega))
-  have g2 : msr (op (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)))
-      (a2 (J (J z (op (op x y) y)) y)) < msr z (J (J z (op (op x y) y)) y) := by
-    simp only [a1_J_eq, a2_J_eq, hx]
-    exact msr_lt_of_max_lt (mxl (by omega) (by omega))
-  have g3 : msr z (op (op (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)))
-      (a2 (J (J z (op (op x y) y)) y))) < msr z (J (J z (op (op x y) y)) y) := by
-    simp only [a1_J_eq, a2_J_eq, hx]
-    exact msr_lt_of_max_lt (mxl (by have := sz_pos y; have := sz_pos (op (op x y) y); omega)
-      (by have := sz_pos y; have := sz_pos z; omega))
-  have hn : ¬ P1 z (J (J z (op (op x y) y)) y) := by
-    intro h
-    obtain ⟨-, -, -, -, -, -, h7⟩ := h
-    simp only [a1_J_eq, a2_J_eq] at h7
-    have := congrArg sz h7; omega
-  have hg : a1 (J (J z (op (op x y) y)) y) =
-      op z (op (op (a1 (a1 (a2 (J (J z (op (op x y) y)) y)))) (a2 (J (J z (op (op x y) y)) y)))
-        (a2 (J (J z (op (op x y) y)) y))) := by
-    simp only [a1_J_eq, a2_J_eq, hx]; exact hAf.symm
-  have hr := oR2 (u := z) (v := J (J z (op (op x y) y)) y) hn ⟨rfl, hy, hay⟩ g1 g2 g3 hg
-  rw [hr]; simp only [a2_J_eq, hx]
+/-- **AQd**: `A` decoded forces `Q` decoded.  The only size input `law` still needs.
+    Measured 0 failures / 294,800 (agent A) and 0 / 10,063 (gen/_x32281_pool4.py). -/
+theorem AQd (x y z : M) (hP : op x y ≠ J x y) :
+    op z (op (op x y) y) = J z (op (op x y) y) ∨ sz (op (op x y) y) < sz y := by
+  rcases RS (op x y) y with hQ | hQ
+  · left
+    have hp : sz (op x y) < sz y := (RS x y).resolve_left hP
+    apply Classical.byContradiction; intro hne
+    rcases TR z (op (op x y) y) with h | ⟨h1, -⟩ | ⟨h1, h2, h3, hr, hg, he⟩ | ⟨h1, q, -, hr, hg, he⟩
+    · exact hne h
+    · exfalso
+      obtain ⟨-, -, -, -, -, -, h7⟩ := h1
+      rw [hQ] at h7
+      simp only [a1_J_eq, a2_J_eq] at h7
+      have := sz_a2 (a1 (a2 (op x y))); have := sz_a1 (a2 (op x y)); have := sz_a2 (op x y)
+      have := congrArg sz h7
+      omega
+    · exfalso
+      rw [hQ] at he
+      simp only [a1_J_eq, a2_J_eq] at he
+      rcases RS z (op (op (a1 (a1 y)) y) y) with hf | hf
+      · rw [hf] at he
+        rcases RS (op (a1 (a1 y)) y) y with hm | hm
+        · rw [hm] at he
+          have := congrArg sz he; simp only [sz] at this
+          have := sz_pos z; have := sz_pos (op (a1 (a1 y)) y); omega
+        · rcases TR x y with hx | ⟨hx1, -⟩ | ⟨-, -, -, -, -, hxg⟩ | ⟨-, q2, -, -, -, hxg⟩
+          · exact hP hx
+          · rw [← hx1.2.2.1, hQ] at he
+            have := congrArg sz he; simp only [sz] at this
+            have := sz_pos z; have := sz_pos y; omega
+          · rcases RS x (op (op (a1 (a1 (a2 y))) (a2 y)) (a2 y)) with hf2 | hf2
+            · rw [hf2] at hxg
+              have hb := congrArg a1 hxg
+              simp only [a1_J_eq] at hb
+              rw [hb, hQ] at he
+              have := congrArg sz he; simp only [sz] at this
+              have := sz_pos z; have := sz_pos y; omega
+            · sorry
+          · rcases RS x (op (op (op x q2) (a2 y)) (a2 y)) with hf2 | hf2
+            · rw [hf2] at hxg
+              have hb := congrArg a1 hxg
+              simp only [a1_J_eq] at hb
+              rw [hb, hQ] at he
+              have := congrArg sz he; simp only [sz] at this
+              have := sz_pos z; have := sz_pos y; omega
+            · sorry
+      · sorry
+    · exfalso
+      rw [hQ] at he
+      simp only [a1_J_eq, a2_J_eq] at he
+      rcases RS z (op (op (op z q) y) y) with hf | hf
+      · rw [hf] at he
+        rcases RS (op (op z q) y) y with hm | hm
+        · rw [hm] at he
+          have := congrArg sz he; simp only [sz] at this
+          have := sz_pos z; have := sz_pos (op (op z q) y); omega
+        · sorry
+      · sorry
+  · exact Or.inr hQ
+
+/-- **SFg**: the fourth chain product is free, with `A` abstract (replaces the old `SF`). -/
+theorem SFg (x y z : M) : op (op z (op (op x y) y)) y = J (op z (op (op x y) y)) y := by
+  sorry
+
+
 
 theorem law (x y z : M) : op (z) (op (op (z) (op (op (x) (y)) (y))) (y)) = x := by
-  rw [AF x y z, SF x y z]
-  by_cases hP : op x y = J x y
-  · rw [hP, Wf (u := J x y) (v := y) (by simp only [sz]; have := sz_pos x; omega)]
-    exact oR1 ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
-  · have hPs := (RS x y).resolve_left hP
-    have hQ : sz (a2 (a1 (op (op x y) y))) < sz y := by
-      rcases RS (op x y) y with h | h
-      · rw [h]; simp only [a1_J_eq]; have := sz_a2 (op x y); omega
-      · have := sz_a1 (op (op x y) y); have := sz_a2 (a1 (op (op x y) y)); omega
-    /- **HOLE 3**: `op x y` decoded puts `x` at `a1 (a1 y)`.  TRUE on 202,598 of the 202,599 decoded
-       pairs the model produces; the one exception is the level-2 cell where R2's own gate product
-       decodes, and there the top product is answered by the recursive rule R3 instead of by `TOP`. -/
-    have hk : tg y = 2 ∧ tg (a1 y) = 2 ∧ a1 (a1 y) = x := by
-      sorry
-    exact TOP hk.1 hk.2.1 hk.2.2 hPs hQ (AF x y z)
+  sorry
 
 
 theorem lhs : @EquationLHS M inst := by

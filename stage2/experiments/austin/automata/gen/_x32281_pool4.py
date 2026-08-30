@@ -272,6 +272,45 @@ for u in [G(0), J(G(0), G(1))]:
                     Dd = enc(Q0, Q0, v2)
                     J_probe.append((K, Q0, Dd))
 
+# K. the level-2 cell (`gen/_x32281_exctop.py`'s instance) -- the ONE shape where `hk` fails and
+#    R3 fires at the top.  Arms A-I never generate it, so without this arm the hk column reads a
+#    misleading 100%.  Parameterised by substituting the leaf `g2` for other terms.
+def _PA(s):
+    s = s.strip()
+    if s.startswith('g'):
+        return G(int(s[1:]))
+    d = 0
+    for i, ch in enumerate(s[1:-1], 1):
+        if ch == '(':
+            d += 1
+        elif ch == ')':
+            d -= 1
+        elif ch == '*' and d == 0:
+            return J(_PA(s[1:i]), _PA(s[i + 1:-1]))
+    raise ValueError(s)
+
+
+def _subst(t, leaf, r):
+    if t[0] == 'g':
+        return r if t == leaf else t
+    return J(_subst(t[1], leaf, r), _subst(t[2], leaf, r))
+
+
+_EXC_X = '(g2*g2)'
+_EXC_Y = ('((((g2*g2)*((g2*(g2*g2))*(g2*g2)))*(g2*g2))*(((((g2*g2)*(((((g2*g2)*((g2*(g2*g2))*'
+          '(g2*g2)))*(g2*g2))*(g2*g2))*(g2*g2)))*(g2*g2))*(((((g2*g2)*(((((g2*g2)*((g2*(g2*g2))*'
+          '(g2*g2)))*(g2*g2))*(g2*g2))*(g2*g2)))*(g2*g2))*(g2*g2))*(g2*g2)))*(g2*g2)))')
+K_pool = []
+_bx, _by = _PA(_EXC_X), _PA(_EXC_Y)
+for t in [G(2), G(0), G(1), G(9), J(G(5), G(6)), J(G(0), J(G(1), G(2)))]:
+    xx = _subst(_bx, G(2), t)
+    yy = _subst(_by, G(2), t)
+    if sz(yy) > MAXSZ:
+        continue
+    for z in [G(0), G(1), G(7), J(G(0), G(1))]:
+        K_pool.append((xx, yy, z))
+ARMS['K level-2 cell'] = K_pool
+
 # ----------------------------------------------------------------------------- run
 if __name__ == '__main__':
     total = collections.Counter()

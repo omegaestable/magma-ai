@@ -218,29 +218,78 @@ theorem NFX {u v : M} (h : op u v = v) : False := by
   · rw [hf] at h; have := congrArg sz h; simp only [sz] at this; have := sz_pos u; omega
   · rw [h] at hs; exact Nat.lt_irrefl _ hs
 
-/-- **HOLE 1**: the third chain product `A = op z (op (op x y) y)` is always free.
-    Census evidence: free in every one of 139,482 chained-encoding triples and every attack round. -/
-theorem AF (x y z : M) : op z (op (op x y) y) = J z (op (op x y) y) := by
-  rcases TR z (op (op x y) y) with h | ⟨h1, -⟩ | ⟨-, -, -, -, -, he⟩ | ⟨-, q, -, -, -, he⟩
+/- `AF (x y z) : op z (op (op x y) y) = J z (op (op x y) y)` was HOLE 1.  It is FALSE and was
+   deleted; `AFbad` in NOTES_32281 refutes it in the kernel.  Its true restriction is `Afree`
+   below, which is all the free branch of `law` ever needed. -/
+
+/-- the shared residue of `Afree`: a decoded `op z (op (op c y) y)` is never `J a y`.
+    Fuel induction on the R3 gate — every branch dies by size or by `NFX`, and the R3 guard with
+    `op c y` free is the same statement one gate down. -/
+theorem AFn (n : Nat) : ∀ z c y a : M, msr z (op (op c y) y) < n →
+    op z (op (op c y) y) = J a y → False := by
+  induction n with
+  | zero => intro z c y a h _; omega
+  | succ n ih =>
+    intro z c y a hn he
+    have hd : op z (op (op c y) y) ≠ J z (op (op c y) y) := by
+      intro hf
+      have h1 := congrArg a2 (hf.symm.trans he)
+      simp only [a2_J_eq] at h1
+      exact NFX h1
+    have hsz := (RS z (op (op c y) y)).resolve_left hd
+    rw [he] at hsz
+    simp only [sz] at hsz
+    rcases RS (op c y) y with hC | hC
+    · rw [hC] at hsz he hd hn
+      simp only [sz] at hsz
+      rcases RS c y with hK | hK
+      · rw [hK] at he hd hn
+        rcases TR z (J (J c y) y) with h | ⟨h1, -⟩ | ⟨-, -, -, hr, -, -⟩ | ⟨-, q, -, -, hg, hgu⟩
+        · exact hd h
+        · obtain ⟨-, -, -, h4, -, -, h7⟩ := h1
+          simp only [a1_J_eq, a2_J_eq] at h4 h7
+          have := sA1 h4; have := sz_a2 (a1 y); have := congrArg sz h7; omega
+        · rw [hr] at he
+          simp only [a1_J_eq, a2_J_eq] at he
+          have := congrArg sz he
+          simp only [sz] at this
+          have := sz_a1 (a1 y); have := sz_a1 y; omega
+        · simp only [a1_J_eq, a2_J_eq] at hg hgu
+          exact ih z (op z q) y c (by omega) hgu.symm
+      · rcases TR z (J (op c y) y) with h | ⟨-, hr⟩ | ⟨-, -, -, hr, -, -⟩ | ⟨-, q, -, -, -, hgu⟩
+        · exact hd h
+        · rw [hr] at he
+          simp only [a1_J_eq, a2_J_eq] at he
+          have := congrArg sz he
+          simp only [sz] at this
+          have := sz_a1 (a1 (a2 (op c y))); have := sz_a1 (a2 (op c y))
+          have := sz_a2 (op c y); omega
+        · rw [hr] at he
+          simp only [a1_J_eq, a2_J_eq] at he
+          have := congrArg sz he
+          simp only [sz] at this
+          have := sz_a1 (a1 y); have := sz_a1 y; omega
+        · /- **THE ONE OPEN CELL.**  `op c y` is decoded (`sz (op c y) < sz y`) and R3's guard reads
+             `op c y = op z (op (op (op z q) y) y)`.  The IH does not apply: it needs a conclusion of
+             the form `... = J a' y`, and `op c y` has no such form.  This is the guard-decoded
+             residue that also blocks `SF`, `SFa`, `SFb`; see NOTES_32281 § SESSION 4. -/
+          sorry
+    · omega
+
+theorem AFm {z c y a : M} (he : op z (op (op c y) y) = J a y) : False :=
+  AFn (msr z (op (op c y) y) + 1) z c y a (Nat.lt_succ_self _) he
+
+/-- `AF`'s TRUE restriction: with `Q` the literal `J (J x y) y` the third chain product IS free.
+    0 failures in 294,800 corrected-pool triples; every `AF` failure has `op x y` decoded. -/
+theorem Afree (x y z : M) : op z (J (J x y) y) = J z (J (J x y) y) := by
+  rcases TR z (J (J x y) y) with h | ⟨h1, -⟩ | ⟨-, -, -, -, -, he⟩ | ⟨-, q, -, -, -, he⟩
   · exact h
   · exfalso
     obtain ⟨-, -, -, h4, -, -, h7⟩ := h1
-    rcases RS (op x y) y with hQ | hQ
-    · rw [hQ] at h4 h7; simp only [a1_J_eq, a2_J_eq] at h4 h7
-      rcases RS x y with hp | hp
-      · rw [hp] at h4 h7; simp only [a1_J_eq, a2_J_eq] at h4 h7
-        have := sA1 h4; have := sz_a2 (a1 y); have := congrArg sz h7; omega
-      · have := sz_a2 (op x y); have := sz_a1 (a2 (op x y)); have := sz_a2 (a1 (a2 (op x y)))
-        have := congrArg sz h7; omega
-    · sorry
-  · exfalso
-    /- R2 at (z,Q): `a1 Q = op z (op (op (a1 (a1 (a2 Q))) (a2 Q)) (a2 Q))`.  Split `RS (op x y) y` first
-       (that makes `a1 Q = op x y` and `a2 Q = y` concrete); then `RS z m` free gives `x = z /\ y = m`,
-       killed by `NFX`.  The residue is `op z m` decoded. -/
-    sorry
-  · exfalso
-    /- R3(rec) at (z,Q): same shape with `op z q` in place of `a1 (a1 (a2 Q))`. -/
-    sorry
+    simp only [a1_J_eq, a2_J_eq] at h4 h7
+    have := sA1 h4; have := sz_a2 (a1 y); have := congrArg sz h7; omega
+  · exact absurd he (fun hh => AFm (by simp only [a1_J_eq, a2_J_eq] at hh; exact hh.symm))
+  · exact absurd he (fun hh => AFm (by simp only [a1_J_eq, a2_J_eq] at hh; exact hh.symm))
 
 /-- the collapse `x = J z Q` and `op x y = J z Q` force `x = J z x`. -/
 theorem SFc {x y z : M} (hxx : x = J z (op (op x y) y))
@@ -416,22 +465,59 @@ theorem TOPg {x y z A : M} (hy : tg y = 2) (hay : tg (a1 y) = 2) (hx : a1 (a1 y)
   rw [oR2 (u := z) (v := J A y) hn ⟨rfl, hy, hay⟩ g1 g2 g3 hg]
   simp only [a2_J_eq, hx]
 
+/-- `P1` at the top is refuted when `A` IS free, from `sz (a2 (a1 Q)) < sz y`.  Together with
+    `NPAq` (the `Q` decoded case) this covers everything `AQd` offers. -/
+theorem NPAf {x y z : M} (hQ : sz (a2 (a1 (op (op x y) y))) < sz y)
+    (hA : op z (op (op x y) y) = J z (op (op x y) y)) :
+    ¬ P1 z (J (op z (op (op x y) y)) y) := by
+  intro h
+  obtain ⟨-, -, -, -, -, -, h7⟩ := h
+  simp only [a1_J_eq, a2_J_eq] at h7
+  rw [hA] at h7
+  simp only [a1_J_eq, a2_J_eq] at h7
+  have := congrArg sz h7
+  omega
+
+/-- **HOLE (replaces the old `SF`)**: the fourth chain product is free with `A` left ABSTRACT.
+    `SF` is this lemma's `A`-free special case.  0 failures in 294,800 corrected-pool triples. -/
+theorem SFg (x y z : M) :
+    op (op z (op (op x y) y)) y = J (op z (op (op x y) y)) y := by
+  sorry
+
+/-- **HOLE**: on the decoded branch, `A` is free or `Q` is decoded — equivalently `A` decoded
+    forces `Q` decoded.  0 failures / 0 occurrences of the negation in 294,800 triples. -/
+theorem AQd (x y z : M) (hP : op x y ≠ J x y) :
+    op z (op (op x y) y) = J z (op (op x y) y) ∨ sz (op (op x y) y) < sz y := by
+  sorry
+
 theorem law (x y z : M) : op (z) (op (op (z) (op (op (x) (y)) (y))) (y)) = x := by
-  rw [AF x y z, SF x y z]
+  rw [SFg x y z]
   by_cases hP : op x y = J x y
-  · rw [hP, Wf (u := J x y) (v := y) (by simp only [sz]; have := sz_pos x; omega)]
+  · rw [show op (op x y) y = J (J x y) y by
+      rw [hP]; exact Wf (by simp only [sz]; have := sz_pos x; omega), Afree x y z]
     exact oR1 ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
   · have hPs := (RS x y).resolve_left hP
     have hQ : sz (a2 (a1 (op (op x y) y))) < sz y := by
       rcases RS (op x y) y with h | h
       · rw [h]; simp only [a1_J_eq]; have := sz_a2 (op x y); omega
       · have := sz_a1 (op (op x y) y); have := sz_a2 (a1 (op (op x y) y)); omega
-    /- **HOLE 3**: `op x y` decoded puts `x` at `a1 (a1 y)`.  TRUE on 202,598 of the 202,599 decoded
-       pairs the model produces; the one exception is the level-2 cell where R2's own gate product
-       decodes, and there the top product is answered by the recursive rule R3 instead of by `TOP`. -/
+    /- **HOLE (agent D)**: `op x y` decoded puts `x` at `a1 (a1 y)`.  FALSE as a conjunction on the
+       one level-2 cell where R2's own gate product decodes; must become a disjunction whose second
+       arm fires R3 at the top. -/
     have hk : tg y = 2 ∧ tg (a1 y) = 2 ∧ a1 (a1 y) = x := by
       sorry
-    exact TOP hk.1 hk.2.1 hk.2.2 hPs hQ (AF x y z)
+    have hpa := sz_pos (op z (op (op x y) y))
+    rcases AQd x y z hP with hA | hA
+    · have e := congrArg sz hA
+      simp only [sz] at e
+      exact TOPg hk.1 hk.2.1 hk.2.2 hPs rfl (NPAf hQ hA) (by omega) (by omega)
+    · have hz : sz z < sz (op z (op (op x y) y)) + sz y := by
+        rcases RS z (op (op x y) y) with hf | hf
+        · have e := congrArg sz hf; simp only [sz] at e; omega
+        · have hne : op z (op (op x y) y) ≠ J z (op (op x y) y) := by
+            intro hc; rw [hc] at hf; simp only [sz] at hf; have := sz_pos z; omega
+          have := SU hne; omega
+      exact TOPg hk.1 hk.2.1 hk.2.2 hPs rfl (NPAq hA) hz (by omega)
 
 
 theorem lhs : @EquationLHS M inst := by

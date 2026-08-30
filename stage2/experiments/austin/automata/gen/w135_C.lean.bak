@@ -218,89 +218,6 @@ theorem NFX {u v : M} (h : op u v = v) : False := by
   · rw [hf] at h; have := congrArg sz h; simp only [sz] at this; have := sz_pos u; omega
   · rw [h] at hs; exact Nat.lt_irrefl _ hs
 
-/-- the uniform guard.  A decoded product either fires R1 (which pins `u` structurally) or
-    leaves `a1 v = op u C` with `C = op (op (op u v) (a2 v)) (a2 v)` — a `C` that depends only
-    on `v` and on the *result*, hence the same `C` for every `u` with the same result. -/
-theorem GG {u v : M} (h : op u v ≠ J u v) : (P1 u v ∧ op u v = a1 (a1 (a2 (a1 v)))) ∨
-    (a1 v = op u (op (op (op u v) (a2 v)) (a2 v)) ∧
-      msr u (op (op (op u v) (a2 v)) (a2 v)) < msr u v) := by
-  rcases TR u v with h0 | h1 | ⟨-, -, -, hr, hg, he⟩ | ⟨-, q, -, hr, hg, he⟩
-  · exact absurd h0 h
-  · exact Or.inl h1
-  · rw [← hr] at hg he; exact Or.inr ⟨he, hg⟩
-  · rw [← hr] at hg he; exact Or.inr ⟨he, hg⟩
-
-/-- R1 at `(u,v)` against R2/R3 at `(u',v)` with the same result.  `P1` pins
-    `sz (a1 v) = sz u + sz (op u v) + 2*sz (a2 v) + 3`, while the other rule's guard argument is
-    at most `sz (op u v) + 2*sz (a2 v) + 2`, so the guard cannot be decoded and is `J u' C`. -/
-theorem MX2 {u u' v : M} (q1 : P1 u v) (q2 : op u v = a1 (a1 (a2 (a1 v))))
-    (e : a1 v = op u' (op (op (op u v) (a2 v)) (a2 v))) : u = u' := by
-  by_cases hf : op u' (op (op (op u v) (a2 v)) (a2 v)) = J u' (op (op (op u v) (a2 v)) (a2 v))
-  · rw [hf] at e
-    have h3 := q1.2.2.1
-    rw [e] at h3; simpa using h3
-  · exfalso
-    have hs := (RS u' (op (op (op u v) (a2 v)) (a2 v))).resolve_left hf
-    rw [← e] at hs
-    obtain ⟨-, t2, t3, t4, t5, t6, t7⟩ := q1
-    have s1 := sz_tg _ t2
-    have s2 := sz_tg _ t4
-    have s3 := sz_tg _ t5
-    have c3 := congrArg sz t3
-    have c6 := congrArg sz t6
-    have c7 := congrArg sz t7
-    have c2 := congrArg sz q2
-    have hb : sz (op (op (op u v) (a2 v)) (a2 v)) ≤ sz (op u v) + sz (a2 v) + sz (a2 v) + 2 := by
-      rcases RS (op (op u v) (a2 v)) (a2 v) with k | k
-      · rcases RS (op u v) (a2 v) with k2 | k2
-        · rw [k, k2]; simp only [sz]; omega
-        · rw [k]; simp only [sz]; omega
-      · omega
-    have := sz_pos u
-    omega
-
-/-- **`op` is injective in its first argument.**  Induction on `sz v`: two free products agree only
-    if `u = u'`; free against decoded is refuted by `RS`; two R1s pin both to `a1 (a1 v)`; R1 against
-    R2/R3 is `MX2`; and two R2/R3 guards read the *same* `C` (it is a function of `v` and the shared
-    result), so `op u C = a1 v = op u' C` and the gate `msr u C < msr u v` gives `sz C < sz v`. -/
-theorem INJn (n : Nat) : ∀ v u u' : M, sz v < n → op u v = op u' v → u = u' := by
-  induction n with
-  | zero => intro v u u' h; omega
-  | succ n ih =>
-    intro v u u' hn he
-    by_cases h1 : op u v = J u v
-    · by_cases h2 : op u' v = J u' v
-      · have hz := congrArg a1 he; rw [h1, h2] at hz; simpa using hz
-      · exfalso
-        have hs := (RS u' v).resolve_left h2
-        rw [← he, h1] at hs; simp only [sz] at hs; omega
-    · by_cases h2 : op u' v = J u' v
-      · exfalso
-        have hs := (RS u v).resolve_left h1
-        rw [he, h2] at hs; simp only [sz] at hs; omega
-      · rcases GG h1 with ⟨q1, q2⟩ | ⟨e, g⟩
-        · rcases GG h2 with ⟨r1, -⟩ | ⟨e', -⟩
-          · rw [q1.2.2.1, r1.2.2.1]
-          · rw [← he] at e'; exact MX2 q1 q2 e'
-        · rcases GG h2 with ⟨r1, r2⟩ | ⟨e', -⟩
-          · exact (MX2 r1 r2 (by rw [← he]; exact e)).symm
-          · rw [← he] at e'
-            have hsu := SU h1
-            have hm := mx g
-            have hmax : max (sz u) (sz v) = sz v := Nat.max_eq_right (Nat.le_of_lt hsu)
-            have hle : sz (op (op (op u v) (a2 v)) (a2 v)) ≤ sz v := by
-              have hz := Nat.le_trans (Nat.le_max_right (sz u)
-                (sz (op (op (op u v) (a2 v)) (a2 v)))) hm
-              rw [hmax] at hz; exact hz
-            have hlt : sz (op (op (op u v) (a2 v)) (a2 v)) < sz v := by
-              apply Classical.byContradiction; intro hc
-              have heq : sz (op (op (op u v) (a2 v)) (a2 v)) = sz v := by omega
-              simp only [msr] at g; rw [heq] at g; exact Nat.lt_irrefl _ g
-            exact ih _ u u' (by omega) (e.symm.trans e')
-
-theorem INJ {u u' v : M} (h : op u v = op u' v) : u = u' :=
-  INJn (sz v + 1) v u u' (Nat.lt_succ_self _) h
-
 /-- **HOLE 1**: the third chain product `A = op z (op (op x y) y)` is always free.
     Census evidence: free in every one of 139,482 chained-encoding triples and every attack round. -/
 theorem AF (x y z : M) : op z (op (op x y) y) = J z (op (op x y) y) := by
@@ -457,27 +374,6 @@ theorem TOP {x y z : M} (hy : tg y = 2) (hay : tg (a1 y) = 2) (hx : a1 (a1 y) = 
   have hr := oR2 (u := z) (v := J (J z (op (op x y) y)) y) hn ⟨rfl, hy, hay⟩ g1 g2 g3 hg
   rw [hr]; simp only [a2_J_eq, hx]
 
-/-- the decoded trichotomy at `(u,v)`: R1's structural reading, the free-guard reading (which is
-    exactly what `TOP` needs), or the level-2 cell where the guard product is itself decoded. -/
-theorem GD {u v : M} (h : op u v ≠ J u v) : P1 u v ∨
-    (tg v = 2 ∧ tg (a1 v) = 2 ∧ a1 (a1 v) = u) ∨
-    (tg v = 2 ∧ ∃ C, a1 v = op u C ∧ op u C ≠ J u C) := by
-  have k : ∀ C : M, a1 v = op u C →
-      (tg (a1 v) = 2 ∧ a1 (a1 v) = u) ∨ (∃ C, a1 v = op u C ∧ op u C ≠ J u C) := by
-    intro C he
-    by_cases hf : op u C = J u C
-    · rw [hf] at he; exact Or.inl ⟨by rw [he]; rfl, by rw [he]; rfl⟩
-    · exact Or.inr ⟨C, he, hf⟩
-  rcases TR u v with h0 | ⟨h1, -⟩ | ⟨h1, -, -, -, -, he⟩ | ⟨h1, q, -, -, -, he⟩
-  · exact absurd h0 h
-  · exact Or.inl h1
-  · rcases k _ he with hl | hr
-    · exact Or.inr (Or.inl ⟨h1, hl.1, hl.2⟩)
-    · exact Or.inr (Or.inr ⟨h1, hr⟩)
-  · rcases k _ he with hl | hr
-    · exact Or.inr (Or.inl ⟨h1, hl.1, hl.2⟩)
-    · exact Or.inr (Or.inr ⟨h1, hr⟩)
-
 theorem law (x y z : M) : op (z) (op (op (z) (op (op (x) (y)) (y))) (y)) = x := by
   rw [AF x y z, SF x y z]
   by_cases hP : op x y = J x y
@@ -488,14 +384,12 @@ theorem law (x y z : M) : op (z) (op (op (z) (op (op (x) (y)) (y))) (y)) = x := 
       rcases RS (op x y) y with h | h
       · rw [h]; simp only [a1_J_eq]; have := sz_a2 (op x y); omega
       · have := sz_a1 (op (op x y) y); have := sz_a2 (a1 (op (op x y) y)); omega
-    rcases GD hP with hp | hk | ⟨hy, C, he, hf⟩
-    · exact TOP hp.1 hp.2.1 hp.2.2.1.symm hPs hQ (AF x y z)
-    · exact TOP hk.1 hk.2.1 hk.2.2 hPs hQ (AF x y z)
-    · /- **HOLE 3**, now exact: the level-2 cell.  `a1 y = op x C` with `op x C` itself DECODED, so
-         `a1 (a1 y) ≠ x` and R2 cannot answer the top product — R3 must.  See NOTES_32281.md
-         SESSION 4 for the full reduction (R3's `p5` is `C` on the nose, `p8 = x` is the law at the
-         strictly smaller parameter `C`, and the two open items are the `p6`/`J p7 p5` size gates). -/
+    /- **HOLE 3**: `op x y` decoded puts `x` at `a1 (a1 y)`.  TRUE on 202,598 of the 202,599 decoded
+       pairs the model produces; the one exception is the level-2 cell where R2's own gate product
+       decodes, and there the top product is answered by the recursive rule R3 instead of by `TOP`. -/
+    have hk : tg y = 2 ∧ tg (a1 y) = 2 ∧ a1 (a1 y) = x := by
       sorry
+    exact TOP hk.1 hk.2.1 hk.2.2 hPs hQ (AF x y z)
 
 
 theorem lhs : @EquationLHS M inst := by

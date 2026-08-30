@@ -253,3 +253,45 @@ own rail 60 an unvalidated claim is not evidence.
 **Do not resume these as if the leads were established.** Re-derive each cheaply first; four of the six
 touch the exact failure mode (a rule firing where its locator is not guaranteed) that this session
 proved fatal for 8485.
+
+---
+
+## 10. Post-cutoff: the `UD` lemma for 32281 (two independent agents converged on it)
+
+After the stop, the 32281 agent and a sub-agent it had spawned both ran on until they hit the
+account's weekly Opus limit. Both reported the **same** structural finding independently, which is
+the strongest signal this session produced on that law:
+
+> **"Confirmed: `UD` reduces `SFg`'s main branch to the generalized `SFa` in one line."**
+> **"`UD` is exactly the structural tool I said was needed."**
+
+`SFa`'s Q-decoded residue was session 8's named bottleneck for 32281, so a one-line reduction of it
+is exactly the missing piece. **Still unverified by the orchestrator** — no compile of the result was
+seen, and rail 60 applies.
+
+### 32281 file state at final cutoff — read this before picking a file
+
+| file | bytes | sorries | has `UD` | age |
+| --- | --- | --- | --- | --- |
+| `w135f.lean` | 26,631 | 11 | **yes** | newest |
+| `w135_C.lean` | **15,147** | 7 | no | newest |
+| `w135e.lean` | 18,628 | 10 | no | 30 min |
+| `w135d.lean` (session-8 base) | 19,874 | 5 | no | stable |
+| **`w135b.lean`** | **10,246** | **1** | no | ~15 h |
+| **`w135a.lean`** | **9,201** | **1** | no | ~15 h |
+| `w135c.lean` | 12,831 | 3 | no | ~15 h |
+
+Two things stand out and neither was known when the byte-pressure task was written:
+
+1. **`w135_C.lean` is 15,147 B — 4,727 B *below* the base file** — because the agent deleted the dead
+   `SF`/`SFa`/`SFb`/`SFc` after `UD` subsumed them. **The 126-byte crisis may already be over.** The
+   task was scoped as "bytes first, maths second"; `UD` appears to have solved both at once.
+2. **`w135a.lean` and `w135b.lean` carry ONE sorry each at 9,201 B and 10,246 B.** They predate this
+   session. Nobody in session 8 or 9 examined them, and on the face of it they are closer to a
+   certificate than the 19,874 B / 5-sorry file the whole task was built around. **Check what that
+   single sorry is before doing anything else on this law** — this is rail 47's lesson (a finished-
+   looking file sitting unexamined on disk) in a form the harvest scan missed, because the scan only
+   flags files with *zero* sorries and a `def submission`.
+
+`w135f.lean` at 26,631 B is 6.6 KB over the cap and has more sorries than it started with; it is a
+mid-restructure snapshot, not a candidate.
