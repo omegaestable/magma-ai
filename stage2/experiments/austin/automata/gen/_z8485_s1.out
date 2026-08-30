@@ -1,0 +1,7 @@
+[1] exhaustive law check on the LEAN op
+  exh9/1                     tested 12167    BAD 0        0.4s pool 23, branch counts [88274, 12144, 26, 0, 0]
+  exh7/2                     tested 1061208  BAD 0      115.8s pool 102, branch counts [7212300, 1061208, 16, 0, 0]
+  exh5/3                     tested 287496   BAD 0       26.6s pool 66, branch counts [1657107, 287496, 0, 0, 0]
+  exh5/2                     tested 10648    BAD 0        0.9s pool 22, branch counts [59356, 10648, 0, 0, 0]
+
+=== TOTAL BAD 0  (143.8s) ===

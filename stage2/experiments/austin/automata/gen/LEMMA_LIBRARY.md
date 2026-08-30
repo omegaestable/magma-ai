@@ -1503,3 +1503,67 @@ were mid-measurement on related questions when the session ended:
   collision survives on op-produced terms only — the same question from the other side.
 
 Partial results, recorded as partial. The measurements above are real; the conclusions are not drawn.
+
+---
+
+## SESSION 9 (2026-08-30)
+
+### The closing rule and the breaking rule are THE SAME RULE — the necessity form of rail 58  (law 8485)
+
+Law 8485 was inherited as the set's only *"validated model, no Lean yet"* row. Re-forcing killed it,
+and the mechanism is the sharpest statement of the root-vs-inner obstruction yet, because it is a
+**necessity** argument rather than another counterexample:
+
+* Rule R2 was added so the **top** pair decodes, where a conjunct of `P1 z x` guarantees the locator
+  `z = a2 (a2 x)`.
+* **A rule is a predicate of `(u,v)` alone**, so it also fires at the inner `P` pair `(z,x)`, where
+  nothing guarantees that locator.
+* A **fixed point** then makes R2's three-step chain collapse: with `c := J z0 X1` and
+  `z := J c (J (J (J zz c) c) c)`, `P1 c z` holds so `op c z = c`, and `x := J X1 c` has
+  `sz x = 13 < 33 = sz z` — so **`z` does not occur in `x` at all** and the top pair is forced free.
+
+> **"The rule that closes the P-decoded-by-R1 cell is exactly the rule that manufactures the bad
+> decode at the P pair — necessary and fatal."**
+
+Necessity was checked both ways: **all 11 rule sets on file fall** to the attack (83-rule
+`FULL(noexist)`, 24/24); the one that survives it, `FULL(exist)` at 102 rules, then fails
+`smallcheck` exh9/1 with **25 fails in 301 assignments**; and **removing** the rule breaks exh9/1
+within 4,000 assignments. There is no subset escape. 8485 therefore belongs on the **carrier track**,
+not on any "just needs Lean" list — a sixth law naming the same separator.
+
+This is the second *independent* derivation of the non-convergence fixed point (9663's `inimg`/`IMG`
+argument is the first, from the opposite direction). Two independent derivations is the reason to
+treat the obstruction as structural rather than as an artifact of one carrier.
+
+### Rung 13: A FORCING SUITE CAN BE UNABLE TO EXPRESS ITS OWN TARGET  (law 8485)
+
+Six oracles missed the above, and the interesting one is not the samplers.
+
+Exhaustive small terms could not reach it — **exh9/1 12,167 · exh7/2 1,061,208 · exh5/3 287,496 ·
+exh5/2 10,648, all 0 failures** — because the witness needs `sz x = 13` **and** a `z` of `sz 33`
+**that is a function of `x`**: a measure-zero fibre (rail 50). Junk-variable sweeps missed it too
+(3 seeds x 40,000 large random `z`, 0 failures, branch histogram `[~1.2M free, ~34k R1, 0 R2, 0 R3,
+0 R4]`).
+
+But the **forcing suite** missed it for a different and more dangerous reason: all **97,000** of its
+constructed instances build `x` through `enc(u,w,j)`, whose last step is free, so the locator
+`a2 (a2 x) = z` held **by construction**. The suite could not express the case it existed to test —
+and a suite that cannot express its target reports a clean sweep, which reads as evidence.
+
+Rung 11 says the census must show rule *k* fired. **Rung 13 is stronger and is now required: show
+that your constructions can BUILD a witness of the shape the rule is supposed to be wrong on.**
+Concretely, for a decode rule, build an instance in which **the payload is not reachable from the
+first argument at all**. If every construction in the suite reaches the payload by construction, the
+suite is vacuous with respect to the only failure that matters, however many instances it runs.
+
+Corollary for reading old evidence: a branch showing **0 firings** across a million assignments
+(R4 here) is not "safe", and a branch showing millions of *free* firings is not coverage.
+
+### Two operational notes
+
+* **`by decide` cannot reduce a well-founded `op`** — the kernel will not unfold it. Use `#eval`
+  (compiler) to test a model's Lean-exact definition. `gen/_z8485_diag2.lean` is kept as the standing
+  demonstration so nobody retries `decide`.
+* **Transcribe the Lean definition into Python and differential-test it** before trusting any Python
+  oracle about a Lean model: `gen/_z8485_lean.py` checked 23,600 pairs against `closedform.Closed`
+  with 0 disagreements, which is what made the counterexample trustworthy on the first pass.

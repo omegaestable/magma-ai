@@ -24,7 +24,7 @@ def judge_one(rid, path, rows):
     env = jlock.judge_env()
     t0 = time.time()
     with jlock.Slot():
-        subprocess.run([ROOT + '/.venv/Scripts/python.exe', ROOT + '/stage2/experiments/judge_cert_text.py',
+        p = subprocess.run([ROOT + '/.venv/Scripts/python.exe', ROOT + '/stage2/experiments/judge_cert_text.py',
                         '--in', inp, '--out', out], capture_output=True, text=True, env=env, cwd=ROOT,
                        encoding='utf-8', errors='replace')
     rec = None
@@ -37,9 +37,21 @@ def judge_one(rid, path, rows):
         try: os.remove(f)
         except OSError: pass
     st = (rec or {}).get('judge_status', 'NO_OUTPUT')
+    # `infra_error` / NO_OUTPUT is a broken ENVIRONMENT, not a broken certificate, and the
+    # two look identical in the summary line.  Carry the judge's own error_code (and, if the
+    # judge produced nothing at all, its stderr) so the next one is diagnosable in one run
+    # instead of a debugging session -- this cost real time when `.artifacts/` had been wiped
+    # and the judge could not find the `lean` binary.
+    errs = []
+    if st != 'accepted':
+        ec = (rec or {}).get('error_code')
+        if ec:
+            errs.append(str(ec))
+        elif p.stderr or p.stdout:
+            errs.append((p.stderr or p.stdout).strip()[-300:])
     return dict(id=rid, eq1_id=row['eq1_id'], eq2_id=row['eq2_id'], judge_status=st,
                 judge_seconds=(rec or {}).get('judge_seconds', round(time.time() - t0, 1)),
-                code_bytes=len(code.encode()), errors=[], when=time.strftime('%Y-%m-%d %H:%M'))
+                code_bytes=len(code.encode()), errors=errs, when=time.strftime('%Y-%m-%d %H:%M'))
 
 def main():
     rows = {r['id']: r for r in load_rows()}
@@ -64,6 +76,9 @@ def main():
     print('accepted %d / %d' % (len(res) - len(bad), len(res)))
     if bad:
         print('NOT ACCEPTED:', [(r['id'], r['judge_status']) for r in bad])
+        for r in bad:
+            if r['errors']:
+                print('   ', r['id'], '->', r['errors'][0])
     json.dump(res, open(os.path.join(HERE, 'verify_certs.json'), 'w'), indent=1)
 
 if __name__ == '__main__':

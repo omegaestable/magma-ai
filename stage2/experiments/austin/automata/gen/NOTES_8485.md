@@ -1,4 +1,21 @@
-# NOTES 8485 — wave-3 gate-cut agent, 2026-08-29 (deep session 8)
+# NOTES 8485
+
+> ## STOP — 2026-08-30 (session 9): **THE VARIANT-f MODEL IS FALSE.**
+> `theorem law` in `gen/f8485.lean` / `f8485p.lean` / `f8485q.lean` / `f8485r.lean` is **not provable,
+> because it is not true**. Lean's own `#eval` on the shipped `op` returns `false` on
+>
+> ```
+> x = ((g0*(g0*g0))*(g0*(g0*(g0*g0))))                                                       sz 13
+> y = g0                    (any y -- 1680/1680 sweep instances fail)
+> z = ((g0*(g0*(g0*g0)))*(((g0*(g0*(g0*(g0*g0))))*(g0*(g0*(g0*g0))))*(g0*(g0*(g0*g0)))))     sz 33
+> ```
+>
+> **Do not write Lean against this model.** Everything below the "SESSION 9" heading is the
+> falsification; everything above it is session-8 material that is now known to describe a false
+> model (its "six independent oracles" all missed this cell). See the section
+> "SESSION 9 -- RE-FORCING: THE MODEL IS FALSE" at the end of this file.
+
+## (session 8 material follows, superseded)
 
 Law 8485 (catalog, L-form, not dualised): `x = y * (x * (((z*x)*y)*y))`
 Row: `research_order5_hard_0096` (8485:4916).
@@ -337,3 +354,122 @@ the refutation of goal 4916 is already verified against this `op`.
 | `gen/_y8485_fire.py` | per-rule forcing at every chain product (the 40037 check), 97,000 instances |
 | `gen/_y8485_deep3.py` + `gen/_y8485_deep3.out` | the level-k descent oracle, levels 0-3, both junk pools, two seeds |
 | `gen/_y8485_p2.py` | search for decodes via a rule other than R1 (none in 10,404 exhaustive pairs) |
+
+---
+
+# SESSION 9 (2026-08-30) — RE-FORCING: THE MODEL IS FALSE
+
+The task was "re-force the minimised model, then prove `op_R2` and `SZOP`". The re-forcing kills the
+model, so no Lean was written. Row `research_order5_hard_0096` (8485:4916) is **not** one Lean
+session away; it needs a new carrier.
+
+## The result in one line
+
+`gen/f8485r.lean`'s `op` does **not** satisfy law 8485. Confirmed four independent ways:
+an independent Python transcription of the Lean definition (`gen/_z8485_lean.py`), `closedform.Closed`
+with variant f's rules, a hand derivation, and **Lean's own `#eval` on the shipped `def op`**
+(`gen/_z8485_diag.lean`, `exit=0`):
+
+```
+#eval (op (g 0) X1d == cd)                                        -- true
+#eval (op cd zd == cd)                                            -- true
+#eval (op zd xd == X1d)                                           -- true   (P decodes, branch 2 = R2)
+#eval (a2 (a2 xd) == zd)                                          -- FALSE  (the locator is destroyed)
+#eval (op yd (op xd (op (op (op zd xd) yd) yd)) == xd)            -- FALSE  <-- THE LAW
+```
+
+(`by decide` cannot be used here: the kernel will not reduce `op`'s well-founded recursion. `#eval`
+uses the compiler and agrees with two separate Python implementations and with the hand derivation.)
+
+## The construction (`gen/_z8485_break.py`)
+
+The rule that dies is **R2 = N4 `[zP@x22]`**, the one that reads `z` at `a2 (a2 (a1 v))`. It was added
+to fire at the **top** pair `(y, J x R)`, where `a1 v = x` and `P1 z x`'s conjunct 7 guarantees
+`z = a2 (a2 x)`. But a rule is a predicate of `(u, v)` alone, so it also fires at the **P** pair
+`(z, x)` — and there nothing guarantees the locator. Build the instance that exploits that:
+
+```
+z0, A, Cc, zz   generators
+X1 := J A (J Cc z0)              -- puts z0 on R2's accessor path inside a1 x
+c  := J z0 X1                    -- = op z0 X1, a free product
+z  := J c (J (J (J zz c) c) c)   -- P1 c z holds, so  op c z = c   (a FIXED POINT of the chain)
+x  := J X1 c
+```
+
+At `(z, x)`: `P2 z x` holds, the three chain steps are `op z0 X1 = c`, `op c z = c`, `op c z = c`,
+and the guard `a2 x = c` is satisfied — so **R2 fires and `P = op z x = X1`**. The fixed point is the
+whole trick: it lets the chain terminate *without* leaving `z` inside `a2 x`. Consequently
+
+* `sz x = 13 < 33 = sz z`, so **`z` does not occur in `x` at all**;
+* `a2 (a2 x) = a2 c = X1 != z`;
+* measured: of the 5 accessor-reachable terms from `{x, y}`, and of **615** terms of size <= 11
+  (1 generator) / <= 9 (2 generators), **zero** satisfy `op w x = P`. The only `w` that work are the
+  z-shaped `J c (J (J (J _ c) c) c)`, which no accessor path can reach.
+
+So at the top pair `(y, J x R)`: `P1` fails (it would need `a2 X1 = x`, an occurs-check violation),
+`P2`'s guard needs `op (a2 (a2 x)) x = P` which is false, and with `y` a generator `P3`/`P4` cannot
+fire at all (`tg u = 2`). The top pair stays **free**, so `op y S = J y S != x`.
+
+## How general is it
+
+`gen/_z8485_break2.py` re-runs the construction with the shape of `X1` matched to each rule's own
+accessor path. **Every rule set on file falls:**
+
+| rule set | rules | result |
+| --- | --- | --- |
+| `FULL(noexist)` (the extractor's own output) | 83 | **FAILS** every shape (24/24) |
+| `FULL(exist)` | 102 | survives this construction, but **fails `smallcheck` exh9/1 with 25 fails in 301 assignments** |
+| variants a, b, c, d, f, g, i | 3–6 | **FAIL** every shape (24/24) |
+| variant e | 3 | **FAILS** on the `a2a1a2` shape (C4's path) |
+| variant h | 2 | **FAILS** on `a2a2` and `a2a1a2` |
+
+And the rule is not optional. With **R1 alone**, or with **R1+N1+N2 (N4 and C4 removed)**,
+`smallcheck` exh9/1 fails in the first 4,000 assignments on `x = (g0*(((g0*g0)*g0)*g0)), z = g0` —
+the cell where `P` decodes by R1 and the top pair must read `z = a2 (a2 x)`. **The rule that closes
+that cell is exactly the rule that manufactures the bad decode at the P pair: necessary and fatal.**
+
+## Why six oracles missed it (the methodological finding)
+
+1. **Exhaustive small terms cannot reach it.** The witness needs `sz x = 13` *and* a `z` of `sz 33`
+   that is a *function of x* (`z = J c (J (J (J _ c) c) c)` with `c = a2 x`). This session ran
+   **exh9/1 12,167**, **exh7/2 1,061,208**, **exh5/3 287,496**, **exh5/2 10,648** assignments against
+   the Lean transcription: **0 failures**. Rail 50 again — a sampler cannot find a cell of measure
+   zero, and this cell is a one-dimensional fibre inside a two-parameter family.
+2. **The session-8 "forced firing" suite had no positive control for this branch.** All 97,000 of its
+   constructed instances build `x` through `enc(u,w,j) = op(w, op(op(op(j,w),u),u))`, whose last step
+   is free, so `a2 x = J _ z` and `a2 (a2 x) = z` **by construction**. The suite could not express the
+   case it needed to test. That is exactly `LEMMA_LIBRARY.md`'s "a forcing suite needs its own
+   positive control", and session 2's own note already said the descent instances worked "because `x`
+   is the free encoding … that is a property of the construction, not a theorem". It was right.
+3. **R4 (`[zP@u221]`) fires 0 times** in every one of the 1.37M exhaustive assignments — session 2's
+   observation confirmed. It is dead weight, and a branch that never fires is untested, not unneeded.
+
+## What it would take (rail 58 territory)
+
+This is not "one more rule". Any rule reads `z` off a fixed accessor path; the construction above
+makes `op z x` decode while erasing every trace of `z` from `x`, so the path does not exist. The only
+fix is to stop R2 from firing at the P pair, and `op` is a function of `(u, v)` alone — it cannot see
+whether it is at the root of the law's chain or inside it. That is the **root-vs-inner position
+separator** that CLAUDE.md already names as the single obstruction shared by ~25 rows: the free term
+algebra is the wrong carrier. 8485 belongs on that track, not on the "just needs Lean" list.
+
+## Files
+
+| file | what |
+| --- | --- |
+| `gen/_z8485_lean.py` | independent transcription of the Lean `op` (agrees with `closedform.Closed` on 23,600 pairs, 0 disagreements) |
+| `gen/_z8485_reforce.py` | the re-forcing battery (cross-check, exhaustive, junk-variable, forced firing, blocker cell, level-k descent, broad random) |
+| `gen/_z8485_break.py` | **the counterexample**, and a 1,680-instance sweep: 1,680 law failures |
+| `gen/_z8485_break2.py` | the same attack per accessor path against all 11 rule sets |
+| `gen/_z8485_variants.py` | the single instance against all 11 rule sets |
+| `gen/_z8485_diag.lean` | the Lean `#eval` confirmation (compiles, `exit=0`) |
+| `gen/_z8485_diag2.lean` | shows `by decide` cannot reduce the WF recursion (kept so nobody retries it) |
+| `gen/_z8485_s1.out` | the four exhaustive sweeps, all clean — the evidence that small-term search cannot see this |
+
+## Addendum — the junk-variable oracle also passes, and shows why
+
+Rail 52a says to blow up the variable no rule constrains (`z`, in R1's free cell). 3 seeds x 40,000
+assignments with `z` drawn from `rand_term(4..7, 4 generators)`: **0 failures**, and the branch
+histogram is `[~1.2M free, ~34k R1, 0 R2, 0 R3, 0 R4]` — random large `z` never produces a decode by
+R2/R3/R4 **at all**. A junk-variable sweep therefore cannot reach this cell either: the witness needs
+`z` to be a *specific function of x*, not a large random term.

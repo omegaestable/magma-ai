@@ -134,7 +134,7 @@ def cds (u c : M) : Prop :=
 /-- what `find` returns: either the sentinel, or a genuine payload. Fuel induction on `sz T`
     (the mutual `find.induct` carries three motives and is unusable for a single statement). -/
 theorem findN (n : Nat) : ∀ u T w P r : M, sz T ≤ n → find u T w P = r →
-    r = J u u ∨ (cds u r ∧ op r w = P) := by
+    r = J u u ∨ (cds u r ∧ op r w = P ∧ sz r < sz T) := by
   induction n with
   | zero => intro u T w P r hn _; have := sz_pos T; omega
   | succ n ih =>
@@ -144,18 +144,69 @@ theorem findN (n : Nat) : ∀ u T w P r : M, sz T ≤ n → find u T w P = r →
        ∧ op u (a1 (a1 T)) = a2 (a2 (a1 T)) ∧ op (a1 T) w = P
     · rw [if_pos h1] at hr
       subst hr
-      exact Or.inr ⟨⟨h1.2.1, h1.2.2.1, h1.2.2.2.1, h1.2.2.2.2.1⟩, h1.2.2.2.2.2⟩
+      exact Or.inr ⟨⟨h1.2.1, h1.2.2.1, h1.2.2.2.1, h1.2.2.2.2.1⟩, h1.2.2.2.2.2, sz_a1_lt h1.1⟩
     · rw [if_neg h1] at hr
       by_cases h2 : tg T = 2 ∧ tg (a2 T) = 2
       · rw [dif_pos h2] at hr
         have e1 := sz_a2_lt h2.1
         have e2 := sz_a2_lt h2.2
-        exact ih u (a2 (a2 T)) w P r (by omega) hr
+        rcases ih u (a2 (a2 T)) w P r (by omega) hr with h | ⟨c1, c2, c3⟩
+        · exact Or.inl h
+        · exact Or.inr ⟨c1, c2, by omega⟩
       · rw [dif_neg h2] at hr; exact Or.inl hr.symm
 
 theorem findOK (u T w P : M) :
-    find u T w P = J u u ∨ (cds u (find u T w P) ∧ op (find u T w P) w = P) :=
+    find u T w P = J u u ∨
+      (cds u (find u T w P) ∧ op (find u T w P) w = P ∧ sz (find u T w P) < sz T) :=
   findN (sz T) u T w P _ (Nat.le_refl _) rfl
+
+/-- the SHAPE digest for `opTail`: three possible results. -/
+theorem RStail (u v : M) (hc : Cd v) : opTail u v hc = J u v
+    ∨ opTail u v hc = J (a1 (a2 (a2 v))) (a2 (a2 v))
+    ∨ sz (opTail u v hc) < sz (a2 (a2 v)) := by
+  rw [opTail.eq_1]
+  by_cases hr : tg (a2 (a2 v)) = 2 ∧ tg (a1 v) = 2 ∧ tg (a2 (a1 v)) = 2
+                ∧ a1 (a1 v) = a1 (a2 (a1 v))
+  · rw [dif_pos hr]
+    by_cases hg : op u (a1 (a2 (a2 v))) = a2 (a2 (a2 v))
+                  ∧ op (a2 (a2 v)) (a1 (a1 v)) = a2 (a2 (a1 v))
+    · rw [if_pos hg]; exact Or.inr (Or.inl rfl)
+    · rw [if_neg hg]
+      rcases findOK u (a2 (a2 v)) (a1 v) (a2 (a2 v)) with hf | ⟨-, -, hs⟩
+      · rw [hf]; simp only [if_pos rfl]; exact Or.inl rfl
+      · by_cases he : find u (a2 (a2 v)) (a1 v) (a2 (a2 v)) = J u u
+        · rw [if_pos he]; exact Or.inl rfl
+        · rw [if_neg he]; exact Or.inr (Or.inr hs)
+  · rw [dif_neg hr]
+    rcases findOK u (a2 (a2 v)) (a1 v) (a2 (a2 v)) with hf | ⟨-, -, hs⟩
+    · rw [hf]; simp only [if_pos rfl]; exact Or.inl rfl
+    · by_cases he : find u (a2 (a2 v)) (a1 v) (a2 (a2 v)) = J u u
+      · rw [if_pos he]; exact Or.inl rfl
+      · rw [if_neg he]; exact Or.inr (Or.inr hs)
+
+/-- the SHAPE digest: every decoded result is `a2 u`, the reconstruction, or smaller than the
+    payload slot.  This is what refutes a decode without needing a converse to `find`. -/
+theorem RS (u v : M) : op u v = J u v ∨ (Cd v ∧
+    ((tg u = 2 ∧ op u v = a2 u)
+     ∨ op u v = J (a1 (a2 (a2 v))) (a2 (a2 v))
+     ∨ sz (op u v) < sz (a2 (a2 v)))) := by
+  by_cases hc : Cd v
+  · by_cases hu : tg u = 2
+    · by_cases hb : op (a2 u) (a1 v) = a2 (a2 v)
+      · exact Or.inr ⟨hc, Or.inl ⟨hu, by rw [op.eq_1, dif_pos hc, dif_pos hu, if_pos hb]⟩⟩
+      · have hop : op u v = opTail u v hc := by rw [op.eq_1, dif_pos hc, dif_pos hu, if_neg hb]
+        rw [hop]
+        rcases RStail u v hc with h | h | h
+        · exact Or.inl h
+        · exact Or.inr ⟨hc, Or.inr (Or.inl h)⟩
+        · exact Or.inr ⟨hc, Or.inr (Or.inr h)⟩
+    · have hop : op u v = opTail u v hc := by rw [op.eq_1, dif_pos hc, dif_neg hu]
+      rw [hop]
+      rcases RStail u v hc with h | h | h
+      · exact Or.inl h
+      · exact Or.inr ⟨hc, Or.inr (Or.inl h)⟩
+      · exact Or.inr ⟨hc, Or.inr (Or.inr h)⟩
+  · exact Or.inl (opF hc)
 
 /-- the digest, for `opTail`. -/
 theorem SNDtail (u v : M) (hc : Cd v) : opTail u v hc = J u v ∨
@@ -178,13 +229,13 @@ theorem SNDtail (u v : M) (hc : Cd v) : opTail u v hc = J u v ∨
       · simp only [a1_J_eq, a2_J_eq]
       · simp only [a1_J_eq, a2_J_eq]; exact hg.1
     · rw [if_neg hg]
-      rcases findOK u (a2 (a2 v)) (a1 v) (a2 (a2 v)) with hf | ⟨hc1, hc2⟩
+      rcases findOK u (a2 (a2 v)) (a1 v) (a2 (a2 v)) with hf | ⟨hc1, hc2, -⟩
       · rw [hf]; simp only [if_pos rfl]; exact Or.inl rfl
       · by_cases he : find u (a2 (a2 v)) (a1 v) (a2 (a2 v)) = J u u
         · rw [if_pos he]; exact Or.inl rfl
         · rw [if_neg he]; exact Or.inr ⟨hc2, Or.inr hc1⟩
   · rw [dif_neg hr]
-    rcases findOK u (a2 (a2 v)) (a1 v) (a2 (a2 v)) with hf | ⟨hc1, hc2⟩
+    rcases findOK u (a2 (a2 v)) (a1 v) (a2 (a2 v)) with hf | ⟨hc1, hc2, -⟩
     · rw [hf]; simp only [if_pos rfl]; exact Or.inl rfl
     · by_cases he : find u (a2 (a2 v)) (a1 v) (a2 (a2 v)) = J u u
       · rw [if_pos he]; exact Or.inl rfl
@@ -220,20 +271,93 @@ theorem TOPU (x y z Q : M) (hP : op x z = Q) : op (J y x) (J z (J z Q)) = x := b
     simp only [a1_J_eq, a2_J_eq]; exact hP)]
   rfl
 
-/-- F2 : the outer chain product is free.  `Cd (J z P)` reduces to `tg P = 2 ∧ z = a1 P`. -/
+/-- **the refutation engine**: a product can never equal its own RIGHT argument, once the left
+    argument is smaller.  All four `RS` shapes die by size. -/
+theorem NZ {c t : M} (hs : sz c < sz t) (h : op c t = t) : False := by
+  rcases RS c t with hf | ⟨hcd, hb⟩
+  · rw [hf] at h
+    have e := congrArg sz h
+    simp only [sz_J] at e
+    have := sz_pos c
+    omega
+  · have e1 := sz_a2_lt hcd.1
+    have e2 := sz_a2_lt hcd.2.1
+    rcases hb with ⟨-, hr⟩ | hr | hr
+    · rw [hr] at h
+      have := sz_a2 c
+      have e := congrArg sz h
+      omega
+    · rw [hr] at h
+      have h2 := congrArg a2 h
+      simp only [a2_J_eq] at h2
+      have e := congrArg sz h2
+      omega
+    · rw [h] at hr
+      omega
+
+/-- the diagonal cell of F2 (`x = z`, the payload slot is `z` itself).  Every branch dies:
+    U and the search by `NZ`, and branch R by its OWN two inner conditions, which both become
+    statements about `op z (a1 z)`. -/
+theorem FDiag (z : M) : op z (J z (J z z)) = J z (J z (J z z)) := by
+  have hcv : Cd (J z (J z z)) := ⟨rfl, rfl, rfl⟩
+  have tail : opTail z (J z (J z z)) hcv = J z (J z (J z z)) := by
+    rw [opTail.eq_1]
+    simp only [a1_J_eq, a2_J_eq]
+    by_cases hr : tg z = 2 ∧ tg z = 2 ∧ tg (a2 z) = 2 ∧ a1 z = a1 (a2 z)
+    · rw [dif_pos hr]
+      have hgn : ¬ (op z (a1 z) = a2 z ∧ op z (a1 z) = a2 (a2 z)) := by
+        rintro ⟨g1, g2⟩
+        have e := g1.symm.trans g2
+        have := sz_a2_lt hr.2.2.1
+        have := congrArg sz e
+        omega
+      rw [if_neg hgn]
+      rcases findOK z z z z with hf | ⟨-, hc2, hs⟩
+      · rw [hf]; simp only [if_pos rfl]
+      · exact absurd hc2 (fun h => absurd (NZ hs h) (fun q => q))
+    · rw [dif_neg hr]
+      rcases findOK z z z z with hf | ⟨-, hc2, hs⟩
+      · rw [hf]; simp only [if_pos rfl]
+      · exact absurd hc2 (fun h => absurd (NZ hs h) (fun q => q))
+  rw [op.eq_1, dif_pos hcv]
+  by_cases hu : tg z = 2
+  · rw [dif_pos hu]
+    have hb : ¬ (op (a2 z) (a1 (J z (J z z))) = a2 (a2 (J z (J z z)))) := by
+      simp only [a1_J_eq, a2_J_eq]
+      exact fun h => NZ (sz_a2_lt hu) h
+    rw [if_neg hb]
+    exact tail
+  · rw [dif_neg hu]
+    exact tail
+
+/-- F2 : the outer chain product is free.  `Cd (J z P)` reduces to `tg P = 2 ∧ z = a1 P`;
+    `RS x z` then kills the reconstruction and the search readings of `P` by size, leaving
+    the free reading (the diagonal, `FDiag`) and the `a2 x` reading. -/
 theorem F2 (x z : M) : op z (J z (op x z)) = J z (J z (op x z)) := by
-  by_cases hc : Cd (J z (op x z))
-  · obtain ⟨-, h2, h3⟩ := hc
-    simp only [a1_J_eq, a2_J_eq] at h2 h3
-    -- h2 : tg (op x z) = 2 ,  h3 : z = a1 (op x z)
-    rw [op.eq_1, dif_pos (show Cd (J z (op x z)) from ⟨rfl, h2, by simp only [a1_J_eq, a2_J_eq]; exact h3⟩)]
-    by_cases hu : tg z = 2
-    · rw [dif_pos hu]
-      by_cases hb : op (a2 z) (a1 (J z (op x z))) = a2 (a2 (J z (op x z)))
-      · exfalso; sorry   -- L-U : refute branch U
-      · rw [if_neg hb]; sorry  -- L-T1 : opTail = J z (J z P)
-    · rw [dif_neg hu]; sorry   -- L-T2 : opTail = J z (J z P)
-  · exact opF hc
+  by_cases hcv : Cd (J z (op x z))
+  · have h2 : tg (op x z) = 2 := hcv.2.1
+    have h3 : z = a1 (op x z) := hcv.2.2
+    rcases RS x z with hf | ⟨hz, hb⟩
+    · rw [hf] at h3
+      simp only [a1_J_eq] at h3
+      subst h3
+      rw [hf]
+      exact FDiag _
+    · have e1 := sz_a2_lt hz.1
+      have e2 := sz_a2_lt hz.2.1
+      rcases hb with ⟨hxg, hr⟩ | hr | hr
+      · sorry
+      · exfalso
+        rw [hr] at h3
+        simp only [a1_J_eq] at h3
+        have e3 := sz_a1 (a2 (a2 z))
+        have e := congrArg sz h3
+        omega
+      · exfalso
+        have e4 : sz (a1 (op x z)) < sz (op x z) := sz_a1_lt h2
+        have e := congrArg sz h3
+        omega
+  · exact opF hcv
 
 theorem law (x y z : M) : op (op (y) (x)) (op (z) (op (z) (op (x) (z)))) = x := by
   sorry

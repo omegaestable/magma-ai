@@ -5,6 +5,17 @@ JUDGE_LEAN_PATH is set; under parallel load that times out (CLAUDE.md, environme
 gotchas).  We pin it from the cached leanpath.txt instead, and cap the number of
 concurrent Lean judge processes so several proof agents can judge without
 starving each other (rail 5e / rail 22: your own parallel jobs are the load).
+
+`judge_env` also prepends elan's bin to PATH.  Without it the judge returns
+`JudgeInfrastructureError: missing lean binary: lean` -- which `verify_certs.py`
+surfaces only as `infra_error`, i.e. it looks like a broken certificate rather
+than a broken environment.  It stayed latent through session 8 because an
+interactive shell had already exported elan; a runner launched from anywhere
+else (an agent, a background task) had not.  CLAUDE.md's environment section
+already says every judge-touching runner must prepend `~/.elan/bin` itself, and
+this is the choke point every Austin runner goes through, so it belongs here
+rather than in each caller (rail 3b-iv: fix every harness that talks to the same
+library, at the one place they share).
 """
 import os, sys, time, errno
 
@@ -13,6 +24,7 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
 LEANPATH = os.path.join(ROOT, 'vendor', 'stage2-official', '.artifacts', 'dev5107', 'leanpath.txt')
 LOCKDIR = os.path.join(HERE, '.judgelocks')
 SLOTS = int(os.environ.get('JUDGE_SLOTS', '5'))
+ELAN_BIN = os.path.join(os.path.expanduser('~'), '.elan', 'bin')
 
 
 def judge_env(env=None):
@@ -20,6 +32,9 @@ def judge_env(env=None):
     env.setdefault('PYTHONIOENCODING', 'utf-8')
     if 'JUDGE_LEAN_PATH' not in env and os.path.exists(LEANPATH):
         env['JUDGE_LEAN_PATH'] = open(LEANPATH, encoding='utf-8').read().strip()
+    path = env.get('PATH', '')
+    if os.path.isdir(ELAN_BIN) and ELAN_BIN not in path.split(os.pathsep):
+        env['PATH'] = ELAN_BIN + os.pathsep + path
     return env
 
 

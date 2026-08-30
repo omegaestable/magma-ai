@@ -1152,6 +1152,48 @@ detail in `stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`).
     Lean template `gen/rec18137b.lean`, full write-up in
     `stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md`.
 
+Rails 59–61 were measured on 2026-08-30 (session 9,
+`stage2/docs/SESSION_9_AUSTIN_HANDOVER.md`).
+
+59. **An environment failure reported through the result channel reads as a result failure.**
+    `verify_certs.py` returned `infra_error` on a certificate the ledger records as **accepted**.
+    The judge had raised `JudgeInfrastructureError: missing lean binary: lean` — `jlock.judge_env()`
+    pinned `JUDGE_LEAN_PATH` but never prepended `~/.elan/bin` to `PATH` — and the runner **swallowed
+    the subprocess output**, collapsing it to a status word sitting in the same field as `incorrect`.
+    Latent through all of session 8 because an interactive shell had already exported elan; any runner
+    launched from an agent, a background task or a fresh shell had not. Fixed at the **shared choke
+    point** (`jlock.judge_env`), not per caller — every Austin runner goes through it (rail 3b-iv's
+    shape again) — and `verify_certs.py` now carries the judge's own `error_code` into the result.
+    Verified from a deliberately stripped PATH: 2/2 accepted, in parallel. **Wherever a harness reports
+    "it failed", check it can distinguish *it was wrong* from *it never ran*.** Related: the whole
+    `vendor/stage2-official/.artifacts/` tree had been deleted, which nothing reports as a missing
+    prerequisite — rebuild `dev5107/leanpath.txt` from `verify._get_lake_lean_path()` and re-run
+    `devrow.py` per row.
+60. **The closing rule and the breaking rule can be the same rule — and that is a necessity proof,
+    not another counterexample.** Law 8485 (the set's only "validated model, no Lean yet" row) is
+    FALSE. **A rule is a predicate of `(u,v)` alone**, so a rule added to make the *top* pair decode
+    also fires at an *inner* pair where nothing guarantees its locator; a constructed fixed point then
+    makes the payload not occur in the first argument at all. No subset escape: all 11 rule sets on
+    file fall, the only survivor fails `smallcheck` exh9/1 at 25/301, and *removing* the rule breaks
+    exh9/1 within 4,000 assignments. This is the **second independent derivation** of rail 58's
+    non-convergence fixed point (9663's `inimg`/`IMG` argument is the first, from the opposite
+    direction), which is why the obstruction should be treated as structural rather than as one
+    carrier's artifact. 8485 moves to the carrier track; the escape is worth ~26 rows.
+    **Eight of eight inherited models have now failed re-validation** (seven in session 8, this one) —
+    re-validate every model you inherit before writing a line of Lean.
+61. **Oracle rung 13: a forcing suite can be unable to express its own target.** All **97,000**
+    constructed instances in 8485's suite built `x` through `enc(u,w,j)`, whose last step is free, so
+    the locator held **by construction** — the suite could not phrase the failure it existed to test,
+    and reported clean. (The samplers missed it for the known rail-50 reason: the witness needs
+    `sz x = 13` *and* a `z` of `sz 33` **that is a function of `x`**, a measure-zero fibre; exh7/2 ran
+    1,061,208 assignments with 0 failures.) Rung 11 asks whether rule *k* fired; **rung 13 asks whether
+    the suite can BUILD a witness of the shape the rule is supposed to be wrong on** — for a decode
+    rule, one where the payload is not reachable from the first argument at all. Two riders:
+    **`by decide` cannot reduce a well-founded `op`** (the kernel will not unfold it — use `#eval`),
+    and **transcribe the Lean definition into Python and differential-test it** before trusting a
+    Python oracle about a Lean model (23,600 pairs, 0 disagreements, is what made the counterexample
+    trustworthy first time).
+
 Rails 42–46 were measured from the 2026-08-29 order-4 campaigns
 (`stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md`).
 
@@ -1373,6 +1415,7 @@ solver primitive cannot hide itself in the oracle.
 
 | Need | Read |
 | --- | --- |
+| **Session 9 handover — READ BEFORE ANY AUSTIN WORK** | **`stage2/docs/SESSION_9_AUSTIN_HANDOVER.md`** — the rebuilt `.artifacts`/judging environment, the 8485 falsification, and the exact compile state of the four near-certificates (two are one `theorem law` from 4 rows) |
 | **Deep session 8 results doc** | `stage2/results/2026-08-29-deep-session-8-austin-60-and-the-carrier-result.md` — the four green checks, what shipped, and the carrier result in one page |
 | **The Austin method — READ THIS FIRST for any Austin work** | **`stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md`** — ~85 KB: the twelve-rung oracle ladder, the recursive-decoder and anchored carriers, every Lean invariant and byte lever, indexed by what you are doing |
 | **Deep session 8: Austin 46 → 60, and the plan for 60 → 100** | **`stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`** — the per-law state of all 40 open rows ordered by distance from a certificate, six corrections to session 7, and the revised agent doctrine |
@@ -1413,6 +1456,14 @@ the problem changed: it is one obstruction, not forty laws. Read
 
 * **11 rows need only Lean** — 17286/28626 (4), 32281 (3), 38316 (2), 23357/23653 (2) each have a
   compiling certificate file and a named list of remaining lemmas. No research. Do these first.
+  **Re-measured 2026-08-30**: `w38316.lean` (16,200 B) and `_w3_23357_cert4.lean` (11,262 B) each have
+  **exactly one `sorry`, and it is `theorem law` itself** — every helper, `inst`, `rhs` and
+  `submission` compile, at 3.8 KB / 8.7 KB of headroom. Those are the cheapest 4 rows on the board.
+  `_x17286_mut.lean` is 10,141 B / 2 sorries. **32281 is a BYTE problem, not a maths problem**:
+  `w135d.lean` is 19,874 B with 5 sorries open — **126 B of headroom** — so apply `Z`/`Y`/`ZP`/`mx`/
+  `mxl` before proving anything. All four compile `exit=0` today; 19 dev dirs are rebuilt.
+* **8485 (row 0096) is NOT a Lean task** — its inherited model is false (rail 60). It joins the
+  carrier track, taking the shared-escape prize to ~26 rows.
 * **13 rows are closed by proof**: the free term algebra is refuted for 22591 (`a = I3(a)` in seven
   substitution instances, no freeness assumed), 11081/35036 (seven carriers, nineteen rule sets, covering
   projection, reconstruction *and* recomputation decodes), 12234 (structural proof, four failure
