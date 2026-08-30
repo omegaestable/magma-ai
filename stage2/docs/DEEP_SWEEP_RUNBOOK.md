@@ -12,7 +12,7 @@ printed. Paths are repo-relative; run from the repo root with
 
 ```powershell
 $env:PYTHONIOENCODING = "utf-8"
-$PY = ".\.venv\Scripts\python.exe"
+$PY = ".\.venv311\Scripts\python.exe"
 ```
 
 ---

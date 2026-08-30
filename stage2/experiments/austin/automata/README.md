@@ -1,25 +1,41 @@
-# Tag-automaton models for the Austin research set (2026-08-28)
+# Austin automata laboratory
 
-Infinite models of `x = T(x,y,z)` laws as *tag automata*: an inductive carrier
-(generators + tag constructors, `J` = free product, `S` = square, …) with `op`
-given by an ordered list of pattern rules with equality guards. Results and
-the construction theory: `stage2/results/2026-08-28-austin-tag-automata.md`.
+This directory contains the reusable construction machinery behind the Austin
+research set. It is an experiment surface, not a dependency of
+`stage2/solver/solver.py`.
+
+Start with:
+
+1. [`../../../docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`](../../../docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md)
+2. [`gen/LEMMA_LIBRARY.md`](gen/LEMMA_LIBRARY.md)
+3. [`gen/README.md`](gen/README.md)
+
+Session 8 raised the accepted set to 60/100 and invalidated several models
+that earlier bounded checks had called clean. The handoff's twelve-rung oracle
+ladder is therefore part of the correctness contract for every future model.
+
+## Stable entry points
 
 | File | Role |
 | --- | --- |
-| `laws.py` | parsing, catalog ids, duality (`ROOT` is hard-coded; edit for another checkout) |
-| `symb.py` | **complete symbolic verifier** — `Model(tags, rules).verify(law)` returns the failing branches (0 = proof for every element of the carrier). Patterns: `'$v'` vars (repeats = equality checks), `(tag, …)`, `('AS','$v',sub)` whole-subterm binding, `('OP',p1,p2)` / `('OPB',name,p1,p2)` / `('A1',p)` recursive self-consistency checks (bounded unfolding, `max_op_depth`; sound over-approximation, currently blows up at depth 2) |
-| `synth.py` | seeds + CEGIS repairs (projection / keep / *directed*), global best-first, `minimize`, `dual_model`, `good_orientation`, `synthesize_any` |
-| `render2.py` | Lean certificate (binary case tree, `simp (disch := …) [op, eqf, *]` leaves) |
-| `concrete.py` | ground evaluator + biased random tests |
-| `batch.py` | `SYN_TIME=900 SYN_PROCS=8 SYN_SKIP=… python batch.py out.jsonl [eq1_id …]` |
-| `pipeline.py` | `python pipeline.py batch.jsonl certs/ [eq1_id …]` — render every row of every model (best of 4 evaluation orders, duals included), bulk-judge, append `certs/ledger.jsonl` |
-| `ship.py` | fixture lines + `DISTILLED_CERTS` entries from the ledger |
-| `judge1.py` | `python judge1.py cert.lean <eq1_id>:<eq2_id>` — judge one certificate |
-| `ledger.py` | accepted-row summary |
-| `complete.py` | exact critical-pair completion (diverges on the hard family — kept as the measurement) |
-| `semantic5107.py` | the semantic fixed-point model of 5107 (too slow as written; the concrete 4-rule recursive model that passes 3,000 biased tests is in the results doc) |
-| `killbatch.py` | kill a batch driver *and* its spawned pool workers (rail 15) |
+| `laws.py` | Parsing, law catalogue ids, and duality. |
+| `symb.py` | Symbolic model verifier. A zero result is one oracle, not sufficient promotion evidence. |
+| `synth.py` | Seeds, CEGIS repairs, minimisation, and dual-model helpers. |
+| `render2.py` | Lean certificate renderer. |
+| `concrete.py` | Ground evaluator and biased random checks. |
+| `batch.py` | Batch model search. |
+| `pipeline.py` | Render candidates, judge them, and prepare ledger entries. |
+| `verify_certs.py` | Re-judge candidate certificates; writes a verification report only. |
+| `append_ledger.py` | Append verified rows to `certs/ledger.jsonl` idempotently. |
+| `ship.py` / `splice_certs.py` | Prepare fixture and distilled-certificate changes from accepted ledger rows. |
+| `judge1.py` | Judge one certificate against one implication pair. |
+| `ledger.py` | Accepted-row summary. |
+| `killbatch.py` | Stop a batch driver and its worker tree. |
 
-Run everything from this directory with the venv interpreter and
-`PYTHONIOENCODING=utf-8`.
+`complete.py` and the earlier tag-model scripts are retained measurements of
+approaches that diverge or need stronger validation. They are not production
+routes.
+
+Run commands from this directory with `PYTHONIOENCODING=utf-8` and the
+repository's Python 3.11 interpreter. Never replace the fixture wholesale;
+Austin promotion must preserve pins written by other route families.

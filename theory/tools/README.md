@@ -15,10 +15,10 @@ Useful commands:
 
 ```powershell
 Push-Location theory\tools
-..\..\.venv\Scripts\python.exe fetch_teorth_data.py --check
+..\..\.venv311\Scripts\python.exe fetch_teorth_data.py --check
 Pop-Location
 
-.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
+.\.venv311\Scripts\python.exe theory\tools\smoke_problem_sets.py
 ```
 
 Use `fetch_teorth_data.py --force` only when intentionally syncing from network. Record the upstream commit/timestamp from the live Teorth implication explorer when a cache refresh matters for team memory.

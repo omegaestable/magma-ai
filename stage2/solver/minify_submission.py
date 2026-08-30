@@ -48,8 +48,8 @@ PACKED_TABLES = {
     "WITNESS_TABLES": "tables",
     # "lit": any top-level literal, carried as its `repr` and rebuilt with
     # `ast.literal_eval`, so tuple/list/str types survive exactly. Added
-    # 2026-08-29: these twelve were the largest data literals the packer was
-    # still shipping verbatim (30,516 B of source between them).
+    # 2026-08-29: these eleven were the largest data literals the packer was
+    # still shipping verbatim.
     "_ANCHORED_RIGHT_PROJECTION_BLOCKS": "lit",
     "_ANCHORED_LEFT_PROJECTION_BLOCKS": "lit",
     "_PRODUCT_CONSTANT_BLOCKS_3565": "lit",
@@ -216,9 +216,8 @@ def _encode_all(values: dict[str, object], order: list[str]) -> str:
 
     A separate lzma stream per table restarts the dictionary each time, which
     costs real bytes when the tables share vocabulary (Lean preambles, block
-    text, prompt prose). Measured 2026-08-29 over the sixteen tables: 77,635 B
-    as separate blobs against 72,920 B shared, and 97,166 B for the state this
-    replaced (four blobs plus twelve verbatim literals) -- 24,246 B saved.
+    text, prompt prose). The shared stream is the measured smaller
+    representation for the current payload set.
     """
     flat = [[name, PACKED_TABLES[name], _flatten_table(name, values[name])] for name in order]
     payload = json.dumps(flat, separators=(",", ":"), ensure_ascii=False).encode("utf-8")

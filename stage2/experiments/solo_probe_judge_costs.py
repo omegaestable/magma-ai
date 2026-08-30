@@ -3,10 +3,12 @@
 speculative grind certificate -- against a control that must be accepted.
 
 Read-only w.r.t. the solver. One judge process; run on an otherwise quiet box.
-    PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe stage2/experiments/solo_probe_judge_costs.py
+    PYTHONIOENCODING=utf-8 ./.venv311/Scripts/python.exe stage2/experiments/solo_probe_judge_costs.py
 """
 from __future__ import annotations
-import json, sys, time
+import json
+import sys
+import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -35,7 +37,8 @@ def main():
     ids = sys.argv[1:] or ["normal_0001"]
     for rid in ids:
         p = cat[rid]
-        S.set_effort("fast"); S.clear_term_caches()
+        S.set_effort("fast")
+        S.clear_term_caches()
         rec = S.solve_problem(p)
         if rec is not None:
             run(p, rec["answer"]["verdict"], rec["answer"]["code"],

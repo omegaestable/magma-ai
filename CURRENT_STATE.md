@@ -7,11 +7,10 @@ the operational detail that does not belong in the entry point (effort tiers,
 deployed budgets, artifact inventory) and a dated index into `stage2/results/`,
 which is the evidence.
 
-Last updated: **2026-08-27** — improvement pass 2 (seven parallel agents:
-`compliance-tests`, `false-side`, `completion`, `lean-formula`, `pacing`,
-`mined-laws`, `llm-lane`). What shipped and the ranked levers are in
-`stage2/docs/NEXT_SESSION_BRIEF.md`; the deep-sweep commands are in
-`stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
+Last updated: **2026-08-29** — bookkeeping/stability audit after Austin session
+8. Current measured numbers are in `CLAUDE.md`; the latest deep-session detail
+and this audit's cleanup plan are in `stage2/docs/LATEST_HANDOFF.md`. The
+deep-sweep commands remain in `stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
 
 ---
 
@@ -150,9 +149,9 @@ pass, so the audit default is unchanged. Full rationale: `CLAUDE.md` rail 12.
 
 **Measure at the tier you ship, with the bound deployment imposes.**
 `audit_corpus.py --row-budget` exists because the audit sets no per-row deadline
-while Solo and Marathon always do. Real Marathon at the default compression ratio
-is `standard` with ~180 s per row on average (`--effort standard --row-budget 540`
-models the borrow ceiling); real Solo is `deep` with 1980 s.
+while Solo and Marathon always do. Real Marathon is `standard` with 300 s per
+row on average (`--effort standard --row-budget 900` models the solver's 3×
+borrow ceiling); real Solo is `deep` with 3600 s.
 
 Marathon's deterministic pass is capped at `MARATHON_DETERMINISTIC_SHARE` (0.6)
 of the run, and since 2026-08-12 each **row** is bounded too:
@@ -172,8 +171,10 @@ derived from it.
 
 - **Sandbox per submission**: `python:3.11-slim`, 2 vCPU, 2048 MB RAM, 64 PIDs,
   `/tmp` 64 MB tmpfs, read-only filesystem, network disabled, all capabilities
-  dropped, env allowlist `PATH`/`HOME`/`LANG`/`PYTHONDONTWRITEBYTECODE`. No
-  third-party packages.
+  dropped. The deployed image includes `sympy==1.13.3`; the solver itself uses
+  no third-party imports. The process allowlist also preserves `USER`,
+  `USERPROFILE`, `TERM`, `TMPDIR`, `TMP`, `TEMP`, `SYSTEMROOT`, `WINDIR`,
+  `ComSpec`, `PATHEXT`, `PYTHONPATH`, and `PYTHONIOENCODING`.
 - **Submission**: a single `solver.py`, max **500,000 bytes**.
 - **Budgets**: solver wall clock **3600 s per problem**; Lean judge **300 s per
   call**; Lean code **100,000 bytes per call**; FALSE certificate **20,000 bytes
@@ -191,8 +192,8 @@ derived from it.
   stale-formula caveat that used to live here is discharged.
 - **Scoring (final, 2026-08-21)**: four equal-weight categories — Normal,
   Hard, Extra Hard, Order 5 — `accepted` = 1 point, else 0; no problem reused
-  from any public selected set. Proofs verified with **Lean 4.32.2 / Mathlib
-  4.32.2**. A solver carrying generated data ships a submission note.
+  from any public selected set. Proofs are currently verified with **Lean 4.33.1
+  / Mathlib 4.33.1**. A solver carrying generated data ships a submission note.
 
 ---
 
@@ -227,7 +228,8 @@ list; the route inventory is `stage2/docs/solver-route-ledger.md` and
 6. `_engine_gate()` before every engine enforces the global hard deadline and the
    memory guard (2048 MB sandbox vs. deep-tier closures measured at 5-17 GB RSS).
    A loop that polls neither has no memory guard either — rail 5f-v.
-7. `DISTILLED_CERTS` (65 entries) is keyed by **canonical equation text**, never
+7. `DISTILLED_CERTS` (119 entries in the 2026-08-29 artifact) is keyed by
+   **canonical equation text**, never
    by row id, so one entry covers the official row, its HF `*`-notation mirror and
    any future ETP sample of the same implication. Nothing enters it that the real
    judge has not accepted; `distill_certs.py` judges before it emits.
@@ -236,34 +238,37 @@ list; the route inventory is `stage2/docs/solver-route-ledger.md` and
 
 ## What is still open
 
-Ranked, as of 2026-08-27. The full list with numbers is
-`stage2/docs/NEXT_SESSION_BRIEF.md`; the commands are
-`stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
+The current ranked plan is in `stage2/docs/LATEST_HANDOFF.md`; the commands
+are in `stage2/docs/DEEP_SWEEP_RUNBOOK.md`.
 
 1. **Upload.** Run `stage2/docs/playground-preflight.md` end to end. Two things
    it now checks that it did not before: the submission directory contains
    `solver.py` **and nothing else** (a stray `__pycache__` makes the official
    runner reject the whole submission — rail 23), and `SUBMISSION_NOTE.md` lists
    every generated payload the artifact ships.
-2. **Deep sweeps** — the declared remaining activity. Order-4 at scale, order-5
-   at **≥ 4 variables** (43% of the population and never swept — rail 33), and
-   the `--effort standard --row-budget 540` / `--effort deep --row-budget 1980`
-   passes that measure the tiers we actually ship (rail 12).
-3. **The z3 witness harvest**, which is the only measured-productive source of
-   new order-5 FALSE coverage (teorth's FinitePoly remainder is spent and random
-   Latin squares score 0 — see the dead-ends table in `CLAUDE.md`).
-4. **Step-count budgets instead of wall clock** — still the most valuable
-   *structural* item (seven instances of the same bug class now, rail 28), but
-   it is a refactor, not a pre-deadline change.
+2. **Austin research completion:** the set is now 60/100 accepted. Resume from
+   `stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md` and
+   `stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md`; the next measured
+   levers are the zero-sorry harvest, 11 lemma-only rows, and the restricted
+   carrier/image-of-`op` question.
+3. **Order-4 residuals:** the current 400k baseline is 399,618/400,000, while
+   the historical failure union is 652 rows (603 TRUE, 49 FALSE). Use
+   `stage2/docs/ORDER4_MISS_ELIMINATION_PLAN.md` and the 2026-08-29 result
+   ledgers; do not present this as exhaustive coverage of the full 22M graph.
+4. **Final stability and upload:** perform the positive-budget runner checks,
+   fixture/layout validation, and cleanup decisions in
+   `stage2/docs/LATEST_HANDOFF.md`. Step-count budgets and broader solver
+   refactors remain post-deadline research, not a reason to edit the solver in
+   this audit.
 
 ---
 
 ## Current artifacts
 
 - Official harness snapshot: `vendor/stage2-official/` at upstream commit
-  `4db175c41d917ce39fc82e48c7e440e2a3fa403d` (synced 2026-08-24; 10 local
+  `817a4653bf762584931d49c6714c9fcfab7df66a` (synced 2026-08-27; 10 local
   Windows patches documented in its `UPSTREAM.md`).
-- Active solver source: `stage2/solver/solver.py` (~11.5k lines, single file by
+- Active solver source: `stage2/solver/solver.py` (~14.3k lines, single file by
   contract). Over the 500 KB cap **by design** — it carries comments and
   docstrings that the packager strips.
 - Packaged submission: `stage2/submissions/solver.py`, gitignored build output.
@@ -315,8 +320,8 @@ Ranked, as of 2026-08-27. The full list with numbers is
 1. **`stage2/submissions/__pycache__/` must not exist when a real run starts.**
    Importing the packaged solver *in place* leaves one, and the official runner
    rejects the submission instantly. It has cost a run before; verify the packaged
-   artifact by copying it elsewhere first. (One is present in the working tree as
-   of this writing.)
+   artifact by copying it elsewhere first. The directory is currently clean, but
+   re-check it immediately before upload.
 2. `vendor/stage2-official/judge/verify.py`'s `50_000` / `10_000` / `120` are
    **fallbacks**, not the deployed caps. Read
    `vendor/stage2-official/pipeline/config.json`. CI now pins this.
@@ -349,8 +354,8 @@ Ranked, as of 2026-08-27. The full list with numbers is
 13. Treat `tmp_stage2_smoke/` as scratch. Promote only concise dated summaries
     into `stage2/results/`.
 14. Printing `◇` crashes on Windows cp1252 — set `PYTHONIOENCODING=utf-8` for
-    ad-hoc scripts. `du`/`find` at the repo root will hang (7.4 GB / 154k files,
-    mostly `vendor/stage2-official/.lake`); scope every search.
+    ad-hoc scripts. `du`/`find` at the repo root will hang (about 7.98 GB /
+    152k files, mostly `vendor/stage2-official/.lake`); scope every search.
 
 ---
 

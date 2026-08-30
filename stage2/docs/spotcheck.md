@@ -10,11 +10,11 @@ answer is the only thing this hunts.
 
 ```powershell
 # default: 5 TRUE + 5 FALSE from each of 9 sources (90 rows)
-.\.venv\Scripts\python.exe stage2\experiments\spotcheck.py
+.\.venv311\Scripts\python.exe stage2\experiments\spotcheck.py
 
-.\.venv\Scripts\python.exe stage2\experiments\spotcheck.py --true 10 --false 10
-.\.venv\Scripts\python.exe stage2\experiments\spotcheck.py --sources etp,hard3
-.\.venv\Scripts\python.exe stage2\experiments\spotcheck.py --seed 123 --pure-random
+.\.venv311\Scripts\python.exe stage2\experiments\spotcheck.py --true 10 --false 10
+.\.venv311\Scripts\python.exe stage2\experiments\spotcheck.py --sources etp,hard3
+.\.venv311\Scripts\python.exe stage2\experiments\spotcheck.py --seed 123 --pure-random
 ```
 
 Exit code is `1` if any mistake was found (and pinned), `0` otherwise — so it

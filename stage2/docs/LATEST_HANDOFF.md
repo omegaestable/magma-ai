@@ -1,4 +1,368 @@
-# Latest handoff — 2026-08-28 (deterministic pass: 4x faster, 96 KB lighter)
+# Latest handoff — competition-ready repository; resume solver work (2026-08-30)
+
+## Readiness result
+
+The repository cleanup and final validation pass is complete. The solver source
+was deliberately not edited; the rebuilt 456,604-byte artifact is byte-identical
+to the accepted session-8 artifact (`SHA-256 784f5ce2…c5f4`). The complete
+commands, hashes, harness counts, archive manifest, and cleanup record are in
+[`2026-08-30-competition-readiness.md`](../results/2026-08-30-competition-readiness.md).
+
+Final release gates:
+
+- Python 3.11 offline gate: **558 passed, 1 expected skip**, twice (standalone
+  and through the canonical packager).
+- `ruff check .`: clean over executable repository code. The frozen Austin
+  notebook is explicitly excluded because it contains partial generated
+  fragments, not importable production modules.
+- Official Solo harness: all buckets green, including 92 public attacks and 4
+  infrastructure attacks; official Marathon harness: **27 passed, 0 failed**.
+- Packaged solver: official Solo sample **20/20 accepted**; official Marathon
+  **5/5 accepted** with a positive 163,840-token budget, zero LLM calls, and
+  1.0 s wall time.
+- Standing spot-check: **90/90** across nine sources.
+- Readiness audit: all **287** unignored Markdown files checked individually,
+  74 local links, zero broken links, zero encoding errors, zero missing final
+  newlines; official caps/toolchain, disclosure, layout, mirrors, and secret
+  scan all pass.
+
+Cleanup was recoverable and scoped: completed raw order-4 shards and the full
+ignored `tmp_stage2_smoke/` tree are in verified local ZIPs listed in
+[`stage2/results/raw/MANIFEST.md`](../results/raw/MANIFEST.md). Regenerable
+`vendor/stage2-official/.artifacts/`, Python bytecode, and lint/test caches were
+removed after the final harnesses. `vendor/stage2-official/.lake/`, both Python
+environments, graph/provenance data, papers, fixtures, and every Austin proof
+or experiment source remain.
+
+## Next session: solver focus, in order
+
+1. Read `CLAUDE.md`, then
+   [`DEEP_SESSION_8_AUSTIN_HANDOVER.md`](DEEP_SESSION_8_AUSTIN_HANDOVER.md),
+   then
+   [`LEMMA_LIBRARY.md`](../experiments/austin/automata/gen/LEMMA_LIBRARY.md).
+2. Run the zero-sorry harvest scan and compile candidates; zero sorries can
+   still mean a refutation, so it is not acceptance evidence.
+3. Close the four one-lemma-set families first: 17286/28626 (4 rows), 38316
+   (2), 32281 (3), and 23357/23653 (2). That is **11 rows with compiling files
+   and named remaining lemmas**.
+4. Then resume the anchored/image-of-`op` carrier, the shared lever worth about
+   25 of the remaining 40 Austin rows. Use 9663 as the first test case.
+5. Re-judge independently, append to the Austin ledger, splice surgically,
+   re-pin without replacing other fixture families, package, and spot-check.
+
+The submission pair is `stage2/submissions/solver.py` plus
+`stage2/solver/SUBMISSION_NOTE.md`. The worktree is intentionally dirty with
+this reviewed readiness pass and still has one unmerged experimental ref
+(`worktree-wf_2be84d37-297-3` at `c58c29e`); neither is a solver defect. Review
+and commit the readiness diff before starting new route work.
+
+---
+
+## Pre-cleanup audit record (superseded by the completed result above)
+
+### Audit and stability handoff — 2026-08-30
+
+This is the bookkeeping, audit, and stabilization pass requested before the
+competition deadline. It is intentionally not a solver-improvement pass:
+`stage2/solver/solver.py` was studied but not edited, and no solver route,
+certificate, fixture, judge harness, or research result was deleted.
+
+## Executive diagnosis
+
+The repository is operationally strong but has accumulated three kinds of
+debt:
+
+1. **Current truth was split across time.** `CLAUDE.md` had the right Austin
+   result but described the whole table as an 2026-08-28 / 373,997-byte run;
+   `CURRENT_STATE.md`, `README.md`, `RESTART_CHECKLIST.md`, and
+   `stage2/solver/SUBMISSION_NOTE.md` carried older snapshot, artifact, count,
+   or packing claims. Those clear contradictions are corrected in this pass.
+2. **Research scratch is interleaved with durable Austin work.**
+   `stage2/experiments/austin/automata/gen/` contains 1,670 files / 9.04 MiB
+   including 119 logs, 109 bytecode files, 71 output files, backups, repeated
+   candidate scripts, zero-sorry proofs, law notes, and the active lemma
+   library. A filename heuristic marks 1,161 files / 5.38 MiB as scratch, but
+   it also catches valuable `NOTES_*` and proof artifacts. Blanket deletion is
+   unsafe.
+3. **Disk size is mostly generated infrastructure, not repository junk.** The
+   current tree is 7,983,088,854 B / 152,246 files including ignored output;
+   tracked content is 195,212,538 B / 3,025 files. The Lean/Mathlib cache alone
+   is 7,624,619,406 B / 143,317 files. The full graph and paper corpus are
+   small by comparison and should be preserved.
+
+The current commit is `18339b4` (`wow`, 2026-08-29), one commit ahead of
+`origin/main` at `b73e50f`. At the start of this pass the worktree was clean
+apart from the temporary audit script. The old `impl/*` branches and most generated
+worktree refs are merged. One unmerged ref,
+`worktree-wf_2be84d37-297-3` at `c58c29e`, contains only a 136-line solver
+completion experiment from 2026-08-27. It is not merged or deleted because
+that would alter the out-of-scope solver history. The temporary audit script
+has been removed. A host process-list query returned access denied, so
+active-session status is not established from that query alone.
+
+## Measured state to carry forward
+
+- Official deterministic baseline: 1,869/1,869 and HF 800/800, with 0 row-id
+  losses, gains, flips, oracle failures, or crashes in the 2026-08-28 isolated
+  comparison. This is the pre-Austin-append baseline, not a fresh full rerun.
+- Austin `research_order5_hard`: **60/100 real-judge accepted**, with all 60
+  served, artifact **456,604 B**, fixture **238** pins, and
+  `test_judge_verified` **230 passed / 0 skipped**. The 40 open rows and the
+  twelve-rung validation ladder are in `DEEP_SESSION_8_AUSTIN_HANDOVER.md`;
+  read `automata/gen/LEMMA_LIBRARY.md` before resuming.
+- Order 4: **399,618/400,000** in the latest three campaigns, 382 skips, 0
+  crashes/oracle failures/label mismatches. The historical failure union is
+  **652 rows: 603 TRUE and 49 FALSE**, solved 611/652 in the distilled replay.
+  The 400k sample and the 652-row union are not the full 22,028,942-row graph.
+- Submission data: the current packer uses one shared LZMA/base85 blob for
+  fifteen named payloads; `PROMPT` remains a top-level unpacked string. The
+  corrected disclosure is in `stage2/solver/SUBMISSION_NOTE.md`.
+
+Evidence hierarchy remains strict: dated `stage2/results/*.md` files are the
+measurement record; `CLAUDE.md` is the current numerical/rail index; this file
+is the session handoff and cleanup plan; ignored JSONL/log output is raw input
+only until a result summary and retention decision exist.
+
+## What can be shed safely
+
+No material cleanup was executed in this pass. The following is the safe order
+for a separately approved cleanup, with the reason and guardrail for each:
+
+### Safe after a final process check
+
+- Repo-side `__pycache__/`, `.pytest_cache/`, `.ruff_cache/`, and generated
+  Python bytecode. They are reproducible and not part of the submission. Check
+  that paths are inside this workspace first.
+- Root `chain.log` (completed old ETP sweep) and `stop_after_b08.log` (52-byte
+  failed shell attempt), after confirming no process still has them open.
+- `vendor/stage2-official/.artifacts/` (**353.6 MB / 8,698 files**) after the
+  final local judge run. It is regenerated on demand; retain any final report
+  or certificate digest outside this directory first.
+- Old, duplicate entries in `tmp_stage2_smoke/` (**122.7 MB / 21,242 files**)
+  after preserving the latest representative run and checking every referenced
+  result path. This directory is the only place where deletion is currently
+  pre-authorized by the existing cleanup policy, but the latest Austin/ETP
+  evidence still needs a manifest review.
+
+### Archive before deletion
+
+- Austin `automata/gen/` scratch candidates, logs, `.out` files, backups, and
+  failed model variants. First preserve `LEMMA_LIBRARY.md`, `NOTES_*`,
+  `PLAYBOOK_*`, `P2_*`, accepted/reusable proofs, current validators, and a
+  manifest recording source path, status, row/law, and last validation. A
+  date-stamped archive is safer than deleting the 1,161 filename-marked files.
+- Ignored raw `stage2/results/*.json`, `*.jsonl`, and `*.log`: retain the exact
+  raw files behind current Austin, order-4, official, and positive-budget
+  claims until their summaries have hashes or an equivalent reproducibility
+  record. Archive older duplicate runs only after that check.
+- Paper build directories under `paper/build/` and
+  `paper/arxiv_sources/**/build/` once no paper compilation is active. Keep
+  TeX, source bundles, PDFs, extracted text, figures, and bibliographies.
+
+### Do not shed
+
+- `vendor/stage2-official/.lake/` (7.62 GB): it is the local Lean/Mathlib build
+  cache and rebuilding it costs hours.
+- `data/exports/`, `data/teorth_cache/`, and `theory/results/proof_atlas/`:
+  these are the full graph/provenance substrate, not disposable output.
+- The blueprint and Austin papers, including the source/PDF pairs.
+- `stage2/fixtures/`, durable dated result summaries, route ledgers, and the
+  current accepted-certificate sources.
+- `stage1/` merely to reduce size. It is an archive; move it only as a
+  deliberate repository-structure decision with a separate review.
+- Either `.venv/` (**456.2 MB**) or `.venv311/` (**123.1 MB**) until the active
+  interpreter and final 3.11 parity checks have been identified. Removing the
+  wrong environment can make the last validation irreproducible.
+
+The duplicate `eq_size5.txt` copies and large tracked graph exports should not
+be deduplicated casually: one is the official mirror and the other is the
+analysis mirror, and tools/reference checks may rely on both. Verify references
+and byte identity before proposing any move.
+
+## Solver study — future queue, not this session
+
+The solver is a large, coherent single-file artifact rather than accidental
+dead code. Its load-bearing architecture is:
+
+- top-level `PROMPT` for the official AST extractor;
+- cheap structural TRUE families, then completion/closure and e-graph routes;
+- named, structured, FinitePoly, order-5, and bounded FALSE witnesses;
+- an optional proxy-only LLM proposal lane whose candidates are locally derived
+  and judge-checked;
+- global deadline and memory gates, per-problem reclaim resets, and an atomic
+  pack/minify path.
+
+The current source is 1,515,437 B and about 14.3k lines. Several unbounded
+`lru_cache(maxsize=None)` sites remain around the parser/term and closure
+helpers, but the solver also has explicit cache reclamation and a memory guard.
+This is a future profiling hypothesis, not a justification for a pre-deadline
+edit. The next solver changes should be isolated, measured by row id, and
+real-judge checked:
+
+1. **Austin carrier work:** pursue the restricted/image-of-`op` carrier. The
+   free carrier requires an apparently infinite rule family; adding more free
+   rules is the wrong lever. The image is only 4.1% of the term algebra, but
+   row 9663 has an op-built witness, so image restriction alone is not enough.
+2. **Eleven near-finished Austin rows:** run the zero-sorry harvest, classify
+   proof versus refutation, compile, independently validate, then judge. The
+   target laws are 17286/28626, 38316, 32281, and 23357/23653.
+3. **Order-4 TRUE residuals:** mine proof motifs for the 15 historical TRUE
+   skips, starting from repeated hypothesis families 3567, 3676, and 4560.
+4. **Order-4 FALSE residuals:** investigate the 26 FALSE skips, especially
+   repeated families 481, 1979, and 2531; do not confuse “no finite witness
+   found” with a TRUE result. The cached graph points to confluence/greedy
+   constructions, but no local Lean source is present.
+5. **Stability research after the deadline:** replace wall-clock-only limits
+   with step-count budgets, profile cache lifetimes, and consider term
+   interning/discrimination indexing. These are substantial rewrites and should
+   not be mixed with the final artifact freeze.
+
+The LLM lane remains optional. Any future validation must use a positive token
+budget, and every candidate must be accepted by the real judge before it counts.
+No zero-token Marathon run is valid promotion evidence.
+
+## Mathematics and full-graph radar
+
+The full order-4 graph remains on radar, but the distinction between graph
+coverage and solver coverage must be kept explicit:
+
+- `data/exports/export_raw_implications_14_3_2026.csv`,
+  `general_implications_closure.json.gz`, `data/teorth_cache/graph.json`,
+  `full_entries.json`, `duals.json`, and `outcome_matrix.bin` are the durable
+  graph/provenance assets. Keep them and record checksums before any future
+  data migration.
+- The local order-4 campaigns have evaluated about 932k rows / 931,955 unique
+  ids, not every one of the roughly 22M labelled order-4 pairs. The graph can
+  nominate implication paths and construction families; it cannot be quoted as
+  a solver benchmark.
+- For the 652 residuals, use graph status, duality, proof-page cache, and paper
+  sections to classify a row before spending Lean time. Promote only a reusable
+  proof/witness family, never a row-id rule.
+
+The papers worth restoring to the active radar are:
+
+- The blueprint’s `infinite_models` and `order_5` chapters: Austin laws admit
+  infinite models but no nontrivial finite models; the text records 57,882
+  order-5 equations, 106 laws with only trivial finite models, 10 known Austin
+  laws, and 24 equations with finite-model status unresolved. Its finite
+  implications use surjective/injective and eventual-period arguments; these
+  explain why finite and infinite lanes must remain separate.
+- `infinite_magma_constructions.tex`, `counterexamples.tex`,
+  `weak_central_groupoids.tex`, and `cohomology.tex`: translation-invariant,
+  greedy, twisting, cohomological, and weak-central-groupoid constructions are
+  the source of the hard FALSE-side families and the warning that a free-term
+  carrier can lose payload at derailments.
+- `rewriting.tex` and `egraphs.tex`: completion adds critical-pair rules and can
+  derive facts an e-graph has not built; variable-bearing laws are not ordinary
+  rewrite rules. This is exactly the distinction behind the solver’s completion
+  gains and the remaining proof-search wall.
+- `paper/austin.tex`: the concise finite-magma framing and the open finite
+  question `Eq677 -> Eq255`; useful context for why the finite witness search
+  cannot settle every Austin-style law.
+- `paper/2603.20396v1` (“Compression is all you need: Modeling Mathematics”):
+  relevant to shared vocabulary and hierarchical compression of formal proofs,
+  not a correctness source. It supports studying reusable intermediate lemmas
+  and compressed certificate payloads.
+- `paper/2509.20820v1` (“Distilling Many-Shot In-Context Learning into a Cheat
+  Sheet”): relevant only to prompt/LLM distillation methodology. It belongs to
+  the Stage 1 archive of ideas and is not Stage 2 accuracy evidence.
+
+The next math-radar artifact should be a short, dated index mapping each
+residual family to: graph status, dual, paper section, construction class,
+candidate Lean motif, local semantic test, judge evidence, and blocker. Do not
+copy the entire graph or paper prose into the solver.
+
+## Detailed execution plan
+
+### Phase A — freeze and establish truth
+
+1. Confirm no Austin, order-4, package, or judge process is active by inspecting
+   process command lines, not just a task count. Record the check.
+2. Record `git status`, `git rev-parse HEAD`, the upstream relation, and a
+   checksum/size manifest for the packaged solver, fixture, current Austin ship
+   files, result summaries, graph exports, and paper source bundles.
+3. Keep `solver.py` byte-identical. Any solver change starts a new branch and
+   requires the full gate, positive-budget runner checks, and a fresh handoff.
+
+### Phase B — close the documentation loop
+
+1. Treat `CLAUDE.md`’s current measured table as the only current benchmark
+   ledger. Keep older figures in dated results with explicit historical labels.
+2. Keep `LATEST_HANDOFF.md`’s audit section at the top; historical handoffs
+   below it are context, not current state.
+3. Keep `CURRENT_STATE.md`, root `README.md`, `RESTART_CHECKLIST.md`, and
+   `SUBMISSION_NOTE.md` synchronized only for operational facts and pointers.
+   Do not recreate duplicate score tables.
+4. Keep `vendor/stage2-official/UPSTREAM.md`’s current `817a4653` snapshot
+   separate from its historical 4db/4.32.2 sync entries. No vendor harness code
+   was changed in this audit.
+
+### Phase C — make research sessions resumable
+
+1. Freeze session 8 with one canonical status ledger and one manifest of
+   accepted certificates. The durable inputs are the session result summary,
+   `LEMMA_LIBRARY.md`, `NOTES_*`, validators, ship files, and judge pins.
+2. For every `gen/` file, classify `canonical`, `reusable`, `open`, `failed`,
+   `log`, or `generated bytecode`; preserve row/law references and validation
+   date. Move only a reviewed class into a date-stamped archive.
+3. Replace tool claims with tested behavior: `verify_certs.py` does not itself
+   write the ledger; `append_ledger.py` does. A zero-sorry Lean file can be a
+   refutation, not a proof. `_orch_minim.py` status is not soundness evidence.
+4. Resume existing agents/sessions where possible. Before a new fan-out, record
+   owner, branch, files, process id, result path, and stop/recovery instructions.
+
+### Phase D — graph and mathematics pass
+
+1. Run cache presence/shape checks, not a network refresh, unless an explicit
+   external-data decision is made. Verify equation counts, row-index base, dual
+   maps, and graph/export timestamps.
+2. Reconcile the 652 residual ledger against graph status and the full order-4
+   outcome matrix. Produce family-level queues, not pasted answer rules.
+3. Build the small math-radar index described above and attach paper sections to
+   the Austin carrier, finite-period, rewriting, and countermodel queues.
+4. Only then allocate Lean/search time to the 11 lemma-only Austin rows,
+   carrier/image experiments, 15 TRUE residuals, and 26 FALSE residuals.
+
+### Phase E — approved cleanup
+
+1. Start with generated bytecode, stale scratch, and `.artifacts`; retain a
+   manifest and current evidence before each removal.
+2. Archive Austin scratch before considering deletion. Do not delete the active
+   lemma library, accepted proof sources, or current validators based on names.
+3. Do not touch `.lake`, graph exports, paper sources, fixtures, durable result
+   summaries, or the solver.
+4. Re-run the documentation link check and `git status` after each cleanup
+   batch. A cleanup commit should contain only cleanup/manifest changes.
+
+### Phase F — final readiness gate
+
+1. On an idle machine, package the unchanged solver and verify that
+   `stage2/submissions/` contains exactly `solver.py`.
+2. Run the offline gate and spotcheck. Compare pass and skip counts, not just
+   pass totals; run no Marathon validation with a zero token budget.
+3. Run the official Solo/Marathon or runner-equivalent positive-budget checks
+   on the packaged artifact, including the current fixture and representative
+   Austin certificates. Record accepted/rejected/malformed/incomplete/incorrect
+   statuses by row id.
+4. Run the upload preflight, inspect the final diff, commit the handoff and
+   documentation corrections, and preserve the final artifact digest.
+5. After the final accepted artifact is frozen, stop research processes and
+   perform only the explicitly approved scratch cleanup.
+
+## Acceptance criteria for closing this plan
+
+- `solver.py` unchanged from the frozen candidate unless a separately approved
+  solver branch is created.
+- One current benchmark table, one latest handoff, and dated result evidence;
+  no contradictory “current” snapshot/count/packing claims.
+- Every retained Austin research claim maps to a ship file, fixture pin, ledger
+  entry, and official judge result.
+- Cleanup is reproducible from a manifest, with `.lake`, graph data, papers,
+  fixtures, and durable summaries retained.
+- Final package is under 500,000 B, has the required single-file layout,
+  positive-budget validation, and no unreviewed speculative answer path.
+
+---
 
 ## 2026-08-29 order-4 sweep addendum
 

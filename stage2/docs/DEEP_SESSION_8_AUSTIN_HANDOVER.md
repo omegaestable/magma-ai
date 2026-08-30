@@ -38,7 +38,7 @@ an agent's claim of acceptance is not evidence.
 
 **C1. The byte budget was wrong, and it mattered.** Session 7 recorded "the artifact built from HEAD plus
 all 46 certificates is 423,307 B — 76.7 KB headroom". Measured 2026-08-29 by running
-`minify_submission.py` over HEAD (`b73e50f`, which added ~36 KB of anchored-projection routes):
+`minify_submission.py` over the pre-session base (`b73e50f`, which added ~36 KB of anchored-projection routes):
 **459,379 B, 40,621 B headroom.** The marginal cost of a certificate, measured rather than extrapolated,
 is **1,421 B for the first row of a new law and 64 B for each sibling row** (a second row of the same law
 differs only in `def rhs`, and lzma sees that). The 52 open rows are 24 new laws plus 28 siblings, so 100
@@ -47,8 +47,8 @@ certificates project to **≈ 475 KB**. That fits — but only after C2.
 **C2. One shared compression blob, not four — worth 23,437 B.** The packer compressed four data tables,
 each in its own lzma stream, and shipped every other data literal verbatim. A separate stream restarts the
 dictionary, and the tables share vocabulary. Now **fifteen** tables go into **one** blob (measured:
-97,166 B before; 77,635 B as separate blobs; **72,920 B shared**). Artifact **459,379 → 435,942 B**. All 16
-tables verified byte-identical afterwards, artifact import cost +0.21 s, `test_artifact.py` 8/8. A new
+97,166 B before; 77,635 B as separate blobs; **72,920 B shared**). Artifact **459,379 → 435,942 B**. All
+fifteen payloads verified byte-identical afterwards, artifact import cost +0.21 s, `test_artifact.py` 8/8. A new
 `"lit"` kind carries any top-level literal as its `repr`, rebuilt with `ast.literal_eval`, so
 tuple/list/str types survive exactly.
 
@@ -288,7 +288,7 @@ Ordered by distance from a certificate. Per-law detail is in `gen/NOTES_<eq>.md`
 in total. Every one of them would have cost an agent-session of Lean work, and **not one false certificate
 reached the judge** — every shipped row was re-judged independently by the orchestrator.
 
-That is why `gen/LEMMA_LIBRARY.md` is now 60 KB and why its **twelve-rung oracle ladder** is the first
+That is why `gen/LEMMA_LIBRARY.md` is now ~93 KB and why its **twelve-rung oracle ladder** is the first
 thing to read. Each rung was forced by a model that passed the previous one:
 
 1. `rv.run_tests` · 2. `deep_tests` 20k x 3 · 3. the case tree · 4. the both-decoded census ·
@@ -303,7 +303,7 @@ under the fuzz battery", so its bulk drop is **unsound**, and it produced a mode
 
 ## 3b. Where to start next session — in order
 
-**Read `gen/LEMMA_LIBRARY.md` first, not this file.** It is ~85 KB, has a table of contents keyed to what
+**Read `gen/LEMMA_LIBRARY.md` first, not this file.** It is ~93 KB, has a table of contents keyed to what
 you are doing, and opens with the twelve-rung oracle ladder. This file has the score and the per-law state;
 that one has the method.
 

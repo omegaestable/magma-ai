@@ -111,25 +111,26 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (2026-08-28; deterministic-pass perf + bytes; judge parity on Lean 4.33.1)
+## Current measured state (2026-08-29; deterministic baseline plus Austin session 8)
 
-Every number below is from the 2026-08-28 session
-(`stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`), measured on
-the merged solver and the packaged **373,997-byte** artifact, no LLM calls.
-Diff by row id, never by total (rail 2). Numbers not re-measured this session
-(sweeps, Marathon/Solo runs, LLM lane) are in the 2026-08-27 table below,
-which stays the reference for them.
+The deterministic corpus rows below are the isolated 2026-08-28 baseline
+(`stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`). The latest
+artifact and research row are from the 2026-08-29 Austin session 8
+(`stage2/results/2026-08-29-deep-session-8-austin-60-and-the-carrier-result.md`).
+Do not read the table as one single-run benchmark: the Austin append was
+re-judged and gate-checked, but the full official corpus has not been rerun
+after that append. Diff by row id, never by total (rail 2).
 
 | Metric | Value |
 | --- | --- |
 | Official sets, `fast` tier (`normal`+`hard1`+`hard2`+`hard3`+samples) | **1869 / 1869** distinct rows (1889 with `sample_20`'s duplicates), isolated (16 workers, idle box), **0 lost / 0 gained / 0 flips / 0 oracle failures** vs the 2026-08-27 pass-2 audit; solver time **1,105.9 s → 262.6 s (−76%)**; rows over 1 s **201 → 10**; 184 route changes, all `egg_collapse`/`egg_bootstrap` → `completion:*` |
 | HF mirror sets | **800 / 800**, isolated, 0 lost / 0 gained / 0 flips, **479.9 s → 135.1 s**; 70 route changes of the same kind |
 | Real judge (Lean 4.33.1, deployed caps) | **29 / 29 accepted**: 14 sampled route-changed official rows across `completion:collapse`/`join`/`bridge` + the 15 fixture pins whose route could drift, all re-pinned |
-| Offline gate | **474 passed, 1 skipped** (packager run, `-n auto`, 8 min 50 s; the skip is "no spot-check failures pinned yet"). The first post-reorder run read 452 / **9** skipped — drifted `egg_collapse` pins (rail 16), fixed by the re-pin |
-| Packaged size | **373,997 bytes of 500,000 — 126.0 KB headroom (25.2%)**; four data tables packed zlib+base85 with every pinned certificate kept; organizer layout validator OK; fixture **173** pins |
+| Offline gate | **558 passed, 1 skipped** (Python 3.11, `-n auto`, 8 min 49 s, 2026-08-30 readiness run; the skip is "no spot-check failures pinned yet") |
+| Packaged size | Deterministic baseline: **373,997 bytes** and fixture **173** pins. Latest Austin session 8 artifact: **456,604 bytes of 500,000 — 43,396 B headroom** and fixture **238** pins; fifteen data payloads are packed in one LZMA+base85 blob, while `PROMPT` remains top-level and unpacked |
 | Upstream snapshot | `817a4653`, **0 ahead / 0 behind** upstream HEAD at session start (rail 14) |
 | Spotcheck (after packaging) | **90 / 90, 100% accuracy, 0 mistakes** |
-| **Full combined evaluation set** — every published labelled file deduplicated by (eq1, eq2): `normal`+`hard1`+`hard2`+`hard3`+`sample_200`+`stress_test`+the four `evaluation_*` mirrors = **2,869 pairs** (+100 unlabelled research rows = 2,969; `sample_20`, `hard.jsonl`, the marathon example add nothing new) | **2869 / 2869 solved, 0 failed**, solver time 403.7 s (sum of per-row seconds), wall-clock 1m46.0s on 16 workers, 0.14 s/problem; 0 crashes / 0 oracle failures / 0 label mismatches. The research rows are 0/100 (`DEEP_SESSION_5_AUSTIN_HANDOVER.md`). A "2130/2130" figure quoted from the competition Zulip matches no union of the published files |
+| **Full combined evaluation set** — every published labelled file deduplicated by (eq1, eq2): `normal`+`hard1`+`hard2`+`hard3`+`sample_200`+`stress_test`+the four `evaluation_*` mirrors = **2,869 pairs** (+100 unlabelled research rows = 2,969; `sample_20`, `hard.jsonl`, the marathon example add nothing new) | **2869 / 2869 solved, 0 failed**, solver time 403.7 s (sum of per-row seconds), wall-clock 1m46.0s on 16 workers, 0.14 s/problem; 0 crashes / 0 oracle failures / 0 label mismatches. Austin research rows are tracked separately below and are not part of this labelled evaluation total. A "2130/2130" figure quoted from the competition Zulip matches no union of the published files |
 | Extended official battery, first full pass (`--all` incl. `stress_test_200`) | **2089/2089 solved, 0 oracle failures, 260.4 s solver time (sum of per-row seconds; per-set wall on 16 workers: hard1 1.3 s, hard2 24.6 s, hard3 11.6 s, normal 14.0 s, sample_20 1.9 s, sample_200 7.4 s, stress_test_200 12.7 s)** |
 | Organizers' stress test (`stress_test_200`: 50 order-4 normal/hard/extra-hard + 50 order-5 normal, 100 T / 100 F) | **200 / 200, 0 oracle failures, all labels matched, 12.7 s** — promoted into `audit_corpus.py --all` the same day (it was under the gitignored `stage2/results/*.jsonl`) |
 | Organizers' Austin research set (`research_order5_hard`, 100 rows, ground truth null, excluded from evaluation) | **60 / 100 accepted by the real judge (2026-08-29 deep session 8; 46 that morning, 37 the morning before, 10 the evening before that)** — see `stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`, and **read `stage2/experiments/austin/automata/gen/LEMMA_LIBRARY.md` before it**. Session 8 shipped 27859 (2 rows), 34889 (3), 33020/12883 (3), 12073 (2), 13764/32294 (3) and 23354 (1), all re-judged independently; artifact **456,604 B** with all 60 served, fixture 238 pins, `test_judge_verified` 230 passed / 0 skipped. **The dominant finding is rail 58**: `closedform`'s free model emits 2^k rules and reads the payload off a fixed accessor path, so for the hard laws the required rule set is *infinite* — the fix is a different **carrier**, not more rules (13764: 67 rules / 54,402 B definition block → 5 rules / ~2,300 B, three rows). **Eleven models were falsified**, seven after passing ~10^6 validation chains, and the oracle ladder grew from five rungs to twelve; nothing false reached the judge. Four laws are now closed by *proof* (22591, 11081/35036, 12234, 12087) and five independently name one escape — **a carrier restricted to the terms the model itself builds**, worth ~25 rows; its first measurement is that the image of `op` is 4.1% of the term algebra. Selectable with `--set research_order5_hard`, deliberately outside `--all` |
@@ -232,10 +233,10 @@ Regenerate everything with the four commands below.
 ## The four commands
 
 ```powershell
-# 1. Correctness gate (~14 s on -n auto, 297 passed / 2 skipped, 2026-08-27).
+# 1. Correctness gate (~9 min on -n auto, 558 passed / 1 skipped, 2026-08-30).
 #    Compare the SKIP count too, not just the pass count (rail 16).
 #    Run before AND after any solver change.
-.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
+.\.venv311\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
 # 2. Full corpus audit (official sets incl. the organizers' 200-row stress
 #    test since 2026-08-28; add --hf for the HF mirrors; the Austin research
@@ -248,13 +249,13 @@ Regenerate everything with the four commands below.
 #    ADD --row-budget WHEN MEASURING A DEPLOYED TIER. Solo and Marathon always
 #    bound a row; the audit does not unless told to, so `--effort standard/deep`
 #    without it measures a solver no runner will ever be. Real Marathon at the
-#    default compression ratio is `standard` with ~180 s per row on average
-#    (`--effort standard --row-budget 540` models the borrow ceiling); real Solo
-#    is `deep` with 1980 s. See rail 12.
-.\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
+#    current Marathon allowance is `standard` with 300 s per row on average
+#    (`--effort standard --row-budget 900` models the 3× borrow ceiling); Solo
+#    is `deep` with 3600 s. See rail 12.
+.\.venv311\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
 
 # 3. The standing accuracy loop. Run it every session; fix whatever it pins.
-.\.venv\Scripts\python.exe stage2/experiments/spotcheck.py
+.\.venv311\Scripts\python.exe stage2/experiments/spotcheck.py
 
 # 4. Package (re-runs the gate and refuses to package on failure). Builds to a
 #    temp file and swaps it in only after the 500,000-byte check passes, so a
@@ -266,10 +267,12 @@ Regenerate everything with the four commands below.
 Touching a certificate builder? Add a fifth: verify against the **real Lean
 judge** (see below). It is the only thing that is not an upper bound.
 
-CI (`.github/workflows/gate.yml`) runs 1 on **Python 3.11** — the sandbox
-interpreter — plus ruff, then *builds* the submission and asserts the 500 KB cap
-on the artifact, then pins the solver's judge-limit constants to
-`vendor/stage2-official/pipeline/config.json`.
+CI (`.github/workflows/gate.yml`) and the local packager run on **Python 3.11** —
+the sandbox interpreter — plus ruff, then *build* the submission and assert the
+500 KB cap on the artifact, then pin the solver's judge-limit constants to
+`vendor/stage2-official/pipeline/config.json`. `.venv311` is the canonical
+local environment; `.venv` currently targets Python 3.14 and is not a release
+gate.
 
 ## Rails that cost real points to relearn
 
@@ -1106,7 +1109,7 @@ detail in `stage2/docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md`).
     tables share vocabulary: 97,166 B before, 77,635 B as separate blobs, **72,920 B shared**.
     Fifteen tables now go into one blob (a `"lit"` kind carries any literal as its `repr`,
     rebuilt with `ast.literal_eval`, so tuple/list/str types survive exactly); artifact
-    **459,379 → 435,942 B**, import cost +0.21 s, all 16 tables byte-identical. This is rail 51
+    **459,379 → 435,942 B**, import cost +0.21 s, all fifteen payloads byte-identical. This is rail 51
     one level up: after fixing the *window*, fix the *dictionary reuse*.
     (b) `squeeze.py` is **NOT idempotent**. Squeezing an already-squeezed file yields a smaller
     file that does **not** compile (measured on an accepted 33020 certificate: 19,877 → 18,952 B,
@@ -1214,7 +1217,7 @@ The offline oracles are an upper bound; the judge is ground truth. Use it
 whenever you touch a certificate builder:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
+.\.venv311\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
 ```
 
 Roughly 3–8 s per row warm. **The deployed judge limits come from

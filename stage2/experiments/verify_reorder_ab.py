@@ -6,7 +6,11 @@ a row file and applies the exact offline oracle battery `audit_corpus.py` uses,
 so a proposed reorder can be checked for soundness as well as speed.
 """
 from __future__ import annotations
-import argparse, json, os, sys, time
+import argparse
+import json
+import os
+import sys
+import time
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -51,7 +55,9 @@ def _run(args):
     row["seconds"] = round(time.monotonic() - t0, 3)
     if rec is None:
         return row
-    ans = rec["answer"]; verdict = ans["verdict"]; code = ans["code"]
+    ans = rec["answer"]
+    verdict = ans["verdict"]
+    code = ans["code"]
     row.update(status="solved", verdict=verdict, route=str(rec["route"]),
                code_bytes=len(code.encode("utf-8")))
     eq1 = S.parse_equation(str(problem["equation1"]))
@@ -64,19 +70,26 @@ def _run(args):
             return row
     checks = []
     try:
-        O.check_no_banned_tactics(code, row["route"]); checks.append("no_banned_tactics")
+        O.check_no_banned_tactics(code, row["route"])
+        checks.append("no_banned_tactics")
         if verdict == "false":
-            O.check_false_certificate(code, eq1, eq2); checks.append("false_table_verified")
+            O.check_false_certificate(code, eq1, eq2)
+            checks.append("false_table_verified")
         else:
-            shape = O.classify_true_certificate(code); row["cert_shape"] = shape
+            shape = O.classify_true_certificate(code)
+            row["cert_shape"] = shape
             if shape == "exact_expr":
-                O.check_true_exact_certificate(code, eq1, eq2); checks.append("kernel")
+                O.check_true_exact_certificate(code, eq1, eq2)
+                checks.append("kernel")
             elif shape == "singleton":
-                O.check_true_singleton_certificate(code, eq1); checks.append("kernel")
+                O.check_true_singleton_certificate(code, eq1)
+                checks.append("kernel")
             elif shape == "lemma":
-                O.check_true_lemma_certificate(code, eq1, eq2); checks.append("kernel")
+                O.check_true_lemma_certificate(code, eq1, eq2)
+                checks.append("kernel")
             elif shape == "lemma_chain":
-                O.check_true_lemma_chain_certificate(code, eq1, eq2); checks.append("kernel")
+                O.check_true_lemma_chain_certificate(code, eq1, eq2)
+                checks.append("kernel")
             else:
                 checks.append("kernel_skipped_unsupported_shape")
             b = _battery(eq1)

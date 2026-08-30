@@ -65,7 +65,7 @@ Check local Teorth cache status:
 
 ```powershell
 Push-Location theory\tools
-..\..\.venv\Scripts\python.exe fetch_teorth_data.py --check
+..\..\.venv311\Scripts\python.exe fetch_teorth_data.py --check
 Pop-Location
 ```
 
@@ -73,7 +73,7 @@ Refresh Teorth cache deliberately, with network access:
 
 ```powershell
 Push-Location theory\tools
-..\..\.venv\Scripts\python.exe fetch_teorth_data.py --force
+..\..\.venv311\Scripts\python.exe fetch_teorth_data.py --force
 Pop-Location
 ```
 
@@ -81,7 +81,7 @@ Certify graph/provenance status for a benchmark file:
 
 ```powershell
 Push-Location theory\tools
-..\..\.venv\Scripts\python.exe teorth_true_proof_agent.py certify-benchmark --input ..\..\data\stage2_official_problems\hard3.jsonl --output ..\..\stage2\results\teorth-hard3-certification.jsonl
+..\..\.venv311\Scripts\python.exe teorth_true_proof_agent.py certify-benchmark --input ..\..\data\stage2_official_problems\hard3.jsonl --output ..\..\stage2\results\teorth-hard3-certification.jsonl
 Pop-Location
 ```
 
@@ -89,7 +89,7 @@ Scrape a focused proof-page pair list:
 
 ```powershell
 Push-Location theory\tools
-..\..\.venv\Scripts\python.exe proof_scraping_lab.py `
+..\..\.venv311\Scripts\python.exe proof_scraping_lab.py `
   --pairs "310,118;118,310" `
   --out-prefix ..\..\stage2\results\proof_lab\focused_pairs
 Pop-Location
@@ -99,7 +99,7 @@ Classify a proof-page crawl into construction families:
 
 ```powershell
 Push-Location theory\tools
-..\..\.venv\Scripts\python.exe proof_construction_atlas.py `
+..\..\.venv311\Scripts\python.exe proof_construction_atlas.py `
   --crawl-jsonl ..\..\stage2\results\proof_lab\focused_pairs.jsonl `
   --out-prefix ..\..\stage2\results\proof_lab\focused_pairs_atlas
 Pop-Location
@@ -108,7 +108,7 @@ Pop-Location
 Validate problem-set paths and cache policy:
 
 ```powershell
-.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
+.\.venv311\Scripts\python.exe theory\tools\smoke_problem_sets.py
 ```
 
 ## Motif Card Convention

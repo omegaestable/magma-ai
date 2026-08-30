@@ -46,10 +46,10 @@ refuses to package on failure.
 
 Authoritative source: `vendor/stage2-official/pipeline/config.json` (the values
 the harness actually passes to the judge) and `vendor/stage2-official/rules/`.
-The snapshot vendored here is commit `4db175c41d917ce39fc82e48c7e440e2a3fa403d`
-(synced 2026-08-24 — the 2026-08-21 upstream rules rewrite that finalized
-scoring, hardened the judge's banned-token scan, and bumped the verification
-toolchain to **Lean 4.32.2 / Mathlib 4.32.2**).
+The snapshot vendored here is commit `817a4653bf762584931d49c6714c9fcfab7df66a`
+(synced 2026-08-27 on top of `13648682` — a docs-only upstream sync that
+keeps the verification toolchain at **Lean 4.33.1 / Mathlib 4.33.1**). The
+historical 2026-08-24 sync is recorded in `vendor/stage2-official/UPSTREAM.md`.
 
 **Scoring (final)**: four equal-weight categories — Normal, Hard, Extra Hard,
 **Order 5** — `accepted` = 1 point, anything else 0. No evaluation problem is
@@ -166,7 +166,7 @@ down.
 
 ## Architecture
 
-`stage2/solver/solver.py` — ~11.5k lines, single file by contract. The 500 KB
+`stage2/solver/solver.py` — ~14.3k lines, single file by contract. The 500 KB
 cap applies to the **built artifact**, never to this source, which legitimately
 exceeds it because it carries the comments the packager strips.
 
@@ -253,7 +253,7 @@ bound. It runs locally on Windows via `elan` — despite the official docs sayin
 WSL/Linux only:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
+.\.venv311\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
 ```
 
 Roughly 3–8 s per row warm. Touch a certificate builder and you owe this run: a
@@ -266,17 +266,17 @@ check reads the parsed Python table, blind to the emitted text.
 
 ```powershell
 # 1. Correctness gate. Run before AND after any solver change.
-.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
+.\.venv311\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
 # 2. Full corpus audit (official sets; add --hf for the HF mirrors).
 #    Run it once per session, never two at once — concurrent sweeps starve each
 #    other's wall-clock-budgeted engines and produce spurious "losses".
 #    Add --row-budget when measuring a tier you actually deploy: Solo and
 #    Marathon always bound a row, the audit does not unless told to.
-.\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
+.\.venv311\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
 
 # 3. The standing accuracy loop. Run it every session; fix whatever it pins.
-.\.venv\Scripts\python.exe stage2/experiments/spotcheck.py
+.\.venv311\Scripts\python.exe stage2/experiments/spotcheck.py
 
 # 4. Package (re-runs the gate and refuses to package on failure).
 .\stage2\solver\package_solver.ps1
@@ -316,8 +316,8 @@ but timing numbers do (`CLAUDE.md` rails 5e, 19, 22).
 | `paper/` | math papers, TeX sources, reading material |
 | `stage1/` | complete Stage 1 archive — reference only |
 
-**Note on repo size.** The working tree is ~7.4 GB / 154k files;
-`vendor/stage2-official/.lake` alone is 7.06 GB / 117,609 files of Lean and
+**Note on repo size.** The working tree is about 7.98 GB / 152k files;
+`vendor/stage2-official/.lake` alone is 7.62 GB / 143,317 files of Lean and
 Mathlib build cache. It is needed — but `du`/`find` at the repo root will hang.
 Scope every search to a subdirectory.
 

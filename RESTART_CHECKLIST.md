@@ -30,15 +30,14 @@ before touching anything. Everything else is on-demand:
 ## 2. Check the environment
 
 ```powershell
-.\.venv\Scripts\python.exe -V
-.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv311\Scripts\python.exe -V
+.\.venv311\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
-**The local venv is Python 3.14, and the sandbox that grades the submission is
-`python:3.11-slim`.** This line used to say "expect 3.11", which had stopped
-being true, and leaving it there made a real risk look checked. The guard
-is CI (`.github/workflows/gate.yml` pins `python-version: "3.11"`), not the local
-interpreter. The risk it guards against is syntax newer than 3.11 — PEP 701
+**Use `.venv311`: it matches the `python:3.11-slim` grading image.** The older
+`.venv` currently targets Python 3.14 and is retained only for unrelated local
+work; it is not a release gate. CI and `package_solver.ps1` also enforce 3.11.
+The risk this guards against is syntax newer than 3.11 — PEP 701
 f-strings (nested same-type quotes) are the easy one to write by accident on
 3.12+ and they are a hard `SyntaxError` on 3.11, which would fail the whole
 submission rather than one row.
@@ -57,28 +56,28 @@ Only if you need the Lean judge (i.e. you are touching a certificate builder):
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-elan toolchain install leanprover/lean4:v4.30.0-rc2   # pinned in vendor/stage2-official/lean-toolchain
+elan toolchain install leanprover/lean4:v4.33.1   # pinned in vendor/stage2-official/lean-toolchain
 Push-Location vendor/stage2-official
 lake exe cache get
 lake build JudgeMagma.Magma JudgeDecide.DecideBang JudgeFinOp.MemoFinOp JudgeSupport.Inspect
 Pop-Location
 ```
 
-The 7.06 GB `.lake` build cache already in the tree is this, prebuilt. Keep it.
+The 7.62 GB `.lake` build cache already in the tree is this, prebuilt. Keep it.
 
 ## 3. The four commands, and when to run each
 
 ```powershell
-# 1. Offline correctness gate (~24 s on -n auto). BEFORE and AFTER any solver change.
-.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
+# 1. Offline correctness gate (~9 min on -n auto). BEFORE and AFTER any solver change.
+.\.venv311\Scripts\python.exe -m pytest stage2/tests -q -n auto
 
 # 2. Full corpus audit. Once per session, never two at once (see gotchas).
 #    Add --hf for the HF mirrors. Add --row-budget when measuring a tier you
 #    actually deploy: Solo and Marathon always bound a row, the audit does not.
-.\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
+.\.venv311\Scripts\python.exe stage2/experiments/audit_corpus.py --all --out stage2/results/audit-<date>.json
 
 # 3. The standing accuracy loop. Every session; fix whatever it pins.
-.\.venv\Scripts\python.exe stage2/experiments/spotcheck.py
+.\.venv311\Scripts\python.exe stage2/experiments/spotcheck.py
 
 # 4. Package (re-runs the gate and refuses to package on failure).
 .\stage2\solver\package_solver.ps1
@@ -88,7 +87,7 @@ Touched a certificate builder? Add a fifth — the real Lean judge is the only
 thing that is not an upper bound:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
+.\.venv311\Scripts\python.exe stage2/experiments/judge_rows.py --ids hard2_0080,normal_0747
 ```
 
 Judge limits, read from `vendor/stage2-official/pipeline/config.json` and
@@ -104,8 +103,8 @@ so local judging matches deployment.
   `UnicodeEncodeError` on a Windows cp1252 console. Set `$env:PYTHONUTF8='1'`
   (or `PYTHONIOENCODING=utf-8`) in any ad-hoc script; the repo entrypoints
   already do.
-- **Scope every search.** The working tree is ~7.4 GB / 154k files, 7.06 GB of it
-  `vendor/stage2-official/.lake`. `du`/`find` at the repo root will hang. Use
+- **Scope every search.** The working tree is about 7.98 GB / 152k files, 7.62 GB
+  of it `vendor/stage2-official/.lake`. `du`/`find` at the repo root will hang. Use
   `Grep`/`Glob` (they respect `.gitignore`) or point `find` at a subdirectory.
 - **The local Lean judge works on Windows** via `elan`, despite the vendored docs
   saying WSL/Linux only. Caveat: `lake env` times out (30 s) under heavy CPU
@@ -135,13 +134,13 @@ Get-ChildItem -Force stage2/submissions
    official Solo runner rejects the directory before executing the solver. Delete
    any `__pycache__`, `.gitkeep` or stray file. (The directory is gitignored, so
    git will not warn you.)
-3. Size under 500,000 bytes. Last packaged: **466,320 bytes, 6.7% headroom**
-   (2026-08-21). Never shrink it by deleting routes — rail 1. If headroom is ever
-   needed, the measured slack is in `DISTILLED_CERTS`, not in routes: see
-   `stage2/docs/NEXT_SESSION_BRIEF.md` §3.3.
+3. Size under 500,000 bytes. Latest packaged: **456,604 bytes, 43,396 B
+   headroom** (2026-08-29, Austin session 8). Never shrink it by deleting routes —
+   rail 1. The source and packaging details are in `CLAUDE.md` and
+   `stage2/solver/SUBMISSION_NOTE.md`.
 4. Single file, no repo-local imports, no network, no secrets. The sandbox is
    `python:3.11-slim`, 2 vCPU, 2048 MB RAM, read-only filesystem, network
-   disabled.
+   disabled, with `sympy==1.13.3` available but unused by the solver.
 5. CI (`.github/workflows/gate.yml`) mirrors this: ruff, the pytest gate, a real
    build of the artifact with the cap asserted on the *artifact* (not the source,
    which legitimately exceeds it), and a check that the solver's judge-limit

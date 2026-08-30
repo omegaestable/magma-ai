@@ -45,30 +45,21 @@ Latest completed public refresh, generated on 2026-05-18 before the final heartb
 
 Total public score for that 2026-05-18 refresh: `1201/1669`, with `0` LLM calls. **Historical only** — `34` of those wins came from `true:grind`, retired since. Current measured state lives in `CLAUDE.md`.
 
-Latest local candidate evidence after the final optimization patch:
+The May and June bullets that used to live here are historical discovery
+evidence, not current package state. The current artifact is **456,604 bytes**
+as of 2026-08-29; current coverage and judge evidence live only in `../CLAUDE.md`
+and the dated files linked from `docs/LATEST_HANDOFF.md`.
 
-- `sample_20`: `15/20` solved in the 2026-05-25 no-key Solo smoke
-- `sample_200`: `169/200` solved in the 2026-05-25 no-key Solo smoke
-- packaged solver size: see `CLAUDE.md` for the current figure (`445,640` bytes on 2026-08-13, 10.9% under the 500,000-byte cap; this line's `138939` was the 2026-05-30 pass, before most of the engines and the distilled-certificate library)
-- May 21 prune/refactor evidence: `_closure_route_impl` dedupe preserved `normal_100 = 74/100` historical Marathon behavior; selected fallback reproduction is summarized in `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`
-- composite-affine focused fixture: `14/14` accepted
-- accepted-grind fixture with heartbeat cap: historical discovery evidence only; the active solver no longer exposes this route
-- compact witness fixture: `8/8` accepted, `0` LLM calls
-- fresh 150-row hard mixes, archived as deterministic discovery evidence: `91/150`, `83/150`, and `72/150` on seeds `20260516`, `20260517`, and `20260518`
-- positive-token local proxy evidence: direct OpenRouter smokes passed; targeted parity recorded Solo `llm_calls=2`, Marathon `llm_calls=1`, and Marathon `tokens_used=7208`, but unresolved TRUE proof quality still failed
-- 2026-05-30 TRUE red-flag positive-token Marathon after trimming raw/grind TRUE behavior: `2/13` accepted, `11` LLM calls, `22764` tokens, and `0` incorrect submissions
-- 2026-05-30 official `normal_100` positive-token Marathon guardrail: `75/100` accepted, `25` not attempted, `47419` tokens used, and no incorrect submissions
-- 2026-05-30 official `hard1` positive-token mixed-lane Marathon: `39/69` accepted, `30` not attempted, `30` LLM calls, `240164` tokens used, and no incorrect submissions
-- boundary cleanup smoke: full-file TRUE `code` with helper declarations is accepted; legacy `proof` / `proof_body` payloads are rejected
-
-Do not promote the optimized package without positive-token official/proxy evidence. The default small-fixture gate is positive-token playground parity through `stage2/experiments/run_playground_parity_llm.py`, and the default wide public hard-set gate is `stage2/experiments/run_playground_public_sweeps.py`.
+Do not promote a package without positive-token official/proxy evidence. The
+current preflight is `docs/playground-preflight.md`, and active Marathon
+validation must use a positive token budget.
 For standard local LLM runs, store the rotated upstream key in the ignored
 repo-root `.env` with `stage2/experiments/set_openrouter_repo_env.ps1`. The
 repo-owned probe and parity entrypoints load process env first, then `.env`,
 then legacy Windows User env fallback.
 Selected row lists are diagnostic fixtures; generalize them into reusable proof/witness families instead of hardcoding ids. The latest public, hard-mix, homelab, optimization, fallback-reproduction, cleanup-smoke, and positive-token mixed-lane evidence is summarized in `results/2026-05-18-zero-token-public-refresh-after-witness.md`, `results/2026-05-17-hard-mix-witness-summary.md`, `results/2026-05-17-homelab-openrouter-proxy-smoke.md`, `results/2026-05-20-optimization-readiness.md`, `results/2026-05-21-prune-refactor-and-fallback-reproduction.md`, `results/2026-05-25-cleanup-and-smoke.md`, and `results/2026-05-30-positive-token-mixed-lane-resume.md`.
 
-Current best route learnings:
+Historical route learnings (kept for rationale):
 
 - The frontier is now TRUE-heavy: the public remainder is mostly TRUE proof synthesis, not finite countermodels.
 - `true:grind` found `34` public wins but `433` incorrect attempts and failed playground error discipline; it is historical evidence only, not an active route.
@@ -76,7 +67,12 @@ Current best route learnings:
 - `true:absorption_closure` and `true:equational_closure` produced accepted hard TRUE certificates; next TRUE work should be proof-producing local congruence/e-graph extraction.
 - False certificates may need `set_option maxRecDepth 20000` before `decideFin!` — keyed on the decide cost `n ** variables`, not on the order alone.
 - runner-equivalent certificate debugging should use the official runner or `verify_answer(_to_judge_problem(problem), raw_answer)`.
-- canonical full public gap counts remain the 2026-05-12 numbers until `normal|hard1|hard2|hard3` are refreshed together.
+- Austin research: `docs/DEEP_SESSION_8_AUSTIN_HANDOVER.md` and
+  `experiments/austin/automata/gen/LEMMA_LIBRARY.md`.
+- Order-4 frontier: `docs/ORDER4_MISS_ELIMINATION_PLAN.md` and the 2026-08-29
+  result summaries.
+- Current benchmark numbers and rails: `../CLAUDE.md`; historical numbers stay
+  in dated result files rather than being recopied here.
 
 Package it with:
 
@@ -94,10 +90,8 @@ Use `../theory/TEORTH_WORKFLOW.md`, `../theory/TEORTH_NOTES.md`, and `../theory/
 
 ## Next Engines
 
-1. Run broader no-loss validation for the `0.05s` absorption cap, especially hard TRUE closure fixtures and the full public sets.
-2. Build the small route fixtures listed in `docs/solver-route-ledger.md`.
-3. Improve unresolved TRUE proof quality; proxy transport works, but targeted parity still fails by judge rejection / rejected LLM output.
-4. Extend proof-producing TRUE synthesis before spending time on broad brute-force FALSE search.
-5. Refresh the full public suite, including `normal`, before updating canonical `stage2/results/` totals.
+The next-engine queue is intentionally maintained in the audit addendum at the
+top of `docs/LATEST_HANDOFF.md`. This README is a stable navigation page, not a
+second backlog or metrics ledger.
 
 For the latest compressed handoff, read `docs/LATEST_HANDOFF.md`.

@@ -43,8 +43,8 @@ Push-Location vendor/stage2-official
 lake update
 lake exe cache get
 lake build JudgeMagma.Magma JudgeDecide.DecideBang JudgeFinOp.MemoFinOp JudgeSupport.Inspect
-c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_harness.py
-c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe scripts/run_marathon_harness.py
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv311/Scripts/python.exe scripts/run_harness.py
+c:/Users/nacho/Documents/GitHub/magma-ai/.venv311/Scripts/python.exe scripts/run_marathon_harness.py
 Pop-Location
 ```
 
@@ -180,8 +180,8 @@ gitignored `tmp_stage2_smoke/real-run-tools/`, where a clean tree would have
 lost them):
 
 ```powershell
-.\.venv\Scripts\python.exe stage2/experiments/run_marathon_batch.py --manifest <jsonl> --output-dir <dir> [--budget-tokens N] [--budget-seconds N] [--score-only] [--no-score]
-.\.venv\Scripts\python.exe stage2/experiments/run_solo_batch.py --problems <jsonl> --output <jsonl> [--limit N]
+.\.venv311\Scripts\python.exe stage2/experiments/run_marathon_batch.py --manifest <jsonl> --output-dir <dir> [--budget-tokens N] [--budget-seconds N] [--score-only] [--no-score]
+.\.venv311\Scripts\python.exe stage2/experiments/run_solo_batch.py --problems <jsonl> --output <jsonl> [--limit N]
 ```
 
 Both import `local_runner_env`, whose `judge_cap_env()` reads the deployed
@@ -206,8 +206,8 @@ For each failed certificate attempt, record:
 After any meaningful public benchmark run, regenerate:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
-.\.venv\Scripts\python.exe stage2\experiments\competition_preflight.py
+.\.venv311\Scripts\python.exe stage2\experiments\summarize_public_benchmarks.py
+.\.venv311\Scripts\python.exe stage2\experiments\competition_preflight.py
 ```
 
 These are now part of the team-memory chain, not optional extras.

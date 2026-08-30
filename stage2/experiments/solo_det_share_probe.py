@@ -10,11 +10,13 @@ case the share is irrelevant and the lever is engine budgets, not the split.
 Measures: wall seconds until solve_problem returns, at `deep`, with a hard
 deadline of CAP seconds, on rows the sweeps recorded as misses.
 
-    PYTHONIOENCODING=utf-8 ./.venv/Scripts/python.exe \
+    PYTHONIOENCODING=utf-8 ./.venv311/Scripts/python.exe \
         stage2/experiments/solo_det_share_probe.py <cap_seconds> <n_order5> <n_order4>
 """
 from __future__ import annotations
-import json, sys, time
+import json
+import sys
+import time
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -50,7 +52,8 @@ def main():
         for line in path.read_text(encoding="utf-8").splitlines():
             if not line.strip() or picked >= n:
                 continue
-            rows.append(json.loads(line)); picked += 1
+            rows.append(json.loads(line))
+            picked += 1
     with ProcessPoolExecutor(max_workers=4) as ex:
         for r in ex.map(one, [(cap, r) for r in rows]):
             print(json.dumps(r), flush=True)

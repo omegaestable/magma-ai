@@ -10,7 +10,7 @@ the judge for every row of that law, and report.
 
 Work directory: `c:/Users/nacho/Documents/GitHub/magma-ai/stage2/experiments/austin/automata/`
 (bash shell on Windows; forward-slash paths; always `export PYTHONIOENCODING=utf-8`; Python is
-`c:/Users/nacho/Documents/GitHub/magma-ai/.venv/Scripts/python.exe`).
+`c:/Users/nacho/Documents/GitHub/magma-ai/.venv311/Scripts/python.exe`).
 
 ## The worked example — read it first, in full
 

@@ -192,14 +192,14 @@ powershell -NoProfile -Command "1..3 | ForEach-Object { (Get-CimInstance Win32_P
 # 2. The sweep. ONE AT A TIME — never two audit_corpus.py runs on the same
 #    machine (rail 5e); 16-worker pools starve each other and manufacture
 #    losses that are not real.
-.\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py `
+.\.venv311\Scripts\python.exe stage2/experiments/audit_corpus.py `
     --file stage2/results/<batch>.jsonl --effort fast --workers 16 `
     --out stage2/results/audit-<batch>.json
 
 # 3. Failure ledger + summary (+ a row-id diff against the previous batch's
 #    report where the rows overlap — they do not here, so --baseline is for
 #    re-runs of the same batch after a solver change).
-.\.venv\Scripts\python.exe stage2/experiments/sweep_report.py `
+.\.venv311\Scripts\python.exe stage2/experiments/sweep_report.py `
     --audit stage2/results/audit-<batch>.json `
     --batch stage2/results/<batch>.jsonl `
     --out-prefix stage2/results/<batch>
@@ -207,7 +207,7 @@ powershell -NoProfile -Command "1..3 | ForEach-Object { (Get-CimInstance Win32_P
 # 4. Diagnose every failed row: re-solve with all 19 engines wrapped in a
 #    timer, so a skip records WHERE its wall clock went instead of only how
 #    much of it there was.
-.\.venv\Scripts\python.exe stage2/experiments/sweep_report.py `
+.\.venv311\Scripts\python.exe stage2/experiments/sweep_report.py `
     --audit stage2/results/audit-<batch>.json `
     --batch stage2/results/<batch>.jsonl `
     --out-prefix stage2/results/<batch> --diagnose --diagnose-budget 300

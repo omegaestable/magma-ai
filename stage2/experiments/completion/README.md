@@ -70,7 +70,7 @@ to escape.
 
 ```powershell
 $env:PYTHONIOENCODING='utf-8'
-.\.venv\Scripts\python.exe stage2\experiments\completion\solve_row.py <row_id> [budget_s] [max_size] [max_active]
+.\.venv311\Scripts\python.exe stage2\experiments\completion\solve_row.py <row_id> [budget_s] [max_size] [max_active]
 ```
 
 Row ids are benchmark ids (`hard2_0073`, `evaluation_order5_0042`, ...). The

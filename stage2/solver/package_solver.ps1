@@ -9,11 +9,29 @@ param(
 
 $sourcePath = "stage2/solver/solver.py"
 $limitBytes = 500000
-$python = if (Test-Path ".venv/Scripts/python.exe") { ".venv/Scripts/python.exe" } else { "python" }
+$python = if (Test-Path ".venv311/Scripts/python.exe") {
+    ".venv311/Scripts/python.exe"
+} elseif (Test-Path ".venv/Scripts/python.exe") {
+    ".venv/Scripts/python.exe"
+} else {
+    "python"
+}
 
 if (-not (Test-Path $sourcePath)) {
     throw "Missing solver source: $sourcePath"
 }
+
+# Match the organizer's runtime. A second local environment currently targets
+# a newer Python, so silently taking the first `.venv` on disk can validate a
+# construct the official Python 3.11 process cannot parse or execute.
+$pythonVersion = & $python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not run the selected Python interpreter: $python"
+}
+if ($pythonVersion.Trim() -ne "3.11") {
+    throw "Packaging requires Python 3.11 (official runtime); $python reports $pythonVersion."
+}
+Write-Host "Using Python $pythonVersion from $python."
 
 # Offline correctness gate. The Lean judge is cloud-only, so these oracles
 # (proof kernel + finite-model checks + golden routes) are the local guard

@@ -11,7 +11,11 @@ Usage:
 """
 from __future__ import annotations
 
-import argparse, json, os, sys, time
+import argparse
+import json
+import os
+import sys
+import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -80,7 +84,8 @@ def _init(effort: str):
 def _run(args):
     row, effort, row_budget, false_budget = args
     S = _S
-    _TIMES.clear(); _CALLS.clear()
+    _TIMES.clear()
+    _CALLS.clear()
     S.set_effort(effort)
     S.clear_term_caches()
     S.set_hard_deadline(time.monotonic() + row_budget if row_budget else None)
@@ -132,8 +137,11 @@ def main() -> int:
             out.append(res)
 
     tot = sum(r["seconds"] for r in out)
-    agg = defaultdict(float); calls = defaultdict(int)
-    agg_true = defaultdict(float); agg_false = defaultdict(float); agg_skip = defaultdict(float)
+    agg = defaultdict(float)
+    calls = defaultdict(int)
+    agg_true = defaultdict(float)
+    agg_false = defaultdict(float)
+    agg_skip = defaultdict(float)
     for r in out:
         for k, v in r["engine_seconds"].items():
             agg[k] += v

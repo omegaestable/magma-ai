@@ -62,9 +62,9 @@ No Lean, no key, no network. These always work and are the right first move
 after any solver edit.
 
 ```powershell
-.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
-.\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
-.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
+.\.venv311\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py
+.\.venv311\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
+.\.venv311\Scripts\python.exe theory\tools\smoke_problem_sets.py
 .\stage2\solver\package_solver.ps1
 ```
 
@@ -84,9 +84,9 @@ What each proves:
   use it before an upload. `-WarnBytes 450000` is a "within 10% of the cap"
   alarm, not a de-bloat target (rail 1).
 
-Artifact size, most recent measurement: **466,320 of 500,000 bytes (33,680
-free, 6.7%)**, packaged 2026-08-21 after the `true:completion` engine landed
-(+20,680 bytes over the 2026-08-13 build's 445,640). That is past the packager's
+Artifact size, most recent measurement: **456,604 of 500,000 bytes (43,396
+free, 8.7%)**, packaged 2026-08-29 after Austin session 8 and shared-payload
+packing. That is past the packager's
 `-WarnBytes 450000` alarm, which is the alarm doing its job — not a signal to
 de-bloat (rail 1). The headroom to spend, if it is ever needed, is measured and
 listed: 48 of the 65 `DISTILLED_CERTS` entries (120,229 bytes) are now
@@ -139,16 +139,15 @@ the four commands in `CLAUDE.md`. Two smoke-relevant rules about them:
 
 ### Toolchain
 
-`vendor/stage2-official/lean-toolchain` pins `leanprover/lean4:v4.30.0-rc2`
-(checked 2026-08-13). The local native-Windows install validated in the
-2026-05-30 setup run was Elan `4.2.1`, Lean `4.30.0-rc2`
-(`x86_64-w64-windows-gnu`), Lake `5.0.0-src+3dc1a08`.
+`vendor/stage2-official/lean-toolchain` pins `leanprover/lean4:v4.33.1`
+(checked against upstream 2026-08-30), with Mathlib commit
+`0df444a360eaa60ab8c11dca51a86af692955474`.
 
 ```powershell
 winget install --id Lean.Elan -e --accept-source-agreements --accept-package-agreements
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-elan toolchain install leanprover/lean4:v4.30.0-rc2
-elan default leanprover/lean4:v4.30.0-rc2
+elan toolchain install leanprover/lean4:v4.33.1
+elan default leanprover/lean4:v4.33.1
 Push-Location vendor/stage2-official
 lake update
 lake exe cache get
@@ -184,7 +183,7 @@ bytecode caches under it.
 
 ```powershell
 Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions `
+..\..\.venv311\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions `
     --problems examples\problems\sample_20.json `
     --output ..\..\tmp_stage2_smoke\<date>-sample20-solo.json
 Pop-Location
@@ -209,7 +208,7 @@ ladder — a Solo run over a real set is the smoke worth doing here.
 
 ```powershell
 Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions `
+..\..\.venv311\Scripts\python.exe scripts\run_marathon.py --solver ..\..\stage2\submissions `
     --manifest examples\problems\marathon\normal_100.jsonl `
     --output-dir ..\..\tmp_stage2_smoke\<date>-normal100-marathon
 Pop-Location
@@ -247,8 +246,8 @@ found the expensive way:
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 Push-Location vendor/stage2-official
-..\..\.venv\Scripts\python.exe scripts\run_harness.py
-..\..\.venv\Scripts\python.exe scripts\run_marathon_harness.py
+..\..\.venv311\Scripts\python.exe scripts\run_harness.py
+..\..\.venv311\Scripts\python.exe scripts\run_marathon_harness.py
 Pop-Location
 ```
 
@@ -279,9 +278,9 @@ regressions) after local patches documented in
 ## 3. LLM transport probes (need a key)
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-direct-openrouter-smoke
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke `
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-direct-openrouter-smoke
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke `
     --marathon-budget-tokens 4096 --marathon-budget-seconds 180
 ```
 
@@ -370,7 +369,7 @@ locally.
   candidates in 51.0 s, `sample_200` 169 in 62.2 s, no judge or LLM calls. The
   tool and the constant both still exist; the counts are superseded.
   ```powershell
-  .\.venv\Scripts\python.exe stage2\experiments\profile_solver_routes.py `
+  .\.venv311\Scripts\python.exe stage2\experiments\profile_solver_routes.py `
       --manifest vendor\stage2-official\examples\problems\marathon\normal_100.jsonl `
       --output tmp_stage2_smoke\solver_route_profile.json `
       --marathon-budget-seconds 600 --reference-seconds-per-problem 600

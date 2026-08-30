@@ -42,6 +42,12 @@ stage2/submissions/__pycache__/
 stage2/results/*.json
 stage2/results/*.jsonl
 stage2/results/*.log
+# Completed raw campaigns are compressed and kept outside the durable summary
+# namespace. README.md and MANIFEST.md document the local archives; the ZIPs
+# themselves were always-untracked evidence and remain machine-local.
+stage2/results/raw/*
+!stage2/results/raw/README.md
+!stage2/results/raw/MANIFEST.md
 
 # Generated equation catalogs. Regenerated exactly (and verified against ETP's
 # own eq_size5.txt, line for line) by:

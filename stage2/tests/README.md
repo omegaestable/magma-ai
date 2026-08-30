@@ -7,7 +7,7 @@ is exactly where builder bugs turn into judge `incorrect` verdicts.
 Run the gate:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest stage2/tests -q -n auto
+.\.venv311\Scripts\python.exe -m pytest stage2/tests -q -n auto
 ```
 
 `-n auto` (pytest-xdist) matters: the gate re-solves ~170 real problems, which was
@@ -61,7 +61,7 @@ judge-accepted before it was pinned, and since 2026-08-12 the test checks all 99
 rather than skipping the ones whose route label drifted. Regenerate with:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2/experiments/judge_rows.py `
+.\.venv311\Scripts\python.exe stage2/experiments/judge_rows.py `
     --from-audit stage2/results/audit-<date>.json --shape other --write-fixture
 ```
 
@@ -176,8 +176,8 @@ proof kernel cannot see.
 Only after an **intentional** route change. Never hand-edit it.
 
 ```powershell
-.\.venv\Scripts\python.exe stage2/experiments/audit_corpus.py --all --subsumption --out stage2/results/audit.json
-.\.venv\Scripts\python.exe stage2/experiments/make_golden.py --audit stage2/results/audit.json
+.\.venv311\Scripts\python.exe stage2/experiments/audit_corpus.py --all --subsumption --out stage2/results/audit.json
+.\.venv311\Scripts\python.exe stage2/experiments/make_golden.py --audit stage2/results/audit.json
 ```
 
 `audit_corpus.py` is also the full-corpus soundness sweep and the source of

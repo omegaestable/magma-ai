@@ -28,7 +28,7 @@ def main() -> int:
     random.Random(7).shuffle(rows)
     rows = rows[:limit]
     bad = []
-    both = same = only_ship = only_new = neither = 0
+    both = only_ship = only_new = neither = 0
     t0 = time.monotonic()
     for row in rows:
         eq1 = S.parse_equation(row["equation1"])
@@ -37,7 +37,6 @@ def main() -> int:
             b1 = [S.CONSTRAINT_MAX_NODES]
             t_a = S._cp_search(eq1, eq2, n, time.monotonic() + budget, b1)
             ok_a = t_a is not None and S.table_is_counterexample(eq1, eq2, t_a)
-            exh_a = b1[0] > 0
             b2 = [S.CONSTRAINT_MAX_NODES]
             st = {}
             t_b = cp_search2(eq1, eq2, n, time.monotonic() + budget, b2, stats=st)

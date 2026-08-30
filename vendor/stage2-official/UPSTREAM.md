@@ -4,9 +4,14 @@ Vendored repository: https://github.com/SAIRcompetition/equational-theories-lean
 
 Snapshot commit: `817a4653bf762584931d49c6714c9fcfab7df66a` (docs-only sync 2026-08-27 on top of `13648682a5553717ea91b86513ed140b39160cf5`: README.md, docs/marathon_mode.md, rules/evaluation.md — the 300 s Lean timeout is per Lean phase, code cap is UTF-8 bytes; no local patch touched)
 
+Freshness check: the organizer's public `main` branch still ended at
+`817a4653bf762584931d49c6714c9fcfab7df66a` on 2026-08-30. The live
+`pipeline/config.json`, `lean-toolchain`, and `rules/evaluation.md` matched this
+snapshot's limits, model allowlist, and Lean 4.33.1 toolchain.
+
 Vendored on: 2026-05-04 (initial snapshot `6805e2323018fbd8a85f41ca09fc33d74d5a02a5`)
 
-Synced to upstream HEAD on: 2026-08-26 (from `4db175c4`, 4 commits ahead,
+Historical sync entry (2026-08-26, source `4db175c4`, 4 commits ahead,
 0 behind). Upstream changed 16 files and added 5 (three size-cap answer
 fixtures, one lone-surrogate challenger answer, one Marathon size-cap
 manifest). Verbatim copies for everything except the five locally patched
@@ -30,7 +35,7 @@ judge block **unchanged** (CI pin still valid), `llm.reasoning_effort`
 gemma-4-31b-it with reasoning disabled); Marathon scoring now snapshots the
 judge config and proof policy before the solver launches.
 
-Synced to upstream HEAD on: 2026-08-24. Upstream changed 16 files and added 14
+Historical sync entry (2026-08-24). Upstream changed 16 files and added 14
 (12 challenger answers plus 2 infinite-countermodel fixtures). All were taken
 verbatim from upstream except `judge/verify.py` and `scripts/run_harness.py`,
 which carry local patches: those two were re-applied via a 3-way merge

@@ -1,9 +1,7 @@
 # Playground Preflight
 
-Updated: 2026-05-30; budget and packaging notes amended 2026-08-13; submission
-note and upstream-sync items added 2026-08-24; the submission-layout check
-hardened 2026-08-27 after the organizers' own validator rejected our directory
-over a stray `__pycache__` (`CLAUDE.md` rail 23).
+Updated: 2026-08-30. The submission note, upstream sync, Python 3.11 packaging,
+and submission-layout checks reflect the final competition contract.
 
 Use this checklist before trying the packaged solver in the official Stage 2 playground or calling a local candidate playground-ready.
 
@@ -34,7 +32,11 @@ It must satisfy the official submission contract:
     `judge_answer_payload()` and the offline oracle both enforce the exact
     judge list, so a green gate + audit covers this.
 
-Packaged size: see `CLAUDE.md`'s measured-state table for the current figure (`466,320` bytes on 2026-08-21; the `138939` this line used to quote was the 2026-05-30 pass). The invariant that matters here is unchanged: `stage2/submissions/` contains only `solver.py`, under 500 KB — and since 2026-08-13 `package_solver.ps1` asserts both itself, swapping in a new artifact only after the size check passes.
+Packaged size: see `CLAUDE.md`'s measured-state table for the current figure
+(456,604 bytes on 2026-08-29 before this readiness rebuild). The invariant that
+matters is unchanged: `stage2/submissions/` contains only `solver.py`, under
+500,000 UTF-8 bytes. `package_solver.ps1` runs under Python 3.11, checks both,
+and swaps the artifact only after validation succeeds.
 
 Current TRUE boundary rails:
 
@@ -106,7 +108,7 @@ storage, but it is no longer the standard repo path.
 Verify the local proxy path without printing the key:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --key-status
 ```
 
 This reports only non-secret shape metadata, including whether the key came
@@ -116,19 +118,19 @@ need to inherit the key first. For a low-token direct OpenRouter request-shape
 smoke:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-direct-openrouter-smoke
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-direct-openrouter-smoke
 ```
 
 Once the key is present and the solver is packaged, run a Solo LLM-path probe:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-solo
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-solo
 ```
 
 For a small positive-token Marathon proxy probe:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-marathon --marathon-budget-tokens 131072 --marathon-budget-seconds 600
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-marathon --marathon-budget-tokens 131072 --marathon-budget-seconds 600
 ```
 
 For the preferred local playground-parity LLM check, use the positive-token
@@ -141,7 +143,7 @@ Marathon records zero tokens, or if LLM/proxy/judge failures are only visible in
 logs instead of the summary.
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py
+.\.venv311\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py
 ```
 
 For the default wide public hard-set check, use the playground-equivalent
@@ -162,13 +164,13 @@ generously; it does not model the clock the deployed solver gets. See `CLAUDE.md
 you ship.
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\run_playground_public_sweeps.py
+.\.venv311\Scripts\python.exe stage2\experiments\run_playground_public_sweeps.py
 ```
 
 For a targeted unresolved-TRUE run, use:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py --fixture-mode unresolved-true
+.\.venv311\Scripts\python.exe stage2\experiments\run_playground_parity_llm.py --fixture-mode unresolved-true
 ```
 
 The runner defaults Marathon to at least `131072` tokens so the official
@@ -187,7 +189,7 @@ For a fast transport-only smoke that avoids long hard-problem proof attempts,
 use the temporary one-call proxy smoke:
 
 ```powershell
-.\.venv\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180
+.\.venv311\Scripts\python.exe stage2\experiments\homelab_llm_probe.py --run-proxy-smoke --marathon-budget-tokens 4096 --marathon-budget-seconds 180
 ```
 
 Latest local evidence for that smoke: Solo `1/1` accepted with `llm_calls=1`,
@@ -207,10 +209,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\.venv\Scripts\Activate.ps1
 $env:PYTHONUTF8='1'
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
-.\.venv\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py stage2\experiments\secret_scan.py stage2\experiments\profile_focused_fixture.py stage2\experiments\mine_finite_countermodel.py stage2\experiments\trace_teorth_path.py
-.\.venv\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
-.\.venv\Scripts\python.exe stage2\experiments\secret_scan.py --include-untracked
-.\.venv\Scripts\python.exe theory\tools\smoke_problem_sets.py
+.\.venv311\Scripts\python.exe -m py_compile stage2\solver\solver.py stage2\experiments\smoke_llm_dsl.py stage2\experiments\secret_scan.py stage2\experiments\profile_focused_fixture.py stage2\experiments\mine_finite_countermodel.py stage2\experiments\trace_teorth_path.py
+.\.venv311\Scripts\python.exe stage2\experiments\smoke_llm_dsl.py
+.\.venv311\Scripts\python.exe stage2\experiments\secret_scan.py --include-untracked
+.\.venv311\Scripts\python.exe theory\tools\smoke_problem_sets.py
 .\stage2\solver\package_solver.ps1
 Get-ChildItem -Force stage2\submissions
 (Get-Item stage2\submissions\solver.py).Length
@@ -228,7 +230,7 @@ the layout check immediately before upload, whatever else has happened since:
 
 ```powershell
 cd vendor\stage2-official
-..\..\.venv\Scripts\python.exe -c "from pathlib import Path; import pipeline.proxy as p; print(p._validate_submission_layout(Path(r'..\..\stage2\submissions')))"
+..\..\.venv311\Scripts\python.exe -c "from pathlib import Path; import pipeline.proxy as p; print(p._validate_submission_layout(Path(r'..\..\stage2\submissions')))"
 ```
 
 It prints `None` when the layout is valid and the error string otherwise
@@ -242,8 +244,8 @@ Then run official smokes from `vendor/stage2-official/`:
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 $env:PYTHONUTF8='1'
 Push-Location vendor\stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json --output ..\..\tmp_stage2_smoke\sample20_playground_preflight.json
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json --output ..\..\tmp_stage2_smoke\sample200_playground_preflight.json
+..\..\.venv311\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_20.json --output ..\..\tmp_stage2_smoke\sample20_playground_preflight.json
+..\..\.venv311\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems examples\problems\sample_200.json --output ..\..\tmp_stage2_smoke\sample200_playground_preflight.json
 Pop-Location
 ```
 
@@ -262,7 +264,7 @@ Optional focused LLM-path check when no local key is available. First create or 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.elan\bin;$env:PATH"
 Push-Location vendor\stage2-official
-..\..\.venv\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\unresolved_true_probe.jsonl --output ..\..\tmp_stage2_smoke\unresolved_true_probe_result.json
+..\..\.venv311\Scripts\python.exe -m pipeline.runner --submission ..\..\stage2\submissions --problems ..\..\tmp_stage2_smoke\unresolved_true_probe.jsonl --output ..\..\tmp_stage2_smoke\unresolved_true_probe_result.json
 Pop-Location
 ```
 

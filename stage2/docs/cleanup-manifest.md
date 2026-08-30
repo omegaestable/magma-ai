@@ -1,11 +1,58 @@
-# Non-Destructive Cleanup Manifest
+# Cleanup and Archive Manifest
 
-Updated: 2026-08-13 (added the ordered-completion pipeline to "Keep In Place" and
-a 2026-08-13 removal; the disk inventory below is still the 2026-07-29 one)
+Updated: 2026-08-30 (final cleanup executed after all release gates)
 
-This manifest records clutter and evidence debt without deleting anything. Use it before any future cleanup commit so raw artifacts are not lost accidentally.
+This manifest records the measured pre-cleanup inventory, the recoverable
+archives created, and the generated material removed. Use it before any future
+cleanup commit so raw artifacts are not lost accidentally.
 
-## 2026-07-29 measured disk inventory
+## 2026-08-30 completed cleanup
+
+- Compressed 280 ignored shard files from four completed order-4 campaigns:
+  560,024,985 raw bytes to 36,708,652 archive bytes. Exact per-campaign counts,
+  byte totals, and hashes are in `stage2/results/raw/MANIFEST.md`.
+- Archived the entire ignored `tmp_stage2_smoke/` tree after the final runner
+  checks: 21,226 files / 122,469,288 B to a verified 35,786,384 B ZIP,
+  SHA-256 `4401f58ffc67d649e40a80152dfa38d3943b6db0d5659eb61c283f72ef9e26ae`,
+  then removed the source tree. This includes the final Solo-20 and
+  positive-budget Marathon-5 raw outputs.
+- Removed `vendor/stage2-official/.artifacts/` only after both official
+  harnesses and both packaged-solver runner checks passed: 8,823 files /
+  354,129,163 B. It is regenerable by the judge.
+- Removed repo-side `__pycache__`, `.pytest_cache`, `.ruff_cache`, `chain.log`,
+  and `stop_after_b08.log`. Virtual-environment and `.lake` caches were not
+  touched.
+- Added an Austin notebook index instead of deleting research files. Session 8
+  demonstrated that underscore-prefixed and apparently failed artifacts can
+  contain complete proofs.
+
+## 2026-08-30 pre-cleanup disk inventory
+
+Before cleanup, the working tree was **7,983,088,854 B across 152,246 files** when
+ignored build and scratch output is included. Tracked content is **195,212,538 B
+across 3,025 files**. The dominant size is generated infrastructure, not source:
+
+| Path | Bytes | Files | Disposition |
+| --- | ---: | ---: | --- |
+| `vendor/stage2-official/.lake/` | 7,624,619,406 | 143,317 | **Keep.** Required Lean/Mathlib build cache; do not rebuild or delete before upload. |
+| `vendor/stage2-official/.artifacts/` | 353,634,665 | 8,698 | Removed after final judge pass; regenerates on demand. |
+| `.venv/` | 456,241,912 | 17,378 | Local Python 3.14 environment; retained, not a release gate. |
+| `.venv311/` | 123,088,354 | 6,143 | Python 3.11 release environment; retained. |
+| `tmp_stage2_smoke/` | 122,672,590 | 21,242 | Archived in full and removed after final validation. |
+| `stage2/experiments/austin/automata/gen/` | 9,475,103 | 1,670 | Active research workspace; archive scratch only after session 8 is frozen. |
+| `data/` | 126,548,145 | 318 | **Keep.** Benchmark, graph, and provenance data. |
+| `paper/` | 18,445,060 | 150 | **Keep.** Source papers and generated reading artifacts. |
+
+The tracked Austin `gen/` subset is 1,442 files / 8,494,140 B. A filename-based
+scratch pass identifies 1,161 files / 5,637,186 B, but that bucket includes
+useful `NOTES_*` and large research proofs; it is **not** a safe delete set.
+
+The largest tracked mathematical assets are the full implication export
+(57.9 MB), closure export (23.9 MB), outcome matrix (22.0 MB), and Teorth graph
+cache (9.1 MB). They are provenance inputs for the full order-4 graph pass and
+must not be shed as “junk.”
+
+## Historical 2026-07-29 measured disk inventory
 
 The working tree is **~7.4 GB across ~154k files**. Almost none of it is tracked
 content, but it is why `du`/`find` at the repo root hang and why unscoped file
@@ -35,21 +82,20 @@ searches are slow.
   errors from it, keeping CI Lint red. Backed up outside the repo before
   deletion; the `ruff.toml` key was fixed in the same pass.
 
-### Recommended, NOT executed
+### Executed after final validation
 
-Deleting scratch is irreversible and this manifest's policy is to preserve a
-final representative run, so the call is left to the maintainer. Both paths are
-gitignored, so nothing tracked is at stake:
+The following former recommendations were completed with path validation and
+archive verification. Recovery is now:
 
 ```powershell
-# 1. Keep the most recent dated batch, drop the rest (inspect the list first).
-Get-ChildItem tmp_stage2_smoke | Sort-Object Name | Select-Object -SkipLast 20
+# Restore ignored scratch evidence when needed.
+Expand-Archive stage2/results/raw/tmp-stage2-smoke-through-2026-08-30.zip tmp_stage2_smoke
 
-# 2. Judge artifacts regenerate on the next verify_answer call.
-Remove-Item -Recurse -Force vendor/stage2-official/.artifacts
+# Judge artifacts regenerate on the next verify_answer call; do not restore them.
 ```
 
-Recovers ~160 MB and ~36k files, which measurably speeds up unscoped searches.
+The source scratch tree and judge artifacts were removed only after the final
+evidence had been summarized and the archive had been verified.
 Do **not** touch `vendor/stage2-official/.lake`: rebuilding Mathlib costs hours.
 
 ## Completed Archive Batches
@@ -59,13 +105,14 @@ Do **not** touch `vendor/stage2-official/.lake`: rebuilding Mathlib costs hours.
 | 2026-05-20 optimization readiness | `stage2/results/archive/optimization-readiness-2026-05-20/MANIFEST.md` | `stage2/results/2026-05-20-optimization-readiness.md` | Moved summarized optimization profiles, legacy no-LLM Marathon runs, aborted Solo attempts, and positive-token parity output out of `tmp_stage2_smoke/`. |
 | 2026-05-25 generated bytecode cleanup | n/a | `stage2/results/2026-05-25-cleanup-and-smoke.md` | Removed repo-side `__pycache__` directories generated by local tests; left `.venv/` caches alone. |
 | 2026-05-25 tracked LaTeX build cleanup | n/a | `stage2/results/2026-05-25-cleanup-and-smoke.md` | Removed tracked build byproducts already covered by `.gitignore`; kept source TeX, PDFs, figures, and bibliographies. |
+| 2026-08-30 competition readiness | `stage2/results/raw/MANIFEST.md` | `stage2/results/2026-08-30-competition-readiness.md` | Archived completed order-4 shards and all ignored smoke output; removed judge artifacts and caches after final gates. |
 
 ## Policy
 
 - Do not delete dated result summaries under `stage2/results/`.
 - Do not delete raw evidence that is the only source for a promoted claim.
 - Prefer archive-with-manifest over deletion for judge artifacts and Marathon outputs.
-- Treat `tmp_stage2_smoke/` as scratch, but preserve a final representative run when it is the only evidence for a recent workflow.
+- Treat `tmp_stage2_smoke/` as scratch; archive and hash it before removal when it contains unique evidence.
 - Ask before deleting or moving anything outside `tmp_stage2_smoke/`.
 
 ## Keep In Place
@@ -78,37 +125,6 @@ Do **not** touch `vendor/stage2-official/.lake`: rebuilding Mathlib costs hours.
 | `stage2/results/2026-05-15-theory-diagnosis.md` | Teorth proof-page and finite-model diagnosis. |
 | `stage2/experiments/*.py` | Active tooling unless a future audit marks a script obsolete. |
 | `stage2/docs/solver-route-ledger.md` and `stage2/docs/motif-cards/` | Current route review artifacts. |
-| `tmp_stage2_smoke/final-nine-2026-08-12/` | **Scratch by location, not by value** — the original working copy of the ordered-completion (Knuth-Bendix) pipeline that closed the last nine official/HF rows and `sample_200`'s last three, each in under 0.2 s and with no tuning. A cleaned, row-agnostic copy now lives in the repo at `stage2/experiments/completion/` (2026-08-13), so this directory is no longer the only copy — but keep it until that one is **committed**, because `tmp*/` is gitignored and the new directory was still untracked when this line was written. It also holds the per-row derivations and `judge_results.json` behind `stage2/results/2026-08-12-final-nine-completion.md`. The "keep the most recent batch, drop the rest" recipe above would delete all of it. |
-
-## Archive Candidates
-
-| Path / pattern | Suggested destination | Why |
-| --- | --- | --- |
-| `tmp_stage2_smoke/2026-05-14-*after-*` | `stage2/results/archive/obsolete-intermediate/` | Absorption/affine tuning snapshots superseded by summaries. |
-| `tmp_stage2_smoke/2026-05-15-*after-*` | `stage2/results/archive/obsolete-intermediate/` | Equational-closure tuning snapshots. |
-| `tmp_stage2_smoke/2026-05-16-*after-witness*` | `stage2/results/archive/witness-tuning/` | Pre/post compact-witness tuning traces. |
-| `tmp_stage2_smoke/*grind*` and `tmp_stage2_smoke/judge-artifacts-grind-*` | `stage2/results/archive/grind-regression-evidence/` | Grind is retired from active solver policy, but accepted/incorrect ledgers remain useful archaeology. |
-| `tmp_stage2_smoke/*normal100*` duplicate runs | `stage2/results/archive/smokes/` | Keep one final representative run plus summary. |
-| `tmp_stage2_smoke/playground_parity_llm_dry_check*` | `stage2/results/archive/parity-dry-runs/` | Keep final dry check if needed; intermediate dry checks are tuning clutter. |
-
-## Delete Candidates After Review
-
-| Path / pattern | Reason |
-| --- | --- |
-| repo-side `__pycache__/` directories | Generated by Python smoke/integration runs; ignored and safe to remove after verifying paths stay inside the workspace. |
-| `tmp_stage2_smoke/sample20-current.json`, `tmp_stage2_smoke/sample200-current.json` | Untimestamped snapshots with no promotion status. |
-| `tmp_stage2_smoke/answers.jsonl` | One-off output; regenerate from runner. |
-| `tmp_stage2_smoke/solo_result.json` | Stale standalone Solo output. |
-| `tmp_stage2_smoke/reflexive_problem.json` | One-off fixture if not referenced by a current doc. |
-| `tmp_stage2_smoke/hard3_true*.json*` | Old TRUE tuning fixtures superseded by route summaries. |
-| Non-final `post_rollback_tiny_zero_token*` dirs | Iterative implementation checks; keep only final summary if needed. |
-
-## Promote or Summarize Before Cleanup
-
-- Positive-token parity run: create a dated summary under `stage2/results/` before archiving raw output.
-- Post-rollback public refresh: create a positive-token official/proxy baseline summary before deleting any raw public-run traces.
-- Targeted unresolved TRUE LLM repair run: summarize accepted/rejected/malformed/incorrect/token-exhausted classes before cleanup.
-- New motif route fixture runs: record problem ids, routes, statuses, and result paths.
 
 ## Suggested Future Archive Manifest Format
 
@@ -122,6 +138,9 @@ Summary artifact: stage2/results/<dated-summary>.md or none
 Safe to delete later: yes/no
 ```
 
-## Current No-Delete Decision
+## Current disposition
 
-For the 2026-05-19 conservative polish session, cleanup is documentation-only. No raw artifact should be deleted or moved without a separate explicit approval.
+The approved cleanup is complete. No branch, environment, `.lake` content,
+tracked mathematical asset, fixture, accepted certificate, paper, or Austin
+research source was deleted. Future cleanup again requires an inventory and a
+fresh evidence-retention decision.

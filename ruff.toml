@@ -16,6 +16,7 @@ target-version = "py311"
 extend-exclude = [
     ".venv",
     "stage1",              # frozen archive; do not churn it
+    "stage2/experiments/austin", # frozen research notebook; includes partial generated fragments
     "vendor",              # vendored official harness, upstream-owned
     "tmp_stage2_smoke",    # scratch
 ]
@@ -55,3 +56,6 @@ ignore = [
 "stage2/experiments/*.py" = ["E402"]
 "stage2/tests/*.py" = ["E402"]
 "theory/tools/*.py" = ["E402"]
+# Style-only lambda assignments in the frozen competition artifact are not a
+# release risk. Changing them would violate the no-solver-edit cleanup rail.
+"stage2/solver/solver.py" = ["E731"]
