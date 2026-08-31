@@ -1,6 +1,38 @@
 # Latest handoff — competition-ready repository; controlled order-5 work (2026-08-30)
 
-## Operator rail — current and authoritative
+## Deadline release addendum — 2026-08-31 (current and authoritative)
+
+This addendum supersedes the opening operator rail and readiness snapshot below
+where they conflict.  The historical material is retained as evidence, not as
+release instructions.
+
+For the remaining Austin Order-5 research, use
+[`AUSTIN_ORDER5_SOLVING_HANDOVER.md`](AUSTIN_ORDER5_SOLVING_HANDOVER.md) before
+opening a model or Lean file; it is the current ranked proof/model/integration
+plan.
+
+- The active source is `stage2/solver/solver.py`; the protected packaged
+  artifact is `stage2/submissions/solver.py`.  The submission directory must
+  contain only that file; `stage2/solver/SUBMISSION_NOTE.md` travels separately.
+- Do not emit speculative Marathon TRUE certificates.  Model-search telemetry
+  may guide the proxy lane, but a deterministic certificate is promoted only
+  after its local oracle and real Lean judge acceptance.
+- The image-of-`op` carrier is retired as a repair strategy.  It cannot exclude
+  op-built adversaries.  For residual carrier work, first use the pair-difference
+  diagnostic and root-functionality test in
+  `stage2/experiments/austin/automata/gen/NOTES_ANCHORED_CARRIER.md`.
+- `v38316.lean` / `v38316b.lean` are the current five-rule candidate and retain
+  five named proof holes; the obsolete 12-rule basis is not a shipping lead.
+  The four-rule `23357` certificate is refuted; only the `full12` branch may be
+  considered, and only after its constructed C3-family validation passes.
+- The working tree was clean before this deadline pass.  Any later modifications
+  are intentional release changes and must receive the full package/gate/harness
+  validation ladder before upload.
+- Large completion, term-interning, cache redesign, and broad route deletion
+  remain deferred.  Keep all live coverage and packed data; only isolate,
+  content-general, oracle-checked corrections may ship.
+
+## Operator rail — historical (superseded where inconsistent)
 
 The previous order-5 hard research session is closed as a failed/capped
 session. Discard its agent choreography, fan-out plans, unfinished claims, and

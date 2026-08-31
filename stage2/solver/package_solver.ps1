@@ -41,10 +41,13 @@ if (-not $SkipTests) {
     # -n auto: the gate re-solves ~170 real problems, which is ~160 s serially
     # and ~47 s across cores. Speed matters here because a slow gate is a gate
     # people skip. Falls back to serial when pytest-xdist is not installed.
-    & $python -m pytest stage2/tests -q -n auto
+    # Some managed Windows runners expose an unreadable shared %TEMP% pytest
+    # root.  Keep test scratch inside the ignored results area so the release
+    # gate remains reproducible without weakening it.
+    & $python -m pytest stage2/tests -q -n auto --basetemp stage2/results/pytest_package_gate -p no:cacheprovider
     if ($LASTEXITCODE -eq 4) {
         Write-Warning "pytest-xdist unavailable; falling back to a serial gate (slower)."
-        & $python -m pytest stage2/tests -q
+        & $python -m pytest stage2/tests -q --basetemp stage2/results/pytest_package_gate -p no:cacheprovider
     }
     if ($LASTEXITCODE -ne 0) {
         throw "Offline correctness gate failed; refusing to package. Re-run with -SkipTests only for a deliberate spike."

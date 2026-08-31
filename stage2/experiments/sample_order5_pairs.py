@@ -26,6 +26,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+from glob import glob
 import json
 import random
 import sys
@@ -111,11 +112,17 @@ def sample_pairs(count: int, seed: int, max_variables: int,
 def load_exclusions(paths: list[Path]) -> set[tuple[int, int]]:
     exclude: set[tuple[int, int]] = set()
     for path in paths:
-        text = path.read_text(encoding="utf-8")
-        rows = ([json.loads(line) for line in text.splitlines() if line.strip()]
-                if path.suffix == ".jsonl" else json.loads(text))
-        for row in rows:
-            exclude.add((row["eq1_id"], row["eq2_id"]))
+        # The sweep runbook intentionally passes a glob so a new batch excludes
+        # every prior batch.  Shells do not consistently expand it on Windows;
+        # expand here rather than accidentally treating the literal `*` as a
+        # path or silently redrawing already measured pairs.
+        expanded = sorted(Path(item) for item in glob(str(path)))
+        for batch in expanded or [path]:
+            text = batch.read_text(encoding="utf-8")
+            rows = ([json.loads(line) for line in text.splitlines() if line.strip()]
+                    if batch.suffix == ".jsonl" else json.loads(text))
+            for row in rows:
+                exclude.add((row["eq1_id"], row["eq2_id"]))
     return exclude
 
 

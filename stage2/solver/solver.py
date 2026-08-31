@@ -14205,69 +14205,9 @@ def run_marathon() -> int:
                             }
                         )
 
-    # ---- RC-07: bank a speculative answer on rows nothing solved ---------
-    # A wrong answer and a missing answer score identically -- rules
-    # /evaluation.md scores `accepted` = 1 and "rejected or timed out" = 0, and
-    # `marathon_score._load_last_writes` maps a missing id to `not_attempted`,
-    # also 0. Marathon has no judge channel, so this costs one `append_answer`
-    # per skipped row and no run time at all; the certificate is graded offline
-    # after the run. Solo has banked exactly this attempt for months.
-    #
-    # Two guards. (1) `solved_ids` -- the scorer keeps the LAST write for an id,
-    # so a speculative line after a real answer would DESTROY it. Nothing here
-    # runs for a row that produced any answer, in either deterministic pass or
-    # in the LLM lane, and this block runs last so `solved_ids` is complete.
-    # (2) `models_seen > 0` -- the same gate Solo uses. If the FALSE search
-    # never found a single model of the hypothesis it refuted nothing and proved
-    # nothing, and a speculative `true` there is a coin flip with no evidence
-    # behind it (rail 5; seven `Eq168` playground rows returned TRUE INCORRECT
-    # exactly this way).
-    speculative_submitted = 0
-    speculative_skipped_no_evidence = 0
-    for _priority, problem in prioritized:
-        pid = str(problem.get("id"))
-        if pid in solved_ids:
-            continue
-        models_seen, exhausted = _MARATHON_ROW_EVIDENCE.get(pid, (0, False))
-        if models_seen <= 0:
-            speculative_skipped_no_evidence += 1
-            continue
-        try:
-            code = grind_true_certificate(
-                parse_equation(str(problem["equation2"]))["variables"])
-            speculative = make_true_answer(problem, code)
-            if not append_answer(output_path, speculative):
-                continue
-        except Exception as exc:  # noqa: BLE001 - a bad row must not kill the tail
-            log_stderr({
-                "route": "fallback:marathon_grind",
-                "id": pid,
-                "error": f"{type(exc).__name__}: {exc}",
-            })
-            continue
-        route_counts["fallback:marathon_grind"] = (
-            route_counts.get("fallback:marathon_grind", 0) + 1)
-        speculative_submitted += 1
-        solved_ids.add(pid)
-        log_stderr({
-            "route": "fallback:marathon_grind",
-            "id": pid,
-            "models_seen": models_seen,
-            "constraint_search_exhausted": exhausted,
-        })
-    if speculative_submitted or speculative_skipped_no_evidence:
-        log_stderr({
-            "route": "fallback:marathon_grind",
-            "event": "done",
-            "submitted": speculative_submitted,
-            "skipped_no_model_evidence": speculative_skipped_no_evidence,
-        })
-    # ---- end speculative fallback ----------------------------------------
-
     log_route_count_chunks(route_counts)
     log_stderr(
         {
-            "speculative_submitted": speculative_submitted,
             "second_pass_submitted": second_pass_submitted,
             "submitted_deterministic": deterministic_submitted,
             "submitted_total": solved,

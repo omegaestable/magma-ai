@@ -111,7 +111,17 @@ config. Do not mirror the fallback — see rail 3b, third instance.
   `incorrect`. Trusted axioms allowed: `propext`, `Quot.sound`,
   `Classical.choice`.
 
-## Current measured state (2026-08-29; deterministic baseline plus Austin session 8)
+## Current measured state (2026-08-31 release addendum; deterministic baseline plus Austin session 8)
+
+The dated table remains the 2026-08-29/30 evidence ledger.  On 2026-08-31 the
+release branch removed the unjudged `fallback:marathon_grind` output path and
+rebuilt `stage2/submissions/solver.py` to **454,993 bytes** (SHA-256
+`d301adea8132f964ff41aa50141de58db05fb4cdd248e16d2ee912230d914a70`).
+The public deterministic audit was re-run at **1,669/1,669**, zero crashes and
+zero oracle failures.  Do not overwrite the historical Austin package figure
+below: it is the session-8 measurement.  The live Lean harness and optional
+LLM evidence require a configured local Lean toolchain and a rotated proxy key,
+respectively; neither is implied by this offline release addendum.
 
 The deterministic corpus rows below are the isolated 2026-08-28 baseline
 (`stage2/results/2026-08-28-deterministic-pass-perf-and-bytes.md`). The latest
@@ -139,6 +149,16 @@ after that append. Diff by row id, never by total (rail 2).
 The three solver changes: completion probe before egg probe (rail 34); the two
 cheap closures ahead of the cheap constraint tier (rail 35); a compiled
 `equation_holds` (rail 36). Nothing was deleted (rail 1).
+
+**Austin correction, 2026-08-31.** The later pair-difference/root-functionality
+check refuted image-of-`op` restriction as a general repair: op-built
+adversaries remain in that carrier.  Treat the carrier sentence in the session-8
+table as historical exploration, not an active target.  `v38316.lean` and
+`v38316b.lean` are the five-rule candidates with five open proof cells; the
+four-rule 23357 certificate is refuted, and only its `full12` branch remains
+conditional on the constructed C3-family check.  Details are in
+`stage2/experiments/austin/automata/gen/NOTES_ANCHORED_CARRIER.md`,
+`NOTES_38316.md`, and `NOTES_23357.md`.
 
 ### 2026-08-29 order-4 miss frontier (current coverage baseline)
 

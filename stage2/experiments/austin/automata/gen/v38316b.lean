@@ -183,6 +183,27 @@ theorem Bdig {u v : M} (h : op u v ≠ J u v) : Pre u v := by
   · exact hp
   · exact absurd (op_free hp) h
 
+/-- Full firing digest: unlike `Bdig`, preserves the rule's resolved recursive equalities. -/
+theorem TR {u v : M} (h : op u v ≠ J u v) :
+    (P1 u v ∧ a2 v = op (a1 (a2 v)) (u) ∧ a1 (a2 v) = op (u) (a2 (a1 (a2 v))) ∧ a2 (a1 (a2 v)) = op (a1 (a2 (a1 (a2 v)))) (a1 v)) ∨
+    (P2 u v ∧ a2 v = op (a1 (a2 v)) (u) ∧ a1 (a2 v) = op (u) (a2 (a1 (a2 v))) ∧ a2 (a1 (a2 v)) = op (a2 (a2 (a1 v))) (a1 v)) ∨
+    (P3 u v ∧ a2 v = op (a1 (a2 v)) (u) ∧ J (a1 (a2 v)) (a1 v) = op (a1 (a2 v)) (a1 v) ∧ a1 (a2 v) = op (u) (J (a1 (a2 v)) (a1 v))) ∨
+    (P4 u v ∧ a2 v = op (a1 (a2 v)) (u) ∧ a1 (a2 v) = op (u) (a1 (a1 v)) ∧ a1 (a1 v) = op (a2 (a2 (a1 v))) (a1 v)) ∨
+    (P5 u v ∧ a2 v = op (a2 (a2 u)) (u) ∧ J (a2 (a2 u)) (a1 v) = op (a2 (a2 u)) (a1 v) ∧ a1 v = op (a1 (a1 v)) (u) ∧ a1 (a1 v) = op (u) (a2 (a1 (a1 v))) ∧ a2 (a1 (a1 v)) = op (a1 (a2 (a1 (a1 v)))) (a2 (a2 u))) := by
+  rw [op.eq_1] at h
+  revert h
+  exact Y
+    (fun h => Or.inl (⟨h.1, (by have e := h.2.2.2.2.1; rw [dif_pos (h.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.1; rw [dif_pos (h.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2; rw [dif_pos (h.2.2.2.1)] at e; exact e)⟩))
+    (Y
+    (fun h => Or.inr (Or.inl (⟨h.1, (by have e := h.2.2.2.2.1; rw [dif_pos (h.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.1; rw [dif_pos (h.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2; rw [dif_pos (h.2.2.2.1)] at e; exact e)⟩)))
+    (Y
+    (fun h => Or.inr (Or.inr (Or.inl (⟨h.1, (by have e := h.2.2.2.2.1; rw [dif_pos (h.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.1; rw [dif_pos (h.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2; rw [dif_pos (h.2.2.2.1)] at e; exact e)⟩))))
+    (Y
+    (fun h => Or.inr (Or.inr (Or.inr (Or.inl (⟨h.1, (by have e := h.2.2.2.2.1; rw [dif_pos (h.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.1; rw [dif_pos (h.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2; rw [dif_pos (h.2.2.2.1)] at e; exact e)⟩)))))
+    (Y
+    (fun h => Or.inr (Or.inr (Or.inr (Or.inr (⟨h.1, (by have e := h.2.2.2.2.2.2.1; rw [dif_pos (h.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2.2.1; rw [dif_pos (h.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2.2.2.1; rw [dif_pos (h.2.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2.2.2.2.1; rw [dif_pos (h.2.2.2.2.1)] at e; exact e), (by have e := h.2.2.2.2.2.2.2.2.2.2; rw [dif_pos (h.2.2.2.2.2.1)] at e; exact e)⟩)))))
+    ((fun hh => absurd rfl hh))))))
+
 theorem mxl {a b c d : M} (h1 : sz a < sz d) (h2 : sz b < sz d) :
     max (sz a) (sz b) < max (sz c) (sz d) := by
   rw [Nat.max_def, Nat.max_def]; split <;> split <;> omega

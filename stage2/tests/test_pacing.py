@@ -215,7 +215,7 @@ def test_marathon_second_pass_closes_rows_the_first_pass_missed(
     """12 rows: 6 close on pass 1, 4 only on pass 2, 2 never.
 
     Of the two that never close, exactly one leaves FALSE-search evidence
-    (`models_seen > 0`), so exactly one speculative fallback line is written.
+    (`models_seen > 0`).  That telemetry must not produce a certificate.
     """
     easy = {row["id"] for row in ROWS[:6]}
     hard = {row["id"] for row in ROWS[6:10]}
@@ -245,9 +245,9 @@ def test_marathon_second_pass_closes_rows_the_first_pass_missed(
 
     ids = [line["id"] for line in lines]
     assert len(ids) == len(set(ids)), f"duplicate answer ids: {ids}"
-    # 6 easy + 4 second-pass + 1 speculative.
-    assert set(ids) == easy | hard | {with_evidence}
-    assert len(ids) == 11
+    # Only deterministic certificates are emitted: 6 easy + 4 second-pass.
+    assert set(ids) == easy | hard
+    assert len(ids) == 10
 
     second = [r for r in records
               if str(r.get("route", "")).startswith("second_pass:")
@@ -269,14 +269,14 @@ def test_marathon_second_pass_closes_rows_the_first_pass_missed(
     second_tier_labels = {str(r["route"]).split(":", 1)[1] for r in second}
     assert second_tier_labels == {"deep"}
 
-    # Speculative fallback: only the row with model evidence.
+    # Marathon must never turn model-search telemetry into an unverified TRUE
+    # certificate.  The evidence remains available to the LLM lane only.
     grind = [r for r in records if r.get("route") == "fallback:marathon_grind"
              and "id" in r]
-    assert [r["id"] for r in grind] == [with_evidence]
+    assert not grind
     done = [r for r in records if r.get("route") == "fallback:marathon_grind"
             and r.get("event") == "done"]
-    assert done and done[0]["submitted"] == 1
-    assert done[0]["skipped_no_model_evidence"] == 1
+    assert not done
 
     # The evidence dict is keyed by id and holds the tuple the LLM lane reads.
     assert solver._MARATHON_ROW_EVIDENCE.get(with_evidence, (0, False))[0] > 0

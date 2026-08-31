@@ -280,44 +280,6 @@ theorem cell4 (x y z : M) (htx : tg x = 2) (hz : a2 (a2 x) = z) (ha : op z x = a
     simp only [a1_J_eq, a2_J_eq]
     rw [hz]; exact ha.symm
 
-theorem cell5 (y z w : M) (hty : tg y = 2) (hy2 : tg (a2 y) = 2) (hz : a2 (a2 y) = z)
-    (hdeep : w = op (a1 w) z) (ha : op z (J (J y w) y) = J z (J (J y w) y))
-    (hc : op z y = a1 y) : op y (J (J (J y w) y) (a1 y)) = J (J y w) y := by
-  have s1 := sz_a1_lt hty
-  have s2 := sz_a2_lt hy2
-  have s3 := sz_a2 y
-  have s4 := sz_a1 w
-  have s5 := sz_a2 (a2 y)
-  have e3 : op (J y w) y = J (J y w) y := by
-    rcases Wdig (J y w) y with q | q
-    · exact q
-    · exfalso; have := congrArg sz q; simp only [sz_J] at this; have := sz_a1 y; omega
-  have e4 : op y w = J y w := by
-    rcases Wdig y w with q | q
-    · exact q
-    · exfalso; have := congrArg sz q; simp only [sz_J] at this; omega
-  rw [op.eq_1]
-  refine ZP rfl (ZP rfl (ZP rfl (ZP rfl ((if_pos ⟨⟨rfl, hty, hy2, rfl, rfl, rfl, rfl, rfl⟩,
-    ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩).trans rfl))))
-  · exact GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega) (by simp only [sz_J]; omega)
-  · exact GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega) (by simp only [a1_J_eq, sz_J]; omega)
-  · exact GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega) (by simp only [sz_J]; omega)
-  · exact GT (by simp only [sz_J]; omega) (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega)
-  · exact GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega)
-      (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega)
-  · rw [dif_pos (GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega) (by simp only [sz_J]; omega))]
-    simp only [a1_J_eq, a2_J_eq]; rw [hz]; exact hc.symm
-  · rw [dif_pos (GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega)
-      (by simp only [a1_J_eq, sz_J]; omega))]
-    simp only [a1_J_eq, a2_J_eq]; rw [hz]; exact ha.symm
-  · rw [dif_pos (GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega) (by simp only [sz_J]; omega))]
-    simp only [a1_J_eq, a2_J_eq]; exact e3.symm
-  · rw [dif_pos (GT (by simp only [sz_J]; omega) (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega))]
-    simp only [a1_J_eq, a2_J_eq]; exact e4.symm
-  · rw [dif_pos (GT (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega)
-      (by simp only [a1_J_eq, a2_J_eq, sz_J]; omega))]
-    simp only [a1_J_eq, a2_J_eq]; rw [hz]; exact hdeep
-
 theorem law (x y z : M) : op (y) (op (x) (op (op (y) (op (z) (x))) (y))) = x := by
   rcases Wsz x (op (op y (op z x)) y) with hd | ⟨-, hd, -⟩
   · rw [hd]

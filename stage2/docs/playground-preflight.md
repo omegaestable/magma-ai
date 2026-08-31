@@ -43,7 +43,9 @@ Current TRUE boundary rails:
 - Preferred TRUE LLM outputs remain solver-owned `rewrite_chain` or `guided_chain` JSON.
 - Marathon TRUE LLM submissions must be solver-checked chains; raw TRUE Lean is disabled for that lane.
 - Raw TRUE fallback, where used in Solo/debug tooling, must use `code` containing a complete Lean file that exposes `submission`.
-- Helper theorems, defs, lemmas, namespaces, and notation above `submission` are allowed in that raw-file rail.
+- Helper theorems, defs, lemmas, and namespaces above `submission` are allowed
+  only when they pass the raw-text banned-token scan.  `notation` and parser
+  extensions are banned even in comments, so they are not allowed in this rail.
 - Legacy body-only `proof` / `proof_body` JSON is intentionally unsupported locally and should be treated as stale prompt drift, including the older example still present in the vendored `vendor/stage2-official/README.md`.
 
 ## Proxy Reality
