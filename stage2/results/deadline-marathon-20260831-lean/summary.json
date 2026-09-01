@@ -1,0 +1,45 @@
+{
+  "score": 5,
+  "attempted": 5,
+  "not_attempted": 0,
+  "by_status": {
+    "accepted": 5
+  },
+  "wall_seconds": 1.0,
+  "sigterm_fired": false,
+  "sigkill_fired": false,
+  "tokens_used": 0,
+  "tokens_exhausted": false,
+  "per_problem": [
+    {
+      "id": "normal_0001",
+      "status": "accepted",
+      "verdict": "true",
+      "message": "certificate accepted"
+    },
+    {
+      "id": "normal_0002",
+      "status": "accepted",
+      "verdict": "true",
+      "message": "certificate accepted"
+    },
+    {
+      "id": "normal_0003",
+      "status": "accepted",
+      "verdict": "false",
+      "message": "certificate accepted"
+    },
+    {
+      "id": "normal_0004",
+      "status": "accepted",
+      "verdict": "true",
+      "message": "certificate accepted"
+    },
+    {
+      "id": "normal_0005",
+      "status": "accepted",
+      "verdict": "true",
+      "message": "certificate accepted"
+    }
+  ]
+}

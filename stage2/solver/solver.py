@@ -1745,9 +1745,19 @@ def _compile_equation_check(equation: dict[str, Any]) -> Any:
     return check
 
 
-def equation_holds(equation: dict[str, Any], table: list[list[int]]) -> bool:
+def equation_holds(
+    equation: dict[str, Any], table: list[list[int]],
+    *, deadline: float | None = None,
+) -> bool:
     check = _compile_equation_check(equation)
-    for values in product(range(len(table)), repeat=len(equation["variables"])):
+    for index, values in enumerate(
+            product(range(len(table)), repeat=len(equation["variables"]))):
+        # A single large-linear candidate can otherwise monopolise the row:
+        # its n**k assignment loop is much larger than the caller's periodic
+        # engine gate.  Abort as a miss when the row/run clock expires; this
+        # candidate cannot be a valid witness after the deadline anyway.
+        if deadline is not None and index % 256 == 0 and time.monotonic() >= deadline:
+            return False
         if not check(table, *values):
             return False
     return True
@@ -1970,7 +1980,7 @@ def witness_check(
     assumption the moment it was added. The gate belongs here, not in the
     callers, so the next family above the old ceiling inherits it.
     """
-    if not equation_holds(eq1, table):
+    if not equation_holds(eq1, table, deadline=_HARD_DEADLINE):
         return False
     note_hypothesis_model()
     # After the bookkeeping, deliberately: a table barred by a Solo retry is
@@ -1979,7 +1989,7 @@ def witness_check(
     # rejection quietly turn evidence into no-evidence.
     if witness_table_rejected(table):
         return False
-    if equation_holds(eq2, table):
+    if equation_holds(eq2, table, deadline=_HARD_DEADLINE):
         return False
     return (
         table_is_renderable(table)
@@ -13827,11 +13837,23 @@ def run_marathon() -> int:
             row_budget = marathon_row_budget(
                 pass_deadline - time.monotonic(), total_rows - attempted)
             attempted += 1
+            log_stderr({
+                "route": "marathon:row_start",
+                "id": str(problem.get("id")),
+                "attempted": attempted,
+                "total": total_rows,
+                "budget_seconds": round(row_budget, 3),
+            })
             set_hard_deadline(time.monotonic() + row_budget)
             try:
                 clear_term_caches()
                 reset_memory_reclaims()
                 answer_record = solve_problem(problem, false_time_budget=per_problem_budget)
+                log_stderr({
+                    "route": "marathon:row_done",
+                    "id": str(problem.get("id")),
+                    "solved": answer_record is not None,
+                })
                 if answer_record is None:
                     # The FALSE-search evidence globals describe THIS row only
                     # until the next `solve_problem` resets them, so snapshot

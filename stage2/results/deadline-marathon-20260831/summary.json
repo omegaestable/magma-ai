@@ -1,0 +1,45 @@
+{
+  "score": 0,
+  "attempted": 5,
+  "not_attempted": 0,
+  "by_status": {
+    "harness_error": 5
+  },
+  "wall_seconds": 1.0,
+  "sigterm_fired": false,
+  "sigkill_fired": false,
+  "tokens_used": 0,
+  "tokens_exhausted": false,
+  "per_problem": [
+    {
+      "id": "normal_0001",
+      "status": "harness_error",
+      "verdict": "true",
+      "message": "judge infrastructure error: missing lean binary: lean"
+    },
+    {
+      "id": "normal_0002",
+      "status": "harness_error",
+      "verdict": "true",
+      "message": "judge infrastructure error: missing lean binary: lean"
+    },
+    {
+      "id": "normal_0003",
+      "status": "harness_error",
+      "verdict": "false",
+      "message": "judge infrastructure error: missing lean binary: lean"
+    },
+    {
+      "id": "normal_0004",
+      "status": "harness_error",
+      "verdict": "true",
+      "message": "judge infrastructure error: missing lean binary: lean"
+    },
+    {
+      "id": "normal_0005",
+      "status": "harness_error",
+      "verdict": "true",
+      "message": "judge infrastructure error: missing lean binary: lean"
+    }
+  ]
+}
