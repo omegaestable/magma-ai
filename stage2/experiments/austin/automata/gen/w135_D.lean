@@ -301,6 +301,24 @@ theorem INJn (n : Nat) : ∀ v u u' : M, sz v < n → op u v = op u' v → u = u
 theorem INJ {u u' v : M} (h : op u v = op u' v) : u = u' :=
   INJn (sz v + 1) v u u' (Nat.lt_succ_self _) h
 
+/-- Every common guard retained by `GG`/`GDx` is a strict descent in its
+    right parameter.  This is the fuel fact needed by the conditional cell. -/
+theorem GLT {u v C : M} (h : op u v ≠ J u v)
+    (hg : msr u C < msr u v) : sz C < sz v := by
+  have hu := SU h
+  have hm := mx hg
+  have hmax : max (sz u) (sz v) = sz v := Nat.max_eq_right (Nat.le_of_lt hu)
+  have hle : sz C ≤ sz v := by
+    have hz := Nat.le_trans (Nat.le_max_right (sz u) (sz C)) hm
+    rw [hmax] at hz
+    exact hz
+  apply Classical.byContradiction
+  intro hn
+  have he : sz C = sz v := by omega
+  simp only [msr] at hg
+  rw [he] at hg
+  exact Nat.lt_irrefl _ hg
+
 /-- **HOLE 1**: the third chain product `A = op z (op (op x y) y)` is always free.
     Census evidence: free in every one of 139,482 chained-encoding triples and every attack round. -/
 theorem AF (x y z : M) : op z (op (op x y) y) = J z (op (op x y) y) := by
@@ -477,6 +495,55 @@ theorem GD {u v : M} (h : op u v ≠ J u v) : P1 u v ∨
   · rcases k _ he with hl | hr
     · exact Or.inr (Or.inl ⟨h1, hl.1, hl.2⟩)
     · exact Or.inr (Or.inr ⟨h1, hr⟩)
+
+/-- The decoded trichotomy with the exact producer retained in its recursive
+    cell.  Unlike `GD`, the last disjunct remembers whether `(u,v)` was read by
+    R2 or by the recursive R3 rule, as well as the common guard product. -/
+theorem GDx {u v : M} (h : op u v ≠ J u v) : P1 u v ∨
+    (tg v = 2 ∧ tg (a1 v) = 2 ∧ a1 (a1 v) = u) ∨
+    (∃ C, C = op (op (op u v) (a2 v)) (a2 v) ∧
+      ((tg v = 2 ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧
+          op u v = a1 (a1 (a2 v))) ∨
+        (tg v = 2 ∧ ∃ q, msr u q < msr u v ∧ op u v = op u q)) ∧
+      msr u C < msr u v ∧ a1 v = op u C ∧ op u C ≠ J u C) := by
+  have k : ∀ C : M, C = op (op (op u v) (a2 v)) (a2 v) →
+      ((tg v = 2 ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧
+          op u v = a1 (a1 (a2 v))) ∨
+        (tg v = 2 ∧ ∃ q, msr u q < msr u v ∧ op u v = op u q)) →
+      msr u C < msr u v → a1 v = op u C →
+      (tg v = 2 ∧ tg (a1 v) = 2 ∧ a1 (a1 v) = u) ∨
+      (∃ C, C = op (op (op u v) (a2 v)) (a2 v) ∧
+        ((tg v = 2 ∧ tg (a2 v) = 2 ∧ tg (a1 (a2 v)) = 2 ∧
+            op u v = a1 (a1 (a2 v))) ∨
+          (tg v = 2 ∧ ∃ q, msr u q < msr u v ∧ op u v = op u q)) ∧
+        msr u C < msr u v ∧ a1 v = op u C ∧ op u C ≠ J u C) := by
+    intro C hc hp hg he
+    by_cases hf : op u C = J u C
+    · rw [hf] at he
+      exact Or.inl ⟨hp.elim And.left And.left, by rw [he]; rfl, by rw [he]; rfl⟩
+    · exact Or.inr ⟨C, hc, hp, hg, he, hf⟩
+  rcases TR u v with h0 | ⟨h1, -⟩ | ⟨h1, h2, h3, hr, hg, he⟩ |
+      ⟨h1, q, hq, hr, hg, he⟩
+  · exact absurd h0 h
+  · exact Or.inl h1
+  · rw [← hr] at hg he
+    rcases k _ rfl (Or.inl ⟨h1, h2, h3, hr⟩) hg he with hl | ht
+    · exact Or.inr (Or.inl hl)
+    · exact Or.inr (Or.inr ht)
+  · rw [← hr] at hg he
+    rcases k _ rfl (Or.inr ⟨h1, q, hq, hr⟩) hg he with hl | ht
+    · exact Or.inr (Or.inl hl)
+    · exact Or.inr (Or.inr ht)
+
+/-- Size content of the recursive `GDx` cell: both the decoder and the decoded
+    guard result lie below the guard parameter, which itself lies below `v`. -/
+theorem CellSz {u v C : M} (h : op u v ≠ J u v)
+    (hg : msr u C < msr u v) (he : a1 v = op u C)
+    (hd : op u C ≠ J u C) :
+    sz u < sz C ∧ sz (a1 v) < sz C ∧ sz C < sz v := by
+  refine ⟨SU hd, ?_, GLT h hg⟩
+  rw [he]
+  exact (RS u C).resolve_left hd
 
 theorem law (x y z : M) : op (z) (op (op (z) (op (op (x) (y)) (y))) (y)) = x := by
   rw [AF x y z, SF x y z]

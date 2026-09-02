@@ -137,3 +137,42 @@ So the Lean proof owes **`op z y ≠ y`**. Case analysis on `op z y`:
 
 Not "the model is clean". The measured statement is: **0 failures on every rung that fired, and one
 branch of the root's guard that no battery has ever instantiated.**
+
+---
+
+# 2026-09-01: the explicit `A=y` family is a guard gap, not a pair collision
+
+- **Batch and laws affected** — Batch 1, `9663`; `36487` by pair reversal.
+  No transfer to `12294` is justified because its chain is different.
+- **Statement** — In the explicit family from `REMAINING_40_PROMPT.md`, put
+  `P=E(l,y)`, `Q=F(l,P)`, and `C=E(y,Q)`.  The intended root pair
+  `r=(y,C)` differs from the bad R2 pair `i_R=(z,y)` and its supporting
+  TAGE pair `i_E=(p,y)`.  The concrete pair predicate
+
+  `S(u,v) :⇔ a2(a2(a2(u))) != v`
+
+  is true at `r` and false at both bad pairs.
+- **Derivation in short numbered steps**
+  1. The constructed equalities are `op(g,y)=V`, `op(y,p)=g`,
+     `op(p,y)=H`, and `op(z,y)=y`; the last two make R2 fire at `(z,y)`.
+  2. With `x=l`, TAGE gives `P=E(l,y)`, TAGF gives `Q=F(l,P)`, and
+     the `A=y` branch gives `C=E(y,Q)`.  The blocked root DEC call is
+     therefore exactly `(y,C)`.
+  3. The first coordinates show `r != i_R` (`E` versus `J`) and
+     `r != i_E` (`y=E(c,g)` whereas `p=E(b,F(g,V))`, with `b!=c`).
+  4. Total accessors are the identity on generators, so
+     `a2^3(y)=g != C`, while the construction gives
+     `a2^3(z)=y=a2^3(p)`.  Hence `S(r)` and not `S(i_R),S(i_E)`.
+  5. In the opposite magma every pair reverses, giving the 36487 pairs
+     `(C,y)`, `(y,z)`, `(y,p)` and the dual predicate `Sᵒᵖ(u,v)=S(v,u)`.
+- **Whether it is proved, refuted, or conjectural** — Pair inequality and the
+  displayed separation are proved for this symbolic family.  The current
+  DEC/R2/TAGF/TAGE model and its 36487 dual remain refuted.  Adding `S` as a
+  global guard is conjectural, not a repair.
+- **The one next lemma needed** — Prove the chain-specific root-safety statement
+
+  `IntendedRootDEC_9663(y,C) -> a2^3(y) != C`,
+
+  while separately retaining a guard against the older Q-slot DEC misfire.
+  Only then is a guarded model worth constructing; `12294` first needs its own
+  ordered-pair map.

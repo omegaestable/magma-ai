@@ -280,3 +280,54 @@ Ranked next moves:
 | --- | --- |
 | `gen/_y6912_quasi.py` | the unipotent-Latin-square DFS (orders 2–6 exhaustive: 0 models) |
 | `gen/_y6912_fin.py` | the cruder constant-diagonal search (orders 2–3) |
+
+---
+
+# 2026-09-01: all finite models are trivial
+
+- **Batch and laws affected** — Batch 3, `6912/39214` (the latter by duality).
+- **Statement** — Every model of 6912 in which all left translations are
+  injective is the one-element magma.  Since the law already makes every left
+  translation surjective, every finite model is therefore trivial.  Thus a
+  nontrivial countermodel, if one exists, must be infinite and must have a
+  noninjective surjective left translation.
+- **Derivation in short numbered steps**
+  1. Let `e` be the common idempotent square and write `L_y(t)=y*t`,
+     `R_y(t)=t*y`, and `g=L_e`.  The reduced law is the map identity
+
+     `L_y^2 ∘ g ∘ R_y = id`.
+
+     Hence every `L_y` is surjective and every `R_y` is injective.
+  2. Right injectivity and the common square give `a*b=e -> a=b`.  The law at
+     `x=e` therefore gives
+
+     `L_y(g^2(y))=y`.
+
+     The map identity at `x=y`, using `R_y(y)=e` and `g(e)=e`, also gives
+     `L_y(L_y(e))=y`.  If `L_y` is injective, then
+
+     `y*e=L_y(e)=g^2(y)`.
+  3. For `y=e`, the map identity is `g^3 ∘ R_e=id`.  Since
+     `R_e(y)=y*e=g^2(y)`, it follows that `g^5=id`.
+  4. Put `a=g^2(y)`.  The three known values form the cycle
+
+     `L_y(y)=e`, `L_y(e)=a`, `L_y(a)=y`.
+
+     Solving the map identity gives `R_y=g^{-1}∘L_y^{-2}`, hence
+     `a*y=g^{-1}(y)=g^4(y)`.  Step 2 applied to `a` also gives
+     `a*e=g^2(a)=g^4(y)`.
+  5. Injectivity of `L_a` now cancels the common left factor in
+     `a*y=a*e`, yielding `y=e`.  Since `y` was arbitrary, the model is
+     trivial.  On a finite carrier, the surjective maps `L_y` are automatically
+     injective, so the conclusion applies at every finite order.
+- **Whether it is proved, refuted, or conjectural** — Proved algebraically from
+  the already established common-square and right-injectivity consequences.
+  This replaces the incomplete order-7 search and explains the order-2–6
+  failures uniformly.  It does not prove that every infinite model is trivial.
+- **The one next lemma needed** — Decide whether the law forces any `L_y` to be
+  injective.  Equivalently, in a proposed infinite countermodel explicitly
+  realize the forced duplicate fiber
+
+  `L_y(y*e)=L_y(e*(e*y))=y`
+
+  with `y*e != e*(e*y)` while preserving injectivity of every `R_y`.

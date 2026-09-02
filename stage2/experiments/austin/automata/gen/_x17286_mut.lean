@@ -52,17 +52,25 @@ theorem Cd_sz {v : M} (h : Cd v) : sz v = 2 * sz (a1 v) + sz (a2 (a2 v)) + 2 := 
   omega
 
 mutual
-/-- walk the unwrap chain `T := a2 (a2 T)` looking for a payload `a1 T` that codes `u` and
-    reproduces the ORIGINAL `P` against `w`.  `J u u` is the "not found" sentinel. -/
+/-- Walk the unwrap chain while scanning both the direct payload `a1 T` and the
+    reconstruction receipt `J (a1 T) T`.  The latter is admitted only below the
+    ambient payload and below the mutual recursion measure. -/
 def find (u T w P : M) : M :=
   if tg T = 2 ∧ tg (a1 T) = 2 ∧ tg (a2 (a1 T)) = 2 ∧ a1 (a1 T) = a1 (a2 (a1 T))
      ∧ op u (a1 (a1 T)) = a2 (a2 (a1 T)) ∧ op (a1 T) w = P then a1 T
-  else if h : tg T = 2 ∧ tg (a2 T) = 2 then find u (a2 (a2 T)) w P
-  else J u u
+  else
+    let r := J (a1 T) T
+    if tg T = 2 ∧ sz r < sz P ∧
+       sz r + sz w < sz u + 2 * sz w + sz T + 2 ∧
+       op u (a1 T) = a2 T ∧ op r w = P then r
+    else if h : tg T = 2 ∧ tg (a2 T) = 2 then find u (a2 (a2 T)) w P
+    else J u u
 termination_by (sz u + 2 * sz w + sz T + 2, 0)
 decreasing_by
   · have := sz_a1 T; have := sz_a1 (a1 T); omega
   · have := sz_a1 T; omega
+  · have := sz_a1 T; have := sz_pos w; omega
+  · exact Prod.Lex.left _ (by omega)
   · have e1 := sz_a2_lt h.1
     have e2 := sz_a2_lt h.2
     omega
@@ -114,6 +122,25 @@ decreasing_by
     rw [h8]; exact Prod.Lex.right _ (by omega)
 end
 
+/-- Prototype of the redesigned locator.  It scans the reconstruction receipt
+    `J (a1 T) T` at every rung, but only when the receipt remains below the
+    ambient payload and its reproduction call satisfies the mutual-op gate. -/
+def findW (u T w P : M) : M :=
+  if tg T = 2 ∧ tg (a1 T) = 2 ∧ tg (a2 (a1 T)) = 2 ∧ a1 (a1 T) = a1 (a2 (a1 T))
+     ∧ op u (a1 (a1 T)) = a2 (a2 (a1 T)) ∧ op (a1 T) w = P then a1 T
+  else
+    let r := J (a1 T) T
+    if tg T = 2 ∧ sz r < sz P ∧
+       sz r + sz w < sz u + 2 * sz w + sz T + 2 ∧
+       op u (a1 T) = a2 T ∧ op r w = P then r
+    else if h : tg T = 2 ∧ tg (a2 T) = 2 then findW u (a2 (a2 T)) w P
+    else J u u
+termination_by sz T
+decreasing_by
+  have e1 := sz_a2_lt h.1
+  have e2 := sz_a2_lt h.2
+  omega
+
 
 def inst : Magma M := { op := op }
 
@@ -130,6 +157,47 @@ theorem opF {u v : M} (h : ¬ Cd v) : op u v = J u v := by
 /-- "c codes u" -- the relation every decode branch verifies. -/
 def cds (u c : M) : Prop :=
   tg c = 2 ∧ tg (a2 c) = 2 ∧ a1 c = a1 (a2 c) ∧ op u (a1 c) = a2 (a2 c)
+
+/-- Ambient-payload invariant for the receipt-scanning locator. -/
+theorem findWN (n : Nat) : ∀ u T w P r : M, sz T ≤ n → sz T ≤ sz P →
+    findW u T w P = r →
+    r = J u u ∨ (cds u r ∧ op r w = P ∧ sz r < sz P) := by
+  induction n with
+  | zero =>
+    intro u T w P r hn
+    have hp := sz_pos T
+    omega
+  | succ n ih =>
+    intro u T w P r hn hTP hr
+    rw [findW.eq_1] at hr
+    by_cases h1 : tg T = 2 ∧ tg (a1 T) = 2 ∧ tg (a2 (a1 T)) = 2 ∧
+        a1 (a1 T) = a1 (a2 (a1 T)) ∧ op u (a1 (a1 T)) = a2 (a2 (a1 T)) ∧
+        op (a1 T) w = P
+    · rw [if_pos h1] at hr
+      subst hr
+      exact Or.inr ⟨⟨h1.2.1, h1.2.2.1, h1.2.2.2.1, h1.2.2.2.2.1⟩,
+        h1.2.2.2.2.2, by have hs := sz_a1_lt h1.1; omega⟩
+    · rw [if_neg h1] at hr
+      let q := J (a1 T) T
+      by_cases hq : tg T = 2 ∧ sz q < sz P ∧
+          sz q + sz w < sz u + 2 * sz w + sz T + 2 ∧
+          op u (a1 T) = a2 T ∧ op q w = P
+      · rw [if_pos hq] at hr
+        subst hr
+        exact Or.inr ⟨⟨rfl, hq.1, rfl, hq.2.2.2.1⟩, hq.2.2.2.2, hq.2.1⟩
+      · rw [if_neg hq] at hr
+        by_cases h2 : tg T = 2 ∧ tg (a2 T) = 2
+        · rw [dif_pos h2] at hr
+          have e1 := sz_a2_lt h2.1
+          have e2 := sz_a2_lt h2.2
+          exact ih u (a2 (a2 T)) w P r (by omega) (by omega) hr
+        · rw [dif_neg h2] at hr
+          exact Or.inl hr.symm
+
+theorem findWOK (u P w : M) : findW u P w P = J u u ∨
+    (cds u (findW u P w P) ∧ op (findW u P w P) w = P ∧
+      sz (findW u P w P) < sz P) :=
+  findWN (sz P) u P w P _ (Nat.le_refl _) (Nat.le_refl _) rfl
 
 /-- what `find` returns: either the sentinel, or a genuine payload. Fuel induction on `sz T`
     (the mutual `find.induct` carries three motives and is unusable for a single statement). -/
@@ -261,6 +329,226 @@ theorem SND (u v : M) : op u v = J u v ∨
       · exact Or.inl h
       · exact Or.inr ⟨hc, h1, h2⟩
   · exact Or.inl (opF hc)
+
+/-- A code strictly below the right child of its producer cannot certify that producer.
+    The payload of the code is smaller again; `SND` either gives an impossible free/direct
+    reading or another certified code, to which the fuel induction applies. -/
+theorem cds_below_a2_N (n : Nat) : ∀ u c : M, sz c ≤ n → sz c < sz (a2 u) → ¬ cds u c := by
+  induction n with
+  | zero =>
+    intro u c hn
+    have hp := sz_pos c
+    omega
+  | succ n ih =>
+    intro u c hn hcu hc
+    have e1 := sz_a2_lt hc.1
+    have e2 := sz_a2_lt hc.2.1
+    have hp : sz (a2 (a2 c)) < sz c := by omega
+    have hop : op u (a1 c) = a2 (a2 c) := hc.2.2.2
+    rcases SND u (a1 c) with hf | ⟨-, -, hu | hd⟩
+    · rw [hf] at hop
+      have es := congrArg sz hop
+      simp only [sz_J] at es
+      have eu := sz_a2 u
+      have hw := sz_pos (a1 c)
+      omega
+    · rw [hop] at hu
+      have es := congrArg sz hu.2
+      omega
+    · rw [hop] at hd
+      exact ih u (a2 (a2 c)) (by omega) (by omega) hd
+
+theorem cds_below_a2 {u c : M} (h : sz c < sz (a2 u)) : ¬ cds u c :=
+  cds_below_a2_N (sz c) u c (Nat.le_refl _) h
+
+/-- The useful descent is to the payload, not merely below the whole code. -/
+theorem cds_a2_le_payload_N (n : Nat) : ∀ u c : M, sz c ≤ n → cds u c →
+    sz (a2 u) ≤ sz (a2 (a2 c)) := by
+  induction n with
+  | zero =>
+    intro u c hn _
+    have hp := sz_pos c
+    omega
+  | succ n ih =>
+    intro u c hn hc
+    have e1 := sz_a2_lt hc.1
+    have e2 := sz_a2_lt hc.2.1
+    have hp : sz (a2 (a2 c)) < sz c := by omega
+    have hop : op u (a1 c) = a2 (a2 c) := hc.2.2.2
+    rcases SND u (a1 c) with hf | ⟨-, -, hu | hd⟩
+    · rw [hf] at hop
+      have es := congrArg sz hop
+      simp only [sz_J] at es
+      have eu := sz_a2 u
+      have hw := sz_pos (a1 c)
+      omega
+    · rw [hop] at hu
+      have es := congrArg sz hu.2
+      omega
+    · rw [hop] at hd
+      have hi := ih u (a2 (a2 c)) (by omega) hd
+      have e3 := sz_a2 (a2 (a2 c))
+      have e4 := sz_a2 (a2 (a2 (a2 c)))
+      omega
+
+theorem cds_a2_le_payload {u c : M} (h : cds u c) :
+    sz (a2 u) ≤ sz (a2 (a2 c)) :=
+  cds_a2_le_payload_N (sz c) u c (Nat.le_refl _) h
+
+theorem cds_a2_lt {u c : M} (h : cds u c) : sz (a2 u) < sz c :=
+  by
+    have h1 := cds_a2_le_payload h
+    have h2 := sz_a2_lt h.1
+    have h3 := sz_a2_lt h.2.1
+    omega
+
+/-- No term can be a code for itself.  The first payload step lands strictly below `a2 u`,
+    where `cds_below_a2` rules out the only recursive `SND` reading. -/
+theorem cds_self (u : M) : ¬ cds u u := by
+  intro hc
+  have e1 := sz_a2_lt hc.1
+  have e2 := sz_a2_lt hc.2.1
+  have hop : op u (a1 u) = a2 (a2 u) := hc.2.2.2
+  rcases SND u (a1 u) with hf | ⟨-, -, hu | hd⟩
+  · rw [hf] at hop
+    have es := congrArg sz hop
+    simp only [sz_J] at es
+    have hw := sz_pos (a1 u)
+    omega
+  · rw [hop] at hu
+    have es := congrArg sz hu.2
+    omega
+  · rw [hop] at hd
+    exact cds_below_a2 (by omega) hd
+
+/-- The decoder has no left fixed point. -/
+theorem op_ne_left (u v : M) : op u v ≠ u := by
+  intro h
+  rcases SND u v with hf | ⟨-, -, hu | hd⟩
+  · rw [hf] at h
+    have es := congrArg sz h
+    simp only [sz_J] at es
+    have hv := sz_pos v
+    omega
+  · rw [h] at hu
+    have es := congrArg sz hu.2
+    have eu := sz_a2_lt hu.1
+    omega
+  · rw [h] at hd
+    exact cds_self u hd
+
+/-- The decoder has no right fixed point either. -/
+theorem op_ne_right (u v : M) : op u v ≠ v := by
+  intro h
+  rcases SND u v with hf | ⟨hc, hr, -⟩
+  · rw [hf] at h
+    have es := congrArg sz h
+    simp only [sz_J] at es
+    have hu := sz_pos u
+    omega
+  · rw [h] at hr
+    exact cds_self v ⟨hc.1, hc.2.1, hc.2.2, hr⟩
+
+/-- If a coded left argument produces `T`, its own payload lies strictly below `T`. -/
+theorem code_payload_lt_result {c w T : M} (hc : Cd c) (hop : op c w = T) :
+    sz (a2 (a2 c)) < sz T := by
+  rcases SND c w with hf | ⟨-, -, hu | hd⟩
+  · rw [hf] at hop
+    have es := congrArg sz hop
+    simp only [sz_J] at es
+    have ec := sz_a2 c
+    have ec2 := sz_a2 (a2 c)
+    have hw := sz_pos w
+    omega
+  · rw [hop] at hu
+    have ec := sz_a2_lt hc.2.1
+    have es := congrArg sz hu.2
+    omega
+  · rw [hop] at hd
+    have hh := cds_a2_lt hd
+    have ec := sz_a2 (a2 c)
+    omega
+
+theorem out_cases {u z P : M} (h : op u z = P) :
+    P = J u z ∨ (cds P z ∧ ((tg u = 2 ∧ a2 u = P) ∨ cds u P)) := by
+  rcases SND u z with hf | ⟨hc, hr, hs⟩
+  · exact Or.inl (h.symm.trans hf)
+  · rw [h] at hr hs
+    exact Or.inr ⟨⟨hc.1, hc.2.1, hc.2.2, hr⟩, hs⟩
+
+theorem code_eq_recon {c P : M} (hc : Cd c) (h : a2 c = P) :
+    c = J (a1 P) P := by
+  obtain ⟨a, b, rfl⟩ := tg_J _ hc.1
+  unfold Cd at hc
+  simp only [a1_J_eq, a2_J_eq] at hc h ⊢
+  subst b
+  rw [hc.2.2]
+
+theorem code_direct_recursive_absurd {A c x P : M}
+    (hAc : cds A c) (hAx : cds A x) (hcP : a2 c = P) (hxP : cds x P) : False := by
+  have hcEq := code_eq_recon (⟨hAc.1, hAc.2.1, hAc.2.2.1⟩ : Cd c) hcP
+  have hpay := code_payload_lt_result
+    (⟨hAx.1, hAx.2.1, hAx.2.2.1⟩ : Cd x) hxP.2.2.2
+  have hA := cds_a2_le_payload hAx
+  have hp := sz_a2_lt hxP.2.1
+  have hlt : sz (a2 A) < sz (a2 P) := by omega
+  have hopA : op A (a1 P) = a2 P := by
+    have h := hAc.2.2.2
+    rw [hcEq] at h
+    simpa only [a1_J_eq, a2_J_eq] using h
+  rcases SND A (a1 P) with hf | ⟨-, -, hu | hd⟩
+  · have e : J A (a1 P) = a2 P := hf.symm.trans hopA
+    have e2 := congrArg a2 e
+    simp only [a2_J_eq] at e2
+    exact op_ne_right x (a1 P) (hxP.2.2.2.trans e2.symm)
+  · rw [hopA] at hu
+    have es := congrArg sz hu.2
+    omega
+  · rw [hopA] at hd
+    have hs : op A (a1 (a2 P)) = a2 P := by
+      rw [← hxP.2.2.1]
+      exact hopA
+    have he := congrArg sz (hs.symm.trans hd.2.2.2)
+    have ep := sz_a2_lt hd.1
+    have ep2 := sz_a2 (a2 (a2 P))
+    omega
+
+/-- Two code candidates for the same source cannot reproduce the same chain payload. -/
+theorem code_fiber_unique_N (n : Nat) : ∀ A c x z P : M, sz P ≤ n →
+    cds A c → cds A x → op c z = P → op x z = P → c = x := by
+  induction n with
+  | zero =>
+    intro A c x z P hn
+    have hp := sz_pos P
+    omega
+  | succ n ih =>
+    intro A c x z P hn hAc hAx hcP hxP
+    rcases out_cases hcP with hcf | ⟨hPz, hc⟩
+    · rcases out_cases hxP with hxf | ⟨hPz', hx⟩
+      · have e : J c z = J x z := hcf.symm.trans hxf
+        injection e
+      · rw [hcf] at hPz'
+        have hh := cds_a2_lt hPz'
+        simp only [a2_J_eq] at hh
+        omega
+    · rcases out_cases hxP with hxf | ⟨hPz', hx⟩
+      · rw [hxf] at hPz
+        have hh := cds_a2_lt hPz
+        simp only [a2_J_eq] at hh
+        omega
+      · rcases hc with hc | hc <;> rcases hx with hx | hx
+        · exact (code_eq_recon ⟨hAc.1, hAc.2.1, hAc.2.2.1⟩ hc.2).trans
+            (code_eq_recon ⟨hAx.1, hAx.2.1, hAx.2.2.1⟩ hx.2).symm
+        · exact (code_direct_recursive_absurd hAc hAx hc.2 hx).elim
+        · exact (code_direct_recursive_absurd hAx hAc hx.2 hc).elim
+        · have e1 := sz_a2_lt hc.1
+          have e2 := sz_a2_lt hc.2.1
+          exact ih A c x (a1 P) (a2 (a2 P)) (by omega) hAc hAx
+            hc.2.2.2 hx.2.2.2
+
+theorem code_fiber_unique {A c x z P : M} (hAc : cds A c) (hAx : cds A x)
+    (hcP : op c z = P) (hxP : op x z = P) : c = x :=
+  code_fiber_unique_N (sz P) A c x z P (Nat.le_refl _) hAc hAx hcP hxP
 
 /-- the A-free top product: branch U fires and returns `a2 (J y x) = x`. -/
 theorem TOPU (x y z Q : M) (hP : op x z = Q) : op (J y x) (J z (J z Q)) = x := by
