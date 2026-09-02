@@ -176,3 +176,32 @@ branch of the root's guard that no battery has ever instantiated.**
   while separately retaining a guard against the older Q-slot DEC misfire.
   Only then is a guarded model worth constructing; `12294` first needs its own
   ordered-pair map.
+
+# 2026-09-02: the two-bit root separator is branch-proved
+
+- **Batch and laws affected** — Batch 1, `9663`; `36487` by pair reversal.  No transfer to
+  `12294` is justified.
+- **Statement** — Let `N(u,v) :⇔ a1(v) != u` and `S(u,v) :⇔ a2^3(u) != v`.  Retain `N` on
+  DEC/R2 and add `S` only to R2.  For every intended root with
+  `P=op(x,y)`, `Q=F(x,P)`, and `C` equal to `E(A,Q)` or `F(A,Q)`, one has `S(y,C)`.
+  The three relevant signatures are: root `N∧S`, old Q-slot `¬N∧S`, bad R2 `N∧¬S`.
+- **Derivation in short numbered steps**
+  1. Every operation output is a container `K(u,v)`, DEC's strict right subterm
+     `a1(a2(v))`, or R2's strict left subterm `a2^3(u)`.
+  2. Since `C` contains `Q=F(x,P)`, both `sz(x)<sz(C)` and `sz(P)<sz(C)`.
+  3. If a container produces `P`, then `a2^3(y)≤sz(y)<sz(P)<sz(C)`.
+  4. If DEC produces `P`, its guard gives `op(P,x)=a2^2(y)`.  Splitting this product puts
+     `a2^3(y)` strictly below either `x` or `P`, hence below `C`.
+  5. If R2 produces `P`, put `p=a1(a2(x))`; its guard gives `op(P,p)=a2(y)`.  Splitting this
+     product puts `a2^3(y)` below `p<x` or below `P`, hence below `C`.
+  6. With `S` on R2, `op(z,y)!=y`: containers are larger than `y`, DEC is smaller, and R2
+     equality is excluded by `S`.  Thus the root's `N` bit also holds.
+  7. `_s10_9663_rootsep.py` reaches the explicit `A=y` control and all existing constructed
+     rule/descent controls with zero failures.  Deleting `S` restores the bad R2 cell; deleting
+     `N` restores the older Q-slot DEC misfire.
+- **Whether it is proved, refuted, or conjectural** — Intended-root safety is proved by the
+  displayed producer split.  The guarded operation is positive-controlled but does not yet have
+  a Lean certificate.
+- **The one next lemma needed** — Prove the chain dichotomy
+  `Q=F(x,P) ∧ C∈{E(A,Q),F(A,Q)}` or `R2Guard(y,C) ∧ a2^3(y)=x`.
+  DEC closes the first branch and R2 closes the second.

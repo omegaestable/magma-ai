@@ -126,15 +126,14 @@ decreasing_by
 end
 
 
-def inst : Magma M := { op := op }
+def inst : Magma M := { op := fun a b => op b a }
 
 theorem rhs : ¬ @EquationRHS M inst := by
   intro h
   have := h (g 0) (g 0) (g 0)
   revert this
-  change ¬ g 0 = op (op (g 0) (g 0)) (op (op (g 0) (op (g 0) (g 0))) (g 0))
+  change ¬ g 0 = op (op (g 0) (op (g 0) (g 0))) (op (op (g 0) (g 0)) (g 0))
   simp [op.eq_1, opTail.eq_1, find.eq_1, Cd, tg, a1, a2, sz]
-
 theorem opF {u v : M} (h : ¬ Cd v) : op u v = J u v := by
   rw [op.eq_1, dif_neg h]
 
@@ -839,7 +838,7 @@ theorem law (x y z : M) : op (op (y) (x)) (op (z) (op (z) (op (x) (z)))) = x := 
 
 theorem lhs : @EquationLHS M inst := by
   intro x y z
-  exact (law x y z).symm
+  first | exact (law x y z).symm | exact (law x z y).symm | exact (law y x z).symm | exact (law y z x).symm | exact (law z x y).symm | exact (law z y x).symm
 
 end submission
 
